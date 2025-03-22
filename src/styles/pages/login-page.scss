@@ -1,0 +1,43 @@
+.login-page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url('/src/assets/login_image_cover.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 100vh;
+  width: 100%;
+
+  .login-form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    max-width: 300px;
+    padding: 85px 50px;
+    background-color: rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 10px;
+    gap: 30px;
+
+    h1 {
+        color: #fff;
+        text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+
+    label {
+        position: absolute;
+        right: 10px;
+        top: 12px;
+        letter-spacing: 0.2px;
+        font-size: 14px;
+        color: $gray-700;
+        transition: all 0.3s ease;
+        pointer-events: none; // Prevents label from blocking input clicks
+      }
+  }
+}

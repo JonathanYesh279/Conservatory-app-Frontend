@@ -1,0 +1,19 @@
+// Reset file for entire app
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-decoration: none;
+  list-style: none;
+}
+
+html {
+  font-family: 'Reisinger Michal';
+  min-height: 100vh;
+  direction: rtl;
+}
+
+img, svg {
+  max-width: 100%;
+}

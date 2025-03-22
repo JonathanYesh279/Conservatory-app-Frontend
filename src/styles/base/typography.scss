@@ -1,0 +1,21 @@
+// Heading
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: $text-primary-color;
+}
+
+p {
+  color: $text-primary-color; 
+}
+
+a {
+  text-decoration: none;
+  color: $text-primary-color;
+}
+
+// Lists
+ul, ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
