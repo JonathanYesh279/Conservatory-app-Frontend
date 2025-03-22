@@ -2,42 +2,162 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: url('/src/assets/login_image_cover.jpg');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('/src/assets/login_image_cover.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   height: 100vh;
   width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  // Add a subtle overlay that moves with mouse for depth
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.15));
+    pointer-events: none;
+  }
 
   .login-form {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    max-width: 300px;
-    padding: 85px 50px;
+    width: 100%;
+    max-width: 380px;
+    padding: 3.5rem 2.5rem;
     background-color: rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(3px);
+    backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    border-radius: 10px;
-    gap: 30px;
-
-    h1 {
-        color: #fff;
-        text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-        letter-spacing: 0.5px;
-        font-weight: 600;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    gap: 2rem;
+    transform: translateY(0);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.25);
     }
 
-    label {
-        position: absolute;
-        right: 10px;
-        top: 12px;
-        letter-spacing: 0.2px;
-        font-size: 14px;
-        color: $gray-700;
-        transition: all 0.3s ease;
-        pointer-events: none; // Prevents label from blocking input clicks
+    h1 {
+      color: #fff;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 2.2rem;
+    }
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      text-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-group {
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      padding: 0.8rem;
+      margin-top: 1rem;
+      background-color: $primary-color;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      
+      &:hover {
+        background-color: darken($primary-color, 5%);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
       }
+      
+      &:active {
+        transform: translateY(1px);
+      }
+      
+      // Add subtle animated shine effect
+      &::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          to right,
+          rgba(255, 255, 255, 0) 0%,
+          rgba(255, 255, 255, 0.2) 50%,
+          rgba(255, 255, 255, 0) 100%
+        );
+        transform: rotate(30deg);
+        transition: transform 0.5s;
+        opacity: 0;
+      }
+      
+      &:hover::after {
+        opacity: 1;
+        transform: rotate(30deg) translate(50%, 50%);
+      }
+    }
+    
+    .forgot-password {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 1rem;
+      text-align: center;
+      width: 100%;
+      gap: 0.25rem;
+      
+      p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        
+        &:hover {
+          color: $white;
+        }
+      }
+
+      a {
+        text-decoration: underline;
+        font-size: 0.9rem;
+        color: $white;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+// Add responsive handling
+@media (max-width: 480px) {
+  .login-page .login-form {
+    padding: 2rem 1.5rem;
+    max-width: 320px;
+    margin: 0 1rem;
+    
+    h1 {
+      font-size: 1.8rem;
+    }
   }
 }

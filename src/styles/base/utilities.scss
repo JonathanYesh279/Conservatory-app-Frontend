@@ -163,15 +163,6 @@ input {
     outline: none;
     box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
   }
-
-   &:focus + label,
-        &:not(:placeholder-shown) + label {
-          top: -25px;
-          right: 0;
-          font-size: 12px;
-          color: #fff;
-          text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
-        }
   
   &::placeholder {
     color: $text-muted-color;
@@ -191,23 +182,145 @@ input {
   }
 }
 
+// Floating label inputs
+.form-floating {
+  position: relative;
+  
+  input, 
+  textarea,
+  select {
+    height: 3.25rem;
+    padding: 1rem;
+    padding: 1rem;
+    padding-right: 2.5rem;
+    
+    &::placeholder {
+      color: transparent;
+    }
+  }
+  
+  label {
+    position: absolute;
+    top: 50%;
+    right: 2.5rem;
+    transform: translateY(-50%);
+    color: $text-muted-color;
+    pointer-events: none;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+  }
+  
+  input:focus,
+  textarea:focus,
+  select:focus,
+  input:not(:placeholder-shown),
+  textarea:not(:placeholder-shown),
+  select:not(:placeholder-shown) {
+    ~ label {
+      top: -0.5rem;
+      right: 0.75rem;
+      font-size: 0.75rem;
+      color: $primary-color;
+      background-color: $white;
+      border-radius: 0.25rem;
+      border: 1px solid $primary-color;
+      padding: 0 0.25rem;
+      transform: translateY(0);
+    }
+  }
+  
+  // Dark theme variant
+  &.dark {
+    input, 
+    textarea,
+    select {
+      background-color: rgba($gray-800, 0.6);
+      border-color: rgba($gray-600, 0.5);
+      color: $white;
+      
+      &:focus {
+        border-color: rgba($primary-color, 0.8);
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+      }
+    }
+    
+    label {
+      color: rgba($gray-400, 0.8);
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus,
+    input:not(:placeholder-shown),
+    textarea:not(:placeholder-shown),
+    select:not(:placeholder-shown) {
+      ~ label {
+        color: rgba($primary-lightest, 0.9);
+      }
+    }
+  }
+  
+  // Glass effect variant
+  &.glass {
+    input, 
+    textarea,
+    select {
+      background-color: rgba($white, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border-color: rgba($white, 0.3);
+      color: $white;
+      
+      &:focus {
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+      }
+    }
+    
+    label {
+      color: rgba($white, 0.8);
+      text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus,
+    input:not(:placeholder-shown),
+    textarea:not(:placeholder-shown),
+    select:not(:placeholder-shown) {
+      ~ label {
+        color: $primary-color;
+        text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+        font-weight: 500;
+      }
+    }
+  }
+}
+
 // Input with icon
 .input-icon-wrapper {
   position: relative;
-  display: flex;
-  align-items: center;
+  width: 100%;
   
   .input {
-    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+
+    &:focus ~ .icon {
+      opacity: 0;
+      transform: translateX(10px);
+    }
   }
   
   .icon {
     position: absolute;
-    left: 0.75rem;
-    color: $icon-color;
+    top: 50%;
+    right: 0.75rem;
+    color: $gray-700;
     width: 1.25rem;
     height: 1.25rem;
     pointer-events: none;
+    transform: translateY(-50%);
+    transition: opacity 0.2s ease, transform 0.2s ease;
   }
 }
 
@@ -245,7 +358,6 @@ input {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
   width: 100%;
   
   .form-label {
@@ -274,7 +386,6 @@ input {
 .form-section {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
   width: 100%;
 }
 
