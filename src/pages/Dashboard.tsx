@@ -1,7 +1,10 @@
+import { Header } from '../cmps/Header.tsx'
+
 export function Dashboard() {
   return (
-    <h1>
-      DASHBOARD
-    </h1>
+    <>
+      <Header />
+      <h1>DASHBOARD!!</h1>
+    </>
   )
 }

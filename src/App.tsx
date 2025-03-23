@@ -4,6 +4,8 @@ import { LoginPage } from './pages/LoginPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from './store/authStore.ts'
 
+import { Dashboard } from './pages/Dashboard.tsx'
+
 // Create a query client
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,16 +30,6 @@ function ProtectedRoute() {
   }
 
   return <Outlet />
-}
-
-// Dashboard placeholder component
-function Dashboard() {
-  return (
-    <div className="dashboard">
-      <h1>Dashboard</h1>
-      <p>Welcome to your dashboard!</p>
-    </div>
-  )
 }
 
 function App() {
