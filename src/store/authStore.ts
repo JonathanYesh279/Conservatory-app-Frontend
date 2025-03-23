@@ -1,19 +1,6 @@
 import { create } from 'zustand'
 import { httpService } from '../services/httpService'
-
-// Define user interface
-interface User {
-  _id: string
-  fullName: string
-  email: string
-  roles: string[]
-}
-
-// Define login response interface
-interface LoginResponse {
-  accessToken: string
-  teacher: User
-}
+import { User } from '../types/teacher'
 
 // Define auth state interface
 interface AuthState {
@@ -42,8 +29,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     if (storedUser && accessToken) {
       try {
+        const user = JSON.parse(storedUser) as User
         set({ 
-          user: JSON.parse(storedUser), 
+          user, 
           isAuthenticated: true 
         })
       } catch (err) {
