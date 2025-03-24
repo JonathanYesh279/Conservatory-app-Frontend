@@ -60,8 +60,6 @@ export function Dashboard() {
       <Header />
       
       <main className="main-content">
-        <h1>מרכז ניהול</h1>
-        
         <div className="dashboard-grid">
           <StatCard
             title="סך הכל תלמידים"
