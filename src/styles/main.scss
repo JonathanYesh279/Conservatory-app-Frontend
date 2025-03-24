@@ -3,9 +3,12 @@
 @import './base/reset';
 @import './base/typography';
 @import './base/utilities';
+@import './base/forms';
 
 // Components
 @import './components/header.scss';
+@import './components/bottom-navbar.scss';
+@import './components/stat-card.scss';
 
 
 // Pages

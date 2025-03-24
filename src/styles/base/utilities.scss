@@ -13,67 +13,67 @@
   transition: background-color 150ms;
   
   &.primary {
-    background-color: $primary-color;
-    color: $white;
+    background-color: var(--primary-color);
+    color: #fff;
     
     &:hover, &:focus {
-      background-color: darken($primary-color, 7%);
+      background-color: var(--primary-dark);
     }
     
     &:active {
-      background-color: darken($primary-color, 10%);
+      background-color: var(--primary-dark);
     }
   }
   
   &.secondary {
-    background-color: $gray-200;
-    color: $gray-700;
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
     
     &:hover, &:focus {
-      background-color: darken($gray-200, 7%);
+      background-color: var(--border-color);
     }
     
     &:active {
-      background-color: darken($gray-200, 10%);
+      background-color: var(--border-color);
     }
   }
   
   &.success {
-    background-color: $success;
-    color: $white;
+    background-color: var(--success);
+    color: #fff;
     
     &:hover, &:focus {
-      background-color: darken($success, 7%);
+      filter: brightness(0.9);
     }
     
     &:active {
-      background-color: darken($success, 10%);
+      filter: brightness(0.85);
     }
   }
   
   &.warning {
-    background-color: $warning;
-    color: $white;
+    background-color: var(--warning);
+    color: #fff;
     
     &:hover, &:focus {
-      background-color: darken($warning, 7%);
+      filter: brightness(0.9);
     }
     
     &:active {
-      background-color: darken($warning, 10%);
+      filter: brightness(0.85);
     }
   }
   
   &.danger {
-    background-color: $danger;
-    color: $white;
+    background-color: var(--danger);
+    color: #fff;
     
     &:hover, &:focus {
-      background-color: darken($danger, 7%);
+      filter: brightness(0.9);
     }
     
     &:active {
-      background-color: darken($danger, 10%);
+      filter: brightness(0.85);
     }
   }
   
@@ -82,7 +82,7 @@
     cursor: not-allowed;
   }
   
-// Icon in button
+  // Icon in button
   .icon {
     width: 1.25rem;
     height: 1.25rem;
@@ -115,13 +115,13 @@
   height: 2.5rem;
   border-radius: 50%;
   background-color: transparent;
-  color: $icon-color;
+  color: var(--text-secondary);
   border: none;
   transition: background-color 150ms, color 150ms;
   
   &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: darken($icon-color, 15%);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
   }
   
   &.btn-sm {
@@ -153,32 +153,32 @@ input {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: $text-primary-color;
-  background-color: $white;
-  border: 1px solid $border-input-color;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-input);
   border-radius: 0.5rem;
   transition: border-color 150ms, box-shadow 150ms;
   
   &:focus {
-    border-color: $primary-color;
+    border-color: var(--primary-color);
     outline: none;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.15);
   }
   
   &::placeholder {
-    color: $text-muted-color;
+    color: var(--text-muted);
   }
   
   &:disabled {
-    background-color: $gray-100;
+    background-color: var(--bg-tertiary);
     cursor: not-allowed;
   }
   
   &.is-invalid {
-    border-color: $danger;
+    border-color: var(--danger);
     
     &:focus {
-      box-shadow: 0 0 0 3px rgba($danger, 0.15);
+      box-shadow: 0 0 0 3px rgba(var(--danger-rgb), 0.15);
     }
   }
 }
@@ -192,7 +192,6 @@ input {
   select {
     height: 3.25rem;
     padding: 1rem;
-    padding: 1rem;
     padding-right: 2.5rem;
     
     &::placeholder {
@@ -205,7 +204,7 @@ input {
     top: 50%;
     right: 2.5rem;
     transform: translateY(-50%);
-    color: $text-muted-color;
+    color: var(--text-muted);
     pointer-events: none;
     transition: all 0.2s ease;
     font-size: 1rem;
@@ -221,10 +220,10 @@ input {
       top: -0.5rem;
       right: 0.75rem;
       font-size: 0.75rem;
-      color: $primary-color;
-      background-color: $white;
+      color: var(--primary-color);
+      background-color: var(--bg-card);
       border-radius: 0.25rem;
-      border: 1px solid $primary-color;
+      border: 1px solid var(--primary-color);
       padding: 0 0.25rem;
       transform: translateY(0);
     }
@@ -235,18 +234,18 @@ input {
     input, 
     textarea,
     select {
-      background-color: rgba($gray-800, 0.6);
-      border-color: rgba($gray-600, 0.5);
-      color: $white;
+      background-color: rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
       
       &:focus {
-        border-color: rgba($primary-color, 0.8);
-        box-shadow: 0 0 0 3px rgba($primary-color, 0.2);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.2);
       }
     }
     
     label {
-      color: rgba($gray-400, 0.8);
+      color: rgba(255, 255, 255, 0.7);
     }
     
     input:focus,
@@ -256,7 +255,8 @@ input {
     textarea:not(:placeholder-shown),
     select:not(:placeholder-shown) {
       ~ label {
-        color: rgba($primary-lightest, 0.9);
+        color: var(--primary-lightest);
+        background-color: var(--bg-tertiary);
       }
     }
   }
@@ -266,20 +266,20 @@ input {
     input, 
     textarea,
     select {
-      background-color: rgba($white, 0.2);
+      background-color: rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      border-color: rgba($white, 0.3);
-      color: $white;
+      border-color: rgba(255, 255, 255, 0.3);
+      color: #fff;
       
       &:focus {
-        border-color: $primary-color;
-        box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.15);
       }
     }
     
     label {
-      color: rgba($white, 0.8);
+      color: rgba(255, 255, 255, 0.8);
       text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
     }
     
@@ -290,9 +290,11 @@ input {
     textarea:not(:placeholder-shown),
     select:not(:placeholder-shown) {
       ~ label {
-        color: $primary-color;
+        color: var(--primary-lightest);
         text-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
         font-weight: 500;
+        background-color: transparent;
+        border-color: transparent;
       }
     }
   }
@@ -303,25 +305,24 @@ input {
   position: relative;
   width: 100%;
   
-  .input {
+  input {
     padding-right: 2.5rem;
-
-    &:focus ~ .icon {
-      opacity: 0;
-      transform: translateX(10px);
-    }
   }
   
   .icon {
     position: absolute;
     top: 50%;
     right: 0.75rem;
-    color: $gray-700;
+    color: var(--text-secondary);
     width: 1.25rem;
     height: 1.25rem;
     pointer-events: none;
     transform: translateY(-50%);
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+  
+  input:focus ~ .icon {
+    color: var(--primary-color);
   }
 }
 
@@ -332,10 +333,10 @@ input {
   padding-right: 2rem;
   font-size: 1rem;
   line-height: 1.5;
-  color: $text-primary-color;
-  background-color: $white;
-  border: 1px solid $border-input-color;
-  border-radius: 0.25rem;
+  color: var(--text-primary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-input);
+  border-radius: 0.5rem;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236C757D' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
   background-position: right 0.75rem center;
@@ -343,13 +344,13 @@ input {
   background-size: 1.5em 1.5em;
   
   &:focus {
-    border-color: $primary-color;
+    border-color: var(--primary-color);
     outline: none;
-    box-shadow: 0 0 0 3px rgba($primary-color, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--primary-color-rgb), 0.15);
   }
   
   &:disabled {
-    background-color: $gray-100;
+    background-color: var(--bg-tertiary);
     cursor: not-allowed;
   }
 }
@@ -360,26 +361,30 @@ input {
   display: flex;
   flex-direction: column;
   width: 100%;
+  margin-bottom: 1rem;
   
   .form-label {
     font-weight: 500;
-    color: $text-primary-color;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
     
     &.required::after {
       content: "*";
-      color: $danger;
-      margin-left: 0.25rem;
+      color: var(--danger);
+      margin-right: 0.25rem;
     }
   }
   
   .form-hint {
     font-size: 0.875rem;
-    color: $text-secondary-color;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
   }
   
   .form-error {
     font-size: 0.875rem;
-    color: $danger;
+    color: var(--danger);
+    margin-top: 0.25rem;
   }
 }
 
@@ -422,5 +427,12 @@ input {
   label {
     cursor: pointer;
     user-select: none;
+    color: var(--text-primary);
   }
+}
+
+// For RGB usage in rgba functions
+:root {
+  --primary-color-rgb: 77, 85, 204; // Matches #4D55CC
+  --danger-rgb: 220, 53, 69; // Matches #DC3545
 }

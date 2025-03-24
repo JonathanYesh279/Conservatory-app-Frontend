@@ -9,11 +9,45 @@
 }
 
 html {
-  font-family: 'Reisinger Michal';
+  font-family: 'Reisinger Michal', sans-serif;
   min-height: 100vh;
   direction: rtl;
 }
 
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 img, svg {
   max-width: 100%;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Set default focus styles
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+// Base container for the app
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 70px; // Space for the floating nav
+}
+
+// Main content container
+.main-content {
+  flex: 1;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
 }

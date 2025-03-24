@@ -1,12 +1,14 @@
 import { useState, FormEvent } from 'react'
-import { MdEmail, MdLock } from 'react-icons/md'
+import { Mail, Lock, Sun, Moon } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/useTheme'
 import { Navigate } from 'react-router-dom'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
+  const { theme, toggleTheme } = useTheme()
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -34,12 +36,24 @@ export function LoginPage() {
   return (
     <div className='login-page'>
       <div className='login-form'>
+        <button 
+          className='theme-toggle' 
+          onClick={toggleTheme}
+          aria-label='Toggle theme'
+        >
+          {theme === 'dark' ? (
+            <Sun className='icon' />
+          ) : (
+            <Moon className='icon' />
+          )}
+        </button>
+        
         <h1>התחברות</h1>
 
         {error && <div className="error-message">{error}</div>}
 
         <form className='form-section' onSubmit={handleSubmit}>
-          <div className='form-group form-floating glass'>
+          <div className='form-group form-floating'>
             <div className='input-icon-wrapper'>
               <input
                 type='email'
@@ -50,12 +64,12 @@ export function LoginPage() {
                 value={email}
                 onChange={handleEmailChange}
               />
-              <MdEmail className='icon' />
+              <Mail className='icon' />
               <label htmlFor='email'>מייל</label>
             </div>
           </div>
 
-          <div className='form-group form-floating glass'>
+          <div className='form-group form-floating'>
             <div className='input-icon-wrapper'>
               <input
                 type='password'
@@ -65,7 +79,7 @@ export function LoginPage() {
                 value={password}
                 onChange={handlePasswordChange}
               />
-              <MdLock className='icon' />
+              <Lock className='icon' />
               <label htmlFor='password'>סיסמה</label>
             </div>
           </div>

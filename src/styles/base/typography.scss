@@ -1,16 +1,51 @@
-// Heading
+// Heading styles
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
-  color: $text-primary-color;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.2;
 }
 
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.75rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+}
+
+h5 {
+  font-size: 1.125rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+// Paragraph styles
 p {
-  color: $text-primary-color; 
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
 
+// Link styles
 a {
   text-decoration: none;
-  color: $text-primary-color;
+  color: var(--primary-color);
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: var(--primary-dark);
+  }
 }
 
 // Lists
@@ -18,4 +53,70 @@ ul, ol {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+// Text utility classes
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-bold {
+  font-weight: 600;
+}
+
+.text-normal {
+  font-weight: 400;
+}
+
+.text-light {
+  font-weight: 300;
+}
+
+// Sizes
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.text-md {
+  font-size: 1rem;
+}
+
+.text-lg {
+  font-size: 1.125rem;
+}
+
+.text-xl {
+  font-size: 1.25rem;
+}
+
+.text-2xl {
+  font-size: 1.5rem;
+}
+
+.text-3xl {
+  font-size: 1.875rem;
 }

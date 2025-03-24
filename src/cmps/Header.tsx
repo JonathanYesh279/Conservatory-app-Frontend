@@ -1,19 +1,19 @@
 import { useAuth } from '../hooks/useAuth'
 import { Link } from 'react-router-dom'
-import avatar from '../assets/avatar.png'
 import logo from '../assets/logo.jpg'
 import { useState, useRef, useEffect } from 'react'
-import { 
-  ChevronDown, 
-  ChevronUp, 
+import {  
   LogOut, 
   User,
-  Menu
+  Sun,
+  Moon
 } from 'lucide-react'
+import { useTheme } from '../hooks/useTheme'
 
 export function Header() {
   const [dropDownMenu, setDropDownMenu] = useState(false)
   const { user, logout } = useAuth()
+  const { theme, toggleTheme } = useTheme()
   const dropdownRef = useRef(null)
 
   // Close dropdown when clicking outside
@@ -40,42 +40,46 @@ export function Header() {
 
   // Extract first name and ensure it's properly rendered with a fallback
   const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'אורח'
+  
+  // Create initials for avatar placeholder
+  const userInitials = user?.fullName
+    ? user.fullName
+        .split(' ')
+        .map(name => name[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase()
+    : 'U'
 
   return (
     <header className='header'>
       <div className='header-container'>
-        {user && (
-          <div className='user-container' ref={dropdownRef}>
-            {/* Mobile menu button */}
-            <button className='mobile-menu-button' onClick={toggleDropDownMenu}>
-              <Menu className='menu-icon' />
-            </button>
-            <div className='avatar-wrapper' onClick={toggleDropDownMenu}>
-              <div className='user-greeting'>
-                <span className='greeting-text'>שלום, {firstName}</span>
-                <div className='chevron-icon'>
-                  {dropDownMenu ? (
-                    <ChevronUp className='icon' strokeWidth={2.5} />
+        <div
+          className='right-section'
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          {user && (
+            <div className='user-container' ref={dropdownRef}>
+              <div className='avatar-wrapper' onClick={toggleDropDownMenu}>
+                <div className='avatar-circle'>
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt='Avatar'
+                      className='user-avatar'
+                    />
                   ) : (
-                    <ChevronDown className='icon' strokeWidth={2.5} />
+                    <div className='avatar-placeholder'>{userInitials}</div>
                   )}
                 </div>
               </div>
 
-              <div className='avatar-circle'>
-                {user.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt='Avatar'
-                    className='user-avatar'
-                  />
-                ) : (
-                  <img src={avatar} alt='Avatar' className='user-avatar' />
-                )}
-              </div>
-
               {dropDownMenu && (
                 <div className='dropdown-menu'>
+                  <div className='user-info'>
+                    <div className='user-name'>{user.fullName}</div>
+                    <div className='user-email'>{user.email}</div>
+                  </div>
                   <Link to='/profile' className='dropdown-item'>
                     <User className='dropdown-icon' strokeWidth={2} />
                     <span>פרופיל אישי</span>
@@ -91,8 +95,20 @@ export function Header() {
                 </div>
               )}
             </div>
-          </div>
-        )}
+          )}
+
+          <button
+            className='theme-toggle'
+            onClick={toggleTheme}
+            aria-label='Toggle theme'
+          >
+            {theme === 'dark' ? (
+              <Sun className='icon' />
+            ) : (
+              <Moon className='icon' />
+            )}
+          </button>
+        </div>
 
         <div className='logo-container'>
           <Link to='/dashboard' className='logo-link'>
