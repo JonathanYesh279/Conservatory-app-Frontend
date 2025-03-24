@@ -1,47 +1,59 @@
+// src/pages/Dashboard.tsx
 import { Header } from '../cmps/Header'
 import { BottomNavbar } from '../cmps/BottomNavbar'
 import { StatCard } from '../cmps/StatCard'
-import { Users, BookOpen, Music, Calendar, TimerIcon, BarChart2 } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { Users, BookOpen, Music, Calendar, CheckSquare } from 'lucide-react'
+import { useDashboard } from '../hooks/useDashboard'
 
 export function Dashboard() {
-  const [dashboardData, setDashboardData] = useState({
-    students: {
-      total: 2845,
-      comparison: { value: 12, text: 'vs last month' }
-    },
-    teachers: {
-      total: 147,
-      comparison: { value: 8, text: 'vs last month' }
-    },
-    orchestras: {
-      total: 24,
-      comparison: { value: 15, text: 'vs last month' }
-    },
-    rehearsals: {
-      total: 156,
-      practiceHours: 468,
-      weeklyBreakdown: {
-        mon: 32,
-        wed: 45,
-        fri: 38
-      }
-    },
-    performances: {
-      total: 32,
-      comparison: { value: 24, text: 'vs last month' }
-    },
-    duration: {
-      value: '3h 12m',
-      comparison: { value: 18, text: 'improvement' }
-    }
-  })
-
-  // Simulate data fetch from API
-  useEffect(() => {
-    // In a real app, you would fetch data from your API here
-    // For this demo, we're using static data defined above
-  }, [])
+  const { stats, isLoading, error } = useDashboard()
+  
+  // If still loading, show a loading state
+  if (isLoading) {
+    return (
+      <div className="app-container">
+        <Header />
+        <main className="main-content">
+          <h1>מרכז ניהול</h1>
+          <div className="loading-state">טוען נתונים...</div>
+        </main>
+        <BottomNavbar />
+      </div>
+    )
+  }
+  
+  // If there's an error, show an error state
+  if (error) {
+    return (
+      <div className="app-container">
+        <Header />
+        <main className="main-content">
+          <h1>מרכז ניהול</h1>
+          <div className="error-state">
+            <p>שגיאה בטעינת הנתונים</p>
+            <button className="btn primary" onClick={() => window.location.reload()}>
+              נסה שוב
+            </button>
+          </div>
+        </main>
+        <BottomNavbar />
+      </div>
+    )
+  }
+  
+  // No data yet (shouldn't happen with our implementation, but just in case)
+  if (!stats) {
+    return (
+      <div className="app-container">
+        <Header />
+        <main className="main-content">
+          <h1>מרכז ניהול</h1>
+          <div className="empty-state">אין נתונים להצגה</div>
+        </main>
+        <BottomNavbar />
+      </div>
+    )
+  }
 
   return (
     <div className="app-container">
@@ -52,60 +64,45 @@ export function Dashboard() {
         
         <div className="dashboard-grid">
           <StatCard
-            title="סך הכל תלמידים"  // "Total Students" in Hebrew
-            value={dashboardData.students.total}
+            title="סך הכל תלמידים"
+            value={stats.students.total}
             icon={Users}
             category="תלמידים"
-            comparison={{
-              value: dashboardData.students.comparison.value,
-              text: "לעומת החודש הקודם"  // "vs last month" in Hebrew
-            }}
+            comparison={stats.students.comparison}
           />
 
           <StatCard
-            title="מורים פעילים"  // "Active Teachers" in Hebrew
-            value={dashboardData.teachers.total}
+            title="מורים פעילים"
+            value={stats.teachers.total}
             icon={BookOpen}
             category="מורים"
-            comparison={{
-              value: dashboardData.teachers.comparison.value,
-              text: "לעומת החודש הקודם"  // "vs last month" in Hebrew
-            }}
+            comparison={stats.teachers.comparison}
           />
           
           <StatCard
             title="תזמורות פעילות"
-            value={dashboardData.orchestras.total}
+            value={stats.orchestras.total}
             icon={Music}
             category="תזמורות"
-            comparison={dashboardData.orchestras.comparison}
+            comparison={stats.orchestras.comparison}
           />
           
           <StatCard
             title="חזרות שבועיות"
-            value={dashboardData.rehearsals.total}
+            value={stats.rehearsals.total}
             icon={Calendar}
             category="חזרות"
             additionalStats={[
-              { label: 'Practice Hours', value: dashboardData.rehearsals.practiceHours }
+              { label: 'שעות אימון', value: stats.rehearsals.practiceHours }
             ]}
           />
           
           <StatCard
-            title="מעקב נוכחות"
-            value={dashboardData.performances.total}
-            icon={BarChart2}
-            category="מעקב נוכחות"
-            comparison={dashboardData.performances.comparison}
-          />
-          
-          <StatCard
-            title="משך זמן"
-            value={dashboardData.duration.value}
-            icon={TimerIcon}
-            category="משך זמן"
-            comparison={dashboardData.duration.comparison}
-            progress={{ value: 80 }}
+            title="נוכחות"
+            value={stats.attendance.total}
+            icon={CheckSquare}
+            category="נוכחות"
+            comparison={stats.attendance.comparison}
           />
         </div>
       </main>

@@ -54,12 +54,7 @@
         color: var(--rehearsals-color);
       }
       
-      &.performances {
-        background-color: rgba(var(--performances-color-rgb), 0.1);
-        color: var(--performances-color);
-      }
-      
-      &.duration {
+      &.attendance {
         background-color: rgba(var(--duration-color-rgb), 0.1);
         color: var(--duration-color);
       }
@@ -175,6 +170,8 @@
   --rehearsals-color-rgb: 40, 167, 69; // #28A745
   --performances-color-rgb: 220, 53, 69; // #DC3545
   --duration-color-rgb: 77, 85, 204; // #4D55CC
+  --attendance-color: #17A2B8;
+  --attendance-color-rgb: 23, 162, 184;
 }
 
 // Grid layout for dashboard
