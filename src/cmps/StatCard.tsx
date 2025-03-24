@@ -5,7 +5,7 @@ interface StatCardProps {
   title: string
   value: string | number
   icon: LucideIcon
-  category: 'תלמידים' | 'מורים' | 'תזמורות' | 'חזרות' | 'מעקב נוכחות' | 'משך זמן'
+  category: 'תלמידים' | 'מורים' | 'תזמורות' | 'חזרות' | 'נוכחות' 
   comparison?: {
     value: number
     text: string
@@ -36,8 +36,7 @@ export function StatCard({
     'מורים': 'teachers',
     'תזמורות': 'orchestras',
     'חזרות': 'rehearsals',
-    'מעקב נוכחות': 'performances',
-    'משך זמן': 'duration'
+    'נוכחות': 'attendance'
   }[category]
 
   return (

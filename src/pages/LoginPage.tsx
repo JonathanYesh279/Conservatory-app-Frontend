@@ -53,35 +53,33 @@ export function LoginPage() {
         {error && <div className="error-message">{error}</div>}
 
         <form className='form-section' onSubmit={handleSubmit}>
-          <div className='form-group form-floating'>
-            <div className='input-icon-wrapper'>
-              <input
-                type='email'
-                id='email'
-                placeholder='מייל'
-                autoComplete='off'
-                required
-                value={email}
-                onChange={handleEmailChange}
-              />
-              <Mail className='icon' />
-              <label htmlFor='email'>מייל</label>
-            </div>
+          <div className='input-container'>
+            <input
+              type='email'
+              id='email'
+              className={email ? 'has-value' : ''}
+              placeholder=''
+              autoComplete='off'
+              required
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <label htmlFor='email'>מייל</label>
+            <Mail className='input-icon' />
           </div>
 
-          <div className='form-group form-floating'>
-            <div className='input-icon-wrapper'>
-              <input
-                type='password'
-                id='password'
-                placeholder='סיסמה'
-                required
-                value={password}
-                onChange={handlePasswordChange}
-              />
-              <Lock className='icon' />
-              <label htmlFor='password'>סיסמה</label>
-            </div>
+          <div className='input-container'>
+            <input
+              type='password'
+              id='password'
+              className={password ? 'has-value' : ''}
+              placeholder=''
+              required
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <label htmlFor='password'>סיסמה</label>
+            <Lock className='input-icon' />
           </div>
 
           <button

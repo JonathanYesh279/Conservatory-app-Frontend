@@ -92,31 +92,101 @@
       text-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
     }
 
-    .form-group {
+    .form-section {
       width: 100%;
-      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    // Input container for floating labels
+    .input-container {
+      position: relative;
+      width: 100%;
       
       input {
+        width: 100%;
+        height: 56px;
+        padding: 1.3rem 2.5rem;
+        font-size: 1rem;
         background-color: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 8px;
         color: white;
+        transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s, padding 0.3s;
         
         &::placeholder {
-          color: rgba(255, 255, 255, 0.6);
+          color: transparent;
         }
         
         &:focus {
+          outline: none;
           border-color: rgba(255, 255, 255, 0.5);
           background-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+          padding-top: 1.25rem; // Move text down when focused
         }
         
-        [data-theme="dark"] & {
-          background-color: rgba(0, 0, 0, 0.2);
+        // When input has value or is focused
+        &:focus,
+        &.has-value {
+          padding-top: 1.25rem;
         }
       }
       
       label {
+        position: absolute;
+        top: 50%;
+        right: 3rem; // Account for icon (RTL layout)
+        transform: translateY(-50%);
         color: rgba(255, 255, 255, 0.8);
+        pointer-events: none;
+        transition: all 0.3s ease;
+        
+        // Light mode adjustments
+        [data-theme="light"] & {
+          color: var(--primary-color); // Use blue in light mode
+        }
+      }
+      
+      // When input is focused or has value
+      input:focus + label,
+      input.has-value + label {
+        right: 6%;
+        top: -1%;
+        font-size: 0.75rem;
+        opacity: 0.85;
+        padding: 0 0.25rem;
+        border-radius: 2px;
+        border: 1px solid var(--primary-color);
+        background-color: white;
+        color: var(--primary-color); // Darker blue in light mode
+      }
+      
+      // Icon styling
+      .input-icon {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.7);
+        width: 1.25rem;
+        height: 1.25rem;
+        pointer-events: none;
+        transition: color 0.2s ease;
+        
+        // Light mode
+        [data-theme="light"] & {
+          color: var(--primary-color); // Blue icon in light mode
+        }
+      }
+      
+      input:focus ~ .input-icon {
+        color: white;
+        
+        [data-theme="light"] & {
+          color: var(--primary-dark); // Darker blue when focused in light mode
+        }
       }
     }
 
@@ -236,6 +306,35 @@
       .icon {
         width: 20px;
         height: 20px;
+      }
+    }
+  }
+}
+
+// For light mode, add this to your colors.scss or equivalent
+[data-theme="light"] {
+  .login-page {
+    .login-form {
+      .input-container {
+        input {
+          color: var(--text-primary);
+          background-color: rgba(255, 255, 255, 0.35);
+          border-color: rgba(0, 0, 0, 0.1);
+          
+          &:focus {
+            border-color: var(--primary-color);
+            background-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 0 0 2px rgba(77, 85, 204, 0.25);
+          }
+        }
+        
+        label {
+          color: var(--primary-color);
+        }
+        
+        input:focus + label {
+          color: var(--primary-dark);
+        }
       }
     }
   }
