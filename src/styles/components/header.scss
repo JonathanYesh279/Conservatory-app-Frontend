@@ -153,6 +153,17 @@
           color: $gray-500;
           width: 18px;
           height: 18px;
+          transition: color 0.15s ease, stroke-width 0.15s ease;
+        }
+
+        &:hover {
+          background-color: $gray-50;
+          color: $primary-color;
+
+          .dropdown-icon {
+            color: $primary-color;
+            stroke-width: 2.5;
+          }
         }
       }
       
