@@ -6,6 +6,8 @@ import { useAuthStore } from './store/authStore'
 import { ThemeProvider } from './hooks/useTheme'
 
 import { Dashboard } from './pages/Dashboard'
+import { StudentIndex } from './pages/StudentIndex.tsx'
+import { StudentDetails } from './pages/StudentDetails.tsx'
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -45,8 +47,15 @@ function App() {
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              {/* Add more routes for the navigation */}
-              <Route path="/students" element={<div>Students Page</div>} />
+              
+              {/* Student routes - nested pattern */}
+              <Route path="/students" element={<StudentIndex />}>
+                {/* Child routes for StudentIndex */}
+                <Route path=":studentId" element={<StudentDetails />} />
+                <Route path="new" element={<StudentDetails />} />
+              </Route>
+              
+              {/* Other routes */}
               <Route path="/orchestras" element={<div>Orchestras Page</div>} />
               <Route path="/calendar" element={<div>Calendar Page</div>} />
               <Route path="/stats" element={<div>Stats Page</div>} />
