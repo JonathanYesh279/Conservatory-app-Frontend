@@ -12,14 +12,9 @@ import { useSearchbar } from '../hooks/useSearchbar.tsx';
 import { Student } from '../services/studentService.ts';
 
 export function StudentIndex() {
-  const { 
-    students, 
-    isLoading, 
-    error, 
-    loadStudents, 
-    removeStudent 
-  } = useStudentStore();
-  
+  const { students, isLoading, error, loadStudents, removeStudent } =
+    useStudentStore();
+
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => [
     student.personalInfo.fullName,
@@ -28,33 +23,34 @@ export function StudentIndex() {
     student.personalInfo.parentName || '',
     student.personalInfo.studentEmail || '',
   ];
-  
+
   // Use the search hook
   const { filteredEntities: filteredStudents, handleSearch } = useSearchbar(
     students,
     studentSearchFields
   );
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  
+
   const isAdmin = user?.roles.includes('מנהל');
-  const isDetailPage = location.pathname.includes('/students/') && 
-                       !location.pathname.endsWith('/students/');
-  
+  const isDetailPage =
+    location.pathname.includes('/students/') &&
+    !location.pathname.endsWith('/students/');
+
   useEffect(() => {
     loadStudents();
   }, [loadStudents]);
-  
+
   const handleAddStudent = () => {
     navigate('/students/new');
   };
-  
+
   const handleEditStudent = (studentId: string) => {
     navigate(`/students/${studentId}`);
   };
-  
+
   const handleRemoveStudent = async (studentId: string) => {
     if (window.confirm('האם אתה בטוח שברצונך למחוק תלמיד זה?')) {
       try {
@@ -64,64 +60,64 @@ export function StudentIndex() {
       }
     }
   };
-  
+
   const handleFilter = () => {
     // This would open your filter dialog
     alert('Open filter dialog');
   };
-  
+
   const canAddStudent = isAdmin || user?.roles.includes('מורה');
-  
+
   return (
     <div className='app-container'>
       <Header />
       <main className='main-content'>
-        <div className='page-header'>
-          
-          <div className='search-action-container'>
-            <Searchbar
-              onSearch={handleSearch}
-              placeholder='חיפוש תלמידים...'
-            />
-            
-            <div className='action-buttons'>
-              <button 
-                className='btn-icon filter-btn' 
-                onClick={handleFilter}
-                aria-label='סנן תלמידים'
-              >
-                <Filter className='icon' />
-              </button>
-              
-              {canAddStudent && !isDetailPage && (
-                <button 
-                  className='btn-icon add-btn' 
-                  onClick={handleAddStudent}
-                  aria-label='הוספת תלמיד חדש'
+        {/* Only show search bar and action buttons if not on details page */}
+        {!isDetailPage && (
+          <div className='page-header'>
+            <div className='search-action-container'>
+              <Searchbar
+                onSearch={handleSearch}
+                placeholder='חיפוש תלמידים...'
+              />
+
+              <div className='action-buttons'>
+                <button
+                  className='btn-icon filter-btn'
+                  onClick={handleFilter}
+                  aria-label='סנן תלמידים'
                 >
-                  <Plus className='icon' />
+                  <Filter className='icon' />
                 </button>
-              )}
+
+                {canAddStudent && (
+                  <button
+                    className='btn-icon add-btn'
+                    onClick={handleAddStudent}
+                    aria-label='הוספת תלמיד חדש'
+                  >
+                    <Plus className='icon' />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-        
-        {error && (
-          <div className='error-message'>{error}</div>
         )}
-        
+
+        {error && <div className='error-message'>{error}</div>}
+
         {!isDetailPage && (
-          <StudentList 
+          <StudentList
             students={filteredStudents}
             isLoading={isLoading}
             onEdit={handleEditStudent}
             onRemove={isAdmin ? handleRemoveStudent : undefined}
           />
         )}
-        
+
         <Outlet context={{ loadStudents }} />
       </main>
-      
+
       <BottomNavbar />
     </div>
   );
