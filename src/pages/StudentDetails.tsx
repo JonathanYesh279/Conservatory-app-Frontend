@@ -278,7 +278,7 @@ export function StudentDetails() {
                 {/* Teacher Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.teacher ? 'active' : ''}`}
                     onClick={() => toggleSection('teacher')}
                   >
                     <User size={16} />
@@ -317,7 +317,7 @@ export function StudentDetails() {
                 {/* Orchestras Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.orchestras ? 'active' : ''}`}
                     onClick={() => toggleSection('orchestras')}
                   >
                     <Music size={16} />
@@ -354,7 +354,7 @@ export function StudentDetails() {
                 {/* Tests Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.tests ? 'active' : ''}`}
                     onClick={() => toggleSection('tests')}
                   >
                     <Award size={16} />
@@ -440,7 +440,7 @@ export function StudentDetails() {
                 {/* Attendance Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.attendance ? 'active' : ''}`}
                     onClick={() => toggleSection('attendance')}
                   >
                     <Calendar size={16} />
@@ -577,7 +577,7 @@ export function StudentDetails() {
                 {/* Personal Info Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.personalInfo ? 'active' : ''}`}
                     onClick={() => toggleSection('personalInfo')}
                   >
                     <User size={16} />
@@ -666,7 +666,7 @@ export function StudentDetails() {
                 {/* Parent Info Section - Collapsible */}
                 <div className='section'>
                   <div 
-                    className='section-title clickable' 
+                    className={`section-title clickable ${openSections.parentInfo ? 'active' : ''}`}
                     onClick={() => toggleSection('parentInfo')}
                   >
                     <User size={16} />
