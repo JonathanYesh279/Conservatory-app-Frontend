@@ -39,7 +39,15 @@ export interface Student {
       schoolYearId: string
       isActive: boolean
     }>
+    teachers?: Array<{
+      teacherId: string
+      lessonDay?: string
+      lessonTime?: string
+      lessonDuration?: number
+      isActive: boolean
+    }>
   }
+  teacherIds: string[]
   isActive: boolean
   createdAt: string
   updatedAt: string

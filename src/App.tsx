@@ -4,6 +4,7 @@ import { LoginPage } from './pages/LoginPage'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useAuthStore } from './store/authStore'
 import { ThemeProvider } from './hooks/useTheme'
+import { EventRegistrationForm } from './cmps/EventRegistrationForm'
 
 import { Dashboard } from './pages/Dashboard'
 import { StudentIndex } from './pages/StudentIndex.tsx'
@@ -61,6 +62,9 @@ function App() {
               <Route path="/stats" element={<div>Stats Page</div>} />
               <Route path="/profile" element={<div>Profile Page</div>} />
             </Route>
+            
+            {/* Event registration route */}
+            <Route path="/event-registration" element={<EventRegistrationForm />} />
             
             {/* Default redirect */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

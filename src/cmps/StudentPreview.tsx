@@ -1,6 +1,6 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import { Edit, Trash2, Music, BookOpen, Calendar, Award } from 'lucide-react';
+import { Edit, Trash2, Music, BookOpen, Calendar, Award, Eye } from 'lucide-react';
 
 interface StudentPreviewProps {
   student: Student;
@@ -52,7 +52,7 @@ export function StudentPreview({
 
   // Format orchestra count
   const getOrchestraText = (count: number): string => {
-    if (count === 0) return 'אין תזמורות';
+    if (count === 0) return 'ללא תזמורת';
     if (count === 1) return 'תזמורת אחת';
     return `${count} תזמורות`;
   };
@@ -71,10 +71,19 @@ export function StudentPreview({
     student.academicInfo.tests?.stageTest?.status || 'לא נבחן';
 
   return (
-    <div className='student-preview' onClick={() => onEdit(student._id)}>
+    <div 
+      className='student-preview'
+      onClick={() => onEdit(student._id)}
+      style={{ cursor: 'pointer' }}
+    >
       <div className='preview-header'>
         <div className='avatar-section'>
-          <div className='avatar'>
+          <div
+            className='avatar'
+            style={{
+              backgroundColor: getStageColor(student.academicInfo.currentStage),
+            }}
+          >
             {getInitials(student.personalInfo.fullName)}
           </div>
         </div>
@@ -87,23 +96,29 @@ export function StudentPreview({
           </div>
         </div>
 
-        <div
-          className='stage-badge'
-          style={{
-            backgroundColor: getStageColor(student.academicInfo.currentStage),
-          }}
-        >
-          <span>שלב {student.academicInfo.currentStage}</span>
+        <div className='badges-container'>
+          <div
+            className='stage-badge'
+            style={{
+              backgroundColor: getStageColor(student.academicInfo.currentStage),
+            }}
+          >
+            <span>שלב {student.academicInfo.currentStage}</span>
+          </div>
+          
+          <div
+            className='grade-badge'
+            style={{
+              backgroundColor: '#348b49',
+            }}
+          >
+            <span>כיתה {student.academicInfo.class}</span>
+          </div>
         </div>
       </div>
 
       <div className='preview-content'>
         <div className='info-row'>
-          <div className='info-item'>
-            <BookOpen size={16} />
-            <span>כיתה {student.academicInfo.class}</span>
-          </div>
-
           <div className='info-item'>
             <Award size={16} />
             <span>{getOrchestraText(orchestraCount)}</span>
@@ -135,6 +150,17 @@ export function StudentPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
+          <button
+            className='action-btn view'
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(student._id);
+            }}
+            aria-label='הצג פרטי תלמיד'
+          >
+            <Eye size={16} />
+          </button>
+
           <button
             className='action-btn edit'
             onClick={(e) => {
