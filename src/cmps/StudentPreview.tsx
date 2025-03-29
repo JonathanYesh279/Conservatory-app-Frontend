@@ -1,15 +1,25 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import { Edit, Trash2, Music, BookOpen, Calendar, Award, Eye } from 'lucide-react';
+import {
+  Edit,
+  Trash2,
+  Music,
+  BookOpen,
+  Calendar,
+  Award,
+  Eye,
+} from 'lucide-react';
 
 interface StudentPreviewProps {
   student: Student;
+  onView: (studentId: string) => void;
   onEdit: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
 }
 
 export function StudentPreview({
   student,
+  onView,
   onEdit,
   onRemove,
 }: StudentPreviewProps) {
@@ -71,9 +81,9 @@ export function StudentPreview({
     student.academicInfo.tests?.stageTest?.status || 'לא נבחן';
 
   return (
-    <div 
+    <div
       className='student-preview'
-      onClick={() => onEdit(student._id)}
+      onClick={() => onView(student._id)}
       style={{ cursor: 'pointer' }}
     >
       <div className='preview-header'>
@@ -105,7 +115,7 @@ export function StudentPreview({
           >
             <span>שלב {student.academicInfo.currentStage}</span>
           </div>
-          
+
           <div
             className='grade-badge'
             style={{
@@ -154,7 +164,7 @@ export function StudentPreview({
             className='action-btn view'
             onClick={(e) => {
               e.stopPropagation();
-              onEdit(student._id);
+              onView(student._id);
             }}
             aria-label='הצג פרטי תלמיד'
           >

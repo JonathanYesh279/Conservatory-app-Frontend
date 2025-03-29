@@ -6,6 +6,7 @@ interface StudentListProps {
   students: Student[];
   isLoading: boolean;
   onEdit: (studentId: string) => void;
+  onView?: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
 }
 
@@ -13,6 +14,7 @@ export function StudentList({
   students,
   isLoading,
   onEdit,
+  onView,
   onRemove,
 }: StudentListProps) {
   if (isLoading && students.length === 0) {
@@ -35,6 +37,7 @@ export function StudentList({
           key={student._id}
           student={student}
           onEdit={onEdit}
+          onView={onView || onEdit} // Use view handler or fall back to edit
           onRemove={onRemove}
         />
       ))}

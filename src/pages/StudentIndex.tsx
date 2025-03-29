@@ -5,12 +5,13 @@ import { useStudentStore } from '../store/studentStore.ts';
 import { StudentList } from '../cmps/StudentList.tsx';
 import { Header } from '../cmps/Header.tsx';
 import { BottomNavbar } from '../cmps/BottomNavbar.tsx';
-import { Filter, Plus } from 'lucide-react';
+import { Filter, Plus, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
 import { useSearchbar } from '../hooks/useSearchbar.tsx';
 import { Student } from '../services/studentService.ts';
 import { StudentForm } from '../cmps/StudentForm';
+import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 
 export function StudentIndex() {
@@ -18,6 +19,11 @@ export function StudentIndex() {
     useStudentStore();
   const { loadCurrentSchoolYear } = useSchoolYearStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+
+  // Add state for the confirmation dialog
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => [
@@ -49,21 +55,40 @@ export function StudentIndex() {
   }, [loadStudents, loadCurrentSchoolYear]);
 
   const handleAddStudent = () => {
+    setSelectedStudent(null);
     setIsFormOpen(true);
   };
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
+    setSelectedStudent(null);
   };
 
   const handleEditStudent = (studentId: string) => {
+    const student = students.find((s) => s._id === studentId) || null;
+    setSelectedStudent(student);
+    setIsFormOpen(true);
+  };
+
+  const handleViewStudent = (studentId: string) => {
     navigate(`/students/${studentId}`);
   };
 
-  const handleRemoveStudent = async (studentId: string) => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק תלמיד זה?')) {
+  // Updated to show confirmation dialog instead of browser prompt
+  const handleRemoveStudent = (studentId: string) => {
+    const student = students.find((s) => s._id === studentId);
+    if (student) {
+      setStudentToDelete(studentId);
+      setIsConfirmDialogOpen(true);
+    }
+  };
+
+  // Actual delete function to call when confirmed
+  const confirmRemoveStudent = async () => {
+    if (studentToDelete) {
       try {
-        await removeStudent(studentId);
+        await removeStudent(studentToDelete);
+        setStudentToDelete(null);
       } catch (err) {
         console.error('Failed to remove student:', err);
       }
@@ -120,16 +145,35 @@ export function StudentIndex() {
             students={filteredStudents}
             isLoading={isLoading}
             onEdit={handleEditStudent}
+            onView={handleViewStudent}
             onRemove={isAdmin ? handleRemoveStudent : undefined}
           />
         )}
 
         <Outlet context={{ loadStudents }} />
-        
+
         {/* Student Form Modal */}
-        <StudentForm 
-          isOpen={isFormOpen} 
+        <StudentForm
+          isOpen={isFormOpen}
           onClose={handleCloseForm}
+          student={selectedStudent}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={isConfirmDialogOpen}
+          onClose={() => setIsConfirmDialogOpen(false)}
+          onConfirm={confirmRemoveStudent}
+          title='מחיקת תלמיד'
+          message={
+            <>
+              <p>האם אתה בטוח שברצונך למחוק את התלמיד?</p>
+              <p className='text-sm text-muted'>פעולה זו היא בלתי הפיכה.</p>
+            </>
+          }
+          confirmText='מחק'
+          cancelText='ביטול'
+          type='danger'
         />
       </main>
 

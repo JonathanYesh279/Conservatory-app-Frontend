@@ -1,0 +1,138 @@
+// Add this to your styles/components/_confirm-dialog.scss file
+.confirm-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+  }
+  
+  .dialog-content {
+    position: relative;
+    width: 95%;
+    max-width: 450px;
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    z-index: 10;
+    
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+    }
+    
+    .dialog-title {
+      margin-top: 0;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      
+      &.danger {
+        $danger-color: #DC3545;
+      }
+      
+      &.warning {
+        color: var(--warning);
+      }
+      
+      &.info {
+        color: var(--primary-color);
+      }
+    }
+    
+    .dialog-message {
+      color: var(--text-primary);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+    
+    .dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      
+      .btn {
+        padding: 0.6rem 1.25rem;
+        border-radius: 0.5rem;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        
+        &.danger {
+          background-color: var(--danger);
+          color: white;
+          border: none;
+          
+          &:hover {
+            filter: brightness(0.9);
+          }
+        }
+        
+        &.warning {
+          background-color: var(--warning);
+          color: white;
+          border: none;
+          
+          &:hover {
+            filter: brightness(0.9);
+          }
+        }
+        
+        &.info {
+          background-color: var(--primary-color);
+          color: white;
+          border: none;
+          
+          &:hover {
+            background-color: var(--primary-dark);
+          }
+        }
+        
+        &.secondary {
+          background-color: var(--bg-tertiary);
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+          
+          &:hover {
+            background-color: var(--bg-secondary);
+          }
+        }
+      }
+    }
+  }
+}
