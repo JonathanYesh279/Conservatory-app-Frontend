@@ -511,13 +511,68 @@ export function StudentDetails() {
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
-                <span>הצג פרטים אישיים</span>
-                <ArrowRight size={14} />
+                {flipped ? (
+                  <>
+                    <span>הצג מידע אקדמי</span>
+                    <ArrowRight size={14} />
+                  </>
+                ) : (
+                  <>
+                    <span>הצג פרטים אישיים</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
               </button>
             </div>
 
             {/* Personal Info (Back) */}
             <div className='card-side card-back'>
+              <div className='card-header'>
+                <div className='student-identity'>
+                  <div
+                    className='avatar'
+                    style={{
+                      backgroundColor: getStageColor(
+                        student.academicInfo.currentStage
+                      ),
+                    }}
+                  >
+                    {getInitials(student.personalInfo.fullName)}
+                  </div>
+
+                  <div className='header-text'>
+                    <h1 className='student-name'>
+                      {student.personalInfo.fullName}
+                    </h1>
+                    <div className='instrument'>
+                      <Music size={14} />
+                      <span>{student.academicInfo.instrument}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='header-badges'>
+                  <div
+                    className='stage-badge'
+                    style={{
+                      backgroundColor: getStageColor(
+                        student.academicInfo.currentStage
+                      ),
+                    }}
+                  >
+                    שלב {student.academicInfo.currentStage}
+                  </div>
+                  <div
+                    className='grade-badge'
+                    style={{
+                      backgroundColor: '#348b49',
+                    }}
+                  >
+                    כיתה {student.academicInfo.class}
+                  </div>
+                </div>
+              </div>
+
               <div className='card-scroll-area'>
                 {/* Personal Info Section - Collapsible */}
                 <div className='section'>
@@ -675,8 +730,17 @@ export function StudentDetails() {
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
-                <span>הצג מידע אקדמי</span>
-                <ArrowRight size={14} />
+                {flipped ? (
+                  <>
+                    <span>הצג מידע אקדמי</span>
+                    <ArrowRight size={14} />
+                  </>
+                ) : (
+                  <>
+                    <span>הצג פרטים אישיים</span>
+                    <ArrowRight size={14} />
+                  </>
+                )}
               </button>
             </div>
           </div>
