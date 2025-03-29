@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStudentStore } from '../store/studentStore';
+import { Orchestra, orchestraService } from '../services/orchestraService';
+import { teacherService } from '../services/teacherService';
 import {
   User,
   Calendar,
@@ -16,7 +18,6 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { teacherService } from '../services/teacherService'
 
 // Define attendance record type
 interface AttendanceRecord {
@@ -42,29 +43,6 @@ interface TeacherData {
   instrument?: string;
 }
 
-// Extend academicInfo type to include teacher properties
-interface AcademicInfo {
-  instrument: string;
-  currentStage: number;
-  class: string;
-  teacherId?: string;
-  teacherName?: string;
-  tests?: {
-    stageTest?: {
-      status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
-      lastTestDate?: string;
-      nextTestDate?: string;
-      notes?: string;
-    };
-    technicalTest?: {
-      status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
-      lastTestDate?: string;
-      nextTestDate?: string;
-      notes?: string;
-    };
-  };
-}
-
 export function StudentDetails() {
   const { studentId } = useParams<{ studentId: string }>();
   const {
@@ -76,11 +54,14 @@ export function StudentDetails() {
   } = useStudentStore();
 
   const [flipped, setFlipped] = useState(false);
-  const [attendanceStats, setAttendanceStats] = useState<AttendanceStats | null>(null);
+  const [attendanceStats, setAttendanceStats] =
+    useState<AttendanceStats | null>(null);
   const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
   const [teacherLoading, setTeacherLoading] = useState(false);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const [orchestrasLoading, setOrchestrasLoading] = useState(false);
   const navigate = useNavigate();
-  
+
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     teacher: true,
@@ -88,14 +69,14 @@ export function StudentDetails() {
     tests: false,
     attendance: false,
     personalInfo: false,
-    parentInfo: false
+    parentInfo: false,
   });
 
   // Toggle section visibility
   const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections(prev => ({
+    setOpenSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -105,7 +86,7 @@ export function StudentDetails() {
       loadStudentById(studentId);
     }
   }, [studentId, loadStudentById]);
-  
+
   // Load teacher data when student is loaded
   useEffect(() => {
     if (selectedStudent?.teacherIds?.length) {
@@ -113,11 +94,13 @@ export function StudentDetails() {
       const fetchTeacher = async () => {
         try {
           // Fetch the first teacher (assuming one teacher per student for now)
-          const teacher = await teacherService.getTeacherById(selectedStudent.teacherIds[0]);
+          const teacher = await teacherService.getTeacherById(
+            selectedStudent.teacherIds[0]
+          );
           setTeacherData({
             id: teacher._id,
             name: teacher.personalInfo.fullName,
-            instrument: teacher.professionalInfo?.instrument
+            instrument: teacher.professionalInfo?.instrument,
           });
         } catch (error) {
           console.error('Failed to fetch teacher data:', error);
@@ -125,17 +108,42 @@ export function StudentDetails() {
           setTeacherLoading(false);
         }
       };
-      
+
       fetchTeacher();
     }
   }, [selectedStudent]);
-  
+
+  // Load orchestra data when student is loaded
+  useEffect(() => {
+    if (selectedStudent?.enrollments?.orchestraIds?.length > 0) {
+      setOrchestrasLoading(true);
+      const fetchOrchestras = async () => {
+        try {
+          const orchestraIds = selectedStudent.enrollments.orchestraIds;
+          const orchestraData = await orchestraService.getOrchestrasByIds(
+            orchestraIds
+          );
+          setOrchestras(orchestraData);
+        } catch (error) {
+          console.error('Failed to fetch orchestra data:', error);
+        } finally {
+          setOrchestrasLoading(false);
+        }
+      };
+
+      fetchOrchestras();
+    }
+  }, [selectedStudent]);
+
   // Separate effect for loading attendance data
   useEffect(() => {
-    if (selectedStudent && selectedStudent.enrollments?.orchestraIds?.length > 0) {
+    if (
+      selectedStudent &&
+      selectedStudent.enrollments?.orchestraIds?.length > 0
+    ) {
       // In a real application, this would be an API call:
       // fetch(`/api/orchestra/${selectedStudent.enrollments.orchestraIds[0]}/student/${selectedStudent._id}/attendance`)
-      
+
       // Simulated attendance stats - this would be fetched from an API
       setAttendanceStats({
         attendanceRate: 85,
@@ -147,7 +155,7 @@ export function StudentDetails() {
           { date: '2023-05-18', status: 'לא הגיע/ה', sessionId: '3' },
           { date: '2023-05-11', status: 'הגיע/ה', sessionId: '4' },
           { date: '2023-05-04', status: 'הגיע/ה', sessionId: '5' },
-        ]
+        ],
       });
     }
   }, [selectedStudent]);
@@ -163,6 +171,11 @@ export function StudentDetails() {
   // Navigate to teacher details
   const navigateToTeacher = (teacherId: string) => {
     navigate(`/teachers/${teacherId}`);
+  };
+
+  // Navigate to orchestra details
+  const navigateToOrchestra = (orchestraId: string) => {
+    navigate(`/orchestras/${orchestraId}`);
   };
 
   // Format a date string
@@ -277,19 +290,21 @@ export function StudentDetails() {
               <div className='card-scroll-area'>
                 {/* Teacher Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.teacher ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.teacher ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('teacher')}
                   >
                     <User size={16} />
                     <span>מורה</span>
                     {openSections.teacher ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
-                  
+
                   {openSections.teacher && (
                     <div className='section-content'>
                       {teacherLoading ? (
@@ -298,7 +313,7 @@ export function StudentDetails() {
                           <span>טוען פרטי מורה...</span>
                         </div>
                       ) : teacherData ? (
-                        <div 
+                        <div
                           className='teacher-info clickable'
                           onClick={() => navigateToTeacher(teacherData.id)}
                         >
@@ -316,32 +331,45 @@ export function StudentDetails() {
 
                 {/* Orchestras Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.orchestras ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.orchestras ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('orchestras')}
                   >
                     <Music size={16} />
                     <span>תזמורות</span>
                     {openSections.orchestras ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
 
                   {openSections.orchestras && (
                     <div className='section-content'>
                       {student.enrollments?.orchestraIds?.length > 0 ? (
-                        <div className='orchestras-grid'>
-                          {student.enrollments.orchestraIds.map(
-                            (orchestraId, index) => (
-                              <div key={orchestraId} className='orchestra-card'>
+                        orchestrasLoading ? (
+                          <div className='loading-section'>
+                            <RefreshCw size={16} className='loading-icon' />
+                            <span>טוען נתוני תזמורת...</span>
+                          </div>
+                        ) : (
+                          <div className='orchestras-grid'>
+                            {orchestras.map((orchestra) => (
+                              <div
+                                key={orchestra._id}
+                                className='orchestra-card clickable'
+                                onClick={() =>
+                                  navigateToOrchestra(orchestra._id)
+                                }
+                              >
                                 <Music size={18} />
-                                <span>תזמורת {index + 1}</span>
+                                <span>{orchestra.name}</span>
                               </div>
-                            )
-                          )}
-                        </div>
+                            ))}
+                          </div>
+                        )
                       ) : (
                         <div className='no-orchestra-warning'>
                           התלמיד אינו משתתף בתזמורות
@@ -353,16 +381,18 @@ export function StudentDetails() {
 
                 {/* Tests Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.tests ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.tests ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('tests')}
                   >
                     <Award size={16} />
                     <span>מבחנים</span>
                     {openSections.tests ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
 
@@ -436,22 +466,24 @@ export function StudentDetails() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Attendance Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.attendance ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.attendance ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('attendance')}
                   >
                     <Calendar size={16} />
                     <span>נוכחות</span>
                     {openSections.attendance ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
-                  
+
                   {openSections.attendance && (
                     <div className='section-content'>
                       {student.enrollments?.orchestraIds?.length > 0 ? (
@@ -461,34 +493,57 @@ export function StudentDetails() {
                             <>
                               <div className='attendance-summary'>
                                 <div className='attendance-stat'>
-                                  <span className='stat-label'>שיעור נוכחות</span>
+                                  <span className='stat-label'>
+                                    שיעור נוכחות
+                                  </span>
                                   <div className='attendance-rate'>
-                                    {Math.round(attendanceStats.attendanceRate)}%
+                                    {Math.round(attendanceStats.attendanceRate)}
+                                    %
                                   </div>
                                 </div>
                                 <div className='attendance-stat'>
                                   <span className='stat-label'>נוכח</span>
                                   <div className='attendance-count'>
-                                    {attendanceStats.attended} / {attendanceStats.totalRehearsals}
+                                    {attendanceStats.attended} /{' '}
+                                    {attendanceStats.totalRehearsals}
                                   </div>
                                 </div>
                               </div>
-                              
+
                               {attendanceStats.recentHistory?.length > 0 && (
                                 <div className='attendance-history'>
-                                  <h3 className='history-title'>היסטוריית נוכחות אחרונה</h3>
+                                  <h3 className='history-title'>
+                                    היסטוריית נוכחות אחרונה
+                                  </h3>
                                   <div className='history-entries'>
-                                    {attendanceStats.recentHistory.map((record, index) => (
-                                      <div key={index} className='history-entry'>
-                                        <div className={`status-indicator ${record.status === 'הגיע/ה' ? 'present' : 'absent'}`} />
-                                        <span className='history-date'>
-                                          {formatDate(record.date)}
-                                        </span>
-                                        <span className={`history-status ${record.status === 'הגיע/ה' ? 'present' : 'absent'}`}>
-                                          {record.status}
-                                        </span>
-                                      </div>
-                                    ))}
+                                    {attendanceStats.recentHistory.map(
+                                      (record, index) => (
+                                        <div
+                                          key={index}
+                                          className='history-entry'
+                                        >
+                                          <div
+                                            className={`status-indicator ${
+                                              record.status === 'הגיע/ה'
+                                                ? 'present'
+                                                : 'absent'
+                                            }`}
+                                          />
+                                          <span className='history-date'>
+                                            {formatDate(record.date)}
+                                          </span>
+                                          <span
+                                            className={`history-status ${
+                                              record.status === 'הגיע/ה'
+                                                ? 'present'
+                                                : 'absent'
+                                            }`}
+                                          >
+                                            {record.status}
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -576,25 +631,27 @@ export function StudentDetails() {
               <div className='card-scroll-area'>
                 {/* Personal Info Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.personalInfo ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.personalInfo ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('personalInfo')}
                   >
                     <User size={16} />
                     <span>פרטים אישיים</span>
                     {openSections.personalInfo ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
 
-                  {openSections.personalInfo && 
-                    (student.personalInfo.phone || 
-                     student.personalInfo.address || 
-                     student.personalInfo.studentEmail || 
-                     student.createdAt || 
-                     student.academicInfo.class) ? (
+                  {openSections.personalInfo &&
+                  (student.personalInfo.phone ||
+                    student.personalInfo.address ||
+                    student.personalInfo.studentEmail ||
+                    student.createdAt ||
+                    student.academicInfo.class) ? (
                     <div className='section-content'>
                       <div className='info-grid'>
                         {student.personalInfo.phone && (
@@ -665,60 +722,74 @@ export function StudentDetails() {
 
                 {/* Parent Info Section - Collapsible */}
                 <div className='section'>
-                  <div 
-                    className={`section-title clickable ${openSections.parentInfo ? 'active' : ''}`}
+                  <div
+                    className={`section-title clickable ${
+                      openSections.parentInfo ? 'active' : ''
+                    }`}
                     onClick={() => toggleSection('parentInfo')}
                   >
                     <User size={16} />
                     <span>פרטי הורה</span>
                     {openSections.parentInfo ? (
-                      <ChevronUp size={18} className="toggle-icon" />
+                      <ChevronUp size={18} className='toggle-icon' />
                     ) : (
-                      <ChevronDown size={18} className="toggle-icon" />
+                      <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
 
-                  {openSections.parentInfo && 
-                    ((student.personalInfo.parentName && student.personalInfo.parentName !== "לא צוין") || 
-                     (student.personalInfo.parentPhone && student.personalInfo.parentPhone !== "לא צוין" && student.personalInfo.parentPhone !== "0500000000") || 
-                     (student.personalInfo.parentEmail && student.personalInfo.parentEmail !== "לא צוין" && student.personalInfo.parentEmail !== "parent@example.com")) ? (
+                  {openSections.parentInfo &&
+                  ((student.personalInfo.parentName &&
+                    student.personalInfo.parentName !== 'לא צוין') ||
+                    (student.personalInfo.parentPhone &&
+                      student.personalInfo.parentPhone !== 'לא צוין' &&
+                      student.personalInfo.parentPhone !== '0500000000') ||
+                    (student.personalInfo.parentEmail &&
+                      student.personalInfo.parentEmail !== 'לא צוין' &&
+                      student.personalInfo.parentEmail !==
+                        'parent@example.com')) ? (
                     <div className='section-content'>
                       <div className='info-grid'>
-                        {student.personalInfo.parentName && student.personalInfo.parentName !== "לא צוין" && (
-                          <div className='info-item'>
-                            <User size={14} />
-                            <div>
-                              <span className='info-label'>שם הורה</span>
-                              <span className='info-value'>
-                                {student.personalInfo.parentName}
-                              </span>
+                        {student.personalInfo.parentName &&
+                          student.personalInfo.parentName !== 'לא צוין' && (
+                            <div className='info-item'>
+                              <User size={14} />
+                              <div>
+                                <span className='info-label'>שם הורה</span>
+                                <span className='info-value'>
+                                  {student.personalInfo.parentName}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {student.personalInfo.parentPhone && student.personalInfo.parentPhone !== "לא צוין" && student.personalInfo.parentPhone !== "0500000000" && (
-                          <div className='info-item'>
-                            <Phone size={14} />
-                            <div>
-                              <span className='info-label'>טלפון הורה</span>
-                              <span className='info-value'>
-                                {student.personalInfo.parentPhone}
-                              </span>
+                        {student.personalInfo.parentPhone &&
+                          student.personalInfo.parentPhone !== 'לא צוין' &&
+                          student.personalInfo.parentPhone !== '0500000000' && (
+                            <div className='info-item'>
+                              <Phone size={14} />
+                              <div>
+                                <span className='info-label'>טלפון הורה</span>
+                                <span className='info-value'>
+                                  {student.personalInfo.parentPhone}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {student.personalInfo.parentEmail && student.personalInfo.parentEmail !== "לא צוין" && student.personalInfo.parentEmail !== "parent@example.com" && (
-                          <div className='info-item'>
-                            <Mail size={14} />
-                            <div>
-                              <span className='info-label'>אימייל הורה</span>
-                              <span className='info-value'>
-                                {student.personalInfo.parentEmail}
-                              </span>
+                        {student.personalInfo.parentEmail &&
+                          student.personalInfo.parentEmail !== 'לא צוין' &&
+                          student.personalInfo.parentEmail !==
+                            'parent@example.com' && (
+                            <div className='info-item'>
+                              <Mail size={14} />
+                              <div>
+                                <span className='info-label'>אימייל הורה</span>
+                                <span className='info-value'>
+                                  {student.personalInfo.parentEmail}
+                                </span>
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   ) : openSections.parentInfo ? (

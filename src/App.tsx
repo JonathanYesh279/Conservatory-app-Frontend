@@ -9,6 +9,8 @@ import { EventRegistrationForm } from './cmps/EventRegistrationForm'
 import { Dashboard } from './pages/Dashboard'
 import { StudentIndex } from './pages/StudentIndex.tsx'
 import { StudentDetails } from './pages/StudentDetails.tsx'
+import { TeacherIndex } from './pages/TeacherIndex.tsx'
+import { TeacherDetails } from './pages/TeacherDetails.tsx'
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -43,37 +45,45 @@ function App() {
         <BrowserRouter>
           <Routes>
             {/* Public routes */}
-            <Route path="/login" element={<LoginPage />} />
-            
+            <Route path='/login' element={<LoginPage />} />
+
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              
+              <Route path='/dashboard' element={<Dashboard />} />
+
               {/* Student routes - nested pattern */}
-              <Route path="/students" element={<StudentIndex />}>
+              <Route path='/students' element={<StudentIndex />}>
                 {/* Child routes for StudentIndex */}
-                <Route path=":studentId" element={<StudentDetails />} />
-                <Route path="new" element={<StudentDetails />} />
+                <Route path=':studentId' element={<StudentDetails />} />
+                <Route path='new' element={<StudentDetails />} />
               </Route>
-              
-              {/* Other routes */}
-              <Route path="/orchestras" element={<div>Orchestras Page</div>} />
-              <Route path="/calendar" element={<div>Calendar Page</div>} />
-              <Route path="/stats" element={<div>Stats Page</div>} />
-              <Route path="/profile" element={<div>Profile Page</div>} />
+
+              {/* Teacher routes - nested pattern */}
+              <Route path='/teachers' element={<TeacherIndex />}>
+                {/* Child routes for TeacherIndex */}
+                <Route path=':teacherId' element={<TeacherDetails />} />
+                <Route path='new' element={<TeacherDetails />} />
+              </Route>
+
+              <Route path='/orchestras' element={<div>Orchestras Page</div>} />
+              <Route path='/calendar' element={<div>Calendar Page</div>} />
+              <Route path='/profile' element={<div>Profile Page</div>} />
             </Route>
-            
+
             {/* Event registration route */}
-            <Route path="/event-registration" element={<EventRegistrationForm />} />
-            
+            <Route
+              path='/event-registration'
+              element={<EventRegistrationForm />}
+            />
+
             {/* Default redirect */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path='/' element={<Navigate to='/dashboard' replace />} />
+            <Route path='*' element={<Navigate to='/dashboard' replace />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
     </QueryClientProvider>
-  )
+  );
 }
 
 export default App

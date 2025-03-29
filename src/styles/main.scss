@@ -15,6 +15,8 @@
 @import './components/search-bar.scss';
 @import './components/student-form.scss';
 @import './components//confirm-dialog.scss';
+@import './components/teacher-list.scss';
+@import './components/teacher-preveiw.scss';
 
 
 // Pages
@@ -23,3 +25,5 @@
 @import './pages/student-index.scss';
 @import './pages/student-details.scss';
 @import './pages/event-registration.scss';
+@import './pages/teacher-index.scss';
+@import './pages/teacher-details.scss';
