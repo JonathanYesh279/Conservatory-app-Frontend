@@ -1,0 +1,53 @@
+.event-registration-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #0a1052 0%, #2c56d2 50%, #0a0f78 100%);
+  
+  @media (max-width: 640px) {
+    padding: 1rem;
+  }
+}
+
+// Override some form styles specifically for event registration
+.event-registration-page {
+  .glass-form {
+    max-width: 460px;
+  }
+  
+  // First name / last name row
+  .form-row.two-columns {
+    margin-top: 0.5rem;
+  }
+  
+  // Reduce space between fields
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  // Align fields without labels
+  .form-row.two-columns .form-group {
+    margin-bottom: 0;
+  }
+  
+  // Make selects more prominent
+  select {
+    border-radius: 0.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 0.75rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  // Better looking placeholders
+  ::placeholder {
+    opacity: 0.6;
+  }
+  
+  // Make the button wider
+  .btn-submit {
+    min-width: 180px;
+  }
+} 

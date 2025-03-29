@@ -1,5 +1,5 @@
 // src/pages/StudentIndex.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useStudentStore } from '../store/studentStore.ts';
 import { StudentList } from '../cmps/StudentList.tsx';
@@ -10,10 +10,14 @@ import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
 import { useSearchbar } from '../hooks/useSearchbar.tsx';
 import { Student } from '../services/studentService.ts';
+import { StudentForm } from '../cmps/StudentForm';
+import { useSchoolYearStore } from '../store/schoolYearStore';
 
 export function StudentIndex() {
   const { students, isLoading, error, loadStudents, removeStudent } =
     useStudentStore();
+  const { loadCurrentSchoolYear } = useSchoolYearStore();
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => [
@@ -41,10 +45,15 @@ export function StudentIndex() {
 
   useEffect(() => {
     loadStudents();
-  }, [loadStudents]);
+    loadCurrentSchoolYear();
+  }, [loadStudents, loadCurrentSchoolYear]);
 
   const handleAddStudent = () => {
-    navigate('/students/new');
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
   };
 
   const handleEditStudent = (studentId: string) => {
@@ -116,6 +125,12 @@ export function StudentIndex() {
         )}
 
         <Outlet context={{ loadStudents }} />
+        
+        {/* Student Form Modal */}
+        <StudentForm 
+          isOpen={isFormOpen} 
+          onClose={handleCloseForm}
+        />
       </main>
 
       <BottomNavbar />

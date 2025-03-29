@@ -155,7 +155,7 @@
       
       .stage-badge {
         padding: 0.4rem 0.75rem;
-        border-radius: 100px;
+        border-radius: 0.375rem;
         color: white;
         font-weight: 500;
         font-size: 0.85rem;
@@ -164,6 +164,25 @@
         justify-content: center;
         box-shadow: var(--shadow-sm);
       }
+      
+      .header-badges {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        
+        .grade-badge {
+          padding: 0.4rem 0.75rem;
+          border-radius: 0.375rem;;
+          color: white;
+          font-weight: 500;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: var(--shadow-sm);
+        }
+      }
     }
     
     // Scrollable content area
@@ -171,20 +190,22 @@
       flex: 1;
       padding: 1rem;
       padding-bottom: 3.5rem; // Space for the button
+      overflow-y: auto;
       
       // Section styling
       .section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
         
         &:last-child {
           margin-bottom: 0;
         }
         
+        // Collapsible section title with click functionality
         .section-title {
           display: flex;
           align-items: center;
           gap: 0.75rem;
-          font-size: 1.2rem;
+          font-size: 1.4rem;
           color: var(--text-primary);
           font-weight: 600;
           margin-bottom: 0.75rem;
@@ -194,6 +215,34 @@
           svg {
             color: var(--primary-color);
           }
+          
+          // Clickable section title
+          &.clickable {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            margin-bottom: 0.5rem;
+            
+            &:hover {
+              color: var(--primary-color);
+            }
+            
+            // Toggle icon styling
+            .toggle-icon {
+              margin-left: auto;
+              color: var(--text-secondary);
+              transition: transform 0.3s ease;
+            }
+          }
+        }
+        
+        // Section content container with animation
+        .section-content {
+          transition: all 0.3s ease;
+          overflow: hidden;
+          padding-top: 0.5rem;
+          padding-bottom: 0.5rem;
+          animation: fadeIn 0.3s ease;
         }
       }
     }
@@ -230,6 +279,21 @@
         transform: translateX(-50%) translateY(2px);
       }
     }
+  }
+}
+
+// Loading section
+.loading-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 0.5rem 0;
+  
+  .loading-icon {
+    animation: spin 1.5s linear infinite;
+    color: var(--primary-color);
   }
 }
 
@@ -364,6 +428,154 @@
   border: 1px solid rgba(var(--warning-rgb), 0.2);
 }
 
+// Teacher info styling - NEW
+.teacher-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  border-radius: 0.75rem;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  margin-bottom: 1rem;
+  
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.15);
+      transform: translateY(-2px);
+    }
+  }
+  
+  svg {
+    color: var(--primary-color);
+  }
+}
+
+.no-teacher-warning {
+  display: inline-block;
+  color: var(--warning);
+  font-size: 0.9rem;
+  background-color: rgba(var(--warning-rgb), 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(var(--warning-rgb), 0.2);
+}
+
+// Attendance styling - NEW
+.attendance-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.attendance-summary {
+  display: flex;
+  gap: 1rem;
+  
+  .attendance-stat {
+    flex: 1;
+    background-color: var(--bg-tertiary);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    .stat-label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.5rem;
+    }
+    
+    .attendance-rate,
+    .attendance-count {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+  }
+}
+
+.attendance-history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  
+  .history-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+  }
+  
+  .history-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    
+    .history-entry {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      
+      .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        
+        &.present {
+          background-color: var(--success);
+        }
+        
+        &.absent {
+          background-color: var(--danger);
+        }
+      }
+      
+      .history-date {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+      
+      .history-status {
+        margin-right: auto;
+        font-size: 0.85rem;
+        font-weight: 500;
+        
+        &.present {
+          color: var(--success);
+        }
+        
+        &.absent {
+          color: var(--danger);
+        }
+      }
+    }
+  }
+}
+
+.loading-attendance {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  padding: 1rem;
+  justify-content: center;
+  
+  .loading-icon {
+    animation: spin 1.5s linear infinite;
+  }
+}
+
 // Loading and error states
 .loading-state,
 .error-state {
@@ -418,6 +630,12 @@
   }
 }
 
+// Animation for section opening
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
@@ -454,15 +672,25 @@
     border-color: rgba(var(--primary-color-rgb), 0.25);
   }
   
-  .no-orchestra-warning {
+  .no-orchestra-warning,
+  .no-teacher-warning {
     background-color: rgba(var(--warning-rgb), 0.15);
+  }
+  
+  .attendance-summary .attendance-stat {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.5);
+  }
+  
+  .attendance-history .history-entry {
+    background-color: var(--bg-tertiary);
   }
 }
 
 // Media queries
 @media (max-width: 768px) {
   .info-grid,
-  .tests-grid {
+  .tests-grid,
+  .attendance-summary {
     grid-template-columns: 1fr 1fr;
   }
   
@@ -519,7 +747,8 @@
   }
   
   .info-grid,
-  .tests-grid {
+  .tests-grid,
+  .attendance-summary {
     grid-template-columns: 1fr;
     gap: 0.75rem;
   }
@@ -544,5 +773,13 @@
       padding: 1rem;
       font-size: 0.9rem;
     }
+  }
+  
+  .teacher-info {
+    padding: 0.6rem;
+  }
+  
+  .attendance-history .history-entry {
+    padding: 0.4rem;
   }
 }

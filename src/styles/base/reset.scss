@@ -13,16 +13,44 @@ html {
   font-weight: bold;
   min-height: 100vh;
   direction: rtl;
+  overflow-x: hidden; /* Prevent horizontal scrolling at the document level */
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 img, svg {
   max-width: 100%;
+}
+
+/* Hide scrollbars when not needed */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(var(--border-color-rgb, 100, 100, 100), 0.3);
+  border-radius: 10px;
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--border-color-rgb, 100, 100, 100), 0.3) transparent;
+}
+
+/* Don't show horizontal scrollbar */
+div {
+  overflow-x: hidden;
 }
 
 // Smooth scrolling
@@ -43,10 +71,24 @@ html {
   left: 0;
   right: 0;
   bottom: 0;
-  overflow: scroll;
+  overflow-y: auto;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
   display: flex;
   flex-direction: column;
   padding-bottom: 70px; // Space for the floating nav
+  
+  /* Only show scrollbar when needed */
+  &::-webkit-scrollbar {
+    display: auto;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--border-color-rgb, 100, 100, 100), 0.2);
+  }
+  
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(var(--border-color-rgb, 100, 100, 100), 0.4);
+  }
 }
 
 // Main content container
@@ -56,4 +98,5 @@ html {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  overflow-x: hidden; /* Ensure no horizontal scroll */
 }

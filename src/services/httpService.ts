@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 
 // Base URL based on environment
-const BASE_URL = process.env.NODE_ENV === 'production' ? '/api/' : 'http://localhost:3000/api/'
+const BASE_URL = process.env.NODE_ENV === 'production' ? '/api/' : 'http://localhost:3001/api/'
 
 // Create axios instance with default config
 const axiosInstance = axios.create({

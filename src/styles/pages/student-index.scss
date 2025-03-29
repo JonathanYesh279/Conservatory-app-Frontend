@@ -103,136 +103,6 @@
   border: 1px solid rgba(var(--danger-rgb), 0.2);
 }
 
-// Student details
-.student-details {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(3px);
-  }
-  
-  .details-modal {
-    position: relative;
-    background-color: var(--bg-card);
-    border-radius: 1rem;
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 2rem;
-    box-shadow: var(--shadow-lg);
-    
-    h2 {
-      margin-top: 0;
-      margin-bottom: 1.5rem;
-      border-bottom: 1px solid var(--border-color);
-      padding-bottom: 1rem;
-      color: var(--text-primary);
-    }
-    
-    .form-section {
-      margin-bottom: 2rem;
-      
-      h3 {
-        font-size: 1.125rem;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
-      }
-      
-      .form-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        
-        .form-group {
-          flex: 1 0 calc(50% - 0.5rem);
-          min-width: 250px;
-          
-          label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-          }
-          
-          input, select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border-input);
-            border-radius: 0.5rem;
-            background-color: var(--bg-card);
-            color: var(--text-primary);
-            
-            &:focus {
-              outline: none;
-              border-color: var(--primary-color);
-              box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
-            }
-          }
-        }
-      }
-    }
-    
-    .form-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 1rem;
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-color);
-      
-      .btn {
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        
-        &.primary {
-          background-color: var(--primary-color);
-          color: white;
-          border: none;
-          
-          &:hover {
-            background-color: var(--primary-dark);
-          }
-          
-          &:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-          }
-        }
-        
-        &.secondary {
-          background-color: var(--bg-tertiary);
-          color: var(--text-primary);
-          border: 1px solid var(--border-color);
-          
-          &:hover {
-            background-color: var(--bg-secondary);
-          }
-        }
-      }
-    }
-  }
-}
-
 @keyframes spinner {
   to {
     transform: rotate(360deg);
@@ -240,17 +110,6 @@
 }
 
 // Media queries for responsive design
-@media (max-width: 768px) {
-  .student-details .details-modal {
-    width: 90%;
-    padding: 1.5rem;
-  }
-  
-  .form-row .form-group {
-    flex: 1 0 100%;
-  }
-}
-
 @media (max-width: 480px) {
   .page-header {
     .search-action-container {
@@ -261,11 +120,5 @@
         justify-content: flex-end;
       }
     }
-  }
-  
-  .student-details .details-modal {
-    width: 95%;
-    max-height: 95vh;
-    padding: 1rem;
   }
 }
