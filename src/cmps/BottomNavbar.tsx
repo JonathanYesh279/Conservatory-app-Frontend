@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, Music, Users, BarChart2 } from 'lucide-react'
+import { Home, Calendar, Music, Users, GraduationCap  } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export function BottomNavbar() {
@@ -15,9 +15,9 @@ export function BottomNavbar() {
   // Define navigation items
   const navItems = [
     {
-      path: '/stats',
-      label: 'סטטיסטיקות',
-      icon: BarChart2,
+      path: '/teachers',
+      label: 'מורים',
+      icon: GraduationCap,
     },
     {
       path: '/students',
@@ -40,7 +40,7 @@ export function BottomNavbar() {
       label: 'לוח שנה',
       icon: Calendar,
     },
-  ]
+  ];
 
   return (
     <nav 
