@@ -270,8 +270,7 @@
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 0.75rem;
       overflow: auto;
-      line-height: 1;
-      max-height: 96px;
+      max-height: 200px;
       
       .student-card {
         display: flex;

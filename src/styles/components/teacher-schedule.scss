@@ -1,0 +1,302 @@
+// Modal overlay
+.schedule-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(3px);
+}
+
+// Modal design
+.schedule-modal {
+  width: 90%;
+  height: 90vh;
+  max-width: 900px;  // Increased max-width for better visibility
+  background-color: #10172a; // Dark blue background
+  border-radius: 1.25rem;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+// Header design
+.schedule-header {
+  display: flex;
+  align-items: center;
+  padding: 1.25rem;
+  position: relative;
+  
+  .header-title {
+    font-size: 1.25rem;
+    margin: 0;
+    color: #fff;
+    font-weight: 600;
+    margin-right: auto;
+  }
+  
+  .header-icon {
+    color: #4078f2;
+    position: absolute;
+    right: 1.25rem;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0;
+    
+    &:hover {
+      color: #fff;
+    }
+  }
+  
+  .view-selector {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 1.25rem;
+    padding: 0.25rem;
+    display: flex;
+    margin: 0 auto;
+    width: 160px;
+  }
+  
+  .view-button {
+    padding: 0.5rem 1rem;
+    border-radius: 1.25rem;
+    border: none;
+    background: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+    
+    &.active {
+      background-color: #4078f2;
+      color: white;
+    }
+  }
+}
+
+// Main calendar body
+.schedule-body {
+  flex: 1;
+  overflow: hidden;
+  
+  // Empty state message
+  .empty-schedule-message {
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+  }
+  
+  // Override react-big-calendar styles
+  .rbc-calendar {
+    height: 100%;
+    background-color: #10172a;
+    color: #fff;
+    direction: rtl;
+    
+    // Remove default border
+    .rbc-time-view {
+      border: none;
+      background-color: #10172a;
+    }
+    
+    // Hide header row border
+    .rbc-time-header {
+      border-bottom: none;
+    }
+    
+    // Style day headers
+    .rbc-time-header-content {
+      border-left: none;
+      
+      .rbc-header {
+        border-bottom: none;
+        font-weight: normal;
+        
+        // Custom day header styling
+        .custom-day-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 8px 0;
+          
+          .day-name {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 4px;
+          }
+          
+          .day-number {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #fff;
+          }
+        }
+      }
+    }
+    
+    // Style time labels
+    .rbc-time-gutter {
+      .rbc-timeslot-group {
+        .rbc-label {
+          font-size: 0.85rem;
+          color: rgba(255, 255, 255, 0.7);
+          padding-right: 10px;
+        }
+      }
+    }
+    
+    // Very subtle time slot borders
+    .rbc-timeslot-group {
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .rbc-time-slot {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    // Customize current time indicator
+    .rbc-current-time-indicator {
+      background-color: #f24040;
+      height: 2px;
+      
+      &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        left: -6px;
+        top: -4px;
+        background-color: #f24040;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+      }
+    }
+    
+    // Event styling
+    .rbc-event {
+      background-color: #4078f2;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      opacity: 0.9;
+      
+      &:hover {
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+      }
+      
+      .rbc-event-content {
+        height: 100%;
+      }
+    }
+    
+    // Event selection style
+    .rbc-selected {
+      background-color: #2a5ac9;
+      
+      &:hover {
+        background-color: #2a5ac9;
+      }
+    }
+    
+    // Highlight today
+    .rbc-today {
+      background-color: rgba(64, 120, 242, 0.1);
+    }
+  }
+}
+
+// Event styling
+.schedule-event {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  
+  .event-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .event-time {
+    font-size: 0.75rem;
+    opacity: 0.9;
+    margin: 2px 0;
+  }
+  
+  .event-instrument {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    font-style: italic;
+  }
+}
+
+// Force RTL for the time column
+.rbc-time-gutter .rbc-label {
+  direction: ltr !important;
+  text-align: right;
+  padding-right: 10px !important;
+}
+
+// Fix alignment issues
+.rbc-time-content > * + * > * {
+  border-left: none !important;
+}
+
+.rbc-header + .rbc-header {
+  border-left: none !important;
+}
+
+// Day view specific styles
+.rbc-time-view.rbc-day-view .rbc-time-header-content {
+  margin-right: 0 !important;
+  border-left: none !important;
+}
+
+// Fix alignment in day view
+.rbc-day-slot .rbc-events-container {
+  margin-left: 0 !important;
+}
+
+// Fix right to left issues
+.rbc-rtl .rbc-time-header-content {
+  border-right: none !important;
+}
+
+// Responsive layout
+@media (max-width: 768px) {
+  .schedule-modal {
+    width: 95%;
+    height: 95vh;
+  }
+  
+  .rbc-toolbar {
+    flex-direction: column;
+    align-items: center;
+    
+    .rbc-toolbar-label {
+      margin: 8px 0;
+    }
+  }
+}

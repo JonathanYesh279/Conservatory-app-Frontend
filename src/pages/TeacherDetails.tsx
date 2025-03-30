@@ -16,7 +16,9 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from 'lucide-react';
+import { TeacherSchedule } from '../cmps/TeacherSchedule';
 
 // Extend for student data reference
 interface StudentReference {
@@ -35,11 +37,17 @@ export function TeacherDetails() {
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
 
+  // State for schedule modal
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [initialScheduleView, setInitialScheduleView] = useState<
+    'day' | 'week'
+  >('week');
+
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     students: true,
     orchestras: true,
-    schedule: false,
+    schedule: true,
     personalInfo: true,
     professionalInfo: true,
   });
@@ -142,6 +150,12 @@ export function TeacherDetails() {
     navigate(`/orchestras/${orchestraId}`);
   };
 
+  // Open schedule modal with specified view
+  const openScheduleModal = (view: 'day' | 'week') => {
+    setInitialScheduleView(view);
+    setIsScheduleModalOpen(true);
+  };
+
   // Format a date string
   const formatDate = (dateString: string) => {
     if (!dateString) return 'לא זמין';
@@ -170,6 +184,17 @@ export function TeacherDetails() {
     );
   }
 
+  // Enhanced schedule data with student info
+  const enhancedSchedule =
+    teacher.teaching?.schedule?.map((lesson: any) => {
+      const student = students.find((s) => s._id === lesson.studentId);
+      return {
+        ...lesson,
+        studentName: student?.fullName || 'תלמיד',
+        instrument: student?.instrument,
+      };
+    }) || [];
+
   // Get initials for avatar
   const getInitials = (name: string) => {
     return name
@@ -194,6 +219,9 @@ export function TeacherDetails() {
   // Get primary role for visualization
   const primaryRole =
     teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה';
+
+  const hasSchedule =
+    teacher.teaching?.schedule && teacher.teaching.schedule.length > 0;
 
   return (
     <div className='teacher-details-content'>
@@ -353,111 +381,46 @@ export function TeacherDetails() {
                     </div>
                   )}
 
-                {/* Teaching Schedule - Collapsible */}
-                {teacher.teaching?.schedule &&
-                  teacher.teaching.schedule.length > 0 && (
-                    <div className='section'>
-                      <div
-                        className={`section-title clickable ${
-                          openSections.schedule ? 'active' : ''
-                        }`}
-                        onClick={() => toggleSection('schedule')}
-                      >
-                        <Calendar size={16} />
-                        <span>מערכת שעות</span>
-                        {openSections.schedule ? (
-                          <ChevronUp size={18} className='toggle-icon' />
-                        ) : (
-                          <ChevronDown size={18} className='toggle-icon' />
-                        )}
-                      </div>
-
-                      {openSections.schedule && (
-                        <div className='section-content'>
-                          <div className='schedule-grid'>
-                            {teacher.teaching.schedule.map(
-                              (lesson: any, index: number) => (
-                                <div key={index} className='schedule-item'>
-                                  <div className='schedule-day-time'>
-                                    <span className='day'>{lesson.day}</span>
-                                    <span className='time'>{lesson.time}</span>
-                                  </div>
-                                  <div className='schedule-details'>
-                                    <span className='duration'>
-                                      {lesson.duration} דק׳
-                                    </span>
-                                    {students.find(
-                                      (s) => s._id === lesson.studentId
-                                    )?.fullName && (
-                                      <span
-                                        className='student-name clickable'
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigateToStudent(lesson.studentId);
-                                        }}
-                                      >
-                                        {
-                                          students.find(
-                                            (s) => s._id === lesson.studentId
-                                          )?.fullName
-                                        }
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              )
-                            )}
-                          </div>
-                        </div>
+                {/* Teaching Schedule Section */}
+                {hasSchedule && (
+                  <div className='section'>
+                    <div
+                      className={`section-title clickable ${
+                        openSections.schedule ? 'active' : ''
+                      }`}
+                      onClick={() => toggleSection('schedule')}
+                    >
+                      <Calendar size={16} />
+                      <span>מערכת שעות</span>
+                      {openSections.schedule ? (
+                        <ChevronUp size={18} className='toggle-icon' />
+                      ) : (
+                        <ChevronDown size={18} className='toggle-icon' />
                       )}
                     </div>
-                  )}
 
-                {/* Professional Info - Collapsible */}
-                <div className='section'>
-                  <div
-                    className={`section-title clickable ${
-                      openSections.professionalInfo ? 'active' : ''
-                    }`}
-                    onClick={() => toggleSection('professionalInfo')}
-                  >
-                    <BookOpen size={16} />
-                    <span>מידע מקצועי</span>
-                    {openSections.professionalInfo ? (
-                      <ChevronUp size={18} className='toggle-icon' />
-                    ) : (
-                      <ChevronDown size={18} className='toggle-icon' />
-                    )}
-                  </div>
-
-                  {openSections.professionalInfo && (
-                    <div className='section-content'>
-                      <div className='info-grid'>
-                        {teacher.professionalInfo?.instrument && (
-                          <div className='info-item'>
-                            <Music size={14} />
-                            <div>
-                              <span className='info-label'>כלי נגינה</span>
-                              <span className='info-value'>
-                                {teacher.professionalInfo.instrument}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className='info-item'>
-                          <Calendar size={14} />
-                          <div>
-                            <span className='info-label'>תאריך הצטרפות</span>
-                            <span className='info-value'>
-                              {formatDate(teacher.createdAt || '')}
-                            </span>
-                          </div>
+                    {openSections.schedule && (
+                      <div className='section-content'>
+                        <div className='schedule-buttons'>
+                          <button
+                            className='schedule-view-btn weekly'
+                            onClick={() => openScheduleModal('week')}
+                          >
+                            <Calendar size={16} />
+                            <span>הצג מערכת שבועית</span>
+                          </button>
+                          <button
+                            className='schedule-view-btn daily'
+                            onClick={() => openScheduleModal('day')}
+                          >
+                            <Clock size={16} />
+                            <span>הצג מערכת יומית</span>
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
@@ -596,6 +559,51 @@ export function TeacherDetails() {
                     </div>
                   )}
                 </div>
+                {/* Professional Info - Collapsible */}
+                <div className='section'>
+                  <div
+                    className={`section-title clickable ${
+                      openSections.professionalInfo ? 'active' : ''
+                    }`}
+                    onClick={() => toggleSection('professionalInfo')}
+                  >
+                    <BookOpen size={16} />
+                    <span>מידע מקצועי</span>
+                    {openSections.professionalInfo ? (
+                      <ChevronUp size={18} className='toggle-icon' />
+                    ) : (
+                      <ChevronDown size={18} className='toggle-icon' />
+                    )}
+                  </div>
+
+                  {openSections.professionalInfo && (
+                    <div className='section-content'>
+                      <div className='info-grid'>
+                        {teacher.professionalInfo?.instrument && (
+                          <div className='info-item'>
+                            <Music size={14} />
+                            <div>
+                              <span className='info-label'>כלי נגינה</span>
+                              <span className='info-value'>
+                                {teacher.professionalInfo.instrument}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className='info-item'>
+                          <Calendar size={14} />
+                          <div>
+                            <span className='info-label'>תאריך הצטרפות</span>
+                            <span className='info-value'>
+                              {formatDate(teacher.createdAt || '')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
@@ -614,6 +622,16 @@ export function TeacherDetails() {
             </div>
           </div>
         </div>
+
+        {/* Schedule Modal */}
+        {isScheduleModalOpen && (
+          <TeacherSchedule
+            schedule={enhancedSchedule}
+            isOpen={isScheduleModalOpen}
+            onClose={() => setIsScheduleModalOpen(false)}
+            initialView={initialScheduleView}
+          />
+        )}
       </div>
     </div>
   );
