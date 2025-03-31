@@ -1,7 +1,6 @@
 // src/pages/TeacherIndex.tsx
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { teacherService, Teacher } from '../services/teacherService';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Filter, Plus } from 'lucide-react';
@@ -9,18 +8,25 @@ import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
 import { useSearchbar } from '../hooks/useSearchbar';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
-import { FloatingActionButton } from '../cmps/FloatingActionButton';
+import { useTeacherStore } from '../store/teacherStore';
+import { Teacher } from '../services/teacherService';
 import { TeacherList } from '../cmps/TeacherList';
+import { TeacherForm } from '../cmps/TeacherForm';
 
 export function TeacherIndex() {
-  // State for teachers data
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    teachers,
+    isLoading,
+    error,
+    loadTeachers,
+    removeTeacher,
+    selectedTeacher,
+    clearSelectedTeacher,
+  } = useTeacherStore();
 
   // State for modal forms and dialogs
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [teacherToEdit, setTeacherToEdit] = useState<Teacher | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
 
@@ -50,39 +56,24 @@ export function TeacherIndex() {
   // Load teachers on component mount
   useEffect(() => {
     loadTeachers();
-  }, []);
-
-  // Function to load teachers
-  const loadTeachers = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const teachersData = await teacherService.getTeachers();
-      setTeachers(teachersData);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to load teachers';
-      setError(errorMessage);
-      console.error('Error loading teachers:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [loadTeachers]);
 
   // Handler functions for teacher CRUD operations
   const handleAddTeacher = () => {
-    setSelectedTeacher(null);
+    setTeacherToEdit(null);
+    clearSelectedTeacher();
     setIsFormOpen(true);
+    console.log('Adding new teacher');
   };
 
   const handleCloseForm = () => {
     setIsFormOpen(false);
-    setSelectedTeacher(null);
+    setTeacherToEdit(null);
   };
 
   const handleEditTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId) || null;
-    setSelectedTeacher(teacher);
+    setTeacherToEdit(teacher);
     setIsFormOpen(true);
   };
 
@@ -100,19 +91,11 @@ export function TeacherIndex() {
 
   const confirmRemoveTeacher = async () => {
     if (teacherToDelete) {
-      setIsLoading(true);
       try {
-        await teacherService.removeTeacher(teacherToDelete);
-        // Update the teachers list after deletion
-        setTeachers(teachers.filter((t) => t._id !== teacherToDelete));
+        await removeTeacher(teacherToDelete);
         setTeacherToDelete(null);
       } catch (err) {
         console.error('Failed to remove teacher:', err);
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to remove teacher';
-        setError(errorMessage);
-      } finally {
-        setIsLoading(false);
       }
     }
   };
@@ -189,13 +172,13 @@ export function TeacherIndex() {
           type='danger'
         />
 
-        {/* Here you would include your TeacherForm component */}
-        {/* <TeacherForm
+        {/* Teacher Form Modal */}
+        <TeacherForm
           isOpen={isFormOpen}
           onClose={handleCloseForm}
-          teacher={selectedTeacher}
+          teacher={teacherToEdit}
           onSave={loadTeachers}
-        /> */}
+        />
       </main>
 
       <BottomNavbar />
