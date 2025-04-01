@@ -1,3 +1,4 @@
+// src/cmps/TeacherForm.tsx
 import { useState, useEffect } from 'react';
 import { X, Eye, EyeOff } from 'lucide-react';
 import { Teacher } from '../services/teacherService';
@@ -402,6 +403,7 @@ export function TeacherForm({
 
     try {
       const teacherId = formData._id;
+      // Remove the _id field from the data to send to the server
       const { _id, ...dataWithoutId } = formData;
 
       // Handle password for existing teachers
@@ -427,11 +429,10 @@ export function TeacherForm({
 
       // Save or update teacher
       if (teacherId) {
-        await saveTeacher({
-          _id: teacherId,
-          ...dataWithoutId,
-        });
+        // For updates, we need to call updateTeacher separately
+        await saveTeacher(dataWithoutId, teacherId);
       } else {
+        // For new teachers, add them without an ID
         await saveTeacher(dataWithoutId);
       }
 

@@ -92,7 +92,7 @@
         border-radius: 1rem;
         background-color: var(--bg-card);
         border: 1px solid var(--border-color);
-        overflow: hidden;
+        overflow: visible; // Changed from hidden to visible
         display: flex;
         flex-direction: column;
         transition: all 0.5s ease;
@@ -129,11 +129,13 @@
       justify-content: space-between;
       border-bottom: 1px solid var(--border-color);
       flex-shrink: 0;
+      overflow: visible; // Ensure popups aren't cut off
       
       .teacher-identity {
         display: flex;
         align-items: center;
         gap: 0.75rem;
+        position: relative; // Important for popup positioning
         
         .avatar {
           width: 44px;
@@ -147,6 +149,18 @@
           font-weight: 600;
           box-shadow: var(--shadow-sm);
           flex-shrink: 0;
+        }
+        
+        // Avatar clickable styles - moved outside of media query
+        .avatar-clickable {
+          position: relative;
+          overflow: visible;
+          transition: transform 0.2s;
+          cursor: pointer;
+        }
+
+        .avatar-clickable:hover {
+          transform: scale(1.05);
         }
         
         .header-text {
@@ -196,7 +210,8 @@
       flex: 1;
       padding: 1rem;
       padding-bottom: 3.5rem; // Space for the button
-      overflow-y: hidden;
+      overflow-y: auto;
+      overflow-x: visible; // Allow popups to show
       
       // Section styling
       .section {
@@ -574,6 +589,398 @@
   to { transform: rotate(360deg); }
 }
 
+// Communication popup styles
+.communication-popup {
+  position: absolute;
+  top: 110%;
+  right: -20px;
+  width: 220px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000; // Higher z-index to appear above other elements
+  overflow: hidden;
+  direction: rtl;
+  text-align: right;
+  animation: popup-fade 0.2s ease-in-out;
+}
+
+// Popup animation
+@keyframes popup-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Popup header
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.popup-header span {
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.popup-header .close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-header .close-btn:hover {
+  color: #333;
+}
+
+// Popup actions
+.popup-actions {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Communication buttons
+.comm-btn {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  font-size: 14px;
+  gap: 8px;
+  color: white;
+}
+
+.comm-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.email-btn {
+  background-color: #D44638;
+}
+
+.email-btn:hover {
+  background-color: #c53b2d;
+}
+
+.whatsapp-btn {
+  background-color: #25D366;
+}
+
+.whatsapp-btn:hover {
+  background-color: #20bd5a;
+}
+
+// Communication Modal Styles
+.communication-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+  backdrop-filter: blur(2px);
+  direction: rtl;
+}
+
+.communication-modal {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  width: 90%;
+  max-width: 450px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(
+    to left,
+    rgba(var(--primary-color-rgb), 0.1),
+    rgba(var(--primary-color-rgb), 0.05)
+  );
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+      color: var(--text-primary);
+    }
+  }
+}
+
+// Method Selection Section
+.comm-method-selection {
+  padding: 20px;
+
+  .comm-details {
+    margin-bottom: 20px;
+    background-color: rgba(var(--bg-tertiary-rgb), 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+
+    .contact-info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border-color);
+      
+      &:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+
+      svg {
+        color: var(--primary-color);
+        flex-shrink: 0;
+      }
+
+      span {
+        flex: 1;
+        color: var(--text-primary);
+        font-weight: 500;
+        word-break: break-all;
+      }
+
+      .copy-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.05);
+          color: var(--text-primary);
+        }
+
+        // For check icon when copied
+        svg {
+          color: var(--success);
+        }
+      }
+    }
+  }
+
+  .method-buttons {
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+
+    .method-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: white;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      &.email-btn {
+        background-color: #D44638;
+
+        &:hover {
+          background-color: #c53b2d;
+        }
+      }
+
+      &.whatsapp-btn {
+        background-color: #25D366;
+
+        &:hover {
+          background-color: #20bd5a;
+        }
+      }
+
+      span {
+        font-size: 1rem;
+      }
+    }
+  }
+}
+
+// Email & WhatsApp Forms
+.email-form,
+.whatsapp-form {
+  padding: 20px;
+
+  .back-to-methods {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 1rem;
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      resize: vertical;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+      }
+
+      &::placeholder {
+        color: var(--text-placeholder);
+      }
+    }
+
+    textarea {
+      min-height: 100px;
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+
+    .cancel-btn {
+      padding: 10px 16px;
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+      }
+    }
+
+    .send-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: var(--primary-dark);
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--primary-color);
+      }
+    }
+  }
+}
+
+// Animation for slideUp used in communication modal
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 // Dark mode adjustments
 [data-theme="dark"] {
   .teacher-card-container .card-side {
@@ -605,6 +1012,63 @@
     background-color: rgba(var(--primary-color-rgb), 0.15);
     border-color: rgba(var(--primary-color-rgb), 0.25);
   }
+  
+  .communication-popup {
+    background-color: #2a2a2a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+
+  .popup-header {
+    background-color: #333;
+    border-bottom-color: #444;
+  }
+
+  .popup-header span {
+    color: #eaeaea;
+  }
+
+  .close-btn {
+    color: #aaa;
+  }
+
+  .close-btn:hover {
+    color: #fff;
+  }
+  
+  // Dark mode adjustments for communication modal
+  .communication-modal {
+    background-color: var(--bg-secondary);
+  }
+
+  .comm-method-selection .comm-details {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+
+  .email-form, .whatsapp-form {
+    .form-group {
+      input, textarea {
+        background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+        border-color: var(--border-dark);
+      }
+    }
+
+    .form-actions {
+      .cancel-btn {
+        border-color: var(--border-dark);
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.05);
+        }
+      }
+    }
+  }
+
+  .contact-info-item .copy-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .modal-header .close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+  }
 }
 
 // Media queries
@@ -617,6 +1081,46 @@
   .orchestras-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
+  
+  .communication-popup {
+    width: 200px;
+    right: -10px;
+  }
+  
+  .popup-header {
+    padding: 8px 12px;
+  }
+  
+  .comm-btn {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .communication-.communication-modal {
+  width: 95%;
+  max-width: 400px;
+}
+
+.schedule-buttons {
+  flex-direction: column;
+}
+
+.modal-header h3 {
+  font-size: 1.1rem;
+}
+
+.comm-method-selection .method-buttons .method-btn {
+  padding: 10px 14px;
+}
+
+.email-form, .whatsapp-form {
+  .form-actions {
+    .cancel-btn, .send-btn {
+      padding: 8px 12px;
+      font-size: 0.9rem;
+    }
+  }
+}
 }
 
 @media (max-width: 480px) {
@@ -670,5 +1174,34 @@
   .orchestras-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 0.5rem;
+  }
+  
+  .communication-modal {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    border-radius: 0;
+    max-height: 100vh;
+  }
+
+  .communication-modal-overlay {
+    padding: 0;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .method-buttons .method-btn {
+    padding: 10px 14px;
+  }
+
+  .email-form, .whatsapp-form {
+    .form-actions {
+      .cancel-btn, .send-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+    }
   }
 }

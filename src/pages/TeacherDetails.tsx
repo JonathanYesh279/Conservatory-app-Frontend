@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { teacherService } from '../services/teacherService';
-import { Orchestra, orchestraService } from '../services/orchestraService';
-import { studentService } from '../services/studentService';
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { teacherService, Teacher } from '../services/teacherService'
+import { Orchestra, orchestraService } from '../services/orchestraService'
+import { studentService } from '../services/studentService'
 import {
   User,
   Calendar,
@@ -17,75 +17,108 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-} from 'lucide-react';
-import { TeacherSchedule } from '../cmps/TeacherSchedule';
+  X,
+  Send,
+  MessageSquare,
+  Copy,
+  Check,
+} from 'lucide-react'
+import { TeacherSchedule } from '../cmps/TeacherSchedule'
 
 // Extend for student data reference
 interface StudentReference {
-  _id: string;
-  fullName: string;
-  instrument: string;
+  _id: string
+  fullName: string
+  instrument: string
+}
+
+// Define schedule item interface
+interface ScheduleItem {
+  studentId: string
+  day: string
+  time: string
+  duration: number
+  isActive: boolean
+  studentName?: string
+  instrument?: string
+}
+
+// Communication modal types
+type CommunicationMethod = 'email' | 'whatsapp'
+
+interface EmailFormData {
+  subject: string
+  message: string
+}
+
+interface WhatsAppFormData {
+  message: string
 }
 
 export function TeacherDetails() {
-  const { teacherId } = useParams<{ teacherId: string }>();
-  const [teacher, setTeacher] = useState<any | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [flipped, setFlipped] = useState(false);
-  const [students, setStudents] = useState<StudentReference[]>([]);
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-  const [orchestrasLoading, setOrchestrasLoading] = useState(false);
+  const { teacherId } = useParams<{ teacherId: string }>()
+  const [teacher, setTeacher] = useState<Teacher | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [flipped, setFlipped] = useState(false)
+  const [students, setStudents] = useState<StudentReference[]>([])
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([])
+  const [orchestrasLoading, setOrchestrasLoading] = useState(false)
+  
+  // New communication modal state
+  const [communicationModalOpen, setCommunicationModalOpen] = useState(false)
+  const [communicationMethod, setCommunicationMethod] = useState<CommunicationMethod | null>(null)
+  const [emailForm, setEmailForm] = useState<EmailFormData>({ subject: '', message: '' })
+  const [whatsAppForm, setWhatsAppForm] = useState<WhatsAppFormData>({ message: '' })
+  const [copied, setCopied] = useState(false)
 
   // State for schedule modal
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
-  const [initialScheduleView, setInitialScheduleView] = useState<
-    'day' | 'week'
-  >('week');
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
+  const [initialScheduleView, setInitialScheduleView] = useState<'day' | 'week'>('week')
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     students: true,
     orchestras: true,
-    schedule: true,
+    schedule: false,
     personalInfo: true,
     professionalInfo: true,
-  });
+  })
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   // Load teacher data when component mounts
   useEffect(() => {
     if (teacherId) {
-      loadTeacher(teacherId);
+      loadTeacher(teacherId)
     }
-  }, [teacherId]);
+  }, [teacherId])
 
   // Function to load teacher details
   const loadTeacher = async (id: string) => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
     try {
-      const teacherData = await teacherService.getTeacherById(id);
-      setTeacher(teacherData);
+      const teacherData = await teacherService.getTeacherById(id)
+      setTeacher(teacherData)
 
       // Load related students
-      if (teacherData.teaching?.studentIds.length > 0) {
-        await loadStudents(teacherData.teaching.studentIds);
+      if (teacherData.teaching?.studentIds?.length > 0) {
+        await loadStudents(teacherData.teaching.studentIds)
       }
 
       // Load related orchestras
       if (teacherData.conducting?.orchestraIds?.length > 0) {
-        setOrchestrasLoading(true);
-        await loadOrchestras(teacherData.conducting.orchestraIds);
+        setOrchestrasLoading(true)
+        await loadOrchestras(teacherData.conducting.orchestraIds)
       }
     } catch (err) {
-      console.error('Failed to load teacher:', err);
-      setError(err instanceof Error ? err.message : 'שגיאה בטעינת פרטי המורה');
+      console.error('Failed to load teacher:', err)
+      setError(err instanceof Error ? err.message : 'שגיאה בטעינת פרטי המורה')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // Load student details
   const loadStudents = async (studentIds: string[]) => {
@@ -93,21 +126,21 @@ export function TeacherDetails() {
       // For each student ID, fetch the student data
       const studentPromises = studentIds.map((id) =>
         studentService.getStudentById(id)
-      );
-      const studentData = await Promise.all(studentPromises);
+      )
+      const studentData = await Promise.all(studentPromises)
 
       // Map to simplified reference objects
       const studentReferences = studentData.map((student) => ({
         _id: student._id,
         fullName: student.personalInfo.fullName,
         instrument: student.academicInfo.instrument,
-      }));
+      }))
 
-      setStudents(studentReferences);
+      setStudents(studentReferences)
     } catch (err) {
-      console.error('Failed to load students:', err);
+      console.error('Failed to load students:', err)
     }
-  };
+  }
 
   // Load orchestra details
   const loadOrchestras = async (orchestraIds: string[]) => {
@@ -115,54 +148,119 @@ export function TeacherDetails() {
       // Fetch orchestras by IDs
       const orchestraData = await orchestraService.getOrchestrasByIds(
         orchestraIds
-      );
-      setOrchestras(orchestraData);
+      )
+      setOrchestras(orchestraData)
     } catch (err) {
-      console.error('Failed to load orchestras:', err);
+      console.error('Failed to load orchestras:', err)
     } finally {
-      setOrchestrasLoading(false);
+      setOrchestrasLoading(false)
     }
-  };
+  }
 
   // Toggle section visibility
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }));
-  };
+    }))
+  }
 
   const toggleFlip = () => {
-    setFlipped(!flipped);
-  };
+    setFlipped(!flipped)
+  }
 
   const goBack = () => {
-    navigate('/teachers');
-  };
+    navigate('/teachers')
+  }
 
   // Navigate to student details
   const navigateToStudent = (studentId: string) => {
-    navigate(`/students/${studentId}`);
-  };
+    navigate(`/students/${studentId}`)
+  }
 
   // Navigate to orchestra details
   const navigateToOrchestra = (orchestraId: string) => {
-    navigate(`/orchestras/${orchestraId}`);
-  };
+    navigate(`/orchestras/${orchestraId}`)
+  }
 
   // Open schedule modal with specified view
   const openScheduleModal = (view: 'day' | 'week') => {
-    setInitialScheduleView(view);
-    setIsScheduleModalOpen(true);
-  };
+    setInitialScheduleView(view)
+    setIsScheduleModalOpen(true)
+  }
+
+  // NEW: Open communication modal
+  const openCommunicationModal = () => {
+    setCommunicationModalOpen(true)
+    setCommunicationMethod(null)
+  }
+
+  // NEW: Close communication modal
+  const closeCommunicationModal = () => {
+    setCommunicationModalOpen(false)
+    setCommunicationMethod(null)
+    setEmailForm({ subject: '', message: '' })
+    setWhatsAppForm({ message: '' })
+    setCopied(false)
+  }
+
+  // NEW: Select communication method
+  const selectCommunicationMethod = (method: CommunicationMethod) => {
+    setCommunicationMethod(method)
+  }
+
+  // NEW: Handle email form changes
+  const handleEmailFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEmailForm(prev => ({ ...prev, [name]: value }))
+  }
+
+  // NEW: Handle WhatsApp form changes
+  const handleWhatsAppFormChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setWhatsAppForm({ message: e.target.value })
+  }
+
+  // NEW: Handle send email
+  const handleSendEmail = () => {
+    if (!teacher?.personalInfo.email) return
+    
+    const emailContent = `mailto:${teacher.personalInfo.email}?subject=${encodeURIComponent(emailForm.subject)}&body=${encodeURIComponent(emailForm.message)}`
+    window.open(emailContent)
+    closeCommunicationModal()
+  }
+
+  // NEW: Format phone number for WhatsApp
+  const formatPhoneForWhatsApp = (phone: string) => {
+    if (phone.startsWith('0')) {
+      return `972${phone.substring(1)}`
+    }
+    return phone
+  }
+
+  // NEW: Handle send WhatsApp
+  const handleSendWhatsApp = () => {
+    if (!teacher?.personalInfo.phone) return
+    
+    const formattedPhone = formatPhoneForWhatsApp(teacher.personalInfo.phone)
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsAppForm.message)}`
+    window.open(whatsappUrl)
+    closeCommunicationModal()
+  }
+
+  // NEW: Copy phone or email to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   // Format a date string
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'לא זמין';
+    if (!dateString) return 'לא זמין'
 
-    const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL');
-  };
+    const date = new Date(dateString)
+    return date.toLocaleDateString('he-IL')
+  }
 
   if (isLoading) {
     return (
@@ -170,7 +268,7 @@ export function TeacherDetails() {
         <RefreshCw className='loading-icon' size={28} />
         <p>טוען פרטי מורה...</p>
       </div>
-    );
+    )
   }
 
   if (error || !teacher) {
@@ -181,19 +279,19 @@ export function TeacherDetails() {
           חזרה לרשימת המורים
         </button>
       </div>
-    );
+    )
   }
 
   // Enhanced schedule data with student info
-  const enhancedSchedule =
+  const enhancedSchedule: ScheduleItem[] = 
     teacher.teaching?.schedule?.map((lesson: any) => {
-      const student = students.find((s) => s._id === lesson.studentId);
+      const student = students.find((s) => s._id === lesson.studentId)
       return {
         ...lesson,
         studentName: student?.fullName || 'תלמיד',
         instrument: student?.instrument,
-      };
-    }) || [];
+      }
+    }) || []
 
   // Get initials for avatar
   const getInitials = (name: string) => {
@@ -202,8 +300,8 @@ export function TeacherDetails() {
       .map((n: string) => n[0])
       .join('')
       .toUpperCase()
-      .substring(0, 2);
-  };
+      .substring(0, 2)
+  }
 
   // Get role color
   const getRoleColor = (role: string) => {
@@ -212,16 +310,16 @@ export function TeacherDetails() {
       מנצח: '#28A745', // Success color
       'מדריך הרכב': '#FFC107', // Warning color
       מנהל: '#DC3545', // Danger color
-    };
-    return roleColors[role] || '#6c757d'; // Default color
-  };
+    }
+    return roleColors[role] || '#6c757d' // Default color
+  }
 
   // Get primary role for visualization
   const primaryRole =
-    teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה';
+    teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה'
 
   const hasSchedule =
-    teacher.teaching?.schedule && teacher.teaching.schedule.length > 0;
+    teacher.teaching?.schedule && teacher.teaching.schedule.length > 0
 
   return (
     <div className='teacher-details-content'>
@@ -234,10 +332,11 @@ export function TeacherDetails() {
               <div className='card-header'>
                 <div className='teacher-identity'>
                   <div
-                    className='avatar'
+                    className='avatar avatar-clickable'
                     style={{
                       backgroundColor: getRoleColor(primaryRole),
                     }}
+                    onClick={openCommunicationModal}
                   >
                     {getInitials(teacher.personalInfo.fullName)}
                   </div>
@@ -443,10 +542,11 @@ export function TeacherDetails() {
               <div className='card-header'>
                 <div className='teacher-identity'>
                   <div
-                    className='avatar'
+                    className='avatar avatar-clickable'
                     style={{
                       backgroundColor: getRoleColor(primaryRole),
                     }}
+                    onClick={openCommunicationModal}
                   >
                     {getInitials(teacher.personalInfo.fullName)}
                   </div>
@@ -632,7 +732,156 @@ export function TeacherDetails() {
             initialView={initialScheduleView}
           />
         )}
+
+        {/* NEW: Communication Modal */}
+        {communicationModalOpen && (
+          <div className='communication-modal-overlay' onClick={closeCommunicationModal}>
+            <div className='communication-modal' onClick={(e) => e.stopPropagation()}>
+              <div className='modal-header'>
+                <h3>יצירת קשר עם {teacher.personalInfo.fullName}</h3>
+                <button className='close-btn' onClick={closeCommunicationModal}>
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Method Selection */}
+              {!communicationMethod && (
+                <div className='comm-method-selection'>
+                  <div className='comm-details'>
+                    {teacher.personalInfo.phone && (
+                      <div className='contact-info-item'>
+                        <Phone size={16} />
+                        <span>{teacher.personalInfo.phone}</span>
+                        <button 
+                          className='copy-btn' 
+                          onClick={() => copyToClipboard(teacher.personalInfo.phone || '')}
+                          aria-label="העתק מספר טלפון"
+                        >
+                          {copied ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                    )}
+                    {teacher.personalInfo.email && (
+                      <div className='contact-info-item'>
+                        <Mail size={16} />
+                        <span>{teacher.personalInfo.email}</span>
+                        <button 
+                          className='copy-btn' 
+                          onClick={() => copyToClipboard(teacher.personalInfo.email || '')}
+                          aria-label="העתק כתובת אימייל"
+                        >
+                          {copied ? <Check size={16} /> : <Copy size={16} />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className='method-buttons'>
+                    {teacher.personalInfo.email && (
+                      <button 
+                        className='method-btn email-btn'
+                        onClick={() => selectCommunicationMethod('email')}
+                      >
+                        <Mail size={20} />
+                        <span>שלח אימייל</span>
+                      </button>
+                    )}
+                    {teacher.personalInfo.phone && (
+                      <button 
+                        className='method-btn whatsapp-btn'
+                        onClick={() => selectCommunicationMethod('whatsapp')}
+                      >
+                        <MessageSquare size={20} />
+                        <span>שלח הודעת WhatsApp</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Email Form */}
+              {communicationMethod === 'email' && (
+                <div className='email-form'>
+                  <button 
+                    className='back-to-methods'
+                    onClick={() => setCommunicationMethod(null)}
+                  >
+                    &larr; חזרה
+                  </button>
+                  
+                  <div className='form-group'>
+                    <label htmlFor='subject'>נושא</label>
+                    <input
+                      type='text'
+                      id='subject'
+                      name='subject'
+                      value={emailForm.subject}
+                      onChange={handleEmailFormChange}
+                      placeholder='נושא ההודעה'
+                    />
+                  </div>
+                  <div className='form-group'>
+                    <label htmlFor='message'>תוכן ההודעה</label>
+                    <textarea
+                      id='message'
+                      name='message'
+                      value={emailForm.message}
+                      onChange={handleEmailFormChange}
+                      placeholder='הקלד את תוכן ההודעה כאן...'
+                      rows={6}
+                    />
+                  </div>
+                  <div className='form-actions'>
+                    <button className='cancel-btn' onClick={closeCommunicationModal}>ביטול</button>
+                    <button 
+                      className='send-btn' 
+                      onClick={handleSendEmail}
+                      disabled={!emailForm.subject || !emailForm.message}
+                    >
+                      <Send size={16} />
+                      <span>שלח אימייל</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* WhatsApp Form */}
+              {communicationMethod === 'whatsapp' && (
+                <div className='whatsapp-form'>
+                  <button 
+                    className='back-to-methods'
+                    onClick={() => setCommunicationMethod(null)}
+                  >
+                    &larr; חזרה
+                  </button>
+                  
+                  <div className='form-group'>
+                    <label htmlFor='whatsapp-message'>הודעה ל-WhatsApp</label>
+                    <textarea
+                      id='whatsapp-message'
+                      value={whatsAppForm.message}
+                      onChange={handleWhatsAppFormChange}
+                      placeholder='הקלד את תוכן ההודעה כאן...'
+                      rows={6}
+                    />
+                  </div>
+                  <div className='form-actions'>
+                    <button className='cancel-btn' onClick={closeCommunicationModal}>ביטול</button>
+                    <button 
+                      className='send-btn' 
+                      onClick={handleSendWhatsApp}
+                      disabled={!whatsAppForm.message}
+                    >
+                      <Send size={16} />
+                      <span>שלח הודעת WhatsApp</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  );
+  )
 }

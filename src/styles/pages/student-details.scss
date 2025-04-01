@@ -773,42 +773,47 @@
         padding: 0.6rem 1.25rem;
       }
     }
-  }
-  
-  .info-grid,
-  .tests-grid,
-  .attendance-summary {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
-  }
-  
-  .info-grid .info-item {
-    gap: 0.5rem;
     
-    .info-value {
-      font-size: 0.95rem;
+    .info-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    .info-grid,
+    .tests-grid,
+    .attendance-summary {
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    
+    .info-grid .info-item {
+      gap: 0.5rem;
+      
+      .info-value {
+        font-size: 0.95rem;
+      }
+    }
+    
+    .tests-grid .test-card {
+      padding: 0.75rem;
+    }
+    
+    .orchestras-grid {
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.75rem;
+      
+      .orchestra-card {
+        padding: 1rem;
+        font-size: 0.9rem;
+      }
+    }
+    
+    .teacher-info {
+      padding: 0.6rem;
+    }
+    
+    .attendance-history .history-entry {
+      padding: 0.4rem;
     }
   }
-  
-  .tests-grid .test-card {
-    padding: 0.75rem;
-  }
-  
-  .orchestras-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.75rem;
-    
-    .orchestra-card {
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-  }
-  
-  .teacher-info {
-    padding: 0.6rem;
-  }
-  
-  .attendance-history .history-entry {
-    padding: 0.4rem;
-  }
+
 }

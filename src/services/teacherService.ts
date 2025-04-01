@@ -1,3 +1,4 @@
+// src/services/teacherService.ts
 import { httpService } from './httpService';
 
 export interface Teacher {
@@ -100,7 +101,9 @@ export const teacherService = {
     teacherId: string,
     teacher: Partial<Teacher>
   ): Promise<Teacher> {
-    return httpService.put(`teacher/${teacherId}`, teacher);
+    // Make sure we're not sending the _id in the request body
+    const { _id, ...teacherWithoutId } = teacher as any;
+    return httpService.put(`teacher/${teacherId}`, teacherWithoutId);
   },
 
   async removeTeacher(teacherId: string): Promise<Teacher> {

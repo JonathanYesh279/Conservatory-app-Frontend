@@ -36,8 +36,8 @@ export function BottomNavbar() {
       icon: Music,
     },
     {
-      path: '/calendar',
-      label: 'לוח שנה',
+      path: '/rehearsals',
+      label: 'לוח חזרות',
       icon: Calendar,
     },
   ];

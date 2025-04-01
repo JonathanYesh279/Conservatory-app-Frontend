@@ -6,7 +6,6 @@ import { X, Calendar as CalendarIcon } from 'lucide-react';
 
 // Initialize moment locale
 try {
-  require('moment/locale/he');
   moment.locale('he');
 } catch (e) {
   console.error('Error loading Hebrew locale:', e);

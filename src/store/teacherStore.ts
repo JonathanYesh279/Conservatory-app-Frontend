@@ -16,7 +16,10 @@ interface TeacherState {
   // Actions
   loadTeachers: (filterBy?: TeacherFilter) => Promise<void>;
   loadTeacherById: (teacherId: string) => Promise<void>;
-  saveTeacher: (teacher: Partial<Teacher>) => Promise<Teacher>;
+  saveTeacher: (
+    teacher: Partial<Teacher>,
+    teacherId?: string
+  ) => Promise<Teacher>;
   removeTeacher: (teacherId: string) => Promise<void>;
   setFilter: (filterBy: Partial<TeacherFilter>) => void;
   clearSelectedTeacher: () => void;
@@ -79,15 +82,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     }
   },
 
-  saveTeacher: async (teacherToSave) => {
+  saveTeacher: async (teacherToSave, teacherId) => {
     set({ isLoading: true, error: null });
     try {
       let savedTeacher: Teacher;
 
-      if (teacherToSave._id) {
-        // Update existing teacher
+      if (teacherId) {
+        // Update existing teacher - pass teacherId as a separate parameter
         savedTeacher = await teacherService.updateTeacher(
-          teacherToSave._id,
+          teacherId,
           teacherToSave
         );
 
