@@ -87,22 +87,24 @@ export function StudentPreview({
       style={{ cursor: 'pointer' }}
     >
       <div className='preview-header'>
-        <div className='avatar-section'>
-          <div
-            className='avatar'
-            style={{
-              backgroundColor: getStageColor(student.academicInfo.currentStage),
-            }}
-          >
-            {getInitials(student.personalInfo.fullName)}
+        <div className='header-right-container'>
+          <div className='avatar-section'>
+            <div
+              className='avatar'
+              style={{
+                backgroundColor: getStageColor(student.academicInfo.currentStage),
+              }}
+            >
+              {getInitials(student.personalInfo.fullName)}
+            </div>
           </div>
-        </div>
 
-        <div className='student-info'>
-          <h3 className='student-name'>{student.personalInfo.fullName}</h3>
-          <div className='student-subject'>
-            <Music size={14} />
-            <span>{student.academicInfo.instrument}</span>
+          <div className='student-info'>
+            <h3 className='student-name'>{student.personalInfo.fullName}</h3>
+            <div className='student-subject'>
+              <Music size={14} />
+              <span>{student.academicInfo.instrument}</span>
+            </div>
           </div>
         </div>
 
