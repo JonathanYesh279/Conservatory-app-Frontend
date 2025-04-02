@@ -11,6 +11,8 @@ import { StudentIndex } from './pages/StudentIndex.tsx'
 import { StudentDetails } from './pages/StudentDetails.tsx'
 import { TeacherIndex } from './pages/TeacherIndex.tsx'
 import { TeacherDetails } from './pages/TeacherDetails.tsx'
+import { OrchestraIndex } from './pages/OrchestraIndex.tsx'
+import { OrchestraDetails } from './pages/OrchestraDetails.tsx'
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -65,9 +67,12 @@ function App() {
                 <Route path='new' element={<TeacherDetails />} />
               </Route>
 
-              <Route path='/orchestras' element={<div>Orchestras Page</div>} />
-              <Route path='/calendar' element={<div>Calendar Page</div>} />
-              <Route path='/profile' element={<div>Profile Page</div>} />
+              {/* Orchestra routes - nested pattern */}
+              <Route path='/orchestras' element={<OrchestraIndex />}>
+                {/* Child routes for OrchestraIndex */}
+                <Route path=':orchestraId' element={<OrchestraDetails/>} />
+                <Route path='new' element={<OrchestraDetails />} />
+              </Route>
             </Route>
 
             {/* Event registration route */}

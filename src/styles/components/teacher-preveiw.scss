@@ -24,29 +24,46 @@
     padding: 1.25rem;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
     border-bottom: 1px solid var(--divider-color);
     flex-wrap: wrap;
-    
-    .avatar-section {
-      .avatar {
-        width: 2.75rem;
-        height: 2.75rem;
-        border-radius: 50%;
-        color: white;
+
+    .teacher-header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      .teacher-info {
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 1rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        padding: 0.25rem 0.5rem;
+        gap: 1rem;
+        border-radius: 0.75rem;
+        margin-bottom: 0;
+      }
+      .avatar-section {
+        .avatar {
+          width: 2.75rem;
+          height: 2.75rem;
+          border-radius: 50%;
+          color: white;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          font-size: 1rem;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        }
       }
     }
+
+    
     
     .teacher-info {
       flex: 1;
       min-width: 0; // For text overflow handling
-      
+
       .teacher-name {
         margin: 0 0 0.25rem;
         font-size: 1.125rem;

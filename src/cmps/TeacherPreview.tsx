@@ -72,31 +72,33 @@ export function TeacherPreview({
       style={{ cursor: 'pointer' }}
     >
       <div className='preview-header'>
-        <div className='avatar-section'>
-          <div
-            className='avatar'
-            style={{
-              backgroundColor: getRoleBadgeColor(primaryRole),
-            }}
-          >
-            {getInitials(teacher.personalInfo.fullName)}
+        <div className='teacher-header-container'>
+          <div className='avatar-section'>
+            <div
+              className='avatar'
+              style={{
+                backgroundColor: getRoleBadgeColor(primaryRole),
+              }}
+            >
+              {getInitials(teacher.personalInfo.fullName)}
+            </div>
           </div>
-        </div>
 
-        <div className='teacher-info'>
-          <h3 className='teacher-name'>{teacher.personalInfo.fullName}</h3>
-          <div className='teacher-subject'>
-            {teacher.professionalInfo?.instrument ? (
-              <>
-                <Music size={14} />
-                <span>{teacher.professionalInfo.instrument}</span>
-              </>
-            ) : (
-              <>
-                <GraduationCap size={14} />
-                <span>{primaryRole}</span>
-              </>
-            )}
+          <div className='teacher-info'>
+            <h3 className='teacher-name'>{teacher.personalInfo.fullName}</h3>
+            <div className='teacher-subject'>
+              {teacher.professionalInfo?.instrument ? (
+                <>
+                  <Music size={14} />
+                  <span>{teacher.professionalInfo.instrument}</span>
+                </>
+              ) : (
+                <>
+                  <GraduationCap size={14} />
+                  <span>{primaryRole}</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 

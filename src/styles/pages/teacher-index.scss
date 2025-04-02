@@ -111,66 +111,6 @@
   margin-top: 1.5rem;
 }
 
-// Temporary teacher card styling (until we create TeacherPreview component)
-.teacher-card {
-  background-color: var(--bg-card);
-  border-radius: 0.75rem;
-  overflow: hidden;
-  box-shadow: var(--card-shadow, 0 4px 6px rgba(0, 0, 0, 0.1));
-  transition: all 0.3s ease;
-  cursor: pointer;
-  border: 1px solid var(--border-color);
-  padding: 1.5rem;
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--card-hover-shadow, 0 10px 15px rgba(0, 0, 0, 0.1));
-  }
-  
-  h3 {
-    margin: 0 0 0.5rem;
-    font-size: 1.2rem;
-    color: var(--text-primary);
-  }
-  
-  p {
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-  }
-  
-  .card-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    
-    button {
-      padding: 0.4rem 0.75rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      
-      &:first-child {
-        background-color: var(--primary-color);
-        color: white;
-        
-        &:hover {
-          background-color: var(--primary-dark);
-        }
-      }
-      
-      &:last-child {
-        background-color: var(--danger);
-        color: white;
-        
-        &:hover {
-          filter: brightness(0.9);
-        }
-      }
-    }
-  }
-}
 
 @keyframes spinner {
   to {

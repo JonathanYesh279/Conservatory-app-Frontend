@@ -415,9 +415,6 @@ export function TeacherDetails() {
                                   <span className='student-name'>
                                     {student.fullName}
                                   </span>
-                                  <span className='student-instrument'>
-                                    {student.instrument}
-                                  </span>
                                 </div>
                               </div>
                             ))}
