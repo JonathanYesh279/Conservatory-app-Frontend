@@ -83,12 +83,14 @@
       }
       
       .student-info {
+        display: flex;
         flex: 1;
         min-width: 0;
         padding: 0.25rem 1rem;
         border-radius: 0.75rem;
         background-color: rgba(var(--primary-color-rgb), 0.1);
         border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+        gap: 1rem;
         
         .student-name {
           margin: 0 0 0.25rem;
