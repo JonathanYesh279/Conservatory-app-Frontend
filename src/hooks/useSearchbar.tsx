@@ -1,4 +1,4 @@
-// src/hooks/useSearchbar.ts
+// src/hooks/useSearchbar.tsx
 import { useState, useEffect } from 'react';
 
 type SearchableEntity = {
@@ -10,12 +10,24 @@ export function useSearchbar<T extends SearchableEntity>(
   searchFields: (keyof T)[] | ((entity: T) => string[])
 ) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredEntities, setFilteredEntities] = useState<T[]>(entities);
+
+  // Add defensive check to ensure entities is always an array
+  const safeEntities = Array.isArray(entities) ? entities : [];
+
+  // Initialize with safe entities
+  const [filteredEntities, setFilteredEntities] = useState<T[]>(safeEntities);
 
   // Update filtered entities when the original entities list changes
   useEffect(() => {
+    console.log('useSearchbar entities update:', {
+      isArray: Array.isArray(entities),
+      length: Array.isArray(entities) ? entities.length : 'n/a',
+      type: typeof entities,
+    });
+
+    // Always use the safe version
     if (!searchQuery) {
-      setFilteredEntities(entities);
+      setFilteredEntities(safeEntities);
     } else {
       performSearch(searchQuery);
     }
@@ -24,26 +36,49 @@ export function useSearchbar<T extends SearchableEntity>(
   // Function to handle search
   const performSearch = (query: string) => {
     if (!query) {
-      setFilteredEntities(entities);
+      setFilteredEntities(safeEntities);
       return;
     }
 
     const lowercaseQuery = query.toLowerCase();
 
-    const filtered = entities.filter((entity) => {
-      // If searchFields is a function, call it to get the fields to search
-      const fieldsToSearch =
-        typeof searchFields === 'function'
-          ? searchFields(entity)
-          : searchFields.map((field) => {
-              const value = entity[field];
-              return value ? String(value) : '';
-            });
+    // Always use the safe version of entities
+    const filtered = safeEntities.filter((entity) => {
+      try {
+        // If searchFields is a function, call it to get the fields to search
+        const fieldsToSearch =
+          typeof searchFields === 'function'
+            ? searchFields(entity)
+            : searchFields.map((field) => {
+                const value = entity[field];
+                return value ? String(value) : '';
+              });
 
-      // Check if any field contains the search query
-      return fieldsToSearch.some((fieldValue) =>
-        fieldValue.toLowerCase().includes(lowercaseQuery)
-      );
+        // Safety check that fieldsToSearch is an array
+        if (!Array.isArray(fieldsToSearch)) {
+          console.error(
+            'Expected fieldsToSearch to be an array but got:',
+            typeof fieldsToSearch
+          );
+          return false;
+        }
+
+        // Check if any field contains the search query
+        return fieldsToSearch.some((fieldValue) => {
+          // Safety check for fieldValue
+          if (typeof fieldValue !== 'string') {
+            console.error(
+              'Expected field value to be a string but got:',
+              typeof fieldValue
+            );
+            return false;
+          }
+          return fieldValue.toLowerCase().includes(lowercaseQuery);
+        });
+      } catch (err) {
+        console.error('Error filtering entity:', err);
+        return false;
+      }
     });
 
     setFilteredEntities(filtered);
@@ -55,7 +90,8 @@ export function useSearchbar<T extends SearchableEntity>(
   };
 
   return {
-    filteredEntities,
+    // Always return a safe array
+    filteredEntities: Array.isArray(filteredEntities) ? filteredEntities : [],
     handleSearch,
     searchQuery,
   };

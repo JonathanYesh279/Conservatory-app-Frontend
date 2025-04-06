@@ -13,7 +13,6 @@ import {
   Music,
   Award,
   ArrowRight,
-  ChevronLeft,
   RefreshCw,
   ChevronDown,
   ChevronUp,
@@ -48,7 +47,6 @@ export function StudentDetails() {
   const {
     selectedStudent,
     loadStudentById,
-    clearSelectedStudent,
     isLoading,
     error,
   } = useStudentStore();
@@ -115,11 +113,11 @@ export function StudentDetails() {
 
   // Load orchestra data when student is loaded
   useEffect(() => {
-    if (selectedStudent?.enrollments?.orchestraIds?.length > 0) {
+    if (selectedStudent?.enrollments?.orchestraIds && selectedStudent.enrollments.orchestraIds.length > 0) {
       setOrchestrasLoading(true);
       const fetchOrchestras = async () => {
         try {
-          const orchestraIds = selectedStudent.enrollments.orchestraIds;
+          const orchestraIds = selectedStudent!.enrollments.orchestraIds
           const orchestraData = await orchestraService.getOrchestrasByIds(
             orchestraIds
           );

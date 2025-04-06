@@ -6,7 +6,7 @@ import { useAuthStore } from './store/authStore'
 import { ThemeProvider } from './hooks/useTheme'
 import { EventRegistrationForm } from './cmps/EventRegistrationForm'
 
-import { Dashboard } from './pages/Dashboard'
+import { Dashboard } from './pages/Dashboard.tsx'
 import { StudentIndex } from './pages/StudentIndex.tsx'
 import { StudentDetails } from './pages/StudentDetails.tsx'
 import { TeacherIndex } from './pages/TeacherIndex.tsx'

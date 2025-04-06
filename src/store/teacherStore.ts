@@ -59,12 +59,23 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const newFilterBy = { ...get().filterBy, ...filterBy };
-      const teachers = await teacherService.getTeachers(newFilterBy);
+      console.log('Fetching teachers with filter:', newFilterBy);
+
+      const response = await teacherService.getTeachers(newFilterBy);
+      console.log('Teachers API response:', {
+        type: typeof response,
+        isArray: Array.isArray(response),
+        length: response && Array.isArray(response) ? response.length : 'n/a',
+      });
+
+      // Ensure we always have an array
+      const teachers = Array.isArray(response) ? response : [];
+
       set({ teachers, filterBy: newFilterBy, isLoading: false });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load teachers';
-      set({ error: errorMessage, isLoading: false });
+      set({ error: errorMessage, isLoading: false, teachers: [] }); // Set empty array on error
       console.error('Error loading teachers:', err);
     }
   },
@@ -94,10 +105,11 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
           teacherToSave
         );
 
-        // Update in the teachers array
-        const updatedTeachers = get().teachers.map((t) =>
-          t._id === savedTeacher._id ? savedTeacher : t
-        );
+        // Update in the teachers array - with safety check
+        const teachers = get().teachers;
+        const updatedTeachers = Array.isArray(teachers)
+          ? teachers.map((t) => (t._id === savedTeacher._id ? savedTeacher : t))
+          : [savedTeacher];
 
         set({
           teachers: updatedTeachers,
@@ -108,8 +120,14 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         // Add new teacher
         savedTeacher = await teacherService.addTeacher(teacherToSave);
 
+        // Safety check on existing teachers
+        const teachers = get().teachers;
+        const updatedTeachers = Array.isArray(teachers)
+          ? [...teachers, savedTeacher]
+          : [savedTeacher];
+
         set({
-          teachers: [...get().teachers, savedTeacher],
+          teachers: updatedTeachers,
           selectedTeacher: savedTeacher,
           isLoading: false,
         });
@@ -130,8 +148,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     try {
       await teacherService.removeTeacher(teacherId);
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [], isLoading: false });
+        return;
+      }
+
       set({
-        teachers: get().teachers.filter((t) => t._id !== teacherId),
+        teachers: teachers.filter((t) => t._id !== teacherId),
         selectedTeacher:
           get().selectedTeacher?._id === teacherId
             ? null
@@ -173,8 +198,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         set({ selectedTeacher: updatedTeacher });
       }
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [updatedTeacher], isLoading: false });
+        return;
+      }
+
       // Update in the teachers array
-      const updatedTeachers = get().teachers.map((t) =>
+      const updatedTeachers = teachers.map((t) =>
         t._id === teacherId ? updatedTeacher : t
       );
 
@@ -197,15 +229,24 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
   assignStudentToTeacher: async (teacherId, studentId) => {
     set({ isLoading: true, error: null });
     try {
-      // This operation would typically need to be implemented in your teacherService
-      // For now we're assuming it adds the student to the teacher's studentIds array
+      // Safety check on selected teacher
+      const selectedTeacher = get().selectedTeacher;
+      const studentIds = selectedTeacher?.teaching?.studentIds || [];
+
+      if (!Array.isArray(studentIds)) {
+        console.error(
+          'Expected studentIds to be an array but got:',
+          typeof studentIds
+        );
+      }
+
       const updatedTeacher = await teacherService.updateTeacher(teacherId, {
         teaching: {
-          ...get().selectedTeacher?.teaching,
           studentIds: [
-            ...(get().selectedTeacher?.teaching?.studentIds || []),
+            ...(Array.isArray(studentIds) ? studentIds : []),
             studentId,
           ],
+          schedule: get().selectedTeacher?.teaching?.schedule || [],
         },
       });
 
@@ -214,8 +255,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         set({ selectedTeacher: updatedTeacher });
       }
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [updatedTeacher], isLoading: false });
+        return;
+      }
+
       // Update in the teachers array
-      const updatedTeachers = get().teachers.map((t) =>
+      const updatedTeachers = teachers.map((t) =>
         t._id === teacherId ? updatedTeacher : t
       );
 
@@ -238,15 +286,22 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
   removeStudentFromTeacher: async (teacherId, studentId) => {
     set({ isLoading: true, error: null });
     try {
-      // This operation would typically need to be implemented in your teacherService
+      // Safety check on selected teacher
       const selectedTeacher = get().selectedTeacher;
       if (!selectedTeacher || !selectedTeacher.teaching) {
         throw new Error('Teacher not found or no teaching data');
       }
 
-      const updatedStudentIds = selectedTeacher.teaching.studentIds.filter(
-        (id) => id !== studentId
-      );
+      const studentIds = selectedTeacher.teaching.studentIds;
+      if (!Array.isArray(studentIds)) {
+        console.error(
+          'Expected studentIds to be an array but got:',
+          typeof studentIds
+        );
+        throw new Error('Invalid student data structure');
+      }
+
+      const updatedStudentIds = studentIds.filter((id) => id !== studentId);
 
       const updatedTeacher = await teacherService.updateTeacher(teacherId, {
         teaching: {
@@ -260,8 +315,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         set({ selectedTeacher: updatedTeacher });
       }
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [updatedTeacher], isLoading: false });
+        return;
+      }
+
       // Update in the teachers array
-      const updatedTeachers = get().teachers.map((t) =>
+      const updatedTeachers = teachers.map((t) =>
         t._id === teacherId ? updatedTeacher : t
       );
 
@@ -295,8 +357,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         set({ selectedTeacher: updatedTeacher });
       }
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [updatedTeacher], isLoading: false });
+        return;
+      }
+
       // Update in the teachers array
-      const updatedTeachers = get().teachers.map((t) =>
+      const updatedTeachers = teachers.map((t) =>
         t._id === teacherId ? updatedTeacher : t
       );
 
@@ -330,8 +399,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         set({ selectedTeacher: updatedTeacher });
       }
 
+      // Safety check on existing teachers
+      const teachers = get().teachers;
+      if (!Array.isArray(teachers)) {
+        set({ teachers: [updatedTeacher], isLoading: false });
+        return;
+      }
+
       // Update in the teachers array
-      const updatedTeachers = get().teachers.map((t) =>
+      const updatedTeachers = teachers.map((t) =>
         t._id === teacherId ? updatedTeacher : t
       );
 

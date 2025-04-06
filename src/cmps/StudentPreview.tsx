@@ -4,7 +4,6 @@ import {
   Edit,
   Trash2,
   Music,
-  BookOpen,
   Calendar,
   Award,
   Eye,

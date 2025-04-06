@@ -29,7 +29,8 @@ export function StatCard({
   additionalStats,
   progress,
 }: StatCardProps) {
-  const isIncrease = comparison?.value >= 0
+
+  const isIncrease = comparison && comparison.value !== undefined ? comparison.value >= 0 : true
 
   const categoryClass = {
     'תלמידים': 'students',

@@ -103,14 +103,14 @@ export function TeacherDetails() {
       setTeacher(teacherData)
 
       // Load related students
-      if (teacherData.teaching?.studentIds?.length > 0) {
-        await loadStudents(teacherData.teaching.studentIds)
+      if (teacherData.teaching?.studentIds && teacherData.teaching.studentIds.length > 0) {
+         await loadStudents(teacherData.teaching!.studentIds)
       }
 
       // Load related orchestras
-      if (teacherData.conducting?.orchestraIds?.length > 0) {
+      if (teacherData.conducting?.orchestraIds && teacherData.conducting.orchestraIds.length > 0) {
         setOrchestrasLoading(true)
-        await loadOrchestras(teacherData.conducting.orchestraIds)
+        await loadOrchestras(teacherData.conducting!.orchestraIds)
       }
     } catch (err) {
       console.error('Failed to load teacher:', err)

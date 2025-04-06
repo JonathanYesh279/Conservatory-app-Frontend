@@ -20,7 +20,6 @@ export function TeacherIndex() {
     error,
     loadTeachers,
     removeTeacher,
-    selectedTeacher,
     clearSelectedTeacher,
   } = useTeacherStore();
 
@@ -176,7 +175,7 @@ export function TeacherIndex() {
         <TeacherForm
           isOpen={isFormOpen}
           onClose={handleCloseForm}
-          teacher={teacherToEdit}
+          teacher={teacherToEdit || undefined}
           onSave={loadTeachers}
         />
       </main>

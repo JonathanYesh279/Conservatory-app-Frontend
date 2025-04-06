@@ -5,7 +5,7 @@ import { useStudentStore } from '../store/studentStore.ts';
 import { StudentList } from '../cmps/StudentList.tsx';
 import { Header } from '../cmps/Header.tsx';
 import { BottomNavbar } from '../cmps/BottomNavbar.tsx';
-import { Filter, Plus, AlertTriangle } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
 import { useSearchbar } from '../hooks/useSearchbar.tsx';
@@ -156,7 +156,7 @@ export function StudentIndex() {
         <StudentForm
           isOpen={isFormOpen}
           onClose={handleCloseForm}
-          student={selectedStudent}
+          student={selectedStudent || undefined}
         />
 
         {/* Delete Confirmation Dialog */}

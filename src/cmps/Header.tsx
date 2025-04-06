@@ -14,12 +14,12 @@ export function Header() {
   const [dropDownMenu, setDropDownMenu] = useState(false)
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const dropdownRef = useRef(null)
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    function handleClickOutside(event: MouseEvent): void {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropDownMenu(false)
       }
     }
@@ -37,9 +37,6 @@ export function Header() {
   function toggleDropDownMenu() {
     setDropDownMenu((prev) => !prev)
   }
-
-  // Extract first name and ensure it's properly rendered with a fallback
-  const firstName = user?.fullName ? user.fullName.split(' ')[0] : 'אורח'
   
   // Create initials for avatar placeholder
   const userInitials = user?.fullName

@@ -16,6 +16,16 @@ import { useAuth } from '../hooks/useAuth';
 import { OrchestraForm } from '../cmps/OrchestraForm';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 
+interface ConductorInfo {
+  _id: string;
+  personalInfo: {
+    fullName: string;
+  };
+  professionalInfo?: {
+    instrument?: string;
+  };
+}
+
 export function OrchestraDetails() {
   const { orchestraId } = useParams();
   const navigate = useNavigate();
@@ -29,12 +39,12 @@ export function OrchestraDetails() {
     error,
   } = useOrchestraStore();
 
-  const { loadTeacherById, selectedTeacher } = useTeacherStore();
+  const { loadTeacherById } = useTeacherStore();
 
   // State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [conductor, setConductor] = useState(null);
+  const [conductor, setConductor] = useState<ConductorInfo | null>(null);
   const [isLoadingConductor, setIsLoadingConductor] = useState(false);
 
   // Section toggle states
@@ -64,7 +74,7 @@ export function OrchestraDetails() {
           await loadTeacherById(selectedOrchestra.conductorId);
           const teacherStore = useTeacherStore.getState();
           const conductorData = teacherStore.selectedTeacher;
-          setConductor(conductorData);
+          setConductor(conductorData as ConductorInfo);
         } catch (err) {
           console.error('Failed to load conductor:', err);
         } finally {
@@ -178,7 +188,7 @@ export function OrchestraDetails() {
                       <span className='info-value'>
                         {isLoadingConductor
                           ? 'טוען...'
-                          : conductor
+                          : conductor && 'personalInfo' in conductor
                           ? conductor.personalInfo.fullName
                           : 'לא הוגדר'}
                       </span>
@@ -279,7 +289,7 @@ export function OrchestraDetails() {
           orchestra={selectedOrchestra}
           onSave={() => {
             setIsEditModalOpen(false);
-            loadOrchestraById(orchestraId);
+            orchestraId && loadOrchestraById(orchestraId);
           }}
         />
       )}

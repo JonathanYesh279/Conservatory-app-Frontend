@@ -6,9 +6,7 @@ import {
   Music,
   Users,
   Calendar,
-  BookOpen,
   Eye,
-  User,
   Phone,
   Mail,
   GraduationCap,
@@ -59,7 +57,7 @@ export function TeacherPreview({
   const hasStudents =
     teacher.teaching?.studentIds && teacher.teaching.studentIds.length > 0;
 
-  const studentCount = hasStudents ? teacher.teaching.studentIds.length : 0;
+  const studentCount = hasStudents && teacher.teaching ? teacher.teaching.studentIds.length : 0
 
   // Get primary role for display
   const primaryRole =

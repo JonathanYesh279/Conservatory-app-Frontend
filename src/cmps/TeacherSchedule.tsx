@@ -242,7 +242,7 @@ export function TeacherSchedule({
               components={{
                 event: EventComponent,
                 timeGutterHeader: TimeGutterHeader,
-                dayHeader: DayHeaderComponent,
+                header: DayHeaderComponent,
               }}
               formats={{
                 timeGutterFormat: TimeGutterFormatter,

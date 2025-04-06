@@ -27,12 +27,13 @@ interface TeacherFormData {
       day: string;
       time: string;
       duration: number;
+      isActive: boolean; // This was missing!
     }>;
   };
   conducting: {
     orchestraIds: string[];
   };
-  ensemblesIds: string[];
+  ensembleIds: string[]; // Note: In your Teacher interface this is ensembleIds, not ensemblesIds
   schoolYears: Array<{
     schoolYearId: string;
     isActive: boolean;
@@ -90,12 +91,12 @@ export function TeacherForm({
     },
     teaching: {
       studentIds: [],
-      schedule: [],
+      schedule: [], // This is already an empty array which is fine
     },
     conducting: {
       orchestraIds: [],
     },
-    ensemblesIds: [],
+    ensembleIds: [], // Make sure this matches the interface (ensembleIds, not ensemblesIds)
     schoolYears: [],
     credentials: {
       email: '',
@@ -167,11 +168,11 @@ export function TeacherForm({
         conducting: {
           orchestraIds: teacher.conducting?.orchestraIds || [],
         },
-        ensemblesIds: teacher.ensemblesIds || [],
+        ensembleIds: teacher.ensembleIds || [],
         schoolYears: teacher.schoolYears || [],
         credentials: {
           email: teacher.personalInfo?.email || '',
-          password: teacher.credentials?.password || '********', // We don't actually get the password from the server
+          password: '********',
         },
         isActive: teacher.isActive !== false,
       });
@@ -196,7 +197,7 @@ export function TeacherForm({
         conducting: {
           orchestraIds: [],
         },
-        ensemblesIds: [],
+        ensembleIds: [],
         schoolYears: currentSchoolYear
           ? [
               {
@@ -409,9 +410,10 @@ export function TeacherForm({
       // Handle password for existing teachers
       if (teacherId && dataWithoutId.credentials.password === '********') {
         // Remove password if it's the masked placeholder
-        dataWithoutId.credentials = {
-          email: dataWithoutId.credentials.email,
-        };
+       dataWithoutId.credentials = {
+         email: dataWithoutId.credentials.email,
+         password: '', // Or any appropriate default
+       };
       }
 
       // Make sure the teacher has the current school year in enrollments
@@ -429,9 +431,48 @@ export function TeacherForm({
 
       // Save or update teacher
       if (teacherId) {
+        if (dataWithoutId.teaching) {
+          // Create a properly typed schedule array
+          const typedSchedule = Array.isArray(dataWithoutId.teaching.schedule)
+            ? dataWithoutId.teaching.schedule.map((item) => ({
+                studentId: item.studentId,
+                day: item.day,
+                time: item.time,
+                duration: item.duration,
+                isActive: true,
+              }))
+            : [];
+
+          // Replace the teaching object with a properly structured one
+          dataWithoutId.teaching = {
+            studentIds: dataWithoutId.teaching.studentIds || [],
+            schedule: typedSchedule,
+          };
+        }
         // For updates, we need to call updateTeacher separately
         await saveTeacher(dataWithoutId, teacherId);
       } else {
+       if (dataWithoutId.teaching) {
+         // Create a properly typed schedule array
+         const typedSchedule = Array.isArray(dataWithoutId.teaching.schedule)
+           ? dataWithoutId.teaching.schedule.map((item) => {
+               // Explicitly create an object with all required properties
+               return {
+                 studentId: item.studentId,
+                 day: item.day,
+                 time: item.time,
+                 duration: item.duration,
+                 isActive: true, // Ensure this property is always added
+               };
+             })
+           : [];
+
+         // Replace the teaching object with a properly structured one
+         dataWithoutId.teaching = {
+           studentIds: dataWithoutId.teaching.studentIds || [],
+           schedule: typedSchedule,
+         };
+       }
         // For new teachers, add them without an ID
         await saveTeacher(dataWithoutId);
       }

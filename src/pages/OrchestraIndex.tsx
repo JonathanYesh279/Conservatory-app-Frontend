@@ -21,8 +21,6 @@ export function OrchestraIndex() {
     error,
     loadOrchestras,
     removeOrchestra,
-    setFilter,
-    clearError,
   } = useOrchestraStore();
 
   const { loadCurrentSchoolYear } = useSchoolYearStore();

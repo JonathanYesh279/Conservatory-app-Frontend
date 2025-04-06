@@ -2,12 +2,23 @@ import { create } from 'zustand'
 import { httpService } from '../services/httpService'
 import { User } from '../types/teacher'
 
+interface LoginResponse {
+  accessToken: string;
+  teacher: {
+    _id: string;
+    fullName: string;
+    email: string;
+    roles: string[];
+  };
+}
+
 // Define auth state interface
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  
   
   // Actions
   login: (email: string, password: string) => Promise<User>

@@ -1,6 +1,6 @@
 // src/cmps/TeacherList.tsx
 import { Teacher } from '../services/teacherService';
-import { TeacherPreview } from './TeacherPreview';
+import { TeacherPreview } from './TeacherPreview.tsx';
 
 interface TeacherListProps {
   teachers: Teacher[];
@@ -17,6 +17,16 @@ export function TeacherList({
   onView,
   onRemove,
 }: TeacherListProps) {
+  // Add defensive check for array
+  if (!Array.isArray(teachers)) {
+    console.error(
+      'Expected teachers to be an array but got:',
+      typeof teachers,
+      teachers
+    );
+    return <div className='error-state'>שגיאה בטעינת נתונים</div>;
+  }
+
   if (isLoading && teachers.length === 0) {
     return <div className='loading-state'>טוען מורים...</div>;
   }
@@ -37,7 +47,7 @@ export function TeacherList({
           key={teacher._id}
           teacher={teacher}
           onEdit={onEdit}
-          onView={onView || onEdit} // Use view handler or fall back to edit
+          onView={onView || onEdit}
           onRemove={onRemove}
         />
       ))}
