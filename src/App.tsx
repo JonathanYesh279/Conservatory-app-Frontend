@@ -13,6 +13,7 @@ import { TeacherIndex } from './pages/TeacherIndex.tsx'
 import { TeacherDetails } from './pages/TeacherDetails.tsx'
 import { OrchestraIndex } from './pages/OrchestraIndex.tsx'
 import { OrchestraDetails } from './pages/OrchestraDetails.tsx'
+import { useEffect } from 'react'
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -41,6 +42,12 @@ function ProtectedRoute() {
 }
 
 function App() {
+  const initialize = useAuthStore(state => state.initialize)
+
+  useEffect(() => {
+    initialize()
+  }, [initialize])
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
@@ -48,42 +55,37 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route path='/login' element={<LoginPage />} />
-
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path='/dashboard' element={<Dashboard />} />
-
-              {/* Student routes - nested pattern */}
-              <Route path='/students' element={<StudentIndex />}>
-                {/* Child routes for StudentIndex */}
-                <Route path=':studentId' element={<StudentDetails />} />
-                <Route path='new' element={<StudentDetails />} />
-              </Route>
-
-              {/* Teacher routes - nested pattern */}
-              <Route path='/teachers' element={<TeacherIndex />}>
-                {/* Child routes for TeacherIndex */}
-                <Route path=':teacherId' element={<TeacherDetails />} />
-                <Route path='new' element={<TeacherDetails />} />
-              </Route>
-
-              {/* Orchestra routes - nested pattern */}
-              <Route path='/orchestras' element={<OrchestraIndex />}>
-                {/* Child routes for OrchestraIndex */}
-                <Route path=':orchestraId' element={<OrchestraDetails/>} />
-                <Route path='new' element={<OrchestraDetails />} />
-              </Route>
-            </Route>
-
-            {/* Event registration route */}
             <Route
               path='/event-registration'
               element={<EventRegistrationForm />}
             />
 
-            {/* Default redirect */}
-            <Route path='/' element={<Navigate to='/dashboard' replace />} />
-            <Route path='*' element={<Navigate to='/dashboard' replace />} />
+            {/* Protected routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path='/dashboard' element={<Dashboard />} />
+
+              {/* Student routes */}
+              <Route path='/students' element={<StudentIndex />}>
+                <Route path=':studentId' element={<StudentDetails />} />
+                <Route path='new' element={<StudentDetails />} />
+              </Route>
+
+              {/* Teacher routes */}
+              <Route path='/teachers' element={<TeacherIndex />}>
+                <Route path=':teacherId' element={<TeacherDetails />} />
+                <Route path='new' element={<TeacherDetails />} />
+              </Route>
+
+              {/* Orchestra routes */}
+              <Route path='/orchestras' element={<OrchestraIndex />}>
+                <Route path=':orchestraId' element={<OrchestraDetails />} />
+                <Route path='new' element={<OrchestraDetails />} />
+              </Route>
+
+              {/* Default route inside protected area */}
+              <Route path='/' element={<Navigate to='/dashboard' replace />} />
+              <Route path='*' element={<Navigate to='/dashboard' replace />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
