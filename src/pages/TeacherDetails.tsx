@@ -374,6 +374,13 @@ export function TeacherDetails() {
                         {role}
                       </div>
                     ))}
+                  <button
+                    className='back-button'
+                    onClick={goBack}
+                    aria-label='חזרה'
+                  >
+                    <ArrowRight size={20} />
+                  </button>
                 </div>
               </div>
 
@@ -581,6 +588,13 @@ export function TeacherDetails() {
                         {role}
                       </div>
                     ))}
+                  <button
+                    className='back-button'
+                    onClick={goBack}
+                    aria-label='חזרה'
+                  >
+                    <ArrowRight size={20} />
+                  </button>
                 </div>
               </div>
 
@@ -732,8 +746,14 @@ export function TeacherDetails() {
 
         {/* NEW: Communication Modal */}
         {communicationModalOpen && (
-          <div className='communication-modal-overlay' onClick={closeCommunicationModal}>
-            <div className='communication-modal' onClick={(e) => e.stopPropagation()}>
+          <div
+            className='communication-modal-overlay'
+            onClick={closeCommunicationModal}
+          >
+            <div
+              className='communication-modal'
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className='modal-header'>
                 <h3>יצירת קשר עם {teacher.personalInfo.fullName}</h3>
                 <button className='close-btn' onClick={closeCommunicationModal}>
@@ -749,10 +769,12 @@ export function TeacherDetails() {
                       <div className='contact-info-item'>
                         <Phone size={16} />
                         <span>{teacher.personalInfo.phone}</span>
-                        <button 
-                          className='copy-btn' 
-                          onClick={() => copyToClipboard(teacher.personalInfo.phone || '')}
-                          aria-label="העתק מספר טלפון"
+                        <button
+                          className='copy-btn'
+                          onClick={() =>
+                            copyToClipboard(teacher.personalInfo.phone || '')
+                          }
+                          aria-label='העתק מספר טלפון'
                         >
                           {copied ? <Check size={16} /> : <Copy size={16} />}
                         </button>
@@ -762,10 +784,12 @@ export function TeacherDetails() {
                       <div className='contact-info-item'>
                         <Mail size={16} />
                         <span>{teacher.personalInfo.email}</span>
-                        <button 
-                          className='copy-btn' 
-                          onClick={() => copyToClipboard(teacher.personalInfo.email || '')}
-                          aria-label="העתק כתובת אימייל"
+                        <button
+                          className='copy-btn'
+                          onClick={() =>
+                            copyToClipboard(teacher.personalInfo.email || '')
+                          }
+                          aria-label='העתק כתובת אימייל'
                         >
                           {copied ? <Check size={16} /> : <Copy size={16} />}
                         </button>
@@ -775,7 +799,7 @@ export function TeacherDetails() {
 
                   <div className='method-buttons'>
                     {teacher.personalInfo.email && (
-                      <button 
+                      <button
                         className='method-btn email-btn'
                         onClick={() => selectCommunicationMethod('email')}
                       >
@@ -784,7 +808,7 @@ export function TeacherDetails() {
                       </button>
                     )}
                     {teacher.personalInfo.phone && (
-                      <button 
+                      <button
                         className='method-btn whatsapp-btn'
                         onClick={() => selectCommunicationMethod('whatsapp')}
                       >
@@ -799,13 +823,13 @@ export function TeacherDetails() {
               {/* Email Form */}
               {communicationMethod === 'email' && (
                 <div className='email-form'>
-                  <button 
+                  <button
                     className='back-to-methods'
                     onClick={() => setCommunicationMethod(null)}
                   >
                     &larr; חזרה
                   </button>
-                  
+
                   <div className='form-group'>
                     <label htmlFor='subject'>נושא</label>
                     <input
@@ -829,9 +853,14 @@ export function TeacherDetails() {
                     />
                   </div>
                   <div className='form-actions'>
-                    <button className='cancel-btn' onClick={closeCommunicationModal}>ביטול</button>
-                    <button 
-                      className='send-btn' 
+                    <button
+                      className='cancel-btn'
+                      onClick={closeCommunicationModal}
+                    >
+                      ביטול
+                    </button>
+                    <button
+                      className='send-btn'
                       onClick={handleSendEmail}
                       disabled={!emailForm.subject || !emailForm.message}
                     >
@@ -845,13 +874,13 @@ export function TeacherDetails() {
               {/* WhatsApp Form */}
               {communicationMethod === 'whatsapp' && (
                 <div className='whatsapp-form'>
-                  <button 
+                  <button
                     className='back-to-methods'
                     onClick={() => setCommunicationMethod(null)}
                   >
                     &larr; חזרה
                   </button>
-                  
+
                   <div className='form-group'>
                     <label htmlFor='whatsapp-message'>הודעה ל-WhatsApp</label>
                     <textarea
@@ -863,9 +892,14 @@ export function TeacherDetails() {
                     />
                   </div>
                   <div className='form-actions'>
-                    <button className='cancel-btn' onClick={closeCommunicationModal}>ביטול</button>
-                    <button 
-                      className='send-btn' 
+                    <button
+                      className='cancel-btn'
+                      onClick={closeCommunicationModal}
+                    >
+                      ביטול
+                    </button>
+                    <button
+                      className='send-btn'
                       onClick={handleSendWhatsApp}
                       disabled={!whatsAppForm.message}
                     >
@@ -880,5 +914,5 @@ export function TeacherDetails() {
         )}
       </div>
     </div>
-  )
+  );
 }
