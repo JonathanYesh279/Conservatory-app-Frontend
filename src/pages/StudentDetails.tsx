@@ -282,6 +282,13 @@ export function StudentDetails() {
                   >
                     כיתה {student.academicInfo.class}
                   </div>
+                  <button
+                    className='back-button'
+                    onClick={goBack}
+                    aria-label='חזרה'
+                  >
+                    <ArrowRight size={20} />
+                  </button>
                 </div>
               </div>
 

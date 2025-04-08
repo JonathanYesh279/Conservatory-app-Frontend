@@ -11,16 +11,19 @@
 html {
   font-family: 'Reisinger Michals', sans-serif;
   font-weight: bold;
-  min-height: 100vh;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
   direction: rtl;
-  overflow-x: hidden; /* Prevent horizontal scrolling at the document level */
+  overflow-x: hidden;
 }
 
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-x: hidden;
+  min-height: 100%;
+  min-height: -webkit-fill-available;
 }
 
 img, svg {
@@ -70,12 +73,15 @@ html {
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: -60px;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   overflow-y: auto;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  padding-bottom: 70px; // Space for the floating nav
   
   /* Only show scrollbar when needed */
   &::-webkit-scrollbar {
@@ -94,9 +100,9 @@ html {
 // Main content container
 .main-content {
   flex: 1;
-  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  overflow-x: hidden; /* Ensure no horizontal scroll */
+  overflow-x: hidden;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

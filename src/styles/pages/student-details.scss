@@ -16,7 +16,8 @@
   position: relative;
   width: 100%;
   max-width: 700px;
-  height: 100%;
+  height: auto;
+  min-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,10 +25,6 @@
   
   // Back button
   .back-button {
-    position: absolute;
-    top: 3rem;
-    left: 1rem;
-    z-index: 10;
     width: 36px;
     height: 36px;
     border-radius: 50%;
@@ -53,20 +50,22 @@
   .student-card-container {
     position: relative;
     width: 100%;
-    height: 600px; // Increased from 500px
-    max-height: 80vh; // Slightly increased
-    perspective: 1500px; // For 3D effect
+    height: auto;
+    min-height: 400px;
+    max-height: 80vh;
+    perspective: 1500px;
     
     // Card content (both front and back)
     .card-content {
       position: absolute;
       width: 100%;
       height: 100%;
+      min-height: 400px;
       transform-style: preserve-3d;
       transition: all 0.5s ease;
       border-radius: 1rem;
       box-shadow: var(--shadow-md);
-      
+          
       // When flipped class is applied
       &.flipped {
         .card-front {
@@ -185,6 +184,7 @@
       
       .header-badges {
         display: flex;
+        align-items: center;
         gap: 0.5rem;
         flex-wrap: wrap;
         justify-content: flex-end;
@@ -717,6 +717,9 @@
 
 // Media queries
 @media (max-width: 768px) {
+  .student-details-content { max-height: 100svh; }
+  .student-details-page { height: 100svh; }
+  .student-card-container { max-height: 85svh; height: auto; }
   .info-grid,
   .tests-grid,
   .attendance-summary {
@@ -753,6 +756,16 @@
         }
         
         .stage-badge {
+          padding: 0.3rem 0.6rem;
+          font-size: 0.8rem;
+        }
+
+        .back-button {
+          width: 32px;
+          height: 32px;
+        }
+
+        .stage-badge, .grade-badge {
           padding: 0.3rem 0.6rem;
           font-size: 0.8rem;
         }

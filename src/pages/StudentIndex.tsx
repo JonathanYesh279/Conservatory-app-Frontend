@@ -45,9 +45,7 @@ export function StudentIndex() {
   const { user } = useAuth();
 
   const isAdmin = user?.roles.includes('מנהל');
-  const isDetailPage =
-    location.pathname.includes('/students/') &&
-    !location.pathname.endsWith('/students/');
+  const isDetailPage = location.pathname.includes('/students/') && !location.pathname.endsWith('/students/');
 
   useEffect(() => {
     loadStudents();
@@ -176,8 +174,7 @@ export function StudentIndex() {
           type='danger'
         />
       </main>
-
-      <BottomNavbar />
+      {!isDetailPage && <BottomNavbar />}
     </div>
   );
 }
