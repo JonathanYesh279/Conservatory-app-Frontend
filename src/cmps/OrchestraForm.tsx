@@ -1,11 +1,13 @@
 // src/cmps/OrchestraForm.tsx
-import { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { X, ChevronDown, User, Search, X as XIcon } from 'lucide-react';
 import { Orchestra } from '../services/orchestraService';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useTeacherStore } from '../store/teacherStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
+import { useStudentStore } from '../store/studentStore';
 import { Teacher } from '../services/teacherService';
+import { Student } from '../services/studentService';
 
 // Constants for validation
 const VALID_TYPES = ['הרכב', 'תזמורת'];
@@ -44,8 +46,17 @@ export function OrchestraForm({
   const { saveOrchestra, isLoading, error, clearError } = useOrchestraStore();
   const { currentSchoolYear } = useSchoolYearStore();
   const { loadTeachers } = useTeacherStore();
+  const { students, loadStudents, saveStudent } = useStudentStore();
+
   const [conductors, setConductors] = useState<Teacher[]>([]);
   const [isLoadingConductors, setIsLoadingConductors] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+
+  // Student search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Form state
   const [formData, setFormData] = useState<OrchestraFormData>({
@@ -93,7 +104,27 @@ export function OrchestraForm({
     };
 
     fetchConductors();
-  }, [isOpen, loadTeachers]); // Only depend on isOpen and loadTeachers, not on teachers
+
+    // Load students
+    loadStudents({ isActive: true });
+  }, [isOpen, loadTeachers, loadStudents]);
+
+  // Close search dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setIsSearchOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // If editing an existing orchestra, populate form data
   useEffect(() => {
@@ -110,6 +141,26 @@ export function OrchestraForm({
           (currentSchoolYear ? currentSchoolYear._id : ''),
         isActive: orchestra.isActive !== false,
       });
+
+      // Load selected members
+      const loadMembers = async () => {
+        if (orchestra.memberIds && orchestra.memberIds.length > 0) {
+          setIsLoadingStudents(true);
+          try {
+            // We'll use the existing students in the store and filter by IDs
+            const members = students.filter((student) =>
+              orchestra.memberIds.includes(student._id)
+            );
+            setSelectedMembers(members);
+          } catch (err) {
+            console.error('Failed to load orchestra members:', err);
+          } finally {
+            setIsLoadingStudents(false);
+          }
+        }
+      };
+
+      loadMembers();
     } else {
       // Reset form for new orchestra
       setFormData({
@@ -121,11 +172,12 @@ export function OrchestraForm({
         schoolYearId: currentSchoolYear ? currentSchoolYear._id : '',
         isActive: true,
       });
+      setSelectedMembers([]);
     }
 
     setErrors({});
     clearError?.();
-  }, [orchestra, isOpen, clearError, currentSchoolYear]);
+  }, [orchestra, isOpen, clearError, currentSchoolYear, students]);
 
   // Handle input changes
   const handleChange = (
@@ -145,6 +197,61 @@ export function OrchestraForm({
         [name]: '',
       });
     }
+  };
+
+  // Handle student search
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.length > 0) {
+      setIsSearchOpen(true);
+    } else {
+      setIsSearchOpen(false);
+    }
+  };
+
+  // Get filtered students based on search
+  const getFilteredStudents = () => {
+    if (!searchQuery) return [];
+
+    return students
+      .filter(
+        (student) =>
+          // Filter by name match
+          student.personalInfo.fullName.includes(searchQuery) &&
+          // Filter out already selected students
+          !selectedMembers.some((member) => member._id === student._id)
+      )
+      .slice(0, 10); // Limit to 10 results for performance
+  };
+
+  // Add a student to the orchestra
+  const handleAddMember = async (student: Student) => {
+    // Add student to selected members
+    setSelectedMembers([...selectedMembers, student]);
+
+    // Add student ID to form data
+    setFormData({
+      ...formData,
+      memberIds: [...formData.memberIds, student._id],
+    });
+
+    // Reset search
+    setSearchQuery('');
+    setIsSearchOpen(false);
+  };
+
+  // Remove a student from the orchestra
+  const handleRemoveMember = (studentId: string) => {
+    // Remove from selected members
+    setSelectedMembers(
+      selectedMembers.filter((member) => member._id !== studentId)
+    );
+
+    // Remove from form data
+    setFormData({
+      ...formData,
+      memberIds: formData.memberIds.filter((id) => id !== studentId),
+    });
   };
 
   // Validate form
@@ -182,7 +289,68 @@ export function OrchestraForm({
 
     try {
       // Save orchestra to store
-      await saveOrchestra(formData);
+      const savedOrchestra = await saveOrchestra(formData);
+
+      // Update each student with the orchestra ID
+      const currentOrchestraId = orchestra?._id || savedOrchestra._id;
+
+      // Students to add orchestra to
+      const studentsToUpdate = selectedMembers
+        .map((student) => {
+          // Check if student already has this orchestra
+          if (!student.enrollments.orchestraIds.includes(currentOrchestraId)) {
+            // Only send the minimal data needed for the update
+            return {
+              _id: student._id, // This is needed to identify the student but will be removed before sending to backend
+              enrollments: {
+                ...student.enrollments,
+                orchestraIds: [
+                  ...student.enrollments.orchestraIds,
+                  currentOrchestraId,
+                ],
+              },
+            };
+          }
+          return null; // No update needed
+        })
+        .filter(Boolean) as Partial<Student>[];
+
+      // Students to remove orchestra from (if editing and members were removed)
+      if (orchestra?._id) {
+        const removedStudentIds = orchestra.memberIds.filter(
+          (id) => !formData.memberIds.includes(id)
+        );
+
+        if (removedStudentIds.length > 0) {
+          const studentsToRemoveFrom = students.filter((student) =>
+            removedStudentIds.includes(student._id)
+          );
+
+          for (const student of studentsToRemoveFrom) {
+            await saveStudent({
+              _id: student._id, // This is needed to identify the student but will be removed before sending to backend
+              enrollments: {
+                ...student.enrollments,
+                orchestraIds: student.enrollments.orchestraIds.filter(
+                  (id) => id !== orchestra._id
+                ),
+              },
+            });
+          }
+        }
+      }
+
+      // Save updated students
+      try {
+        await Promise.all(
+          studentsToUpdate.map((student) =>
+            student._id ? saveStudent(student) : null
+          )
+        );
+      } catch (err) {
+        console.error('Error updating students:', err);
+        // Continue with form submission even if student updates fail
+      }
 
       // Call optional onSave callback
       if (onSave) {
@@ -197,6 +365,8 @@ export function OrchestraForm({
   };
 
   if (!isOpen) return null;
+
+  const filteredStudents = getFilteredStudents();
 
   return (
     <div className='orchestra-form'>
@@ -295,6 +465,72 @@ export function OrchestraForm({
                 {errors['conductorId'] && (
                   <div className='form-error'>{errors['conductorId']}</div>
                 )}
+              </div>
+            </div>
+
+            {/* Members */}
+            <div className='form-row full-width'>
+              <div className='form-group'>
+                <label>תלמידים (חברי התזמורת)</label>
+
+                {/* Student search input */}
+                <div ref={searchRef} className='search-container'>
+                  <div className='search-input-wrapper'>
+                    <Search className='search-icon' size={16} />
+                    <input
+                      type='text'
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder='חפש תלמידים להוספה...'
+                      className='search-input'
+                      onClick={() => setIsSearchOpen(searchQuery.length > 0)}
+                    />
+                  </div>
+
+                  {/* Search results dropdown */}
+                  {isSearchOpen && filteredStudents.length > 0 && (
+                    <div className='search-results-dropdown'>
+                      {filteredStudents.map((student) => (
+                        <div
+                          key={student._id}
+                          className='search-result-item'
+                          onClick={() => handleAddMember(student)}
+                        >
+                          <User size={16} className='student-icon' />
+                          <span>{student.personalInfo.fullName}</span>
+                          <span className='student-instrument'>
+                            {student.academicInfo.instrument}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Selected members list */}
+                <div className='selected-members-list'>
+                  {isLoadingStudents ? (
+                    <div className='loading-text'>טוען תלמידים...</div>
+                  ) : selectedMembers.length > 0 ? (
+                    selectedMembers.map((member) => (
+                      <div key={member._id} className='member-badge'>
+                        <span>{member.personalInfo.fullName}</span>
+                        <button
+                          type='button'
+                          className='remove-btn'
+                          onClick={() => handleRemoveMember(member._id)}
+                          aria-label={`הסר את ${member.personalInfo.fullName}`}
+                        >
+                          <XIcon size={14} />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className='no-members-message'>
+                      לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים לתזמורת.
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

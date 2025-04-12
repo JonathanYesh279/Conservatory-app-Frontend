@@ -104,7 +104,10 @@ export const studentService = {
     studentId: string,
     student: Partial<Student>
   ): Promise<Student> {
-    return httpService.put(`student/${studentId}`, student);
+    // Remove fields that are not allowed in updates according to your Joi schema
+    const { _id, createdAt, updatedAt, ...updateData } = student as any;
+
+    return httpService.put(`student/${studentId}`, updateData);
   },
 
   async removeStudent(studentId: string): Promise<Student> {

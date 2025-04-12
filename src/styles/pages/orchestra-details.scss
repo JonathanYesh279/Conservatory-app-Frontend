@@ -168,6 +168,23 @@
         padding-top: 0.5rem;
         padding-bottom: 0.5rem;
         animation: fadeIn 0.3s ease;
+
+        .members-list {
+          display: flex;
+          padding: 0.3rem;
+
+          .members-items {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+          }
+
+          .member-item {
+            padding: 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.3rem;
+          }
+        }
         
         .info-row {
           display: flex;

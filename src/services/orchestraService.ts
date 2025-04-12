@@ -1,5 +1,6 @@
 // src/services/orchestraService.ts
 import { httpService } from './httpService';
+import { studentService } from './studentService';
 
 export interface Orchestra {
   _id: string;
@@ -77,14 +78,98 @@ export const orchestraService = {
 
   // Member management
   async addMember(orchestraId: string, studentId: string): Promise<Orchestra> {
-    return httpService.post(`orchestra/${orchestraId}/members`, { studentId });
+    try {
+      // 1. Add student to orchestra
+      const updatedOrchestra = await httpService.post(`orchestra/${orchestraId}/members`, { studentId });
+      
+      // 2. Update student with orchestra (to maintain consistency)
+      const student = await studentService.getStudentById(studentId);
+      
+      // Only add if not already present
+      if (!student.enrollments.orchestraIds.includes(orchestraId)) {
+        await studentService.updateStudent(studentId, {
+          enrollments: {
+            ...student.enrollments,
+            orchestraIds: [...student.enrollments.orchestraIds, orchestraId]
+          }
+        });
+      }
+      
+      return updatedOrchestra;
+    } catch (error) {
+      console.error('Error adding member to orchestra:', error);
+      throw error;
+    }
   },
 
   async removeMember(
     orchestraId: string,
     studentId: string
   ): Promise<Orchestra> {
-    return httpService.delete(`orchestra/${orchestraId}/members/${studentId}`);
+    try {
+      // 1. Remove student from orchestra
+      const updatedOrchestra = await httpService.delete(`orchestra/${orchestraId}/members/${studentId}`);
+      
+      // 2. Update student to remove orchestra
+      const student = await studentService.getStudentById(studentId);
+      
+      await studentService.updateStudent(studentId, {
+        enrollments: {
+          ...student.enrollments,
+          orchestraIds: student.enrollments.orchestraIds.filter(id => id !== orchestraId)
+        }
+      });
+      
+      return updatedOrchestra;
+    } catch (error) {
+      console.error('Error removing member from orchestra:', error);
+      throw error;
+    }
+  },
+  
+  // Add multiple members at once
+  async updateMembers(
+    orchestraId: string,
+    memberIds: string[],
+    currentMemberIds: string[] = []
+  ): Promise<Orchestra> {
+    try {
+      // 1. Update the orchestra with the new member IDs
+      const updatedOrchestra = await this.updateOrchestra(orchestraId, { memberIds });
+      
+      // 2. Find which students were added and which were removed
+      const addedStudentIds = memberIds.filter(id => !currentMemberIds.includes(id));
+      const removedStudentIds = currentMemberIds.filter(id => !memberIds.includes(id));
+      
+      // 3. Add orchestra to added students
+      for (const studentId of addedStudentIds) {
+        const student = await studentService.getStudentById(studentId);
+        if (!student.enrollments.orchestraIds.includes(orchestraId)) {
+          await studentService.updateStudent(studentId, {
+            enrollments: {
+              ...student.enrollments,
+              orchestraIds: [...student.enrollments.orchestraIds, orchestraId]
+            }
+          });
+        }
+      }
+      
+      // 4. Remove orchestra from removed students
+      for (const studentId of removedStudentIds) {
+        const student = await studentService.getStudentById(studentId);
+        await studentService.updateStudent(studentId, {
+          enrollments: {
+            ...student.enrollments,
+            orchestraIds: student.enrollments.orchestraIds.filter(id => id !== orchestraId)
+          }
+        });
+      }
+      
+      return updatedOrchestra;
+    } catch (error) {
+      console.error('Error updating orchestra members:', error);
+      throw error;
+    }
   },
 
   // Rehearsal attendance
@@ -117,6 +202,49 @@ export const orchestraService = {
       `orchestra/${orchestraId}/student/${studentId}/attendance`
     );
   },
+  
+  // Bulk operations for synchronizing members
+  async syncOrchestraMembers(orchestraId: string): Promise<void> {
+    try {
+      // 1. Get the orchestra with its current members
+      const orchestra = await this.getOrchestraById(orchestraId);
+      
+      // 2. Get all students who have this orchestra in their enrollments
+      const allStudents = await studentService.getStudents();
+      const studentsWithOrchestra = allStudents.filter(student =>
+        student.enrollments.orchestraIds.includes(orchestraId)
+      );
+      
+      // 3. Compare and synchronize
+      const studentIds = studentsWithOrchestra.map(student => student._id);
+      
+      // Students that should be added to the orchestra
+      const studentsToAdd = studentIds.filter(id => !orchestra.memberIds.includes(id));
+      
+      // Students that should have the orchestra removed from their enrollments
+      const studentsToRemove = orchestra.memberIds.filter(id => !studentIds.includes(id));
+      
+      // 4. Update orchestra with correct member IDs
+      if (studentsToAdd.length > 0) {
+        const newMemberIds = [...orchestra.memberIds, ...studentsToAdd];
+        await this.updateOrchestra(orchestraId, { memberIds: newMemberIds });
+      }
+      
+      // 5. Update students that should be removed
+      for (const studentId of studentsToRemove) {
+        const student = await studentService.getStudentById(studentId);
+        await studentService.updateStudent(studentId, {
+          enrollments: {
+            ...student.enrollments,
+            orchestraIds: student.enrollments.orchestraIds.filter(id => id !== orchestraId)
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error syncing orchestra members:', error);
+      throw error;
+    }
+  },
 
   // Helper methods for frontend use
   getOrchestraTypeDisplay(type: string): string {
@@ -139,5 +267,5 @@ export const orchestraService = {
       'תזמורת יצוגית נשיפה',
       'תזמורת סימפונית',
     ];
-  },
-};
+  }
+}

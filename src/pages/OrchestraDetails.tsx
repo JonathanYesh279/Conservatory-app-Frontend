@@ -12,9 +12,23 @@ import {
 } from 'lucide-react';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useTeacherStore } from '../store/teacherStore';
+import { useStudentStore } from '../store/studentStore';
 import { useAuth } from '../hooks/useAuth';
 import { OrchestraForm } from '../cmps/OrchestraForm';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
+import { Student } from '../services/studentService';
+import { Orchestra } from '../services/orchestraService';
+
+// Define member interface
+interface OrchestraMember {
+  _id: string;
+  personalInfo: {
+    fullName: string;
+  };
+  academicInfo: {
+    instrument: string;
+  };
+}
 
 interface ConductorInfo {
   _id: string;
@@ -40,8 +54,11 @@ export function OrchestraDetails() {
   } = useOrchestraStore();
 
   const { loadTeacherById } = useTeacherStore();
+  const { getStudentsByIds } = useStudentStore();
 
   // State
+  const [members, setMembers] = useState<OrchestraMember[]>([]);
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [conductor, setConductor] = useState<ConductorInfo | null>(null);
@@ -85,6 +102,46 @@ export function OrchestraDetails() {
 
     fetchConductor();
   }, [selectedOrchestra, loadTeacherById]);
+
+  // Load member data
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (
+        selectedOrchestra &&
+        selectedOrchestra.memberIds &&
+        selectedOrchestra.memberIds.length > 0
+      ) {
+        setIsLoadingMembers(true);
+        try {
+          const responseData = await getStudentsByIds(
+            selectedOrchestra.memberIds
+          );
+
+          // Map to only the fields we need
+          const memberData = responseData.map((student: Student) => ({
+            _id: student._id,
+            personalInfo: {
+              fullName: student.personalInfo.fullName,
+            },
+            academicInfo: {
+              instrument: student.academicInfo.instrument,
+            },
+          }));
+
+          setMembers(memberData);
+        } catch (err) {
+          console.error('Failed to load members:', err);
+        } finally {
+          setIsLoadingMembers(false);
+        }
+      } else {
+        // Reset members if no memberIds
+        setMembers([]);
+      }
+    };
+
+    fetchMembers();
+  }, [selectedOrchestra, getStudentsByIds]);
 
   // Handle edit
   const handleEdit = () => {
@@ -230,12 +287,31 @@ export function OrchestraDetails() {
 
                 {showMembersSection && (
                   <div className='section-content'>
-                    {selectedOrchestra.memberIds?.length > 0 ? (
+                    {selectedOrchestra.memberIds &&
+                    selectedOrchestra.memberIds.length > 0 ? (
                       <div className='members-list'>
-                        {/* Would render members here */}
-                        <div className='message-box'>
-                          התלמיד אינו משתתף בתזמורות
-                        </div>
+                        {isLoadingMembers ? (
+                          <div className='loading-message'>טוען תלמידים...</div>
+                        ) : members.length > 0 ? (
+                          <ul className='members-items'>
+                            {members.map((member) => (
+                              <li key={member._id} className='member-item'>
+                                <div className='member-info'>
+                                  <span className='member-name'>
+                                    {member.personalInfo.fullName}
+                                  </span>
+                                  <span className='member-instrument'>
+                                    {member.academicInfo.instrument}
+                                  </span>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className='message-box'>
+                            לא ניתן לטעון את נתוני התלמידים
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className='warning-box'>אין תלמידים בתזמורת זו</div>

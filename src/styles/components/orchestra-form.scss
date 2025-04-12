@@ -151,6 +151,117 @@
             margin-top: 0.25rem;
             font-style: italic;
           }
+          
+          // Member search container
+          .search-container {
+            position: relative;
+            margin-bottom: 0.5rem;
+          }
+          
+          .search-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            
+            .search-icon {
+              position: absolute;
+              right: 0.75rem;
+              color: var(--text-secondary);
+            }
+            
+            .search-input {
+              width: 100%;
+              padding: 0.6rem 2rem 0.6rem 0.75rem;
+              border: 1px solid var(--border-input);
+              border-radius: 0.5rem;
+              background-color: var(--bg-input, var(--bg-tertiary));
+              color: var(--text-primary);
+              
+              &:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+              }
+            }
+          }
+          
+          // Search results dropdown
+          .search-results-dropdown {
+            display: flex;
+            flex-direction: column;
+
+            
+            .search-result-item {
+              display: flex;
+              align-items: center;
+              padding: 0.6rem 0.75rem;
+              cursor: pointer;
+              transition: background-color 0.2s;
+              border-bottom: 1px solid var(--border-color-light, rgba(var(--border-color-rgb), 0.1));
+              
+              &:last-child {
+                border-bottom: none;
+              }
+              
+              &:hover {
+                background-color: var(--bg-hover, var(--bg-tertiary));
+              }
+              
+              .student-icon {
+                margin-left: 0.5rem;
+                color: var(--text-secondary);
+              }
+              
+              .student-instrument {
+                margin-right: auto;
+                font-size: 0.75rem;
+                color: var(--text-secondary);
+                padding-right: 0.5rem;
+              }
+            }
+          }
+          
+          // Selected members list
+          .selected-members-list {
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+            gap: 0.3rem;
+            
+            .member-badge {
+              display: flex;
+              justify-content: space-between;
+              padding: 0.3rem;
+              border: 1px solid var(--border-input);
+              border-radius: 0.3rem;
+              
+              .remove-btn {
+                display: flex;
+                align-items: center;
+                background: none;
+                background-color: var(--bg-primary);
+                color: var(--text-primary);
+                border: none;
+                border-radius: 50%;
+                padding: 0.2rem;
+                
+                
+                &:hover {
+                  background-color: var(--danger-light, rgba(var(--danger-rgb), 0.2));
+                  color: var(--danger);
+                }
+              }
+            }
+            
+            .no-members-message {
+              color: var(--text-secondary);
+              font-size: 0.875rem;
+              padding: 0.5rem 0;
+              font-style: italic;
+              text-align: center;
+              width: 100%;
+            }
+          }
         }
       }
     }
@@ -254,6 +365,27 @@
       
       h4 {
         font-size: 0.9rem;
+      }
+      
+      .form-group {
+        .search-results-dropdown {
+          max-height: 200px;
+        }
+        
+        .selected-members-list {
+          padding: 0.5rem;
+          
+          .member-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem 0.25rem 0.6rem;
+            
+            .remove-btn {
+              width: 16px;
+              height: 16px;
+              margin-left: 0.35rem;
+            }
+          }
+        }
       }
     }
     
