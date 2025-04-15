@@ -1,49 +1,43 @@
 // src/pages/OrchestraDetails.tsx
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-  Edit,
-  ChevronDown,
-  ChevronUp,
-  Music,
-  Calendar,
-  Users,
-  X,
-} from 'lucide-react';
-import { useOrchestraStore } from '../store/orchestraStore';
-import { useTeacherStore } from '../store/teacherStore';
-import { useStudentStore } from '../store/studentStore';
-import { useAuth } from '../hooks/useAuth';
-import { OrchestraForm } from '../cmps/OrchestraForm';
-import { ConfirmDialog } from '../cmps/ConfirmDialog';
-import { Student } from '../services/studentService';
-import { Orchestra } from '../services/orchestraService';
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin } from 'lucide-react'
+import { useOrchestraStore } from '../store/orchestraStore'
+import { useTeacherStore } from '../store/teacherStore'
+import { useStudentStore } from '../store/studentStore'
+import { useRehearsalStore } from '../store/rehearsalStore'
+import { useAuth } from '../hooks/useAuth'
+import { OrchestraForm } from '../cmps/OrchestraForm'
+import { RehearsalForm } from '../cmps/RehearsalForm'
+import { ConfirmDialog } from '../cmps/ConfirmDialog'
+import { Student } from '../services/studentService'
+import { Rehearsal } from '../services/rehearsalService'
 
 // Define member interface
 interface OrchestraMember {
-  _id: string;
+  _id: string
   personalInfo: {
-    fullName: string;
-  };
+    fullName: string
+  }
   academicInfo: {
-    instrument: string;
-  };
+    instrument: string
+  }
 }
 
 interface ConductorInfo {
-  _id: string;
+  _id: string
   personalInfo: {
-    fullName: string;
-  };
+    fullName: string
+  }
   professionalInfo?: {
-    instrument?: string;
-  };
+    instrument?: string
+  }
 }
 
 export function OrchestraDetails() {
-  const { orchestraId } = useParams();
-  const navigate = useNavigate();
-  const { user } = useAuth();
+  const { orchestraId } = useParams()
+  const navigate = useNavigate()
+  const { user } = useAuth()
 
   const {
     selectedOrchestra,
@@ -51,57 +45,76 @@ export function OrchestraDetails() {
     removeOrchestra,
     isLoading,
     error,
-  } = useOrchestraStore();
+  } = useOrchestraStore()
 
-  const { loadTeacherById } = useTeacherStore();
-  const { getStudentsByIds } = useStudentStore();
+  const { loadTeacherById } = useTeacherStore()
+  const { getStudentsByIds } = useStudentStore()
+  const { 
+    rehearsals, 
+    loadRehearsalsByOrchestraId, 
+    removeRehearsal,
+    isLoading: isLoadingRehearsals 
+  } = useRehearsalStore()
 
   // State
-  const [members, setMembers] = useState<OrchestraMember[]>([]);
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [conductor, setConductor] = useState<ConductorInfo | null>(null);
-  const [isLoadingConductor, setIsLoadingConductor] = useState(false);
+  const [members, setMembers] = useState<OrchestraMember[]>([])
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [conductor, setConductor] = useState<ConductorInfo | null>(null)
+  const [isLoadingConductor, setIsLoadingConductor] = useState(false)
+
+  // Rehearsal state
+  const [isRehearsalFormOpen, setIsRehearsalFormOpen] = useState(false)
+  const [selectedRehearsal, setSelectedRehearsal] = useState<Rehearsal | null>(null)
+  const [isConfirmRehearsalDeleteOpen, setIsConfirmRehearsalDeleteOpen] = useState(false)
+  const [rehearsalToDelete, setRehearsalToDelete] = useState<string | null>(null)
 
   // Section toggle states
-  const [showInfoSection, setShowInfoSection] = useState(true);
-  const [showMembersSection, setShowMembersSection] = useState(false);
-  const [showRehearsalsSection, setShowRehearsalsSection] = useState(false);
+  const [showInfoSection, setShowInfoSection] = useState(true)
+  const [showMembersSection, setShowMembersSection] = useState(false)
+  const [showRehearsalsSection, setShowRehearsalsSection] = useState(false)
 
   // Check permissions
-  const isAdmin = user?.roles?.includes('מנהל') || false;
-  const isConductor = user?.roles?.includes('מנצח') || false;
+  const isAdmin = user?.roles?.includes('מנהל') || false
+  const isConductor = user?.roles?.includes('מנצח') || false
   const canEdit =
-    isAdmin || (isConductor && selectedOrchestra?.conductorId === user?._id);
+    isAdmin || (isConductor && selectedOrchestra?.conductorId === user?._id)
 
   // Load orchestra data
   useEffect(() => {
     if (orchestraId) {
-      loadOrchestraById(orchestraId);
+      loadOrchestraById(orchestraId)
     }
-  }, [orchestraId, loadOrchestraById]);
+  }, [orchestraId, loadOrchestraById])
+
+  // Load rehearsals when orchestra is selected
+  useEffect(() => {
+    if (orchestraId) {
+      loadRehearsalsByOrchestraId(orchestraId)
+    }
+  }, [orchestraId, loadRehearsalsByOrchestraId])
 
   // Load conductor data
   useEffect(() => {
     const fetchConductor = async () => {
       if (selectedOrchestra?.conductorId) {
-        setIsLoadingConductor(true);
+        setIsLoadingConductor(true)
         try {
-          await loadTeacherById(selectedOrchestra.conductorId);
-          const teacherStore = useTeacherStore.getState();
-          const conductorData = teacherStore.selectedTeacher;
-          setConductor(conductorData as ConductorInfo);
+          await loadTeacherById(selectedOrchestra.conductorId)
+          const teacherStore = useTeacherStore.getState()
+          const conductorData = teacherStore.selectedTeacher
+          setConductor(conductorData as ConductorInfo)
         } catch (err) {
-          console.error('Failed to load conductor:', err);
+          console.error('Failed to load conductor:', err)
         } finally {
-          setIsLoadingConductor(false);
+          setIsLoadingConductor(false)
         }
       }
-    };
+    }
 
-    fetchConductor();
-  }, [selectedOrchestra, loadTeacherById]);
+    fetchConductor()
+  }, [selectedOrchestra, loadTeacherById])
 
   // Load member data
   useEffect(() => {
@@ -111,11 +124,11 @@ export function OrchestraDetails() {
         selectedOrchestra.memberIds &&
         selectedOrchestra.memberIds.length > 0
       ) {
-        setIsLoadingMembers(true);
+        setIsLoadingMembers(true)
         try {
           const responseData = await getStudentsByIds(
             selectedOrchestra.memberIds
-          );
+          )
 
           // Map to only the fields we need
           const memberData = responseData.map((student: Student) => ({
@@ -126,69 +139,108 @@ export function OrchestraDetails() {
             academicInfo: {
               instrument: student.academicInfo.instrument,
             },
-          }));
+          }))
 
-          setMembers(memberData);
+          setMembers(memberData)
         } catch (err) {
-          console.error('Failed to load members:', err);
+          console.error('Failed to load members:', err)
         } finally {
-          setIsLoadingMembers(false);
+          setIsLoadingMembers(false)
         }
       } else {
         // Reset members if no memberIds
-        setMembers([]);
+        setMembers([])
       }
-    };
+    }
 
-    fetchMembers();
-  }, [selectedOrchestra, getStudentsByIds]);
+    fetchMembers()
+  }, [selectedOrchestra, getStudentsByIds])
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString('he-IL', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
 
   // Handle edit
   const handleEdit = () => {
-    setIsEditModalOpen(true);
-  };
+    setIsEditModalOpen(true)
+  }
 
   // Handle delete
   const handleDelete = () => {
-    setIsConfirmDialogOpen(true);
-  };
+    setIsConfirmDialogOpen(true)
+  }
 
   // Confirm delete
   const confirmDelete = async () => {
     if (selectedOrchestra?._id) {
       try {
-        await removeOrchestra(selectedOrchestra._id);
-        navigate('/orchestras');
+        await removeOrchestra(selectedOrchestra._id)
+        navigate('/orchestras')
       } catch (err) {
-        console.error('Failed to delete orchestra:', err);
+        console.error('Failed to delete orchestra:', err)
       }
     }
-    setIsConfirmDialogOpen(false);
-  };
+    setIsConfirmDialogOpen(false)
+  }
+
+  // Rehearsal handlers
+  const handleAddRehearsal = () => {
+    setSelectedRehearsal(null)
+    setIsRehearsalFormOpen(true)
+  }
+
+  const handleEditRehearsal = (rehearsal: Rehearsal) => {
+    setSelectedRehearsal(rehearsal)
+    setIsRehearsalFormOpen(true)
+  }
+
+  const handleDeleteRehearsal = (rehearsalId: string) => {
+    setRehearsalToDelete(rehearsalId)
+    setIsConfirmRehearsalDeleteOpen(true)
+  }
+
+  const confirmDeleteRehearsal = async () => {
+    if (rehearsalToDelete) {
+      try {
+        await removeRehearsal(rehearsalToDelete)
+        loadRehearsalsByOrchestraId(orchestraId!)
+      } catch (err) {
+        console.error('Failed to delete rehearsal:', err)
+      }
+    }
+    setIsConfirmRehearsalDeleteOpen(false)
+    setRehearsalToDelete(null)
+  }
 
   // Toggle sections
   const toggleInfoSection = () => {
-    setShowInfoSection(!showInfoSection);
-  };
+    setShowInfoSection(!showInfoSection)
+  }
 
   const toggleMembersSection = () => {
-    setShowMembersSection(!showMembersSection);
-  };
+    setShowMembersSection(!showMembersSection)
+  }
 
   const toggleRehearsalsSection = () => {
-    setShowRehearsalsSection(!showRehearsalsSection);
-  };
+    setShowRehearsalsSection(!showRehearsalsSection)
+  }
 
   if (isLoading) {
-    return <div className='loading-state'>טוען...</div>;
+    return <div className='loading-state'>טוען...</div>
   }
 
   if (error) {
-    return <div className='error-state'>{error}</div>;
+    return <div className='error-state'>{error}</div>
   }
 
   if (!selectedOrchestra) {
-    return <div className='not-found-state'>תזמורת לא נמצאה</div>;
+    return <div className='not-found-state'>תזמורת לא נמצאה</div>
   }
 
   return (
@@ -261,7 +313,7 @@ export function OrchestraDetails() {
                     <div className='info-row'>
                       <span className='info-label'>מספר חזרות:</span>
                       <span className='info-value'>
-                        {selectedOrchestra.rehearsalIds?.length || 0}
+                        {rehearsals?.length || 0}
                       </span>
                     </div>
                   </div>
@@ -339,10 +391,69 @@ export function OrchestraDetails() {
 
                 {showRehearsalsSection && (
                   <div className='section-content'>
-                    {selectedOrchestra.rehearsalIds?.length > 0 ? (
+                    {/* Add Rehearsal Button - Only visible for admin/conductor */}
+                    {canEdit && (
+                      <div className='add-rehearsal-btn-container'>
+                        <button 
+                          className='btn primary add-rehearsal-btn'
+                          onClick={handleAddRehearsal}
+                        >
+                          <Plus size={16} />
+                          הוסף חזרה
+                        </button>
+                      </div>
+                    )}
+
+                    {isLoadingRehearsals ? (
+                      <div className='loading-message'>טוען חזרות...</div>
+                    ) : rehearsals && rehearsals.length > 0 ? (
                       <div className='rehearsals-list'>
-                        {/* Would render rehearsals here */}
-                        <div className='message-box'>אין חזרות מתוכננות</div>
+                        {rehearsals
+                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                          .map((rehearsal) => (
+                            <div key={rehearsal._id} className='rehearsal-item'>
+                              <div className='rehearsal-header'>
+                                <div className='rehearsal-date'>
+                                  <Calendar size={16} />
+                                  <span>{formatDate(rehearsal.date)}</span>
+                                </div>
+                                
+                                {canEdit && (
+                                  <div className='rehearsal-actions'>
+                                    <button 
+                                      className='action-btn edit'
+                                      onClick={() => handleEditRehearsal(rehearsal)}
+                                    >
+                                      <Edit size={14} />
+                                    </button>
+                                    <button 
+                                      className='action-btn delete'
+                                      onClick={() => handleDeleteRehearsal(rehearsal._id)}
+                                    >
+                                      <X size={14} />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                              
+                              <div className='rehearsal-details'>
+                                <div className='rehearsal-time'>
+                                  <Clock size={16} />
+                                  <span>{rehearsal.startTime} - {rehearsal.endTime}</span>
+                                </div>
+                                <div className='rehearsal-location'>
+                                  <MapPin size={16} />
+                                  <span>{rehearsal.location}</span>
+                                </div>
+                                {rehearsal.notes && (
+                                  <div className='rehearsal-notes'>
+                                    <span className='notes-label'>הערות:</span>
+                                    <span className='notes-text'>{rehearsal.notes}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
                       </div>
                     ) : (
                       <div className='warning-box'>
@@ -357,20 +468,34 @@ export function OrchestraDetails() {
         </div>
       </div>
 
-      {/* Edit Modal */}
+      {/* Edit Orchestra Modal */}
       {isEditModalOpen && (
         <OrchestraForm
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           orchestra={selectedOrchestra}
           onSave={() => {
-            setIsEditModalOpen(false);
-            orchestraId && loadOrchestraById(orchestraId);
+            setIsEditModalOpen(false)
+            orchestraId && loadOrchestraById(orchestraId)
           }}
         />
       )}
 
-      {/* Confirm Delete Dialog */}
+      {/* Rehearsal Form Modal */}
+      {isRehearsalFormOpen && (
+        <RehearsalForm
+          isOpen={isRehearsalFormOpen}
+          onClose={() => setIsRehearsalFormOpen(false)}
+          rehearsal={selectedRehearsal}
+          orchestraId={orchestraId!}
+          onSave={() => {
+            setIsRehearsalFormOpen(false)
+            orchestraId && loadRehearsalsByOrchestraId(orchestraId)
+          }}
+        />
+      )}
+
+      {/* Confirm Delete Orchestra Dialog */}
       <ConfirmDialog
         isOpen={isConfirmDialogOpen}
         onClose={() => setIsConfirmDialogOpen(false)}
@@ -388,6 +513,23 @@ export function OrchestraDetails() {
         cancelText='ביטול'
         type='danger'
       />
+
+      {/* Confirm Delete Rehearsal Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmRehearsalDeleteOpen}
+        onClose={() => setIsConfirmRehearsalDeleteOpen(false)}
+        onConfirm={confirmDeleteRehearsal}
+        title='מחיקת חזרה'
+        message={
+          <>
+            <p>האם אתה בטוח שברצונך למחוק חזרה זו?</p>
+            <p className='text-sm text-muted'>פעולה זו היא בלתי הפיכה.</p>
+          </>
+        }
+        confirmText='מחק'
+        cancelText='ביטול'
+        type='danger'
+      />
     </div>
-  );
+  )
 }

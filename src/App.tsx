@@ -13,6 +13,8 @@ import { TeacherIndex } from './pages/TeacherIndex.tsx'
 import { TeacherDetails } from './pages/TeacherDetails.tsx'
 import { OrchestraIndex } from './pages/OrchestraIndex.tsx'
 import { OrchestraDetails } from './pages/OrchestraDetails.tsx'
+import { RehearsalIndex } from './pages/RehearsalIndex.tsx'
+import { RehearsalDetails } from './pages/RehearsalDetails.tsx'
 import { useEffect } from 'react'
 
 // Create a query client
@@ -80,6 +82,12 @@ function App() {
               <Route path='/orchestras' element={<OrchestraIndex />}>
                 <Route path=':orchestraId' element={<OrchestraDetails />} />
                 <Route path='new' element={<OrchestraDetails />} />
+              </Route>
+
+              {/* Rehearsal routes */}
+              <Route path='/rehearsals' element={<RehearsalIndex />}>
+                <Route path=':rehearsalId' element={<RehearsalDetails />} />
+                <Route path='new' element={<RehearsalDetails />} />
               </Route>
 
               {/* Default route inside protected area */}

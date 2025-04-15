@@ -22,6 +22,9 @@
 @import './components/orchestra-list.scss';
 @import './components/orchestra-preview.scss';
 @import './components/orchestra-form.scss';
+@import './components/rehearsal-list.scss';
+@import './components/rehearsal-preview.scss';
+@import './components/rehearsal-form.scss';
 
 
 // Pages
@@ -34,3 +37,5 @@
 @import './pages/teacher-details.scss';
 @import './pages/orchestra-index.scss';
 @import './pages/orchestra-details.scss';
+@import './pages/rehearsal-index.scss';
+@import './pages/rehearsal-details.scss';

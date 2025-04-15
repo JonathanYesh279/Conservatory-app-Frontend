@@ -1,0 +1,121 @@
+// src/styles/components/rehearsal-list.scss
+
+.rehearsal-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  
+  // Date group
+  .rehearsal-date-group {
+    .date-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--divider-color);
+      
+      h2 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+      
+      svg {
+        color: var(--primary-color);
+      }
+    }
+    
+    .rehearsal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+  }
+  
+  // Empty state
+  .empty-state {
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    margin-top: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    
+    p {
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      
+      &:first-of-type {
+        font-size: 1.25rem;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+      }
+    }
+  }
+  
+  // Loading state
+  .loading-state {
+    position: relative;
+    min-height: 300px;
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    
+    &:after {
+      content: "";
+      position: absolute;
+      width: 2.5rem;
+      height: 2.5rem;
+      top: 50%;
+      left: 50%;
+      margin-top: -1.25rem;
+      margin-left: -1.25rem;
+      border-radius: 50%;
+      border: 3px solid rgba(var(--primary-color-rgb), 0.2);
+      border-top-color: var(--primary-color);
+      animation: spinner 1s infinite linear;
+    }
+  }
+}
+
+@keyframes spinner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Media queries for responsive design
+@media (max-width: 576px) {
+  .rehearsal-list-container {
+    .rehearsal-date-group {
+      .rehearsal-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .date-header {
+        h2 {
+          font-size: 1rem;
+        }
+      }
+    }
+    
+    .empty-state, .loading-state {
+      padding: 2rem 1rem;
+    }
+  }
+}
+
+@media (min-width: 577px) and (max-width: 992px) {
+  .rehearsal-list-container {
+    .rehearsal-date-group {
+      .rehearsal-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  }
+}

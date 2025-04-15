@@ -1,0 +1,218 @@
+// src/styles/components/rehearsal-form.scss
+
+.rehearsal-form {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+  }
+  
+  .form-modal {
+    position: relative;
+    width: 90%;
+    max-width: 550px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background-color: #1e2a3b;
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    padding: 1.5rem;
+    z-index: 1;
+    direction: rtl;
+    
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      background: none;
+      border: none;
+      color: #a0aec0;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        color: #e74c3c;
+        transform: scale(1.1);
+      }
+    }
+    
+    h2 {
+      text-align: center;
+      color: white;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+    
+    h3 {
+      text-align: center;
+      color: #4169e1;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+    
+    .error-message {
+      background-color: rgba(231, 76, 60, 0.1);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      color: #e74c3c;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    
+    form {
+      .form-section {
+        margin-bottom: 1.5rem;
+        
+        h3 {
+          font-size: 1.1rem;
+          color: white;
+          margin-bottom: 1rem;
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #2c3a52;
+          text-align: right;
+        }
+        
+        .form-row {
+          display: flex;
+          gap: 1rem;
+          margin-bottom: 1rem;
+          
+          &.full-width {
+            flex-direction: column;
+          }
+          
+          @media (max-width: 576px) {
+            flex-direction: column;
+          }
+          
+          .form-group {
+            flex: 1;
+            
+            label {
+              display: flex;
+              align-items: center;
+              gap: 0.35rem;
+              margin-bottom: 0.5rem;
+              color: #a0aec0;
+              font-size: 0.9rem;
+              
+              .icon {
+                color: #4169e1;
+                opacity: 0.8;
+              }
+            }
+            
+            input, textarea, select {
+              width: 100%;
+              padding: 0.65rem 0.75rem;
+              border-radius: 0.5rem;
+              border: 1px solid #2c3a52;
+              background-color: #263144;
+              color: white;
+              font-size: 0.9rem;
+              transition: all 0.2s ease;
+              
+              &:focus {
+                outline: none;
+                border-color: #4169e1;
+                box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+              }
+              
+              &.is-invalid {
+                border-color: #e74c3c;
+                background-color: rgba(231, 76, 60, 0.05);
+              }
+            }
+            
+            textarea {
+              resize: vertical;
+              min-height: 100px;
+            }
+            
+            .form-error {
+              color: #e74c3c;
+              font-size: 0.85rem;
+              margin-top: 0.35rem;
+            }
+          }
+        }
+      }
+      
+      .form-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        
+        button {
+          padding: 0.6rem 1.5rem;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          
+          &.primary {
+            background-color: #4169e1;
+            color: white;
+            border: none;
+            
+            &:hover:not(:disabled) {
+              background-color: #3158d3;
+            }
+            
+            &:disabled {
+              opacity: 0.7;
+              cursor: not-allowed;
+            }
+          }
+          
+          &.secondary {
+            background-color: transparent;
+            color: #a0aec0;
+            border: 1px solid #2c3a52;
+            
+            &:hover {
+              background-color: #263144;
+              color: white;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Media queries
+@media (max-width: 576px) {
+  .rehearsal-form .form-modal {
+    padding: 1rem;
+    width: 95%;
+    
+    h2 {
+      font-size: 1.3rem;
+    }
+    
+    h3 {
+      font-size: 1rem;
+    }
+  }
+}

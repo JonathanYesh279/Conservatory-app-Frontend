@@ -224,6 +224,138 @@
           margin-top: 0.5rem;
         }
       }
+
+      // Rehearsal section in OrchestraDetails
+      .add-rehearsal-btn-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 1rem;
+        
+        .add-rehearsal-btn {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem 1rem;
+          background-color: #4169e1;
+          color: white;
+          border: none;
+          border-radius: 0.5rem;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          
+          &:hover {
+            background-color: #3158d3;
+            transform: translateY(-2px);
+          }
+        }
+      }
+
+      .rehearsals-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: 0.5rem;
+        
+        .rehearsal-item {
+          background-color: #1e2a3b;
+          border-radius: 0.5rem;
+          border: 1px solid #2c3a52;
+          overflow: hidden;
+          
+          .rehearsal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background-color: rgba(65, 105, 225, 0.1);
+            border-bottom: 1px solid rgba(65, 105, 225, 0.2);
+            
+            .rehearsal-date {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-weight: 600;
+              color: #4169e1;
+              font-size: 0.95rem;
+              
+              svg {
+                opacity: 0.8;
+              }
+            }
+            
+            .rehearsal-actions {
+              display: flex;
+              gap: 0.35rem;
+              
+              .action-btn {
+                width: 1.8rem;
+                height: 1.8rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                background: none;
+                border: none;
+                color: #a0aec0;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                
+                &:hover {
+                  background-color: rgba(255, 255, 255, 0.1);
+                  
+                  &.edit {
+                    color: #4169e1;
+                  }
+                  
+                  &.delete {
+                    color: #e74c3c;
+                  }
+                }
+              }
+            }
+          }
+          
+          .rehearsal-details {
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            
+            .rehearsal-time,
+            .rehearsal-location {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              color: #a0aec0;
+              font-size: 0.9rem;
+              
+              svg {
+                color: #4169e1;
+                opacity: 0.7;
+              }
+            }
+            
+            .rehearsal-notes {
+              margin-top: 0.25rem;
+              font-size: 0.85rem;
+              color: #a0aec0;
+              
+              .notes-label {
+                display: inline-block;
+                font-weight: 600;
+                margin-left: 0.35rem;
+                color: white;
+              }
+              
+              .notes-text {
+                display: inline;
+                color: #a0aec0;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -292,6 +424,23 @@
           margin-bottom: 0.6rem;
         }
       }
+    }
+  }
+}
+
+// Media queries for rehearsal list
+@media (max-width: 576px) {
+  .rehearsals-list .rehearsal-item {
+    .rehearsal-header {
+      padding: 0.6rem;
+      
+      .rehearsal-date {
+        font-size: 0.85rem;
+      }
+    }
+    
+    .rehearsal-details {
+      padding: 0.6rem;
     }
   }
 }
