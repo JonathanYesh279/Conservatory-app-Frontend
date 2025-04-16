@@ -1,6 +1,22 @@
 // src/services/studentService.ts
 import { httpService } from './httpService';
 
+// Define interfaces for attendance data
+export interface AttendanceRecord {
+  date: string;
+  status: 'הגיע/ה' | 'לא הגיע/ה';
+  sessionId: string;
+  notes?: string;
+}
+
+export interface AttendanceStats {
+  attendanceRate: number;
+  attended: number;
+  totalRehearsals: number;
+  recentHistory: AttendanceRecord[];
+  message?: string;
+}
+
 export interface Student {
   _id: string;
   personalInfo: {
@@ -112,5 +128,27 @@ export const studentService = {
 
   async removeStudent(studentId: string): Promise<Student> {
     return httpService.delete(`student/${studentId}`);
+  },
+
+  // New function to get attendance stats for a student in an orchestra
+  async getStudentAttendanceStats(
+    orchestraId: string,
+    studentId: string
+  ): Promise<AttendanceStats> {
+    try {
+      return httpService.get(
+        `orchestra/${orchestraId}/student/${studentId}/attendance`
+      );
+    } catch (error) {
+      console.error('Failed to get student attendance stats:', error);
+      // Return default empty stats on error
+      return {
+        attendanceRate: 0,
+        attended: 0,
+        totalRehearsals: 0,
+        recentHistory: [],
+        message: 'Failed to load attendance data',
+      };
+    }
   },
 };

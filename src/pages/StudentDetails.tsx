@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useStudentStore } from '../store/studentStore';
 import { Orchestra, orchestraService } from '../services/orchestraService';
 import { teacherService } from '../services/teacherService';
+import { studentService, AttendanceStats } from '../services/studentService';
 import {
   User,
   Calendar,
@@ -18,23 +19,6 @@ import {
   ChevronUp,
 } from 'lucide-react';
 
-// Define attendance record type
-interface AttendanceRecord {
-  date: string;
-  status: 'הגיע/ה' | 'לא הגיע/ה';
-  sessionId: string;
-  notes?: string;
-}
-
-// Define attendance stats type
-interface AttendanceStats {
-  attendanceRate: number;
-  attended: number;
-  totalRehearsals: number;
-  recentHistory: AttendanceRecord[];
-  message?: string;
-}
-
 // Define teacher data type
 interface TeacherData {
   id: string;
@@ -44,12 +28,8 @@ interface TeacherData {
 
 export function StudentDetails() {
   const { studentId } = useParams<{ studentId: string }>();
-  const {
-    selectedStudent,
-    loadStudentById,
-    isLoading,
-    error,
-  } = useStudentStore();
+  const { selectedStudent, loadStudentById, isLoading, error } =
+    useStudentStore();
 
   const [flipped, setFlipped] = useState(false);
   const [attendanceStats, setAttendanceStats] =
@@ -58,12 +38,13 @@ export function StudentDetails() {
   const [teacherLoading, setTeacherLoading] = useState(false);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
+  const [loadingAttendance, setLoadingAttendance] = useState(false);
   const navigate = useNavigate();
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
-    teacher: true,
-    orchestras: true,
+    teacher: false,
+    orchestras: false,
     tests: false,
     attendance: false,
     personalInfo: false,
@@ -113,11 +94,14 @@ export function StudentDetails() {
 
   // Load orchestra data when student is loaded
   useEffect(() => {
-    if (selectedStudent?.enrollments?.orchestraIds && selectedStudent.enrollments.orchestraIds.length > 0) {
+    if (
+      selectedStudent?.enrollments?.orchestraIds &&
+      selectedStudent.enrollments.orchestraIds.length > 0
+    ) {
       setOrchestrasLoading(true);
       const fetchOrchestras = async () => {
         try {
-          const orchestraIds = selectedStudent!.enrollments.orchestraIds
+          const orchestraIds = selectedStudent!.enrollments.orchestraIds;
           const orchestraData = await orchestraService.getOrchestrasByIds(
             orchestraIds
           );
@@ -133,30 +117,42 @@ export function StudentDetails() {
     }
   }, [selectedStudent]);
 
-  // Separate effect for loading attendance data
+  // Fetch real attendance data
   useEffect(() => {
     if (
       selectedStudent &&
-      selectedStudent.enrollments?.orchestraIds?.length > 0
+      selectedStudent.enrollments?.orchestraIds?.length > 0 &&
+      openSections.attendance // Only fetch when section is open
     ) {
-      // In a real application, this would be an API call:
-      // fetch(`/api/orchestra/${selectedStudent.enrollments.orchestraIds[0]}/student/${selectedStudent._id}/attendance`)
+      setLoadingAttendance(true);
+      const fetchAttendance = async () => {
+        // For now, get attendance for the first orchestra
+        const orchestraId = selectedStudent.enrollments.orchestraIds[0];
+        try {
+          // Use studentService directly instead of trying to get it from the store
+          const stats = await studentService.getStudentAttendanceStats(
+            orchestraId,
+            selectedStudent._id
+          );
+          setAttendanceStats(stats);
+        } catch (error) {
+          console.error('Failed to fetch attendance stats:', error);
+          // Set default empty stats on error
+          setAttendanceStats({
+            attendanceRate: 0,
+            attended: 0,
+            totalRehearsals: 0,
+            recentHistory: [],
+            message: 'Failed to load attendance data',
+          });
+        } finally {
+          setLoadingAttendance(false);
+        }
+      };
 
-      // Simulated attendance stats - this would be fetched from an API
-      setAttendanceStats({
-        attendanceRate: 85,
-        attended: 17,
-        totalRehearsals: 20,
-        recentHistory: [
-          { date: '2023-06-01', status: 'הגיע/ה', sessionId: '1' },
-          { date: '2023-05-25', status: 'הגיע/ה', sessionId: '2' },
-          { date: '2023-05-18', status: 'לא הגיע/ה', sessionId: '3' },
-          { date: '2023-05-11', status: 'הגיע/ה', sessionId: '4' },
-          { date: '2023-05-04', status: 'הגיע/ה', sessionId: '5' },
-        ],
-      });
+      fetchAttendance();
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, openSections.attendance]);
 
   const toggleFlip = () => {
     setFlipped(!flipped);
@@ -493,7 +489,12 @@ export function StudentDetails() {
                       {student.enrollments?.orchestraIds?.length > 0 ? (
                         <div className='attendance-container'>
                           {/* If we have attendance stats */}
-                          {attendanceStats ? (
+                          {loadingAttendance ? (
+                            <div className='loading-attendance'>
+                              <RefreshCw size={16} className='loading-icon' />
+                              <span>טוען נתוני נוכחות...</span>
+                            </div>
+                          ) : attendanceStats ? (
                             <>
                               <div className='attendance-summary'>
                                 <div className='attendance-stat'>
@@ -514,7 +515,7 @@ export function StudentDetails() {
                                 </div>
                               </div>
 
-                              {attendanceStats.recentHistory?.length > 0 && (
+                              {attendanceStats.recentHistory?.length > 0 ? (
                                 <div className='attendance-history'>
                                   <h3 className='history-title'>
                                     היסטוריית נוכחות אחרונה
@@ -550,12 +551,21 @@ export function StudentDetails() {
                                     )}
                                   </div>
                                 </div>
+                              ) : (
+                                <div className='no-attendance-history'>
+                                  אין היסטוריית נוכחות זמינה
+                                </div>
+                              )}
+
+                              {attendanceStats.message && (
+                                <div className='attendance-message warning'>
+                                  {attendanceStats.message}
+                                </div>
                               )}
                             </>
                           ) : (
-                            <div className='loading-attendance'>
-                              <RefreshCw size={16} className='loading-icon' />
-                              <span>טוען נתוני נוכחות...</span>
+                            <div className='no-attendance-data'>
+                              אין נתוני נוכחות זמינים
                             </div>
                           )}
                         </div>

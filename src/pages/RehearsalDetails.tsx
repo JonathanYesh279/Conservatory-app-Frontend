@@ -1,225 +1,221 @@
 // src/pages/RehearsalDetails.tsx
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { Edit, ChevronDown, ChevronUp, Calendar, Users, X, ArrowRight } from 'lucide-react'
-import { useRehearsalStore } from '../store/rehearsalStore'
-import { useOrchestraStore } from '../store/orchestraStore'
-import { useStudentStore } from '../store/studentStore'
-import { useAuth } from '../hooks/useAuth'
-import { RehearsalForm } from '../cmps/RehearsalForm'
-import { ConfirmDialog } from '../cmps/ConfirmDialog'
-import { Student } from '../services/studentService'
-import { Orchestra } from '../services/orchestraService'
-
-interface OrchestraMember {
-  _id: string
-  personalInfo: {
-    fullName: string
-  }
-  academicInfo: {
-    instrument: string
-  }
-}
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Edit, Calendar, Users, ArrowRight } from 'lucide-react';
+import { useRehearsalStore } from '../store/rehearsalStore';
+import { useOrchestraStore } from '../store/orchestraStore';
+import { useStudentStore } from '../store/studentStore';
+import { useAuth } from '../hooks/useAuth';
+import { RehearsalForm } from '../cmps/RehearsalForm';
+import { ConfirmDialog } from '../cmps/ConfirmDialog';
+import { Student } from '../services/studentService';
+import { Orchestra } from '../services/orchestraService';
 
 export function RehearsalDetails() {
-  const { rehearsalId } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuth()
+  const { rehearsalId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const {
     selectedRehearsal,
     loadRehearsalById,
     removeRehearsal,
+    updateAttendance,
     isLoading,
     error,
-  } = useRehearsalStore()
+  } = useRehearsalStore();
 
-  const { loadOrchestraById } = useOrchestraStore()
-  const { getStudentsByIds } = useStudentStore()
+  const { loadOrchestraById } = useOrchestraStore();
+  const { getStudentsByIds } = useStudentStore();
 
   // State
-  const [orchestra, setOrchestra] = useState<Orchestra | null>(null)
-  const [isLoadingOrchestra, setIsLoadingOrchestra] = useState(false)
-  const [members, setMembers] = useState<OrchestraMember[]>([])
-  const [isLoadingMembers, setIsLoadingMembers] = useState(false)
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [orchestra, setOrchestra] = useState<Orchestra | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [isLoadingOrchestra, setIsLoadingOrchestra] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-  // Section toggle states
-  const [showInfoSection, setShowInfoSection] = useState(true)
-  const [showMembersSection, setShowMembersSection] = useState(false)
-  const [showNotesSection, setShowNotesSection] = useState(false)
+  // Attendance state
+  const [presentStudents, setPresentStudents] = useState<string[]>([]);
+  const [absentStudents, setAbsentStudents] = useState<string[]>([]);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   // Check permissions
-  const isAdmin = user?.roles?.includes('מנהל') || false
-  const isConductor = user?.roles?.includes('מנצח') || false
-  const canEdit = isAdmin || isConductor
-  
+  const isAdmin = user?.roles?.includes('מנהל') || false;
+  const isConductor = user?.roles?.includes('מנצח') || false;
+  const canEdit = isAdmin || isConductor;
+  const canUpdateAttendance = isAdmin || isConductor;
+
   // Load rehearsal data
   useEffect(() => {
     if (rehearsalId) {
-      loadRehearsalById(rehearsalId)
+      loadRehearsalById(rehearsalId);
     }
-  }, [rehearsalId, loadRehearsalById])
+  }, [rehearsalId, loadRehearsalById]);
 
   // Load orchestra data when we have the rehearsal
   useEffect(() => {
     const fetchOrchestra = async () => {
-      if (selectedRehearsal?.orchestraId) {
-        setIsLoadingOrchestra(true)
+      if (selectedRehearsal?.groupId) {
+        setIsLoadingOrchestra(true);
         try {
-          await loadOrchestraById(selectedRehearsal.orchestraId)
-          const orchestraStore = useOrchestraStore.getState()
-          setOrchestra(orchestraStore.selectedOrchestra)
+          await loadOrchestraById(selectedRehearsal.groupId);
+          const orchestraStore = useOrchestraStore.getState();
+          setOrchestra(orchestraStore.selectedOrchestra);
         } catch (err) {
-          console.error('Failed to load orchestra:', err)
+          console.error('Failed to load orchestra:', err);
         } finally {
-          setIsLoadingOrchestra(false)
+          setIsLoadingOrchestra(false);
         }
       }
-    }
+    };
 
-    fetchOrchestra()
-  }, [selectedRehearsal, loadOrchestraById])
+    fetchOrchestra();
+  }, [selectedRehearsal, loadOrchestraById]);
 
-  // Load members when we have the orchestra
+  // Load students when we have the orchestra
   useEffect(() => {
-    const fetchMembers = async () => {
+    const fetchStudents = async () => {
       if (orchestra?.memberIds && orchestra.memberIds.length > 0) {
-        setIsLoadingMembers(true)
+        setIsLoadingStudents(true);
         try {
-          const responseData = await getStudentsByIds(orchestra.memberIds)
-
-          // Map to only the fields we need
-          const memberData = responseData.map((student: Student) => ({
-            _id: student._id,
-            personalInfo: {
-              fullName: student.personalInfo.fullName,
-            },
-            academicInfo: {
-              instrument: student.academicInfo.instrument,
-            },
-          }))
-
-          setMembers(memberData)
+          const studentsData = await getStudentsByIds(orchestra.memberIds);
+          setStudents(studentsData);
         } catch (err) {
-          console.error('Failed to load members:', err)
+          console.error('Failed to load students:', err);
         } finally {
-          setIsLoadingMembers(false)
+          setIsLoadingStudents(false);
         }
       } else {
-        // Reset members if no memberIds
-        setMembers([])
+        setStudents([]);
       }
-    }
+    };
 
-    fetchMembers()
-  }, [orchestra, getStudentsByIds])
+    fetchStudents();
+  }, [orchestra, getStudentsByIds]);
+
+  // Initialize attendance state when rehearsal data loads
+  useEffect(() => {
+    if (selectedRehearsal?.attendance) {
+      setPresentStudents(selectedRehearsal.attendance.present || []);
+      setAbsentStudents(selectedRehearsal.attendance.absent || []);
+    } else {
+      setPresentStudents([]);
+      setAbsentStudents([]);
+    }
+    setHasChanges(false);
+  }, [selectedRehearsal]);
 
   // Format date for display
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString('he-IL', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    })
-  }
+    });
+  };
 
-  // Calculate duration in a readable format
-  const formatDuration = (startTime: string, endTime: string): string => {
-    const [startHours, startMinutes] = startTime.split(':').map(Number)
-    const [endHours, endMinutes] = endTime.split(':').map(Number)
-    
-    const start = startHours * 60 + startMinutes
-    const end = endHours * 60 + endMinutes
-    const minutes = end - start
-    
-    const hours = Math.floor(minutes / 60)
-    const mins = minutes % 60
-    
-    if (hours === 0) {
-      return `${mins} דקות`
-    } else if (hours === 1 && mins === 0) {
-      return 'שעה אחת'
-    } else if (hours === 1) {
-      return `שעה ו-${mins} דקות`
-    } else if (mins === 0) {
-      return `${hours} שעות`
-    } else {
-      return `${hours} שעות ו-${mins} דקות`
+  // Toggle student attendance
+  const toggleAttendance = (studentId: string) => {
+    let newPresent = [...presentStudents];
+    let newAbsent = [...absentStudents];
+
+    // If already in present list, move to absent
+    if (presentStudents.includes(studentId)) {
+      newPresent = newPresent.filter((id) => id !== studentId);
+      newAbsent.push(studentId);
     }
-  }
+    // If already in absent list, move to present
+    else if (absentStudents.includes(studentId)) {
+      newAbsent = newAbsent.filter((id) => id !== studentId);
+      newPresent.push(studentId);
+    }
+    // If in neither list (new student), add to present
+    else {
+      newPresent.push(studentId);
+    }
+
+    setPresentStudents(newPresent);
+    setAbsentStudents(newAbsent);
+    setHasChanges(true);
+    setSaveSuccess(false);
+  };
+
+  // Check if student is present
+  const isStudentPresent = (studentId: string) => {
+    return presentStudents.includes(studentId);
+  };
+
+  // Save attendance changes
+  const saveAttendance = async () => {
+    if (!rehearsalId || !selectedRehearsal) return;
+
+    setIsSaving(true);
+
+    try {
+      await updateAttendance(rehearsalId, {
+        present: presentStudents,
+        absent: absentStudents,
+      });
+      setSaveSuccess(true);
+      setHasChanges(false);
+
+      // Reload the rehearsal to get updated data
+      await loadRehearsalById(rehearsalId);
+    } catch (err) {
+      console.error('Failed to update attendance:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Handle edit
   const handleEdit = () => {
-    setIsEditModalOpen(true)
-  }
+    setIsEditModalOpen(true);
+  };
 
   // Handle delete
   const handleDelete = () => {
-    setIsConfirmDialogOpen(true)
-  }
-
-  // Navigate back to orchestra
-  const handleBackToOrchestra = () => {
-    if (orchestra?._id) {
-      navigate(`/orchestras/${orchestra._id}`)
-    } else {
-      navigate('/orchestras')
-    }
-  }
+    setIsConfirmDialogOpen(true);
+  };
 
   // Navigate back to rehearsals
   const handleBackToRehearsals = () => {
     if (orchestra?._id) {
-      navigate(`/rehearsals?orchestraId=${orchestra._id}`)
+      navigate(`/rehearsals?orchestraId=${orchestra._id}`);
     } else {
-      navigate('/rehearsals')
+      navigate('/rehearsals');
     }
-  }
+  };
 
   // Confirm delete
   const confirmDelete = async () => {
     if (selectedRehearsal?._id) {
       try {
-        await removeRehearsal(selectedRehearsal._id)
-        if (orchestra?._id) {
-          navigate(`/rehearsals?orchestraId=${orchestra._id}`)
-        } else {
-          navigate('/rehearsals')
-        }
+        await removeRehearsal(selectedRehearsal._id);
+        navigate('/rehearsals');
       } catch (err) {
-        console.error('Failed to delete rehearsal:', err)
+        console.error('Failed to delete rehearsal:', err);
       }
     }
-    setIsConfirmDialogOpen(false)
-  }
-
-  // Toggle sections
-  const toggleInfoSection = () => {
-    setShowInfoSection(!showInfoSection)
-  }
-
-  const toggleMembersSection = () => {
-    setShowMembersSection(!showMembersSection)
-  }
-
-  const toggleNotesSection = () => {
-    setShowNotesSection(!showNotesSection)
-  }
+    setIsConfirmDialogOpen(false);
+  };
 
   if (isLoading) {
-    return <div className='loading-state'>טוען...</div>
+    return <div className='loading-state'>טוען...</div>;
   }
 
   if (error) {
-    return <div className='error-state'>{error}</div>
+    return <div className='error-state'>{error}</div>;
   }
 
   if (!selectedRehearsal) {
-    return <div className='not-found-state'>חזרה לא נמצאה</div>
+    return <div className='not-found-state'>חזרה לא נמצאה</div>;
   }
 
   return (
@@ -229,15 +225,16 @@ export function RehearsalDetails() {
           <div className='card-content'>
             {/* Rehearsal Header */}
             <div className='rehearsal-header'>
-              <button 
+              <button
                 className='back-button'
                 onClick={handleBackToRehearsals}
+                aria-label='חזור'
               >
-                <ArrowRight size={18} />
-                חזרה לרשימת החזרות
+                <ArrowRight className='lucide lucide-arrow-right' />
               </button>
+
               <div className='header-title'>
-                <h2>פרטי החזרה</h2>
+                <h2>דיווח נוכחות לחזרה</h2>
                 <div className='date-display'>
                   <Calendar size={18} />
                   <span>{formatDate(selectedRehearsal.date)}</span>
@@ -251,150 +248,89 @@ export function RehearsalDetails() {
                     עריכה
                   </button>
                 )}
-
-                {isAdmin && (
-                  <button className='action-btn delete' onClick={handleDelete}>
-                    <X size={16} />
-                    מחיקה
-                  </button>
-                )}
               </div>
             </div>
 
-            {/* Card Content */}
-            <div className='card-scroll-area'>
-              {/* Rehearsal Info Section */}
-              <div className='section'>
-                <div
-                  className={`section-title clickable ${
-                    showInfoSection ? 'active' : ''
-                  }`}
-                  onClick={toggleInfoSection}
-                >
-                  פרטי החזרה
-                  {showInfoSection ? (
-                    <ChevronUp className='toggle-icon' size={20} />
-                  ) : (
-                    <ChevronDown className='toggle-icon' size={20} />
-                  )}
+            {/* Orchestra Info */}
+            <div className='orchestra-info-card'>
+              <h3>
+                {isLoadingOrchestra ? 'טוען...' : orchestra?.name || 'לא מוגדר'}
+              </h3>
+              <div className='rehearsal-details-row'>
+                <div className='detail-item'>
+                  <span className='detail-label'>מיקום:</span>
+                  <span className='detail-value'>
+                    {selectedRehearsal.location}
+                  </span>
                 </div>
-
-                {showInfoSection && (
-                  <div className='section-content'>
-                    <div className='info-row'>
-                      <span className='info-label'>תזמורת:</span>
-                      <span className='info-value info-link' onClick={handleBackToOrchestra}>
-                        {isLoadingOrchestra
-                          ? 'טוען...'
-                          : orchestra
-                          ? orchestra.name
-                          : 'לא מוגדר'}
-                      </span>
-                    </div>
-
-                    <div className='info-row'>
-                      <span className='info-label'>זמן:</span>
-                      <span className='info-value'>
-                        {selectedRehearsal.startTime} - {selectedRehearsal.endTime}
-                        <span className='duration'>
-                          ({formatDuration(selectedRehearsal.startTime, selectedRehearsal.endTime)})
-                        </span>
-                      </span>
-                    </div>
-
-                    <div className='info-row'>
-                      <span className='info-label'>מיקום:</span>
-                      <span className='info-value'>{selectedRehearsal.location}</span>
-                    </div>
-
-                    <div className='info-row'>
-                      <span className='info-label'>מספר תלמידים:</span>
-                      <span className='info-value'>
-                        {orchestra?.memberIds?.length || 0}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                <div className='detail-item'>
+                  <span className='detail-label'>זמן:</span>
+                  <span className='detail-value'>
+                    {selectedRehearsal.startTime} - {selectedRehearsal.endTime}
+                  </span>
+                </div>
               </div>
+            </div>
 
-              {/* Members Section */}
-              <div className='section'>
-                <div
-                  className={`section-title clickable ${
-                    showMembersSection ? 'active' : ''
-                  }`}
-                  onClick={toggleMembersSection}
-                >
-                  <Users size={18} />
-                  תלמידים
-                  {showMembersSection ? (
-                    <ChevronUp className='toggle-icon' size={20} />
-                  ) : (
-                    <ChevronDown className='toggle-icon' size={20} />
-                  )}
-                </div>
-
-                {showMembersSection && (
-                  <div className='section-content'>
-                    {orchestra?.memberIds && orchestra.memberIds.length > 0 ? (
-                      <div className='members-list'>
-                        {isLoadingMembers ? (
-                          <div className='loading-message'>טוען תלמידים...</div>
-                        ) : members.length > 0 ? (
-                          <ul className='members-items'>
-                            {members.map((member) => (
-                              <li key={member._id} className='member-item'>
-                                <div className='member-info'>
-                                  <span className='member-name'>
-                                    {member.personalInfo.fullName}
-                                  </span>
-                                  <span className='member-instrument'>
-                                    {member.academicInfo.instrument}
-                                  </span>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className='message-box'>
-                            לא ניתן לטעון את נתוני התלמידים
+            {/* Attendance Section */}
+            <div className='attendance-section'>
+              {/* Students List */}
+              <div className='students-list-container'>
+                {isLoadingStudents ? (
+                  <div className='loading-students'>טוען רשימת תלמידים...</div>
+                ) : students.length > 0 ? (
+                  <ul className='students-list'>
+                    {students.map((student) => (
+                      <li
+                        key={student._id}
+                        className={`student-item ${
+                          isStudentPresent(student._id) ? 'present' : ''
+                        }`}
+                      >
+                        <div className='student-info'>
+                          <div className='student-name'>
+                            {student.personalInfo.fullName}
                           </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className='warning-box'>אין תלמידים בתזמורת זו</div>
-                    )}
+                          <div className='student-instrument'>
+                            {student.academicInfo.instrument}
+                          </div>
+                        </div>
+                        
+                        <label className='toggle-switch'>
+                          <input
+                            type='checkbox'
+                            checked={isStudentPresent(student._id)}
+                            onChange={() => toggleAttendance(student._id)}
+                          />
+                          <span className='toggle-slider'></span>
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className='empty-students'>
+                    אין תלמידים רשומים לתזמורת זו
                   </div>
                 )}
               </div>
-
-              {/* Notes Section (if there are notes) */}
-              {selectedRehearsal.notes && (
-                <div className='section'>
-                  <div
-                    className={`section-title clickable ${
-                      showNotesSection ? 'active' : ''
-                    }`}
-                    onClick={toggleNotesSection}
-                  >
-                    הערות
-                    {showNotesSection ? (
-                      <ChevronUp className='toggle-icon' size={20} />
-                    ) : (
-                      <ChevronDown className='toggle-icon' size={20} />
-                    )}
-                  </div>
-
-                  {showNotesSection && (
-                    <div className='section-content'>
-                      <div className='notes-box'>
-                        {selectedRehearsal.notes}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
+
+            {/* Save Button */}
+            {canUpdateAttendance && (
+              <div className='attendance-footer'>
+                {saveSuccess && (
+                  <span className='save-success'>הנוכחות עודכנה בהצלחה!</span>
+                )}
+
+                <button
+                  className='save-attendance-btn'
+                  onClick={saveAttendance}
+                  disabled={!hasChanges || isSaving}
+                >
+                  {isSaving ? 'שומר...' : 'עדכן נוכחות'}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -405,10 +341,10 @@ export function RehearsalDetails() {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           rehearsal={selectedRehearsal}
-          orchestraId={selectedRehearsal.orchestraId}
+          orchestraId={selectedRehearsal.groupId}
           onSave={() => {
-            setIsEditModalOpen(false)
-            rehearsalId && loadRehearsalById(rehearsalId)
+            setIsEditModalOpen(false);
+            rehearsalId && loadRehearsalById(rehearsalId);
           }}
         />
       )}
@@ -422,7 +358,8 @@ export function RehearsalDetails() {
         message={
           <>
             <p>
-              האם אתה בטוח שברצונך למחוק את החזרה בתאריך "{formatDate(selectedRehearsal.date)}"?
+              האם אתה בטוח שברצונך למחוק את החזרה בתאריך "
+              {formatDate(selectedRehearsal.date)}"?
             </p>
             <p className='text-sm text-muted'>פעולה זו היא בלתי הפיכה.</p>
           </>
@@ -432,5 +369,5 @@ export function RehearsalDetails() {
         type='danger'
       />
     </div>
-  )
+  );
 }

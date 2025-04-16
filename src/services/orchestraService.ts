@@ -24,7 +24,6 @@ export interface OrchestraFilter {
   isActive?: boolean;
   showInactive?: boolean;
 }
-
 export interface AddMemberRequest {
   studentId: string;
 }
