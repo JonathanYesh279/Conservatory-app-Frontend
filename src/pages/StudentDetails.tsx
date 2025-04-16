@@ -369,7 +369,6 @@ export function StudentDetails() {
                                   navigateToOrchestra(orchestra._id)
                                 }
                               >
-                                <Music size={18} />
                                 <span>{orchestra.name}</span>
                               </div>
                             ))}

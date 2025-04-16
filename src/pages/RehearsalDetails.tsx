@@ -1,18 +1,7 @@
 // src/pages/RehearsalDetails.tsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import {
-  Edit,
-  ChevronDown,
-  ChevronUp,
-  Music,
-  Calendar,
-  Clock,
-  MapPin,
-  Users,
-  X,
-  ArrowRight,
-} from 'lucide-react'
+import { Edit, ChevronDown, ChevronUp, Calendar, Users, X, ArrowRight } from 'lucide-react'
 import { useRehearsalStore } from '../store/rehearsalStore'
 import { useOrchestraStore } from '../store/orchestraStore'
 import { useStudentStore } from '../store/studentStore'

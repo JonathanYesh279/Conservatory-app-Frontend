@@ -145,8 +145,63 @@
   }
 }
 
+.back-button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.3);
+      color: var(--text-primary);
+      transform: translateX(-3px);
+    }
+  }
+
 // For RGB usage in rgba functions
 :root {
   --primary-color-rgb: 77, 85, 204; // Matches #4D55CC
   --danger-rgb: 220, 53, 69; // Matches #DC3545
+}
+
+// Badges
+.header-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+
+  .stage-badge {
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.375rem;
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
+        
+  .grade-badge {
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.375rem;;
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+  }
 }

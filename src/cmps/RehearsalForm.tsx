@@ -1,42 +1,49 @@
 // src/cmps/RehearsalForm.tsx
-import { useState, useEffect } from 'react'
-import { X, Calendar, Clock, MapPin, Repeat } from 'lucide-react'
-import { Rehearsal } from '../services/rehearsalService'
-import { useRehearsalStore } from '../store/rehearsalStore'
-import { useOrchestraStore } from '../store/orchestraStore'
-import { useSchoolYearStore } from '../store/schoolYearStore'
+import { useState, useEffect } from 'react';
+import { X, Calendar, Clock, MapPin, Repeat, Music } from 'lucide-react';
+import { Rehearsal } from '../services/rehearsalService';
+import { useRehearsalStore } from '../store/rehearsalStore';
+import { useOrchestraStore } from '../store/orchestraStore';
+import { useSchoolYearStore } from '../store/schoolYearStore';
+
+// Helper function declarations at the top to prevent "cannot access before initialization" errors
+const formatDateForInput = (date: Date): string => {
+  return date.toISOString().split('T')[0];
+};
 
 interface RehearsalFormData {
-  _id?: string
-  groupId: string
-  date: string
-  startTime: string
-  endTime: string
-  location: string
-  notes?: string
-  isActive: boolean
-  schoolYearId: string
+  _id?: string;
+  groupId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  location: string;
+  notes?: string;
+  isActive: boolean;
+  schoolYearId: string;
+  type: string;
+  dayOfWeek?: number;
 }
 
+// Match what the backend actually expects - note schoolYearId is removed
 interface BulkRehearsalData {
-  orchestraId: string
-  startDate: string
-  endDate: string
-  dayOfWeek: number
-  startTime: string
-  endTime: string
-  location: string
-  notes?: string
-  excludeDates: string[]
-  schoolYearId: string
+  orchestraId: string;
+  startDate: string;
+  endDate: string;
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  location: string;
+  notes?: string;
+  excludeDates: string[];
 }
 
 interface RehearsalFormProps {
-  isOpen: boolean
-  onClose: () => void
-  rehearsal: Rehearsal | null
-  orchestraId: string
-  onSave?: () => void
+  isOpen: boolean;
+  onClose: () => void;
+  rehearsal: Rehearsal | null;
+  orchestraId: string;
+  onSave?: () => void;
 }
 
 export function RehearsalForm({
@@ -46,56 +53,65 @@ export function RehearsalForm({
   orchestraId,
   onSave,
 }: RehearsalFormProps) {
-  const { saveRehearsal, bulkCreateRehearsals, isLoading, error, clearError } = useRehearsalStore()
-  const { selectedOrchestra } = useOrchestraStore()
-  const { currentSchoolYear } = useSchoolYearStore()
-  
+  const { saveRehearsal, bulkCreateRehearsals, isLoading, error, clearError } =
+    useRehearsalStore();
+  const { orchestras, loadOrchestras } = useOrchestraStore();
+  const { currentSchoolYear } = useSchoolYearStore();
+
   // Get current school year ID
   const currentSchoolYearId = currentSchoolYear?._id || '';
-  
+
+  // Form mode state (single or bulk)
+  const [formMode, setFormMode] = useState<'single' | 'bulk'>('single');
+
   // Form state
   const [formData, setFormData] = useState<RehearsalFormData>({
-    groupId: orchestraId,
+    groupId: orchestraId || '',
     date: formatDateForInput(new Date()),
     startTime: '16:00',
     endTime: '18:00',
     location: 'אולם חזרות ראשי',
     notes: '',
     isActive: true,
-    schoolYearId: currentSchoolYearId
-  })
+    schoolYearId: currentSchoolYearId,
+    type: 'תזמורת',
+    dayOfWeek: new Date().getDay(),
+  });
 
-  // Bulk scheduling state
-  const [isBulkMode, setIsBulkMode] = useState(false)
+  // Bulk scheduling state - NOTE: no schoolYearId since backend doesn't expect it
   const [bulkData, setBulkData] = useState<BulkRehearsalData>({
-    orchestraId: orchestraId,
+    orchestraId: orchestraId || '',
     startDate: formatDateForInput(new Date()),
-    endDate: formatDateForInput(new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)),
+    endDate: formatDateForInput(
+      new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000)
+    ),
     dayOfWeek: new Date().getDay(),
     startTime: '16:00',
     endTime: '18:00',
     location: 'אולם חזרות ראשי',
     notes: '',
     excludeDates: [],
-    schoolYearId: currentSchoolYearId
-  })
-  
+  });
+
   // Excluded dates for bulk scheduling
-  const [excludedDate, setExcludedDate] = useState('')
-  
+  const [excludedDate, setExcludedDate] = useState('');
+
   // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState('');
 
-  // Helper to format date for the input field
-  const formatDateForInput = (date: Date): string => {
-    return date.toISOString().split('T')[0]
-  }
+  // Load orchestras if needed
+  useEffect(() => {
+    if (orchestras.length === 0) {
+      loadOrchestras();
+    }
+  }, [orchestras.length, loadOrchestras]);
 
-  // Initialize form data when editing an existing rehearsal
+  // Initialize form data when editing an existing rehearsal or when props change
   useEffect(() => {
     // Cannot be in bulk mode when editing
     if (rehearsal?._id) {
-      setIsBulkMode(false)
+      setFormMode('single');
     }
 
     if (rehearsal?._id) {
@@ -108,264 +124,311 @@ export function RehearsalForm({
         location: rehearsal.location || '',
         notes: rehearsal.notes || '',
         isActive: rehearsal.isActive !== false,
-        schoolYearId: rehearsal.schoolYearId || currentSchoolYearId
-      })
+        schoolYearId: rehearsal.schoolYearId || currentSchoolYearId,
+        type: rehearsal.type || 'תזמורת',
+        dayOfWeek: rehearsal.dayOfWeek,
+      });
     } else {
       // Reset form for new rehearsal
-      const today = new Date()
-      
+      const today = new Date();
+      const todayDayOfWeek = today.getDay();
+
       // Basic form data
       setFormData({
-        groupId: orchestraId,
+        groupId: orchestraId || '',
         date: formatDateForInput(today),
         startTime: '16:00',
         endTime: '18:00',
         location: 'אולם חזרות ראשי',
         notes: '',
         isActive: true,
-        schoolYearId: currentSchoolYearId
-      })
-      
-      // Bulk data with defaults
+        schoolYearId: currentSchoolYearId,
+        type: 'תזמורת',
+        dayOfWeek: todayDayOfWeek,
+      });
+
+      // Bulk data with defaults - no schoolYearId
       setBulkData({
-        orchestraId: orchestraId,
+        orchestraId: orchestraId || '',
         startDate: formatDateForInput(today),
-        endDate: formatDateForInput(new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)),
-        dayOfWeek: today.getDay(),
+        endDate: formatDateForInput(
+          new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+        ),
+        dayOfWeek: todayDayOfWeek,
         startTime: '16:00',
         endTime: '18:00',
         location: 'אולם חזרות ראשי',
         notes: '',
         excludeDates: [],
-        schoolYearId: currentSchoolYearId
-      })
+      });
     }
 
-    setErrors({})
-    if (clearError) clearError()
-  }, [rehearsal, isOpen, clearError, orchestraId, currentSchoolYearId])
+    setErrors({});
+    setFormError('');
+    if (clearError) clearError();
+  }, [
+    rehearsal,
+    isOpen,
+    clearError,
+    orchestraId,
+    currentSchoolYearId,
+    loadOrchestras,
+  ]);
 
   // Handle input changes for single rehearsal
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
+      [name]: value,
+    }));
 
     // Mirror changes to bulk form if applicable
-    if (['startTime', 'endTime', 'location', 'notes'].includes(name)) {
-      setBulkData(prev => ({
+    if (
+      ['startTime', 'endTime', 'location', 'notes', 'groupId'].includes(name)
+    ) {
+      setBulkData((prev) => ({
         ...prev,
-        [name]: value
-      }))
+        [name === 'groupId' ? 'orchestraId' : name]: value,
+      }));
     }
 
     // Clear error for this field if it exists
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: '',
+      }));
     }
-  }
-  
+  };
+
   // Handle input changes for bulk creation
   const handleBulkChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
-    setBulkData(prev => ({
+    setBulkData((prev) => ({
       ...prev,
-      [name]: value
-    }))
+      [name]: value,
+    }));
 
     // Mirror changes to single form if applicable
     if (['startTime', 'endTime', 'location', 'notes'].includes(name)) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
-      }))
+        [name]: value,
+      }));
+    } else if (name === 'orchestraId') {
+      setFormData((prev) => ({
+        ...prev,
+        groupId: value,
+      }));
     }
 
     // Clear error for this field if it exists
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
-      }))
+        [name]: '',
+      }));
     }
-  }
-  
+  };
+
   // Handle day of week selection
   const handleDayOfWeekChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setBulkData(prev => ({
+    const dayValue = parseInt(e.target.value, 10);
+    setBulkData((prev) => ({
       ...prev,
-      dayOfWeek: parseInt(e.target.value, 10)
-    }))
-  }
-  
-  // Toggle between single and bulk modes
-  const toggleBulkMode = () => {
-    // Can't switch to bulk mode when editing
-    if (rehearsal?._id) return
-    
-    setIsBulkMode(!isBulkMode)
-  }
-  
+      dayOfWeek: dayValue,
+    }));
+
+    // Also update the day of week in single form
+    setFormData((prev) => ({
+      ...prev,
+      dayOfWeek: dayValue,
+    }));
+  };
+
+  // Set form mode (single or bulk)
+  const handleSetFormMode = (mode: 'single' | 'bulk') => {
+    if (rehearsal?._id) return; // Cannot switch to bulk mode when editing
+    setFormMode(mode);
+  };
+
   // Add date to excluded dates
   const addExcludedDate = () => {
-    if (!excludedDate) return
-    
+    if (!excludedDate) return;
+
     if (!bulkData.excludeDates.includes(excludedDate)) {
-      setBulkData(prev => ({
+      setBulkData((prev) => ({
         ...prev,
-        excludeDates: [...prev.excludeDates, excludedDate]
-      }))
-      setExcludedDate('')
+        excludeDates: [...prev.excludeDates, excludedDate],
+      }));
+      setExcludedDate('');
     }
-  }
-  
+  };
+
   // Remove date from excluded dates
   const removeExcludedDate = (dateToRemove: string) => {
-    setBulkData(prev => ({
+    setBulkData((prev) => ({
       ...prev,
-      excludeDates: prev.excludeDates.filter(date => date !== dateToRemove)
-    }))
-  }
-  
+      excludeDates: prev.excludeDates.filter((date) => date !== dateToRemove),
+    }));
+  };
+
   // Get day name in Hebrew
   const getDayName = (dayIndex: number): string => {
-    const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת']
-    return days[dayIndex]
-  }
+    const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+    return days[dayIndex];
+  };
 
   // Validate single rehearsal form
   const validateSingleForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     // Required fields validation
+    if (!formData.groupId) {
+      newErrors['groupId'] = 'יש לבחור תזמורת';
+    }
+
     if (!formData.date) {
-      newErrors['date'] = 'תאריך החזרה הוא שדה חובה'
+      newErrors['date'] = 'תאריך החזרה הוא שדה חובה';
     }
 
     if (!formData.startTime) {
-      newErrors['startTime'] = 'שעת התחלה היא שדה חובה'
+      newErrors['startTime'] = 'שעת התחלה היא שדה חובה';
     }
 
     if (!formData.endTime) {
-      newErrors['endTime'] = 'שעת סיום היא שדה חובה'
+      newErrors['endTime'] = 'שעת סיום היא שדה חובה';
     }
 
     if (!formData.location) {
-      newErrors['location'] = 'מיקום החזרה הוא שדה חובה'
+      newErrors['location'] = 'מיקום החזרה הוא שדה חובה';
     }
 
     // Validate that end time is after start time
     if (formData.startTime && formData.endTime) {
       if (formData.endTime <= formData.startTime) {
-        newErrors['endTime'] = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה'
+        newErrors['endTime'] = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה';
       }
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-  
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   // Validate bulk creation form
   const validateBulkForm = (): boolean => {
-    const newErrors: Record<string, string> = {}
-    
+    const newErrors: Record<string, string> = {};
+
+    if (!bulkData.orchestraId) {
+      newErrors['orchestraId'] = 'יש לבחור תזמורת';
+    }
+
     if (!bulkData.startDate) {
-      newErrors['startDate'] = 'תאריך התחלה הוא שדה חובה'
+      newErrors['startDate'] = 'תאריך התחלה הוא שדה חובה';
     }
-    
+
     if (!bulkData.endDate) {
-      newErrors['endDate'] = 'תאריך סיום הוא שדה חובה'
+      newErrors['endDate'] = 'תאריך סיום הוא שדה חובה';
     }
-    
+
     if (bulkData.startDate && bulkData.endDate) {
       if (new Date(bulkData.endDate) < new Date(bulkData.startDate)) {
-        newErrors['endDate'] = 'תאריך הסיום חייב להיות אחרי תאריך ההתחלה'
+        newErrors['endDate'] = 'תאריך הסיום חייב להיות אחרי תאריך ההתחלה';
       }
     }
-    
+
     if (!bulkData.startTime) {
-      newErrors['startTime'] = 'שעת התחלה היא שדה חובה'
+      newErrors['startTime'] = 'שעת התחלה היא שדה חובה';
     }
-    
+
     if (!bulkData.endTime) {
-      newErrors['endTime'] = 'שעת סיום היא שדה חובה'
+      newErrors['endTime'] = 'שעת סיום היא שדה חובה';
     }
-    
+
     if (bulkData.startTime && bulkData.endTime) {
       if (bulkData.endTime <= bulkData.startTime) {
-        newErrors['endTime'] = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה'
+        newErrors['endTime'] = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה';
       }
     }
-    
+
     if (!bulkData.location) {
-      newErrors['location'] = 'מיקום החזרה הוא שדה חובה'
+      newErrors['location'] = 'מיקום החזרה הוא שדה חובה';
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
+    setFormError('');
 
     // Validate based on current mode
-    const isValid = isBulkMode ? validateBulkForm() : validateSingleForm()
-    if (!isValid) return
+    const isValid =
+      formMode === 'bulk' ? validateBulkForm() : validateSingleForm();
+    if (!isValid) return;
 
     try {
-      if (isBulkMode) {
-        // Ensure all required fields are present, especially schoolYearId
+      if (formMode === 'bulk') {
+        // Create a new object with only the fields expected by the backend API
+        // NO schoolYearId - backend validation doesn't allow it
         const bulkCreateData: BulkRehearsalData = {
-          ...bulkData,
-          orchestraId: bulkData.orchestraId || orchestraId,
-          schoolYearId: bulkData.schoolYearId || currentSchoolYearId,
-          excludeDates: bulkData.excludeDates || []
-        }
-        
-        console.log('Sending bulk create data:', bulkCreateData)
-        
-        // Bulk create
-        await bulkCreateRehearsals(bulkCreateData)
+          orchestraId: bulkData.orchestraId,
+          startDate: bulkData.startDate,
+          endDate: bulkData.endDate,
+          dayOfWeek: Number(bulkData.dayOfWeek),
+          startTime: bulkData.startTime,
+          endTime: bulkData.endTime,
+          location: bulkData.location,
+          notes: bulkData.notes || '',
+          excludeDates: bulkData.excludeDates || [],
+        };
+
+        console.log('Sending bulk create data:', bulkCreateData);
+
+        // Bulk create - pass the data without schoolYearId
+        await bulkCreateRehearsals(bulkCreateData);
       } else {
-        // Ensure schoolYearId is set
+        // Ensure schoolYearId is set and calculate dayOfWeek from date
         const singleRehearsalData: RehearsalFormData = {
           ...formData,
-          schoolYearId: formData.schoolYearId || currentSchoolYearId
-        }
-        
+          schoolYearId: formData.schoolYearId || currentSchoolYearId,
+          dayOfWeek: formData.dayOfWeek || new Date(formData.date).getDay(),
+        };
+
         // Single rehearsal
-        await saveRehearsal(singleRehearsalData)
+        await saveRehearsal(singleRehearsalData);
       }
 
       // Call optional onSave callback
       if (onSave) {
-        onSave()
+        onSave();
       }
 
       // Close the form after successful save
-      onClose()
+      onClose();
     } catch (err) {
-      console.error('Error saving rehearsal:', err)
+      console.error('Error saving rehearsal:', err);
       // Show the error to the user
-      setErrors({
-        form: err instanceof Error ? err.message : 'Error saving rehearsal'
-      })
+      setFormError(
+        err instanceof Error ? err.message : 'שגיאה בשמירת החזרה. נסה שוב.'
+      );
     }
-  }
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className='rehearsal-form'>
@@ -380,25 +443,24 @@ export function RehearsalForm({
         </button>
 
         <h2>{rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}</h2>
-        <h3>{selectedOrchestra?.name}</h3>
 
         {error && <div className='error-message'>{error}</div>}
-        {errors.form && <div className='error-message'>{errors.form}</div>}
-        
+        {formError && <div className='error-message'>{formError}</div>}
+
         {/* Mode Toggle - Only visible when creating new */}
         {!rehearsal?._id && (
           <div className='mode-toggle'>
             <button
-              type="button"
-              className={`toggle-btn ${!isBulkMode ? 'active' : ''}`}
-              onClick={() => setIsBulkMode(false)}
+              type='button'
+              className={`toggle-btn ${formMode === 'single' ? 'active' : ''}`}
+              onClick={() => handleSetFormMode('single')}
             >
               חזרה בודדת
             </button>
             <button
-              type="button"
-              className={`toggle-btn ${isBulkMode ? 'active' : ''}`}
-              onClick={() => setIsBulkMode(true)}
+              type='button'
+              className={`toggle-btn ${formMode === 'bulk' ? 'active' : ''}`}
+              onClick={() => handleSetFormMode('bulk')}
             >
               חזרות מרובות
             </button>
@@ -406,11 +468,56 @@ export function RehearsalForm({
         )}
 
         <form onSubmit={handleSubmit}>
+          {/* Orchestra Selection - Common for both modes */}
+          <div className='form-section'>
+            <h3>פרטי תזמורת</h3>
+            <div className='form-row full-width'>
+              <div className='form-group'>
+                <label
+                  htmlFor={formMode === 'single' ? 'groupId' : 'orchestraId'}
+                >
+                  <Music size={16} className='icon' />
+                  תזמורת/הרכב *
+                </label>
+                <select
+                  id={formMode === 'single' ? 'groupId' : 'orchestraId'}
+                  name={formMode === 'single' ? 'groupId' : 'orchestraId'}
+                  value={
+                    formMode === 'single'
+                      ? formData.groupId
+                      : bulkData.orchestraId
+                  }
+                  onChange={
+                    formMode === 'single' ? handleChange : handleBulkChange
+                  }
+                  className={
+                    errors[formMode === 'single' ? 'groupId' : 'orchestraId']
+                      ? 'is-invalid'
+                      : ''
+                  }
+                  required
+                >
+                  <option value=''>בחר תזמורת/הרכב</option>
+                  {orchestras.map((orchestra) => (
+                    <option key={orchestra._id} value={orchestra._id}>
+                      {orchestra.name}
+                    </option>
+                  ))}
+                </select>
+                {errors[formMode === 'single' ? 'groupId' : 'orchestraId'] && (
+                  <div className='form-error'>
+                    {errors[formMode === 'single' ? 'groupId' : 'orchestraId']}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
           {/* Rehearsal Information Section */}
           <div className='form-section'>
             <h3>פרטי חזרה</h3>
 
-            {!isBulkMode ? (
+            {formMode === 'single' ? (
               /* Single Rehearsal Form */
               <>
                 {/* Date */}
@@ -458,7 +565,7 @@ export function RehearsalForm({
                       <div className='form-error'>{errors['startDate']}</div>
                     )}
                   </div>
-                  
+
                   <div className='form-group'>
                     <label htmlFor='endDate'>
                       <Calendar size={16} className='icon' />
@@ -478,7 +585,7 @@ export function RehearsalForm({
                     )}
                   </div>
                 </div>
-                
+
                 {/* Day of Week */}
                 <div className='form-row full-width'>
                   <div className='form-group'>
@@ -502,11 +609,12 @@ export function RehearsalForm({
                       <option value={6}>יום שבת</option>
                     </select>
                     <div className='help-text'>
-                      חזרות ייווצרו בכל יום {getDayName(bulkData.dayOfWeek)} בטווח התאריכים שנבחר
+                      חזרות ייווצרו בכל יום {getDayName(bulkData.dayOfWeek)}{' '}
+                      בטווח התאריכים שנבחר
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Excluded Dates */}
                 <div className='form-row full-width'>
                   <div className='form-group excluded-dates'>
@@ -514,7 +622,7 @@ export function RehearsalForm({
                       <Calendar size={16} className='icon' />
                       תאריכים לדילוג
                     </label>
-                    
+
                     <div className='date-input-group'>
                       <input
                         type='date'
@@ -532,12 +640,12 @@ export function RehearsalForm({
                         הוסף
                       </button>
                     </div>
-                    
+
                     {bulkData.excludeDates.length > 0 && (
                       <div className='excluded-dates-list'>
                         <div className='list-title'>תאריכים שיידלגו:</div>
                         <ul>
-                          {bulkData.excludeDates.map(date => (
+                          {bulkData.excludeDates.map((date) => (
                             <li key={date}>
                               {new Date(date).toLocaleDateString('he-IL')}
                               <button
@@ -568,8 +676,14 @@ export function RehearsalForm({
                   type='time'
                   id='startTime'
                   name='startTime'
-                  value={isBulkMode ? bulkData.startTime : formData.startTime}
-                  onChange={isBulkMode ? handleBulkChange : handleChange}
+                  value={
+                    formMode === 'bulk'
+                      ? bulkData.startTime
+                      : formData.startTime
+                  }
+                  onChange={
+                    formMode === 'bulk' ? handleBulkChange : handleChange
+                  }
                   className={errors['startTime'] ? 'is-invalid' : ''}
                   required
                 />
@@ -587,8 +701,12 @@ export function RehearsalForm({
                   type='time'
                   id='endTime'
                   name='endTime'
-                  value={isBulkMode ? bulkData.endTime : formData.endTime}
-                  onChange={isBulkMode ? handleBulkChange : handleChange}
+                  value={
+                    formMode === 'bulk' ? bulkData.endTime : formData.endTime
+                  }
+                  onChange={
+                    formMode === 'bulk' ? handleBulkChange : handleChange
+                  }
                   className={errors['endTime'] ? 'is-invalid' : ''}
                   required
                 />
@@ -609,8 +727,12 @@ export function RehearsalForm({
                   type='text'
                   id='location'
                   name='location'
-                  value={isBulkMode ? bulkData.location : formData.location}
-                  onChange={isBulkMode ? handleBulkChange : handleChange}
+                  value={
+                    formMode === 'bulk' ? bulkData.location : formData.location
+                  }
+                  onChange={
+                    formMode === 'bulk' ? handleBulkChange : handleChange
+                  }
                   className={errors['location'] ? 'is-invalid' : ''}
                   required
                 />
@@ -627,37 +749,26 @@ export function RehearsalForm({
                 <textarea
                   id='notes'
                   name='notes'
-                  value={isBulkMode ? bulkData.notes : formData.notes}
-                  onChange={isBulkMode ? handleBulkChange : handleChange}
+                  value={formMode === 'bulk' ? bulkData.notes : formData.notes}
+                  onChange={
+                    formMode === 'bulk' ? handleBulkChange : handleChange
+                  }
                   rows={3}
                 />
               </div>
             </div>
-
-            {/* Hidden fields */}
-            {!isBulkMode && (
-              <input
-                type='hidden'
-                name='schoolYearId'
-                value={formData.schoolYearId}
-              />
-            )}
-            
-            {isBulkMode && (
-              <input
-                type='hidden'
-                name='schoolYearId'
-                value={bulkData.schoolYearId}
-              />
-            )}
           </div>
 
           {/* Form Actions */}
           <div className='form-actions'>
             <button type='submit' className='btn primary' disabled={isLoading}>
-              {isLoading ? 'שומר...' : isBulkMode 
-                ? 'יצירת חזרות מרובות' 
-                : rehearsal?._id ? 'עדכון' : 'הוספה'}
+              {isLoading
+                ? 'שומר...'
+                : formMode === 'bulk'
+                ? 'יצירת חזרות מרובות'
+                : rehearsal?._id
+                ? 'עדכון'
+                : 'הוספה'}
             </button>
 
             <button type='button' className='btn secondary' onClick={onClose}>
@@ -667,5 +778,5 @@ export function RehearsalForm({
         </form>
       </div>
     </div>
-  )
+  );
 }

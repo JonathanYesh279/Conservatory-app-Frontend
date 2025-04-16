@@ -1,5 +1,5 @@
 // src/pages/RehearsalIndex.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   Outlet,
   useNavigate,
@@ -10,15 +10,12 @@ import { useRehearsalStore } from '../store/rehearsalStore';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
-import { Plus, Calendar } from 'lucide-react';
+import { Plus, Calendar, Search, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Searchbar } from '../cmps/Searchbar';
-import { useSearchbar } from '../hooks/useSearchbar';
 import { Rehearsal } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { RehearsalList } from '../cmps/RehearsalList';
 import { RehearsalForm } from '../cmps/RehearsalForm';
-import { Orchestra } from '../services/orchestraService';
 
 export function RehearsalIndex() {
   const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal } =
@@ -28,6 +25,7 @@ export function RehearsalIndex() {
   // URL search params
   const [searchParams, setSearchParams] = useSearchParams();
   const orchestraIdParam = searchParams.get('orchestraId');
+  const fromDateParam = searchParams.get('fromDate');
 
   // State for modal forms and dialogs
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -38,79 +36,75 @@ export function RehearsalIndex() {
   const [rehearsalToDelete, setRehearsalToDelete] = useState<string | null>(
     null
   );
+
+  // Filter states
   const [selectedOrchestraId, setSelectedOrchestraId] = useState<string | null>(
     orchestraIdParam
   );
-
-  // Filter state
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-  // Define which fields to search in rehearsals
-  const rehearsalSearchFields = (rehearsal: Rehearsal) => [
-    rehearsal.location,
-    // Add more searchable fields if needed
-  ];
-
-  // Use the search hook
-  const { filteredEntities: filteredRehearsals, handleSearch } = useSearchbar(
-    rehearsals,
-    rehearsalSearchFields
+  const [selectedDate, setSelectedDate] = useState<string | null>(
+    fromDateParam
   );
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Navigation
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
 
+  // User role checks
   const isAdmin = user?.roles.includes('מנהל');
   const isConductor = user?.roles.includes('מנצח');
   const isDetailPage =
     location.pathname.includes('/rehearsals/') &&
     !location.pathname.endsWith('/rehearsals/');
 
-  // Load rehearsals and orchestras when component mounts
+  // Load rehearsals and orchestras when component mounts or filters change
   useEffect(() => {
     loadOrchestras();
 
-    // If orchestraId is provided in URL, load rehearsals for that orchestra only
+    // Build filter parameters from URL or state
+    const filterParams = {};
+
     if (orchestraIdParam) {
-      loadRehearsals({ groupId: orchestraIdParam });
+      filterParams.groupId = orchestraIdParam;
       setSelectedOrchestraId(orchestraIdParam);
-    } else {
-      loadRehearsals();
     }
-  }, [loadRehearsals, loadOrchestras, orchestraIdParam]);
 
-  // Filter rehearsals by selected orchestra
-  const getFilteredRehearsalsByOrchestra = () => {
-    if (!selectedOrchestraId) return filteredRehearsals;
+    if (fromDateParam) {
+      filterParams.fromDate = fromDateParam;
+      setSelectedDate(fromDateParam);
+    }
 
-    return filteredRehearsals.filter(
-      (rehearsal) => rehearsal.groupId === selectedOrchestraId
-    );
-  };
+    // Load rehearsals with filters
+    loadRehearsals(filterParams);
+  }, [loadRehearsals, loadOrchestras, orchestraIdParam, fromDateParam]);
 
-  // Filter rehearsals by selected date
-  const getFilteredRehearsalsByDate = () => {
-    const rehearsalsByOrchestra = getFilteredRehearsalsByOrchestra();
+  // Update URL params when filters change
+  useEffect(() => {
+    const newParams = new URLSearchParams(searchParams);
 
-    if (!selectedDate) return rehearsalsByOrchestra;
+    if (selectedOrchestraId) {
+      newParams.set('orchestraId', selectedOrchestraId);
+    } else {
+      newParams.delete('orchestraId');
+    }
 
-    return rehearsalsByOrchestra.filter(
-      (rehearsal) => rehearsal.date === selectedDate
-    );
-  };
+    setSearchParams(newParams);
+  }, [selectedOrchestraId, setSearchParams]);
 
-  // Get the final filtered rehearsals
-  const getFilteredRehearsals = () => {
-    return getFilteredRehearsalsByDate();
-  };
+  // Filter rehearsals based on search term only (orchestra name)
+  const filteredRehearsals = useMemo(() => {
+    // Apply client-side search filtering only
+    if (!searchTerm.trim()) {
+      return rehearsals;
+    }
 
-  // Get the selected orchestra object
-  const getSelectedOrchestra = (): Orchestra | undefined => {
-    if (!selectedOrchestraId) return undefined;
-    return orchestras.find(
-      (orchestra) => orchestra._id === selectedOrchestraId
-    );
-  };
+    const lowerSearch = searchTerm.toLowerCase();
+    return rehearsals.filter((rehearsal) => {
+      const orchestra = orchestras.find((o) => o._id === rehearsal.groupId);
+      return orchestra && orchestra.name.toLowerCase().includes(lowerSearch);
+    });
+  }, [rehearsals, searchTerm, orchestras]);
 
   // Handler functions for rehearsal CRUD operations
   const handleAddRehearsal = () => {
@@ -153,54 +147,72 @@ export function RehearsalIndex() {
     setIsConfirmDialogOpen(false);
   };
 
-  // Handle orchestra selection
+  // Handle filter changes
   const handleOrchestraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newOrchestraId = e.target.value || null;
     setSelectedOrchestraId(newOrchestraId);
 
-    // Update URL search params
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams);
     if (newOrchestraId) {
-      setSearchParams({ orchestraId: newOrchestraId });
+      newParams.set('orchestraId', newOrchestraId);
     } else {
-      searchParams.delete('orchestraId');
-      setSearchParams(searchParams);
+      newParams.delete('orchestraId');
     }
+    setSearchParams(newParams);
+
+    // Reload rehearsals with new filters
+    const filterParams = {
+      groupId: newOrchestraId || undefined,
+      fromDate: selectedDate || undefined,
+    };
+    loadRehearsals(filterParams);
   };
 
-  // Handle date selection
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(e.target.value || null);
+    const dateValue = e.target.value || null;
+    setSelectedDate(dateValue);
+
+    // Update URL params
+    const newParams = new URLSearchParams(searchParams);
+    if (dateValue) {
+      newParams.set('fromDate', dateValue);
+    } else {
+      newParams.delete('fromDate');
+    }
+    setSearchParams(newParams);
+
+    // Reload rehearsals with new filters
+    const filterParams = {
+      groupId: selectedOrchestraId || undefined,
+      fromDate: dateValue || undefined,
+    };
+    loadRehearsals(filterParams);
+  };
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const clearSearch = () => {
+    setSearchTerm('');
+  };
+
+  const clearFilters = () => {
+    setSelectedOrchestraId(null);
+    setSelectedDate(null);
+    setSearchTerm('');
+
+    // Clear URL params
+    setSearchParams(new URLSearchParams());
+
+    // Reload rehearsals without filters
+    loadRehearsals({});
   };
 
   // Check if user can add/edit rehearsals
   const canAddRehearsal = isAdmin || isConductor;
   const canEditRehearsal = isAdmin || isConductor;
-
-  // Group rehearsals by date for display
-  const groupRehearsalsByDate = (rehearsals: Rehearsal[]) => {
-    const grouped = rehearsals.reduce((acc, rehearsal) => {
-      const date = rehearsal.date;
-      if (!acc[date]) {
-        acc[date] = [];
-      }
-      acc[date].push(rehearsal);
-      return acc;
-    }, {} as Record<string, Rehearsal[]>);
-
-    // Sort dates
-    return Object.keys(grouped)
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-      .map((date) => ({
-        date,
-        rehearsals: grouped[date].sort((a, b) =>
-          a.startTime.localeCompare(b.startTime)
-        ),
-      }));
-  };
-
-  const finalRehearsals = getFilteredRehearsals();
-  const groupedRehearsals = groupRehearsalsByDate(finalRehearsals);
-  const selectedOrchestra = getSelectedOrchestra();
 
   return (
     <div className='app-container'>
@@ -213,14 +225,26 @@ export function RehearsalIndex() {
               <h1>
                 <Calendar className='title-icon' />
                 לוח חזרות
-                {selectedOrchestra && (
-                  <span className='subtitle'>{selectedOrchestra.name}</span>
-                )}
               </h1>
             </div>
 
-            <div className='search-action-container'>
-              <Searchbar onSearch={handleSearch} placeholder='חיפוש חזרות...' />
+            <div className='search-action-container-rehearsal'>
+              {/* Search */}
+              <div className='search-box'>
+                <Search className='search-icon' size={18} />
+                <input
+                  type='text'
+                  placeholder='חיפוש לפי תזמורת...'
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className='search-input'
+                />
+                {searchTerm && (
+                  <button className='clear-search' onClick={clearSearch}>
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
 
               <div className='action-buttons'>
                 {/* Orchestra Filter */}
@@ -249,12 +273,19 @@ export function RehearsalIndex() {
                   />
                 </div>
 
+                {/* Clear Filters Button - Add this inside action-buttons */}
+                {(selectedOrchestraId || selectedDate || searchTerm) && (
+                  <button className='btn secondary' onClick={clearFilters}>
+                    איפוס 
+                  </button>
+                )}
+
+                {/* Add Button */}
                 {canAddRehearsal && (
                   <button
                     className='btn-icon add-btn'
                     onClick={handleAddRehearsal}
                     aria-label='הוספת חזרה חדשה'
-                    disabled={!selectedOrchestraId}
                   >
                     <Plus className='icon' />
                   </button>
@@ -268,7 +299,7 @@ export function RehearsalIndex() {
 
         {!isDetailPage && (
           <RehearsalList
-            groupedRehearsals={groupedRehearsals}
+            rehearsals={filteredRehearsals}
             isLoading={isLoading}
             onEdit={canEditRehearsal ? handleEditRehearsal : undefined}
             onView={handleViewRehearsal}

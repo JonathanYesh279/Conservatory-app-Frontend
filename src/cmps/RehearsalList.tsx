@@ -1,74 +1,112 @@
 // src/cmps/RehearsalList.tsx
-import { Rehearsal } from '../services/rehearsalService'
-import { Orchestra } from '../services/orchestraService'
-import { RehearsalPreview } from './RehearsalPreview'
-import { Calendar } from 'lucide-react'
-
-interface GroupedRehearsals {
-  date: string
-  rehearsals: Rehearsal[]
-}
+import { Rehearsal } from '../services/rehearsalService';
+import { Orchestra } from '../services/orchestraService';
+import { RehearsalPreview } from './RehearsalPreview';
+import { Calendar } from 'lucide-react';
+import { useMemo } from 'react';
 
 interface RehearsalListProps {
-  groupedRehearsals: GroupedRehearsals[]
-  isLoading: boolean
-  orchestras: Orchestra[]
-  onEdit?: (rehearsalId: string) => void
-  onView: (rehearsalId: string) => void
-  onRemove?: (rehearsalId: string) => void
+  rehearsals: Rehearsal[];
+  isLoading: boolean;
+  orchestras: Orchestra[];
+  onEdit?: (rehearsalId: string) => void;
+  onView: (rehearsalId: string) => void;
+  onRemove?: (rehearsalId: string) => void;
 }
 
 export function RehearsalList({
-  groupedRehearsals,
+  rehearsals,
   isLoading,
   orchestras,
   onEdit,
   onView,
   onRemove,
 }: RehearsalListProps) {
-  if (isLoading && groupedRehearsals.length === 0) {
-    return <div className='loading-state'>טוען חזרות...</div>
+  // Group rehearsals by date with today's rehearsals first
+  const groupedRehearsals = useMemo(() => {
+    if (!rehearsals.length) return [];
+
+    // Get today's date as YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
+
+    // Group rehearsals by date
+    const dateGroups = rehearsals.reduce((groups, rehearsal) => {
+      const date = rehearsal.date;
+      if (!groups[date]) {
+        groups[date] = {
+          date,
+          rehearsals: [],
+          isToday: date === today,
+        };
+      }
+      groups[date].rehearsals.push(rehearsal);
+      return groups;
+    }, {} as Record<string, { date: string; rehearsals: Rehearsal[]; isToday: boolean }>);
+
+    // Sort rehearsals within each group by start time
+    Object.values(dateGroups).forEach((group) => {
+      group.rehearsals.sort((a, b) => a.startTime.localeCompare(b.startTime));
+    });
+
+    // Convert to array and sort with today first, then by date
+    return Object.values(dateGroups).sort((a, b) => {
+      // Today's rehearsals first
+      if (a.isToday && !b.isToday) return -1;
+      if (!a.isToday && b.isToday) return 1;
+
+      // Then by date (ascending)
+      return new Date(a.date).getTime() - new Date(b.date).getTime();
+    });
+  }, [rehearsals]);
+
+  if (isLoading && rehearsals.length === 0) {
+    return <div className='loading-state'>טוען חזרות...</div>;
   }
 
-  if (groupedRehearsals.length === 0) {
+  if (rehearsals.length === 0) {
     return (
       <div className='empty-state'>
         <p>לא נמצאו חזרות להצגה</p>
         <p>נסה לשנות את מסנני החיפוש או להוסיף חזרות חדשות</p>
       </div>
-    )
+    );
   }
 
   // Format date to display in Hebrew
-  const formatDateHeader = (dateStr: string) => {
-    const date = new Date(dateStr)
+  const formatDateHeader = (dateStr: string, isToday: boolean) => {
+    if (isToday) {
+      return 'חזרות היום';
+    }
+
+    const date = new Date(dateStr);
     return date.toLocaleDateString('he-IL', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
-    })
-  }
+      day: 'numeric',
+    });
+  };
 
   // Get orchestra name by id
-  const getOrchestraName = (groupId: string) => {
-    const orchestra = orchestras.find(o => o._id === groupId)
-    return orchestra ? orchestra.name : 'תזמורת לא מוגדרת'
-  }
+  const getOrchestraName = (orchestraId: string) => {
+    const orchestra = orchestras.find((o) => o._id === orchestraId);
+    return orchestra ? orchestra.name : 'תזמורת לא מוגדרת';
+  };
 
   return (
     <div className='rehearsal-list-container'>
-      {groupedRehearsals.map(({ date, rehearsals }) => (
-        <div key={date} className='date-group'>
+      {groupedRehearsals.map(({ date, rehearsals, isToday }) => (
+        <div
+          key={date}
+          className={`rehearsal-date-group ${isToday ? 'today-group' : ''}`}
+        >
           <div className='date-header'>
-            <div className='date-text'>
-              <Calendar className='date-icon' size={18} />
-              {formatDateHeader(date)}
-            </div>
+            <Calendar size={20} />
+            <h2>{formatDateHeader(date, isToday)}</h2>
             <span className='date-count'>{rehearsals.length} חזרות</span>
           </div>
-          
-          <div className='rehearsals-list'>
+
+          <div className='rehearsal-grid'>
             {rehearsals.map((rehearsal) => (
               <RehearsalPreview
                 key={rehearsal._id}
@@ -77,11 +115,12 @@ export function RehearsalList({
                 onEdit={onEdit}
                 onView={onView}
                 onRemove={onRemove}
+                isToday={isToday}
               />
             ))}
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 // src/pages/OrchestraDetails.tsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin } from 'lucide-react'
+import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowRight } from 'lucide-react'
 import { useOrchestraStore } from '../store/orchestraStore'
 import { useTeacherStore } from '../store/teacherStore'
 import { useStudentStore } from '../store/studentStore'
@@ -166,6 +166,10 @@ export function OrchestraDetails() {
     })
   }
 
+   const goBack = () => {
+     navigate('/orchestras');
+   };
+
   // Handle edit
   const handleEdit = () => {
     setIsEditModalOpen(true)
@@ -259,16 +263,22 @@ export function OrchestraDetails() {
                 {canEdit && (
                   <button className='action-btn edit' onClick={handleEdit}>
                     <Edit size={16} />
-                    עריכה
                   </button>
                 )}
 
                 {isAdmin && (
                   <button className='action-btn delete' onClick={handleDelete}>
                     <X size={16} />
-                    מחיקה
                   </button>
                 )}
+
+                <button
+                  className='back-button'
+                  onClick={goBack}
+                  aria-label='חזרה'
+                >
+                  <ArrowRight size={20} />
+                </button>
               </div>
             </div>
 
@@ -352,6 +362,7 @@ export function OrchestraDetails() {
                                   <span className='member-name'>
                                     {member.personalInfo.fullName}
                                   </span>
+                                  <span> - </span>
                                   <span className='member-instrument'>
                                     {member.academicInfo.instrument}
                                   </span>
@@ -394,7 +405,7 @@ export function OrchestraDetails() {
                     {/* Add Rehearsal Button - Only visible for admin/conductor */}
                     {canEdit && (
                       <div className='add-rehearsal-btn-container'>
-                        <button 
+                        <button
                           className='btn primary add-rehearsal-btn'
                           onClick={handleAddRehearsal}
                         >
@@ -409,7 +420,11 @@ export function OrchestraDetails() {
                     ) : rehearsals && rehearsals.length > 0 ? (
                       <div className='rehearsals-list'>
                         {rehearsals
-                          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                          .sort(
+                            (a, b) =>
+                              new Date(a.date).getTime() -
+                              new Date(b.date).getTime()
+                          )
                           .map((rehearsal) => (
                             <div key={rehearsal._id} className='rehearsal-item'>
                               <div className='rehearsal-header'>
@@ -417,29 +432,35 @@ export function OrchestraDetails() {
                                   <Calendar size={16} />
                                   <span>{formatDate(rehearsal.date)}</span>
                                 </div>
-                                
+
                                 {canEdit && (
                                   <div className='rehearsal-actions'>
-                                    <button 
+                                    <button
                                       className='action-btn edit'
-                                      onClick={() => handleEditRehearsal(rehearsal)}
+                                      onClick={() =>
+                                        handleEditRehearsal(rehearsal)
+                                      }
                                     >
                                       <Edit size={14} />
                                     </button>
-                                    <button 
+                                    <button
                                       className='action-btn delete'
-                                      onClick={() => handleDeleteRehearsal(rehearsal._id)}
+                                      onClick={() =>
+                                        handleDeleteRehearsal(rehearsal._id)
+                                      }
                                     >
                                       <X size={14} />
                                     </button>
                                   </div>
                                 )}
                               </div>
-                              
+
                               <div className='rehearsal-details'>
                                 <div className='rehearsal-time'>
                                   <Clock size={16} />
-                                  <span>{rehearsal.startTime} - {rehearsal.endTime}</span>
+                                  <span>
+                                    {rehearsal.startTime} - {rehearsal.endTime}
+                                  </span>
                                 </div>
                                 <div className='rehearsal-location'>
                                   <MapPin size={16} />
@@ -448,7 +469,9 @@ export function OrchestraDetails() {
                                 {rehearsal.notes && (
                                   <div className='rehearsal-notes'>
                                     <span className='notes-label'>הערות:</span>
-                                    <span className='notes-text'>{rehearsal.notes}</span>
+                                    <span className='notes-text'>
+                                      {rehearsal.notes}
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -475,8 +498,8 @@ export function OrchestraDetails() {
           onClose={() => setIsEditModalOpen(false)}
           orchestra={selectedOrchestra}
           onSave={() => {
-            setIsEditModalOpen(false)
-            orchestraId && loadOrchestraById(orchestraId)
+            setIsEditModalOpen(false);
+            orchestraId && loadOrchestraById(orchestraId);
           }}
         />
       )}
@@ -489,8 +512,8 @@ export function OrchestraDetails() {
           rehearsal={selectedRehearsal}
           orchestraId={orchestraId!}
           onSave={() => {
-            setIsRehearsalFormOpen(false)
-            orchestraId && loadRehearsalsByOrchestraId(orchestraId)
+            setIsRehearsalFormOpen(false);
+            orchestraId && loadRehearsalsByOrchestraId(orchestraId);
           }}
         />
       )}
@@ -531,5 +554,5 @@ export function OrchestraDetails() {
         type='danger'
       />
     </div>
-  )
+  );
 }

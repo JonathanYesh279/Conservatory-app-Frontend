@@ -73,17 +73,6 @@ export function OrchestraPreview({
             </div>
           </div>
         </div>
-
-        <div className='badges-container'>
-          <div
-            className='type-badge'
-            style={{
-              backgroundColor: getTypeColor(orchestra.type),
-            }}
-          >
-            <span>{orchestra.type}</span>
-          </div>
-        </div>
       </div>
 
       <div className='preview-content'>
