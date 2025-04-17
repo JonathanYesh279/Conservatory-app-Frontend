@@ -1,7 +1,7 @@
 // src/pages/OrchestraDetails.tsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowRight } from 'lucide-react'
+import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowLeft } from 'lucide-react'
 import { useOrchestraStore } from '../store/orchestraStore'
 import { useTeacherStore } from '../store/teacherStore'
 import { useStudentStore } from '../store/studentStore'
@@ -277,7 +277,7 @@ export function OrchestraDetails() {
                   onClick={goBack}
                   aria-label='חזרה'
                 >
-                  <ArrowRight size={20} />
+                  <ArrowLeft size={20} />
                 </button>
               </div>
             </div>

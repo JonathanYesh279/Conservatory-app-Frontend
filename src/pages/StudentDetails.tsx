@@ -13,7 +13,7 @@ import {
   BookOpen,
   Music,
   Award,
-  ArrowRight,
+  ArrowLeft,
   RefreshCw,
   ChevronDown,
   ChevronUp,
@@ -283,7 +283,7 @@ export function StudentDetails() {
                     onClick={goBack}
                     aria-label='חזרה'
                   >
-                    <ArrowRight size={20} />
+                    <ArrowLeft size={20} />
                   </button>
                 </div>
               </div>
@@ -583,12 +583,12 @@ export function StudentDetails() {
                 {flipped ? (
                   <>
                     <span>הצג מידע אקדמי</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 ) : (
                   <>
                     <span>הצג פרטים אישיים</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 )}
               </button>
@@ -818,12 +818,12 @@ export function StudentDetails() {
                 {flipped ? (
                   <>
                     <span>הצג מידע אקדמי</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 ) : (
                   <>
                     <span>הצג פרטים אישיים</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 )}
               </button>

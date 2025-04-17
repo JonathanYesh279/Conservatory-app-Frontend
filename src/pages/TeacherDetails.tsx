@@ -12,7 +12,7 @@ import {
   BookOpen,
   Music,
   Users,
-  ArrowRight,
+  ArrowLeft,
   RefreshCw,
   ChevronDown,
   ChevronUp,
@@ -379,7 +379,7 @@ export function TeacherDetails() {
                     onClick={goBack}
                     aria-label='חזרה'
                   >
-                    <ArrowRight size={20} />
+                    <ArrowLeft size={20} />
                   </button>
                 </div>
               </div>
@@ -530,12 +530,12 @@ export function TeacherDetails() {
                 {flipped ? (
                   <>
                     <span>הצג מידע מקצועי</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 ) : (
                   <>
                     <span>הצג פרטים אישיים</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 )}
               </button>
@@ -593,7 +593,7 @@ export function TeacherDetails() {
                     onClick={goBack}
                     aria-label='חזרה'
                   >
-                    <ArrowRight size={20} />
+                    <ArrowLeft size={20} />
                   </button>
                 </div>
               </div>
@@ -721,12 +721,12 @@ export function TeacherDetails() {
                 {flipped ? (
                   <>
                     <span>הצג מידע מקצועי</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 ) : (
                   <>
                     <span>הצג פרטים אישיים</span>
-                    <ArrowRight size={14} />
+                    <ArrowLeft size={14} />
                   </>
                 )}
               </button>

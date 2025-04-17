@@ -1,7 +1,7 @@
 // src/pages/RehearsalDetails.tsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit, Calendar, Users, ArrowRight } from 'lucide-react';
+import { Edit, Calendar, Users, ArrowLeft } from 'lucide-react';
 import { useRehearsalStore } from '../store/rehearsalStore';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useStudentStore } from '../store/studentStore';
@@ -230,7 +230,7 @@ export function RehearsalDetails() {
                 onClick={handleBackToRehearsals}
                 aria-label='חזור'
               >
-                <ArrowRight className='lucide lucide-arrow-right' />
+                <ArrowLeft className='lucide lucide-arrow-right' />
               </button>
 
               <div className='header-title'>

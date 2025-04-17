@@ -52,9 +52,9 @@ img, svg {
 }
 
 /* Don't show horizontal scrollbar */
-div {
-  overflow-x: hidden;
-}
+// div {
+//   overflow-x: hidden;
+// }
 
 // Smooth scrolling
 html {
@@ -105,4 +105,5 @@ html {
   width: 100%;
   overflow-x: hidden;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 10;
 }

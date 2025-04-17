@@ -127,7 +127,7 @@
       border-radius: 0.5rem;
       box-shadow: var(--shadow-md);
       overflow: hidden;
-      z-index: 10;
+      z-index: 10000;
       transform-origin: top right;
       animation: dropdown-appear 0.2s cubic-bezier(0.16, 1, 0.3, 1);
       border: 1px solid var(--border-color);
