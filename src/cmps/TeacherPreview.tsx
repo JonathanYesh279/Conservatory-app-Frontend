@@ -11,6 +11,7 @@ import {
   Mail,
   GraduationCap,
 } from 'lucide-react';
+import { openWhatsApp } from '../utils/phoneUtils.ts'; // Import the utility function
 
 interface TeacherPreviewProps {
   teacher: Teacher;
@@ -53,11 +54,18 @@ export function TeacherPreview({
     return `${count} תלמידים`;
   };
 
+  // Handle WhatsApp click
+  const handleWhatsAppClick = (e: React.MouseEvent, phone: string) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick (opening details)
+    openWhatsApp(phone);
+  };
+
   // Check if teacher has students
   const hasStudents =
     teacher.teaching?.studentIds && teacher.teaching.studentIds.length > 0;
 
-  const studentCount = hasStudents && teacher.teaching ? teacher.teaching.studentIds.length : 0
+  const studentCount =
+    hasStudents && teacher.teaching ? teacher.teaching.studentIds.length : 0;
 
   // Get primary role for display
   const primaryRole =
@@ -121,7 +129,15 @@ export function TeacherPreview({
           {teacher.personalInfo.phone && (
             <div className='info-item'>
               <Phone size={16} />
-              <span>{teacher.personalInfo.phone}</span>
+              <span
+                className='clickable-phone'
+                onClick={(e) =>
+                  handleWhatsAppClick(e, teacher.personalInfo.phone)
+                }
+                title='לחץ לפתיחת שיחה בוואטסאפ'
+              >
+                {teacher.personalInfo.phone}
+              </span>
             </div>
           )}
 

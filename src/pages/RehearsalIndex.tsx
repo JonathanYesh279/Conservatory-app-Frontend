@@ -234,23 +234,6 @@ export function RehearsalIndex() {
             </div>
 
             <div className='search-action-container-rehearsal'>
-              {/* Search */}
-              <div className='search-box'>
-                <Search className='search-icon' size={18} />
-                <input
-                  type='text'
-                  placeholder='חיפוש לפי תזמורת...'
-                  value={searchTerm}
-                  onChange={handleSearch}
-                  className='search-input'
-                />
-                {searchTerm && (
-                  <button className='clear-search' onClick={clearSearch}>
-                    <X size={16} />
-                  </button>
-                )}
-              </div>
-
               <div className='action-buttons'>
                 {/* Orchestra Filter */}
                 <div className='filter-dropdown'>
