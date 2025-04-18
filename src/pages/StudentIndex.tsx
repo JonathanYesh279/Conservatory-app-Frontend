@@ -174,7 +174,7 @@ export function StudentIndex() {
           type='danger'
         />
       </main>
-      {!isDetailPage && <BottomNavbar />}
+      {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>
   );
 }

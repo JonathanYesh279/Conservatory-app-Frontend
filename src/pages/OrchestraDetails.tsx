@@ -71,7 +71,7 @@ export function OrchestraDetails() {
   const [rehearsalToDelete, setRehearsalToDelete] = useState<string | null>(null)
 
   // Section toggle states
-  const [showInfoSection, setShowInfoSection] = useState(true)
+  const [showInfoSection, setShowInfoSection] = useState(false)
   const [showMembersSection, setShowMembersSection] = useState(false)
   const [showRehearsalsSection, setShowRehearsalsSection] = useState(false)
 
@@ -220,6 +220,10 @@ export function OrchestraDetails() {
     }
     setIsConfirmRehearsalDeleteOpen(false)
     setRehearsalToDelete(null)
+  }
+
+  const handleRehearsalClick = (rehearsalId: string) => {
+    navigate(`/rehearsals/${rehearsalId}`);
   }
 
   // Toggle sections
@@ -426,7 +430,11 @@ export function OrchestraDetails() {
                               new Date(b.date).getTime()
                           )
                           .map((rehearsal) => (
-                            <div key={rehearsal._id} className='rehearsal-item'>
+                            <div key={rehearsal._id}
+                              className='rehearsal-item'
+                              onClick={() => handleRehearsalClick(rehearsal._id)}
+                              style={{ cursor: 'pointer' }}
+                            >
                               <div className='rehearsal-header'>
                                 <div className='rehearsal-date'>
                                   <Calendar size={16} />
@@ -437,17 +445,19 @@ export function OrchestraDetails() {
                                   <div className='rehearsal-actions'>
                                     <button
                                       className='action-btn edit'
-                                      onClick={() =>
+                                      onClick={(e) => {
+                                        e.stopPropagation()
                                         handleEditRehearsal(rehearsal)
-                                      }
+                                    }}
                                     >
                                       <Edit size={14} />
                                     </button>
                                     <button
                                       className='action-btn delete'
-                                      onClick={() =>
+                                      onClick={(e) => {
+                                        e.stopPropagation()
                                         handleDeleteRehearsal(rehearsal._id)
-                                      }
+                                      }}
                                     >
                                       <X size={14} />
                                     </button>

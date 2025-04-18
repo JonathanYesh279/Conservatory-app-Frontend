@@ -504,7 +504,7 @@
           
           .filter-dropdown,
           .filter-date {
-            width: calc(50% - 0.25rem);
+            min-width: 150px;
           }
           
           .btn-icon.add-btn {

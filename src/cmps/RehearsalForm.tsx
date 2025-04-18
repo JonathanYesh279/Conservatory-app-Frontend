@@ -452,14 +452,14 @@ export function RehearsalForm({
           <div className='mode-toggle'>
             <button
               type='button'
-              className={`toggle-btn ${formMode === 'single' ? 'active' : ''}`}
+              className={`btn primary ${formMode === 'single' ? 'active' : ''}`}
               onClick={() => handleSetFormMode('single')}
             >
               חזרה בודדת
             </button>
             <button
               type='button'
-              className={`toggle-btn ${formMode === 'bulk' ? 'active' : ''}`}
+              className={`btn primary ${formMode === 'bulk' ? 'active' : ''}`}
               onClick={() => handleSetFormMode('bulk')}
             >
               חזרות מרובות

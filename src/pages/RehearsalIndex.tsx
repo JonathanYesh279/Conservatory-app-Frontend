@@ -12,7 +12,7 @@ import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Plus, Calendar, Search, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { Rehearsal } from '../services/rehearsalService';
+import { Rehearsal, RehearsalFilter } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { RehearsalList } from '../cmps/RehearsalList';
 import { RehearsalForm } from '../cmps/RehearsalForm';
@@ -63,7 +63,7 @@ export function RehearsalIndex() {
     loadOrchestras();
 
     // Build filter parameters from URL or state
-    const filterParams = {};
+    const filterParams: RehearsalFilter = {};
 
     if (orchestraIdParam) {
       filterParams.groupId = orchestraIdParam;
@@ -73,6 +73,11 @@ export function RehearsalIndex() {
     if (fromDateParam) {
       filterParams.fromDate = fromDateParam;
       setSelectedDate(fromDateParam);
+    } else {
+      const today = new Date()
+       const formattedDate = today.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+       filterParams.fromDate = formattedDate;
+       setSelectedDate(formattedDate);
     }
 
     // Load rehearsals with filters
@@ -276,7 +281,7 @@ export function RehearsalIndex() {
                 {/* Clear Filters Button - Add this inside action-buttons */}
                 {(selectedOrchestraId || selectedDate || searchTerm) && (
                   <button className='btn secondary' onClick={clearFilters}>
-                    איפוס 
+                    איפוס
                   </button>
                 )}
 
@@ -339,7 +344,7 @@ export function RehearsalIndex() {
         )}
       </main>
 
-      {!isDetailPage && <BottomNavbar />}
+      {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>
   );
 }

@@ -7,12 +7,11 @@
   right: 0;
   bottom: 0;
   z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 1rem 0;
+  overflow-y: auto;
   
   .overlay {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
@@ -25,20 +24,21 @@
     position: relative;
     width: 90%;
     max-width: 550px;
-    max-height: 90vh;
+    margin: 0 auto;
     overflow-y: auto;
     background-color: #1e2a3b;
     border-radius: 0.75rem;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-    padding: 1.5rem;
+    padding: 1rem;
     z-index: 1;
     direction: rtl;
     
     .close-btn {
       position: absolute;
-      top: 1rem;
+      top: 4rem;
       left: 1rem;
       background: none;
+      background-color: var(--bg-tertiary);
       border: none;
       color: #a0aec0;
       cursor: pointer;
@@ -67,6 +67,17 @@
       font-weight: 500;
       opacity: 0.9;
     }
+
+    .mode-toggle {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+      margin: 1rem 0;
+    }
     
     .error-message {
       background-color: rgba(231, 76, 60, 0.1);
@@ -80,7 +91,7 @@
     
     form {
       .form-section {
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
         
         h3 {
           font-size: 1.1rem;
@@ -161,7 +172,7 @@
         display: flex;
         justify-content: center;
         gap: 1rem;
-        margin-top: 1.5rem;
+        margin: 1rem 0;
         
         button {
           padding: 0.6rem 1.5rem;
@@ -204,7 +215,8 @@
 // Media queries
 @media (max-width: 576px) {
   .rehearsal-form .form-modal {
-    padding: 1rem;
+    padding-top: 4.5rem;
+    padding-inline: 0.5rem;
     width: 95%;
     
     h2 {

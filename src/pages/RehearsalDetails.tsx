@@ -1,7 +1,7 @@
 // src/pages/RehearsalDetails.tsx
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Edit, Calendar, Users, ArrowLeft } from 'lucide-react';
+import { Edit, Calendar, ArrowLeft } from 'lucide-react';
 import { useRehearsalStore } from '../store/rehearsalStore';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useStudentStore } from '../store/studentStore';
@@ -177,11 +177,6 @@ export function RehearsalDetails() {
   // Handle edit
   const handleEdit = () => {
     setIsEditModalOpen(true);
-  };
-
-  // Handle delete
-  const handleDelete = () => {
-    setIsConfirmDialogOpen(true);
   };
 
   // Navigate back to rehearsals

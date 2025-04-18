@@ -1,6 +1,6 @@
 // src/cmps/OrchestraForm.tsx
 import { useState, useEffect, useRef } from 'react';
-import { X, ChevronDown, User, Search, X as XIcon } from 'lucide-react';
+import { X, User, Search, X as XIcon } from 'lucide-react';
 import { Orchestra } from '../services/orchestraService';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useTeacherStore } from '../store/teacherStore';
@@ -19,6 +19,41 @@ const VALID_NAMES = [
   'תזמורת סימפונית',
 ];
 
+const VALID_LOCATIONS = [
+  'אולם ערן',
+  'סטודיו קאמרי 1',
+  'סטודיו קאמרי 2',
+  'אולפן הקלטות',
+  'חדר חזרות 1',
+  'חדר חזרות 2',
+  'חדר מחשבים',
+  'חדר 1',
+  'חדר 2',
+  'חדר חזרות',
+  'חדר 5',
+  'חדר 6',
+  'חדר 7',
+  'חדר 8',
+  'חדר 9',
+  'חדר 10',
+  'חדר 11',
+  'חדר 12',
+  'חדר 13',
+  'חדר 14',
+  'חדר 15',
+  'חדר 16',
+  'חדר 17',
+  'חדר 18',
+  'חדר 19',
+  'חדר 20',
+  'חדר 21',
+  'חדר 22',
+  'חדר 23',
+  'חדר 24',
+  'חדר 25',
+  'חדר 26',
+];
+
 interface OrchestraFormData {
   _id?: string;
   name: string;
@@ -27,6 +62,7 @@ interface OrchestraFormData {
   memberIds: string[];
   rehearsalIds: string[];
   schoolYearId: string;
+  location: string;
   isActive: boolean;
 }
 
@@ -58,7 +94,7 @@ export function OrchestraForm({
   const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
   const searchRef = useRef<HTMLDivElement>(null);
 
-  // Form state
+  // Form state with complete initial values
   const [formData, setFormData] = useState<OrchestraFormData>({
     name: '',
     type: VALID_TYPES[1], // Default to 'תזמורת'
@@ -66,6 +102,7 @@ export function OrchestraForm({
     memberIds: [],
     rehearsalIds: [],
     schoolYearId: '',
+    location: 'חדר 1', // Default location
     isActive: true,
   });
 
@@ -139,6 +176,7 @@ export function OrchestraForm({
         schoolYearId:
           orchestra.schoolYearId ||
           (currentSchoolYear ? currentSchoolYear._id : ''),
+        location: orchestra.location || 'חדר 1', // Default if not present
         isActive: orchestra.isActive !== false,
       });
 
@@ -170,6 +208,7 @@ export function OrchestraForm({
         memberIds: [],
         rehearsalIds: [],
         schoolYearId: currentSchoolYear ? currentSchoolYear._id : '',
+        location: 'חדר 1', // Include default location
         isActive: true,
       });
       setSelectedMembers([]);
@@ -269,6 +308,10 @@ export function OrchestraForm({
 
     if (!formData.conductorId) {
       newErrors['conductorId'] = 'יש לבחור מנצח';
+    }
+
+    if (!formData.location) {
+      newErrors['location'] = 'יש לבחור מקום';
     }
 
     if (!formData.schoolYearId) {
@@ -435,6 +478,31 @@ export function OrchestraForm({
                 </select>
                 {errors['type'] && (
                   <div className='form-error'>{errors['type']}</div>
+                )}
+              </div>
+            </div>
+
+            {/* Location */}
+            <div className='form-row full-width'>
+              <div className='form-group'>
+                <label htmlFor='location'>מקום *</label>
+                <select
+                  id='location'
+                  name='location'
+                  value={formData.location}
+                  onChange={handleChange}
+                  className={errors['location'] ? 'is-invalid' : ''}
+                  required
+                >
+                  <option value=''>בחר מקום</option>
+                  {VALID_LOCATIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
+                {errors['location'] && (
+                  <div className='form-error'>{errors['location']}</div>
                 )}
               </div>
             </div>

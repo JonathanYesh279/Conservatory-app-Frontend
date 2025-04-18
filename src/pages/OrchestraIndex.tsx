@@ -190,7 +190,7 @@ export function OrchestraIndex() {
         )}
       </main>
 
-      {!isDetailPage && <BottomNavbar />}
+      {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export interface Orchestra {
   memberIds: string[];
   rehearsalIds: string[];
   schoolYearId: string;
+  location: string,
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

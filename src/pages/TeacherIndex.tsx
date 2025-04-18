@@ -180,7 +180,7 @@ export function TeacherIndex() {
         />
       </main>
 
-      {!isDetailPage && <BottomNavbar />}
+      {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>
   );
 }
