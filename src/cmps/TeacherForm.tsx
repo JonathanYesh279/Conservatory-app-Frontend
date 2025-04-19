@@ -1,52 +1,55 @@
 // src/cmps/TeacherForm.tsx
-import { useState, useEffect } from 'react';
-import { X, Eye, EyeOff } from 'lucide-react';
-import { Teacher } from '../services/teacherService';
-import { useTeacherStore } from '../store/teacherStore';
-import { useSchoolYearStore } from '../store/schoolYearStore';
-import { Orchestra, orchestraService } from '../services/orchestraService';
+import { useState, useEffect } from 'react'
+import { X, Eye, EyeOff, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { Teacher } from '../services/teacherService'
+import { useTeacherStore } from '../store/teacherStore'
+import { useSchoolYearStore } from '../store/schoolYearStore'
+import { Orchestra, orchestraService } from '../services/orchestraService'
+import { Student, studentService } from '../services/studentService'
+import { useSearchbar } from '../hooks/useSearchbar'
+import { useNavigate } from 'react-router-dom'
 
 // Define type for form data structure
 interface TeacherFormData {
-  _id?: string;
+  _id?: string
   personalInfo: {
-    fullName: string;
-    phone: string;
-    email: string;
-    address: string;
-  };
-  roles: string[];
+    fullName: string
+    phone: string
+    email: string
+    address: string
+  }
+  roles: string[]
   professionalInfo: {
-    instrument: string;
-    isActive: boolean;
-  };
+    instrument: string
+    isActive: boolean
+  }
   teaching: {
-    studentIds: string[];
+    studentIds: string[]
     schedule: Array<{
-      studentId: string;
-      day: string;
-      time: string;
-      duration: number;
-      isActive: boolean; // This was missing!
-    }>;
-  };
+      studentId: string
+      day: string
+      time: string
+      duration: number
+      isActive: boolean
+    }>
+  }
   conducting: {
-    orchestraIds: string[];
-  };
-  ensembleIds: string[]; // Note: In your Teacher interface this is ensembleIds, not ensemblesIds
+    orchestraIds: string[]
+  }
+  ensemblesIds: string[] // Changed from ensembleIds to ensemblesIds to match backend schema
   schoolYears: Array<{
-    schoolYearId: string;
-    isActive: boolean;
-  }>;
+    schoolYearId: string
+    isActive: boolean
+  }>
   credentials: {
-    email: string;
-    password: string;
-  };
-  isActive: boolean;
+    email: string
+    password: string
+  }
+  isActive: boolean
 }
 
 // Constants for validation and form selection
-const VALID_RULES = ['מורה', 'מנצח', 'מדריך הרכב', 'מנהל', 'מדריך תאוריה'];
+const VALID_RULES = ['מורה', 'מנצח', 'מדריך הרכב', 'מנהל', 'מדריך תאוריה']
 const VALID_INSTRUMENTS = [
   'חצוצרה',
   'חליל צד',
@@ -55,13 +58,19 @@ const VALID_INSTRUMENTS = [
   'בריטון',
   'טרומבון',
   'סקסופון',
-];
+]
+
+// Constants for student scheduling
+const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי']
+const LESSON_DURATIONS = [30, 45, 60]
 
 interface TeacherFormProps {
-  isOpen: boolean;
-  onClose: () => void;
-  teacher?: Partial<Teacher>;
-  onSave?: () => void;
+  isOpen: boolean
+  onClose: () => void
+  teacher?: Partial<Teacher>
+  onSave?: () => void
+  onAddNewStudent?: (teacherInfo: { fullName: string, instrument: string }) => void;
+  newlyCreatedStudent?: Student | null  // New prop to receive the created student
 }
 
 export function TeacherForm({
@@ -69,12 +78,34 @@ export function TeacherForm({
   onClose,
   teacher,
   onSave,
+  onAddNewStudent,
+  newlyCreatedStudent
 }: TeacherFormProps) {
   const { saveTeacher, isLoading, error, clearError } = useTeacherStore();
   const { currentSchoolYear } = useSchoolYearStore();
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [loadingOrchestras, setLoadingOrchestras] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const navigate = useNavigate();
+
+  // Student management state
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [showStudentSearch, setShowStudentSearch] = useState(false);
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+
+  // Define which fields to search in students
+  const studentSearchFields = (student: Student) => [
+    student.personalInfo.fullName,
+    student.academicInfo.instrument,
+    student.academicInfo.class,
+  ];
+
+  // Use the search hook for students
+  const {
+    filteredEntities: filteredStudents,
+    handleSearch: handleStudentSearch,
+  } = useSearchbar(students, studentSearchFields);
 
   // Form state with proper typing
   const [formData, setFormData] = useState<TeacherFormData>({
@@ -91,12 +122,12 @@ export function TeacherForm({
     },
     teaching: {
       studentIds: [],
-      schedule: [], // This is already an empty array which is fine
+      schedule: [],
     },
     conducting: {
       orchestraIds: [],
     },
-    ensembleIds: [], // Make sure this matches the interface (ensembleIds, not ensemblesIds)
+    ensemblesIds: [], // Changed from ensembleIds to ensemblesIds to match backend schema
     schoolYears: [],
     credentials: {
       email: '',
@@ -108,6 +139,14 @@ export function TeacherForm({
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+
+  // Effect to handle newly created student
+  useEffect(() => {
+    if (newlyCreatedStudent) {
+      // Add the newly created student to the selected students
+      handleAddStudent(newlyCreatedStudent);
+    }
+  }, [newlyCreatedStudent]);
 
   // Check for mobile device
   useEffect(() => {
@@ -140,6 +179,25 @@ export function TeacherForm({
     fetchOrchestras();
   }, []);
 
+  // Load students for selection
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoadingStudents(true);
+      try {
+        const allStudents = await studentService.getStudents({
+          isActive: true,
+        });
+        setStudents(allStudents);
+      } catch (err) {
+        console.error('Failed to load students:', err);
+      } finally {
+        setLoadingStudents(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
   // Check if teacher is conductor or teacher
   const isConductor = formData.roles.includes('מנצח');
   const isTeacher = formData.roles.includes('מורה');
@@ -147,6 +205,29 @@ export function TeacherForm({
   // If editing an existing teacher, populate form data
   useEffect(() => {
     if (teacher?._id) {
+      // Map students from IDs to actual student objects
+      const mapStudentIdsToStudents = async () => {
+        if (
+          teacher.teaching?.studentIds &&
+          teacher.teaching.studentIds.length > 0
+        ) {
+          setLoadingStudents(true);
+          try {
+            const studentData = await studentService.getStudentsByIds(
+              teacher.teaching.studentIds
+            );
+            setSelectedStudents(studentData);
+          } catch (err) {
+            console.error("Failed to load teacher's students:", err);
+          } finally {
+            setLoadingStudents(false);
+          }
+        }
+      };
+
+      // Load the teacher's students
+      mapStudentIdsToStudents();
+
       setFormData({
         _id: teacher._id,
         personalInfo: {
@@ -168,7 +249,7 @@ export function TeacherForm({
         conducting: {
           orchestraIds: teacher.conducting?.orchestraIds || [],
         },
-        ensembleIds: teacher.ensembleIds || [],
+        ensemblesIds: teacher.ensemblesIds || [], // Changed from ensembleIds to ensemblesIds
         schoolYears: teacher.schoolYears || [],
         credentials: {
           email: teacher.personalInfo?.email || '',
@@ -197,7 +278,7 @@ export function TeacherForm({
         conducting: {
           orchestraIds: [],
         },
-        ensembleIds: [],
+        ensemblesIds: [], // Changed from ensembleIds to ensemblesIds
         schoolYears: currentSchoolYear
           ? [
               {
@@ -212,6 +293,9 @@ export function TeacherForm({
         },
         isActive: true,
       });
+
+      // Reset selected students
+      setSelectedStudents([]);
     }
 
     setErrors({});
@@ -333,6 +417,99 @@ export function TeacherForm({
     }
   };
 
+  // Handle adding a student to the teacher
+  const handleAddStudent = (student: Student) => {
+    // Check if student is already selected
+    if (selectedStudents.some((s) => s._id === student._id)) {
+      return;
+    }
+
+    // Add student to selected students
+    setSelectedStudents([...selectedStudents, student]);
+
+    // Create initial schedule entry for this student
+    const newScheduleItem = {
+      studentId: student._id,
+      day: DAYS_OF_WEEK[0],
+      time: '08:00',
+      duration: 45,
+      isActive: true,
+    };
+
+    // Update form data
+    setFormData({
+      ...formData,
+      teaching: {
+        studentIds: [...formData.teaching.studentIds, student._id],
+        schedule: [...formData.teaching.schedule, newScheduleItem],
+      },
+    });
+
+    // Hide search after selection
+    setShowStudentSearch(false);
+  };
+
+  // Handle removing a student from the teacher
+  const handleRemoveStudent = (studentId: string) => {
+    // Remove student from selected students
+    setSelectedStudents(selectedStudents.filter((s) => s._id !== studentId));
+
+    // Update form data
+    setFormData({
+      ...formData,
+      teaching: {
+        studentIds: formData.teaching.studentIds.filter(
+          (id) => id !== studentId
+        ),
+        schedule: formData.teaching.schedule.filter(
+          (item) => item.studentId !== studentId
+        ),
+      },
+    });
+  };
+
+  // Handle updating schedule for a student
+  const handleScheduleChange = (
+    studentId: string,
+    field: 'day' | 'time' | 'duration',
+    value: string | number
+  ) => {
+    // Update the schedule item for this student
+    const updatedSchedule = formData.teaching.schedule.map((item) => {
+      if (item.studentId === studentId) {
+        return { ...item, [field]: value };
+      }
+      return item;
+    });
+
+    // Update form data
+    setFormData({
+      ...formData,
+      teaching: {
+        ...formData.teaching,
+        schedule: updatedSchedule,
+      },
+    });
+  };
+
+  // Handle navigating to add a new student
+  const handleAddNewStudent = () => {
+    // Capture the current teacher information that's being entered
+    const teacherInfo = {
+      fullName: formData.personalInfo.fullName,
+      instrument: formData.professionalInfo.instrument,
+    };
+
+    // Use the callback if provided, passing the in-progress teacher info
+    if (onAddNewStudent) {
+      onAddNewStudent(teacherInfo);
+    } else {
+      // Fallback to the old approach
+      onClose();
+      navigate('/students/new');
+    }
+  };
+
   // Validate form
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -390,6 +567,16 @@ export function TeacherForm({
         'דוא"ל בהרשאות חייב להתאים לדוא"ל בפרטים אישיים';
     }
 
+    // Validate student schedule
+    formData.teaching.schedule.forEach((scheduleItem, index) => {
+      if (!scheduleItem.day) {
+        newErrors[`teaching.schedule[${index}].day`] = 'יש לבחור יום';
+      }
+      if (!scheduleItem.time) {
+        newErrors[`teaching.schedule[${index}].time`] = 'יש לבחור שעה';
+      }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -405,22 +592,22 @@ export function TeacherForm({
     try {
       const teacherId = formData._id;
       // Remove the _id field from the data to send to the server
-      const { _id, ...dataWithoutId } = formData;
+      const { _id, ...dataWithoutId } = formData as any;
 
       // Handle password for existing teachers
       if (teacherId && dataWithoutId.credentials.password === '********') {
         // Remove password if it's the masked placeholder
-       dataWithoutId.credentials = {
-         email: dataWithoutId.credentials.email,
-         password: '', // Or any appropriate default
-       };
+        dataWithoutId.credentials = {
+          email: dataWithoutId.credentials.email,
+          password: '', // Or any appropriate default
+        };
       }
 
       // Make sure the teacher has the current school year in enrollments
       if (
         currentSchoolYear &&
         !dataWithoutId.schoolYears?.some(
-          (sy) => sy.schoolYearId === currentSchoolYear._id
+          (sy: any) => sy.schoolYearId === currentSchoolYear._id
         )
       ) {
         dataWithoutId.schoolYears = [
@@ -429,50 +616,24 @@ export function TeacherForm({
         ];
       }
 
+      // Remove isActive from teaching.schedule items - this property is not allowed in the backend schema
+      if (dataWithoutId.teaching && dataWithoutId.teaching.schedule) {
+        dataWithoutId.teaching.schedule = dataWithoutId.teaching.schedule.map(
+          (item: any) => ({
+            studentId: item.studentId,
+            day: item.day,
+            time: item.time,
+            duration: item.duration,
+            // isActive property is removed
+          })
+        );
+      }
+
       // Save or update teacher
       if (teacherId) {
-        if (dataWithoutId.teaching) {
-          // Create a properly typed schedule array
-          const typedSchedule = Array.isArray(dataWithoutId.teaching.schedule)
-            ? dataWithoutId.teaching.schedule.map((item) => ({
-                studentId: item.studentId,
-                day: item.day,
-                time: item.time,
-                duration: item.duration,
-                isActive: true,
-              }))
-            : [];
-
-          // Replace the teaching object with a properly structured one
-          dataWithoutId.teaching = {
-            studentIds: dataWithoutId.teaching.studentIds || [],
-            schedule: typedSchedule,
-          };
-        }
         // For updates, we need to call updateTeacher separately
         await saveTeacher(dataWithoutId, teacherId);
       } else {
-       if (dataWithoutId.teaching) {
-         // Create a properly typed schedule array
-         const typedSchedule = Array.isArray(dataWithoutId.teaching.schedule)
-           ? dataWithoutId.teaching.schedule.map((item) => {
-               // Explicitly create an object with all required properties
-               return {
-                 studentId: item.studentId,
-                 day: item.day,
-                 time: item.time,
-                 duration: item.duration,
-                 isActive: true, // Ensure this property is always added
-               };
-             })
-           : [];
-
-         // Replace the teaching object with a properly structured one
-         dataWithoutId.teaching = {
-           studentIds: dataWithoutId.teaching.studentIds || [],
-           schedule: typedSchedule,
-         };
-       }
         // For new teachers, add them without an ID
         await saveTeacher(dataWithoutId);
       }
@@ -703,6 +864,197 @@ export function TeacherForm({
               </div>
             )}
           </div>
+
+          {/* Students Section - Only for teachers */}
+          {isTeacher && (
+            <div className='form-section'>
+              <h3>תלמידים</h3>
+
+              {/* Selected Students List */}
+              {selectedStudents.length > 0 && (
+                <div className='selected-students'>
+                  <h4>תלמידים שהוקצו למורה</h4>
+
+                  {selectedStudents.map((student) => (
+                    <div key={student._id} className='student-schedule-item'>
+                      <div className='student-info'>
+                        <div className='student-name'>
+                          {student.personalInfo.fullName}
+                        </div>
+                        <div className='student-details'>
+                          <span>{student.academicInfo.instrument}</span>
+                          <span>כיתה {student.academicInfo.class}</span>
+                          <span>שלב {student.academicInfo.currentStage}</span>
+                        </div>
+                        <button
+                          type='button'
+                          className='remove-student-btn'
+                          onClick={() => handleRemoveStudent(student._id)}
+                          aria-label='הסר תלמיד'
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+
+                      {/* Schedule fields for this student */}
+                      <div className='schedule-fields'>
+                        <div className='form-group'>
+                          <label htmlFor={`day-${student._id}`}>יום</label>
+                          <select
+                            id={`day-${student._id}`}
+                            value={
+                              formData.teaching.schedule.find(
+                                (s) => s.studentId === student._id
+                              )?.day || DAYS_OF_WEEK[0]
+                            }
+                            onChange={(e) =>
+                              handleScheduleChange(
+                                student._id,
+                                'day',
+                                e.target.value
+                              )
+                            }
+                          >
+                            {DAYS_OF_WEEK.map((day) => (
+                              <option key={day} value={day}>
+                                {day}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className='form-group'>
+                          <label htmlFor={`time-${student._id}`}>שעה</label>
+                          <input
+                            type='time'
+                            id={`time-${student._id}`}
+                            value={
+                              formData.teaching.schedule.find(
+                                (s) => s.studentId === student._id
+                              )?.time || '08:00'
+                            }
+                            onChange={(e) =>
+                              handleScheduleChange(
+                                student._id,
+                                'time',
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div className='form-group'>
+                          <label htmlFor={`duration-${student._id}`}>
+                            משך (דקות)
+                          </label>
+                          <select
+                            id={`duration-${student._id}`}
+                            value={
+                              formData.teaching.schedule.find(
+                                (s) => s.studentId === student._id
+                              )?.duration || 45
+                            }
+                            onChange={(e) =>
+                              handleScheduleChange(
+                                student._id,
+                                'duration',
+                                Number(e.target.value)
+                              )
+                            }
+                          >
+                            {LESSON_DURATIONS.map((duration) => (
+                              <option key={duration} value={duration}>
+                                {duration}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Student Search or Add Buttons */}
+              <div className='student-actions'>
+                {showStudentSearch ? (
+                  <div className='student-search-container'>
+                    <div className='search-header'>
+                      <h4>חיפוש תלמידים</h4>
+                      <button
+                        type='button'
+                        className='close-search'
+                        onClick={() => setShowStudentSearch(false)}
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                    <div className='search-box'>
+                      <Search size={16} />
+                      <input
+                        type='text'
+                        placeholder='חפש תלמיד לפי שם, כלי או כיתה...'
+                        onChange={(e) => handleStudentSearch(e.target.value)}
+                      />
+                    </div>
+
+                    <div className='search-results'>
+                      {loadingStudents ? (
+                        <div className='loading-message'>טוען תלמידים...</div>
+                      ) : filteredStudents.length === 0 ? (
+                        <div className='no-results'>לא נמצאו תלמידים</div>
+                      ) : (
+                        <div className='student-list'>
+                          {filteredStudents
+                            .filter(
+                              (student) =>
+                                !selectedStudents.some(
+                                  (s) => s._id === student._id
+                                )
+                            )
+                            .map((student) => (
+                              <div
+                                key={student._id}
+                                className='student-search-item'
+                                onClick={() => handleAddStudent(student)}
+                              >
+                                <div className='student-name'>
+                                  {student.personalInfo.fullName}
+                                </div>
+                                <div className='student-details'>
+                                  <span>{student.academicInfo.instrument}</span>
+                                  <span>כיתה {student.academicInfo.class}</span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  <div className='student-action-buttons'>
+                    <button
+                      type='button'
+                      className='search-students-btn'
+                      onClick={() => setShowStudentSearch(true)}
+                    >
+                      <Search size={16} />
+                      <span>חיפוש תלמידים קיימים</span>
+                    </button>
+
+                    <button
+                      type='button'
+                      className='add-new-student-btn'
+                      onClick={handleAddNewStudent}
+                    >
+                      <Plus size={16} />
+                      <span>הוספת תלמיד חדש</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Authentication */}
           <div className='form-section'>

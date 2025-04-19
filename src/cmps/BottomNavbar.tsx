@@ -23,14 +23,6 @@ export function BottomNavbar() {
             currentScrollY - lastScrollY.current
           );
 
-          // Log for debugging
-          console.log({
-            currentY: currentScrollY,
-            lastY: lastScrollY.current,
-            diff: scrollDifference,
-            visible,
-          });
-
           // More sensitive detection - only need a small scroll amount (10px) to trigger
           // Also ensure we're not at the very top of the page (allow 5px buffer)
           if (

@@ -662,7 +662,6 @@
 @media (max-width: 768px) {
   .student-details-content { max-height: 100svh; }
   .student-details-page { height: 100svh; }
-  .student-card-container { max-height: 85svh; height: auto; }
   .info-grid,
   .tests-grid,
   .attendance-summary {
@@ -679,7 +678,7 @@
     padding: 0 0.5rem;
     
     .student-card-container {
-      height: 550px; // Increased from 450px
+      height: 100%;
       
       .card-header {
         padding: 0.75rem;

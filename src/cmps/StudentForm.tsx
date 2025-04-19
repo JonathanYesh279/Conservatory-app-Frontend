@@ -1,75 +1,111 @@
-import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
-import { Student } from '../services/studentService'
-import { Teacher, teacherService } from '../services/teacherService'
-import { useStudentStore } from '../store/studentStore'
-import { studentService } from '../services/studentService'
-import { useSchoolYearStore } from '../store/schoolYearStore.ts'
+import { useState, useEffect } from 'react';
+import { X } from 'lucide-react';
+import { Student } from '../services/studentService';
+import { Teacher, teacherService } from '../services/teacherService';
+import { useStudentStore } from '../store/studentStore';
+import { studentService } from '../services/studentService';
+import { useSchoolYearStore } from '../store/schoolYearStore.ts';
 
 // Define type for form data structure
 interface StudentFormData {
-  _id?: string
+  _id?: string;
   personalInfo: {
-    fullName: string
-    phone?: string
-    age?: number
-    address?: string
-    parentName?: string
-    parentPhone?: string
-    parentEmail?: string
-    studentEmail?: string
-  }
+    fullName: string;
+    phone?: string;
+    age?: number;
+    address?: string;
+    parentName?: string;
+    parentPhone?: string;
+    parentEmail?: string;
+    studentEmail?: string;
+  };
   academicInfo: {
-    instrument: string
-    currentStage: number
-    class: string
+    instrument: string;
+    currentStage: number;
+    class: string;
     tests?: {
       stageTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה'
-        lastTestDate?: string
-        nextTestDate?: string
-        notes?: string
-      }
+        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
+        lastTestDate?: string;
+        nextTestDate?: string;
+        notes?: string;
+      };
       technicalTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה'
-        lastTestDate?: string
-        nextTestDate?: string
-        notes?: string
-      }
-    }
-  }
+        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
+        lastTestDate?: string;
+        nextTestDate?: string;
+        notes?: string;
+      };
+    };
+  };
   enrollments: {
-    orchestraIds: string[]
-    ensembleIds: string[]
+    orchestraIds: string[];
+    ensembleIds: string[];
     schoolYears: Array<{
-      schoolYearId: string
-      isActive: boolean
-    }>
-  }
-  teacherIds: string[]
-  teacherId?: string
-  lessonDay?: string
-  lessonTime?: string
-  lessonDuration?: number
-  isActive: boolean
+      schoolYearId: string;
+      isActive: boolean;
+    }>;
+  };
+  teacherIds: string[];
+  teacherId?: string;
+  lessonDay?: string;
+  lessonTime?: string;
+  lessonDuration?: number;
+  isActive: boolean;
 }
 
 // Constants for validation and form selection
-const VALID_CLASSES = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'יא', 'יב', 'אחר']
-const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8]
-const VALID_INSTRUMENTS = ['חצוצרה', 'חליל צד', 'קלרינט', 'קרן יער', 'בריטון', 'טרומבון', 'סקסופון']
-const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה']
-const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי']
-const LESSON_DURATIONS = [30, 45, 60]
+const VALID_CLASSES = [
+  'א',
+  'ב',
+  'ג',
+  'ד',
+  'ה',
+  'ו',
+  'ז',
+  'ח',
+  'ט',
+  'י',
+  'יא',
+  'יב',
+  'אחר',
+];
+const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
+const VALID_INSTRUMENTS = [
+  'חצוצרה',
+  'חליל צד',
+  'קלרינט',
+  'קרן יער',
+  'בריטון',
+  'טרומבון',
+  'סקסופון',
+];
+const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה'];
+const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+const LESSON_DURATIONS = [30, 45, 60];
 
 interface StudentFormProps {
-  isOpen: boolean
-  onClose: () => void
-  student?: Partial<Student>
+  isOpen: boolean;
+  onClose: () => void;
+  student?: Partial<Student>;
+  onStudentCreated?: (student: Student) => void; // Add this prop for callback
+  newTeacherInfo?: {
+    // Add this prop for passing new teacher info
+    _id?: string;
+    fullName: string;
+    instrument?: string;
+  };
 }
 
-export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
-  const { saveStudent, isLoading, error, clearError, loadStudents } = useStudentStore();
+export function StudentForm({
+  isOpen,
+  onClose,
+  student,
+  onStudentCreated,
+  newTeacherInfo,
+}: StudentFormProps) {
+  const { saveStudent, isLoading, error, clearError, loadStudents } =
+    useStudentStore();
   const { currentSchoolYear } = useSchoolYearStore();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [isLoadingTeachers, setIsLoadingTeachers] = useState(false);
@@ -230,13 +266,17 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
             : [],
         },
         teacherIds: [],
+        teacherId: newTeacherInfo ? 'new-teacher' : undefined,
+        lessonDay: '',
+        lessonTime: '',
+        lessonDuration: 45,
         isActive: true,
       });
     }
 
     setErrors({});
     clearError?.();
-  }, [student, isOpen, clearError, currentSchoolYear]);
+  }, [student, isOpen, clearError, currentSchoolYear, newTeacherInfo]);
 
   // Handle input changes
   const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -432,10 +472,14 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
       const studentId = restFormData._id;
       const { _id, ...dataWithoutId } = restFormData;
 
+      // Special handling for "new-teacher" ID
+      const finalTeacherId =
+        teacherId === 'new-teacher' ? undefined : teacherId;
+
       // Prepare data to submit
       const dataToSubmit = {
         ...dataWithoutId,
-        teacherIds: teacherId ? [teacherId] : [], // Add teacherIds to the submission
+        teacherIds: finalTeacherId ? [finalTeacherId] : [], // Add teacherIds to the submission
         personalInfo: {
           ...formData.personalInfo,
           parentName: formData.personalInfo.parentName || 'לא צוין',
@@ -452,19 +496,7 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
         },
       };
 
-      // Make sure the student has the current school year in enrollments
-      if (
-        currentSchoolYear &&
-        !dataToSubmit.enrollments?.schoolYears?.some(
-          (sy: { schoolYearId: string }) =>
-            sy.schoolYearId === currentSchoolYear._id
-        )
-      ) {
-        dataToSubmit.enrollments.schoolYears = [
-          ...(dataToSubmit.enrollments?.schoolYears || []),
-          { schoolYearId: currentSchoolYear._id, isActive: true },
-        ];
-      }
+      // Rest of the function remains the same...
 
       let savedStudent;
 
@@ -475,15 +507,25 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
           dataToSubmit
         );
 
-        await loadStudents()
+        await loadStudents();
       } else {
         // If no student ID, we're adding a new student
         savedStudent = await saveStudent(dataToSubmit);
+
+        // If we have a callback and this is a new student, call it
+        if (onStudentCreated) {
+          // Pass back the student with the appropriate metadata to associate with new teacher
+          onStudentCreated({
+            ...savedStudent,
+            _newTeacherAssociation: teacherId === 'new-teacher',
+          });
+          return; // Return early without closing the form
+        }
       }
 
-      // If a teacher is selected and all required fields are present, update the teacher's schedule
-      if (teacherId && lessonDay && lessonTime && lessonDuration) {
-        await teacherService.updateTeacherSchedule(teacherId, {
+      // Only try to update teacher schedule if it's a valid existing teacher ID
+      if (finalTeacherId && lessonDay && lessonTime && lessonDuration) {
+        await teacherService.updateTeacherSchedule(finalTeacherId, {
           studentId: savedStudent._id,
           lessonDay,
           lessonTime,
@@ -780,6 +822,7 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
           <div className='form-section'>
             <h3>שיוך מורה</h3>
 
+            {/* Teacher Selection */}
             <div className='form-row full-width'>
               <div className='form-group'>
                 <label htmlFor='teacher'>מורה מלמד</label>
@@ -791,6 +834,16 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
                   disabled={isLoadingTeachers}
                 >
                   <option value=''>בחר מורה</option>
+                  {/* Include the new teacher being created if available */}
+                  {newTeacherInfo && (
+                    <option value='new-teacher'>
+                      {newTeacherInfo.fullName}{' '}
+                      {newTeacherInfo.instrument
+                        ? `(${newTeacherInfo.instrument})`
+                        : ''}{' '}
+                      (המורה החדש)
+                    </option>
+                  )}
                   {teachers.map((teacher) => (
                     <option key={teacher._id} value={teacher._id}>
                       {teacher.personalInfo.fullName}{' '}
@@ -871,4 +924,4 @@ export function StudentForm({ isOpen, onClose, student }: StudentFormProps) {
       </div>
     </div>
   );
-} 
+}

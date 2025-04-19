@@ -1,4 +1,4 @@
-// src/pages/TeacherIndex.tsx
+// src/pages/TeacherIndex.tsx (modified)
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../cmps/Header';
@@ -12,6 +12,8 @@ import { useTeacherStore } from '../store/teacherStore';
 import { Teacher } from '../services/teacherService';
 import { TeacherList } from '../cmps/TeacherList';
 import { TeacherForm } from '../cmps/TeacherForm';
+import { StudentForm } from '../cmps/StudentForm';
+import { Student } from '../services/studentService';
 
 export function TeacherIndex() {
   const {
@@ -24,10 +26,14 @@ export function TeacherIndex() {
   } = useTeacherStore();
 
   // State for modal forms and dialogs
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isTeacherFormOpen, setIsTeacherFormOpen] = useState(false);
+  const [isStudentFormOpen, setIsStudentFormOpen] = useState(false);
   const [teacherToEdit, setTeacherToEdit] = useState<Teacher | null>(null);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
+  // State to pass back the newly created student
+  const [createdStudent, setCreatedStudent] = useState<Student | null>(null);
+  const [newTeacherInfo, setNewTeacherInfo] = useState<{ _id?: string; fullName: string; instrument?: string; } | null>(null);
 
   // Define which fields to search in teachers
   const teacherSearchFields = (teacher: Teacher) => [
@@ -61,19 +67,44 @@ export function TeacherIndex() {
   const handleAddTeacher = () => {
     setTeacherToEdit(null);
     clearSelectedTeacher();
-    setIsFormOpen(true);
-    console.log('Adding new teacher');
+    setIsTeacherFormOpen(true);
   };
 
-  const handleCloseForm = () => {
-    setIsFormOpen(false);
+  const handleCloseTeacherForm = () => {
+    setIsTeacherFormOpen(false);
     setTeacherToEdit(null);
+  };
+
+  const handleOpenStudentForm = (teacherInfo?: {
+    fullName: string;
+    instrument?: string;
+  }) => {
+    // If teacherInfo is provided, use it
+    if (teacherInfo) {
+      setNewTeacherInfo({
+        fullName: teacherInfo.fullName,
+        instrument: teacherInfo.instrument,
+      });
+    }
+    setIsStudentFormOpen(true);
+  };
+
+  const handleCloseStudentForm = () => {
+    setIsStudentFormOpen(false);
+  };
+
+  const handleStudentCreated = (student: Student) => {
+    // Store the newly created student to pass back to TeacherForm
+    setCreatedStudent(student);
+    setIsStudentFormOpen(false);
+    // Reopen the teacher form
+    setIsTeacherFormOpen(true);
   };
 
   const handleEditTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId) || null;
     setTeacherToEdit(teacher);
-    setIsFormOpen(true);
+    setIsTeacherFormOpen(true);
   };
 
   const handleViewTeacher = (teacherId: string) => {
@@ -173,14 +204,24 @@ export function TeacherIndex() {
 
         {/* Teacher Form Modal */}
         <TeacherForm
-          isOpen={isFormOpen}
-          onClose={handleCloseForm}
+          isOpen={isTeacherFormOpen}
+          onClose={handleCloseTeacherForm}
           teacher={teacherToEdit || undefined}
           onSave={loadTeachers}
+          onAddNewStudent={handleOpenStudentForm}
+          newlyCreatedStudent={createdStudent}
+        />
+
+        {/* Student Form Modal */}
+        <StudentForm
+          isOpen={isStudentFormOpen}
+          onClose={handleCloseStudentForm}
+          onStudentCreated={handleStudentCreated}
+          newTeacherInfo={newTeacherInfo}
         />
       </main>
 
-      {!isDetailPage && !isFormOpen && <BottomNavbar />}
+      {!isDetailPage && !isTeacherFormOpen && <BottomNavbar />}
     </div>
   );
 }
