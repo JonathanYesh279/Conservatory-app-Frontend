@@ -64,6 +64,7 @@ export interface Student {
     }>;
   };
   teacherIds: string[];
+  _newTeacherAssociation?: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

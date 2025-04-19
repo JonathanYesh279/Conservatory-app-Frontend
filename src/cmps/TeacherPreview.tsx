@@ -132,7 +132,7 @@ export function TeacherPreview({
               <span
                 className='clickable-phone'
                 onClick={(e) =>
-                  handleWhatsAppClick(e, teacher.personalInfo.phone)
+                  teacher.personalInfo.phone && handleWhatsAppClick(e, teacher.personalInfo.phone)
                 }
                 title='לחץ לפתיחת שיחה בוואטסאפ'
               >

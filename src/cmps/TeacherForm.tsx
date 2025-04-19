@@ -1,6 +1,6 @@
 // src/cmps/TeacherForm.tsx
 import { useState, useEffect } from 'react'
-import { X, Eye, EyeOff, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Eye, EyeOff, Search, Plus } from 'lucide-react'
 import { Teacher } from '../services/teacherService'
 import { useTeacherStore } from '../store/teacherStore'
 import { useSchoolYearStore } from '../store/schoolYearStore'

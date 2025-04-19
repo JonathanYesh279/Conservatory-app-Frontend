@@ -27,7 +27,7 @@ export interface Teacher {
   conducting?: {
     orchestraIds: string[];
   };
-  ensembleIds?: string[];
+  ensemblesIds?: string[];
   schoolYears?: Array<{
     schoolYearId: string;
     isActive: boolean;
@@ -49,7 +49,7 @@ export interface TeacherFilter {
   instrument?: string;
   studentId?: string;
   orchestraId?: string;
-  ensembleId?: string;
+  ensemblesId?: string;
   isActive?: boolean;
   showInactive?: boolean;
 }

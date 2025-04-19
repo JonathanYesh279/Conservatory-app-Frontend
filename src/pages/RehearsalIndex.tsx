@@ -10,7 +10,7 @@ import { useRehearsalStore } from '../store/rehearsalStore';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
-import { Plus, Calendar, Search, X } from 'lucide-react';
+import { Plus, Calendar } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Rehearsal, RehearsalFilter } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
@@ -195,13 +195,13 @@ export function RehearsalIndex() {
     loadRehearsals(filterParams);
   };
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
+  // const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   setSearchTerm(e.target.value);
+  // };
 
-  const clearSearch = () => {
-    setSearchTerm('');
-  };
+  // const clearSearch = () => {
+  //   setSearchTerm('');
+  // };
 
   const clearFilters = () => {
     setSelectedOrchestraId(null);

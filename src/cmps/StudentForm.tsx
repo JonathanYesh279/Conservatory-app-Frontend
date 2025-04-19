@@ -88,13 +88,8 @@ interface StudentFormProps {
   isOpen: boolean;
   onClose: () => void;
   student?: Partial<Student>;
-  onStudentCreated?: (student: Student) => void; // Add this prop for callback
-  newTeacherInfo?: {
-    // Add this prop for passing new teacher info
-    _id?: string;
-    fullName: string;
-    instrument?: string;
-  };
+  onStudentCreated?: (student: Student) => void; 
+  newTeacherInfo?: { _id?: string, fullName: string, instrument?: string } | null
 }
 
 export function StudentForm({

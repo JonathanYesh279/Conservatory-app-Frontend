@@ -1,4 +1,3 @@
-// src/pages/TeacherIndex.tsx (modified)
 import { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../cmps/Header';
