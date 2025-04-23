@@ -983,7 +983,7 @@ export function TeacherForm({
                       <h4>חיפוש תלמידים</h4>
                       <button
                         type='button'
-                        className='close-search'
+                        className='btn'
                         onClick={() => setShowStudentSearch(false)}
                       >
                         <X size={16} />
@@ -1035,7 +1035,7 @@ export function TeacherForm({
                   <div className='student-action-buttons'>
                     <button
                       type='button'
-                      className='search-students-btn'
+                      className='btn primary'
                       onClick={() => setShowStudentSearch(true)}
                     >
                       <Search size={16} />
@@ -1044,7 +1044,7 @@ export function TeacherForm({
 
                     <button
                       type='button'
-                      className='add-new-student-btn'
+                      className='btn primary'
                       onClick={handleAddNewStudent}
                     >
                       <Plus size={16} />
