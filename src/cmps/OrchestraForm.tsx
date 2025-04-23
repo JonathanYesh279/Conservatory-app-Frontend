@@ -1,24 +1,14 @@
 // src/cmps/OrchestraForm.tsx
-import { useState, useEffect, useRef } from 'react';
-import { X, User, Search, X as XIcon } from 'lucide-react';
+import { useRef } from 'react';
+import { X, User, Search, X as XIcon, AlertCircle } from 'lucide-react';
 import { Orchestra } from '../services/orchestraService';
+import { useOrchestraForm } from '../hooks/useOrchestraForm';
+import { useStudentSelection } from '../hooks/useStudentSelection';
+import { useNameValidation } from '../hooks/useNameValidation';
 import { useOrchestraStore } from '../store/orchestraStore';
-import { useTeacherStore } from '../store/teacherStore';
-import { useSchoolYearStore } from '../store/schoolYearStore';
-import { useStudentStore } from '../store/studentStore';
-import { Teacher } from '../services/teacherService';
-import { Student } from '../services/studentService';
 
-// Constants for validation
+// Constants
 const VALID_TYPES = ['הרכב', 'תזמורת'];
-const VALID_NAMES = [
-  'תזמורת מתחילים נשיפה',
-  'תזמורת עתודה נשיפה',
-  'תזמורת צעירה נשיפה',
-  'תזמורת יצוגית נשיפה',
-  'תזמורת סימפונית',
-];
-
 const VALID_LOCATIONS = [
   'אולם ערן',
   'סטודיו קאמרי 1',
@@ -54,18 +44,6 @@ const VALID_LOCATIONS = [
   'חדר 26',
 ];
 
-interface OrchestraFormData {
-  _id?: string;
-  name: string;
-  type: string;
-  conductorId: string;
-  memberIds: string[];
-  rehearsalIds: string[];
-  schoolYearId: string;
-  location: string;
-  isActive: boolean;
-}
-
 interface OrchestraFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -79,334 +57,80 @@ export function OrchestraForm({
   orchestra,
   onSave,
 }: OrchestraFormProps) {
-  const { saveOrchestra, isLoading, error, clearError } = useOrchestraStore();
-  const { currentSchoolYear } = useSchoolYearStore();
-  const { loadTeachers } = useTeacherStore();
-  const { students, loadStudents, saveStudent } = useStudentStore();
+  // Get all existing orchestra names for validation
+  const { orchestras } = useOrchestraStore();
+  const existingOrchestraNames = orchestras.map((o) => o.name);
 
-  const [conductors, setConductors] = useState<Teacher[]>([]);
-  const [isLoadingConductors, setIsLoadingConductors] = useState(false);
-  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
-
-  // Student search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
-  const searchRef = useRef<HTMLDivElement>(null);
-
-  // Form state with complete initial values
-  const [formData, setFormData] = useState<OrchestraFormData>({
-    name: '',
-    type: VALID_TYPES[1], // Default to 'תזמורת'
-    conductorId: '',
-    memberIds: [],
-    rehearsalIds: [],
-    schoolYearId: '',
-    location: 'חדר 1', // Default location
-    isActive: true,
+  // Create form with main business logic in a custom hook
+  const {
+    formData,
+    conductors,
+    errors,
+    isLoading,
+    isSubmitting,
+    isLoadingConductors,
+    error,
+    handleInputChange,
+    handleSubmit: submitForm,
+    isOrchestra,
+  } = useOrchestraForm({
+    initialOrchestra: orchestra,
+    onClose,
+    onSave,
   });
 
-  // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  // Name validation with dedicated hook
+  const nameValidation = useNameValidation({
+    name: formData.name,
+    existingNames: existingOrchestraNames,
+    type: formData.type,
+    originalName: orchestra?.name,
+    isSubmitting, // Pass submission state to prevent validation during submit
+  });
 
-  // Load conductors when component mounts or when the form opens
-  useEffect(() => {
-    if (!isOpen) return;
+  // Student selection with dedicated hook
+  const {
+    selectedMembers,
+    searchQuery,
+    isSearchOpen,
+    isLoading: isLoadingStudents,
+    searchRef,
+    handleSearchChange,
+    getFilteredStudents,
+    handleAddMember,
+    handleRemoveMember,
+  } = useStudentSelection({
+    initialMemberIds: orchestra?.memberIds || [],
+    onMemberIdsChange: (memberIds) => {
+      // Update the formData.memberIds whenever student selection changes
+      handleInputChange({
+        target: { name: 'memberIds', value: memberIds },
+      } as React.ChangeEvent<HTMLInputElement>);
+    },
+  });
 
-    const fetchConductors = async () => {
-      setIsLoadingConductors(true);
-      try {
-        // Fetch teachers with the conductor role directly
-        const conductorResponse = await loadTeachers({
-          role: 'מנצח',
-          isActive: true,
-        });
-
-        // The loadTeachers function should return the teachers
-        if (Array.isArray(conductorResponse)) {
-          setConductors(conductorResponse);
-        } else {
-          // Get conductors from the teacherStore state if the function doesn't return them
-          const teacherStore = useTeacherStore.getState();
-          const filteredConductors = teacherStore.teachers.filter((teacher) =>
-            teacher.roles.includes('מנצח')
-          );
-          setConductors(filteredConductors);
-        }
-      } catch (err) {
-        console.error('Failed to load conductors:', err);
-      } finally {
-        setIsLoadingConductors(false);
-      }
-    };
-
-    fetchConductors();
-
-    // Load students
-    loadStudents({ isActive: true });
-  }, [isOpen, loadTeachers, loadStudents]);
-
-  // Close search dropdown when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target as Node)
-      ) {
-        setIsSearchOpen(false);
-      }
-    }
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  // If editing an existing orchestra, populate form data
-  useEffect(() => {
-    if (orchestra?._id) {
-      setFormData({
-        _id: orchestra._id,
-        name: orchestra.name || '',
-        type: orchestra.type || VALID_TYPES[1],
-        conductorId: orchestra.conductorId || '',
-        memberIds: orchestra.memberIds || [],
-        rehearsalIds: orchestra.rehearsalIds || [],
-        schoolYearId:
-          orchestra.schoolYearId ||
-          (currentSchoolYear ? currentSchoolYear._id : ''),
-        location: orchestra.location || 'חדר 1', // Default if not present
-        isActive: orchestra.isActive !== false,
-      });
-
-      // Load selected members
-      const loadMembers = async () => {
-        if (orchestra.memberIds && orchestra.memberIds.length > 0) {
-          setIsLoadingStudents(true);
-          try {
-            // We'll use the existing students in the store and filter by IDs
-            const members = students.filter((student) =>
-              orchestra.memberIds.includes(student._id)
-            );
-            setSelectedMembers(members);
-          } catch (err) {
-            console.error('Failed to load orchestra members:', err);
-          } finally {
-            setIsLoadingStudents(false);
-          }
-        }
-      };
-
-      loadMembers();
-    } else {
-      // Reset form for new orchestra
-      setFormData({
-        name: '',
-        type: VALID_TYPES[1],
-        conductorId: '',
-        memberIds: [],
-        rehearsalIds: [],
-        schoolYearId: currentSchoolYear ? currentSchoolYear._id : '',
-        location: 'חדר 1', // Include default location
-        isActive: true,
-      });
-      setSelectedMembers([]);
-    }
-
-    setErrors({});
-    clearError?.();
-  }, [orchestra, isOpen, clearError, currentSchoolYear, students]);
-
-  // Handle input changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-
-    // Clear error for this field if it exists
-    if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: '',
-      });
-    }
-  };
-
-  // Handle student search
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-    if (e.target.value.length > 0) {
-      setIsSearchOpen(true);
-    } else {
-      setIsSearchOpen(false);
-    }
-  };
-
-  // Get filtered students based on search
-  const getFilteredStudents = () => {
-    if (!searchQuery) return [];
-
-    return students
-      .filter(
-        (student) =>
-          // Filter by name match
-          student.personalInfo.fullName.includes(searchQuery) &&
-          // Filter out already selected students
-          !selectedMembers.some((member) => member._id === student._id)
-      )
-      .slice(0, 10); // Limit to 10 results for performance
-  };
-
-  // Add a student to the orchestra
-  const handleAddMember = async (student: Student) => {
-    // Add student to selected members
-    setSelectedMembers([...selectedMembers, student]);
-
-    // Add student ID to form data
-    setFormData({
-      ...formData,
-      memberIds: [...formData.memberIds, student._id],
-    });
-
-    // Reset search
-    setSearchQuery('');
-    setIsSearchOpen(false);
-  };
-
-  // Remove a student from the orchestra
-  const handleRemoveMember = (studentId: string) => {
-    // Remove from selected members
-    setSelectedMembers(
-      selectedMembers.filter((member) => member._id !== studentId)
-    );
-
-    // Remove from form data
-    setFormData({
-      ...formData,
-      memberIds: formData.memberIds.filter((id) => id !== studentId),
-    });
-  };
-
-  // Validate form
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    // Required fields validation
-    if (!formData.name) {
-      newErrors['name'] = 'שם התזמורת הוא שדה חובה';
-    }
-
-    if (!formData.type) {
-      newErrors['type'] = 'סוג התזמורת הוא שדה חובה';
-    }
-
-    if (!formData.conductorId) {
-      newErrors['conductorId'] = 'יש לבחור מנצח';
-    }
-
-    if (!formData.location) {
-      newErrors['location'] = 'יש לבחור מקום';
-    }
-
-    if (!formData.schoolYearId) {
-      newErrors['schoolYearId'] = 'שנת לימודים היא שדה חובה';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Handle form submission with validation
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    // Check if name validation passes
+    if (!nameValidation.isValid && nameValidation.message) {
+      // Add name validation error to form errors
+      handleInputChange({
+        target: {
+          name: 'name',
+          value: formData.name,
+          dataset: { error: nameValidation.message },
+        },
+      } as React.ChangeEvent<HTMLInputElement>);
       return;
     }
 
-    try {
-      // Save orchestra to store
-      const savedOrchestra = await saveOrchestra(formData);
-
-      // Update each student with the orchestra ID
-      const currentOrchestraId = orchestra?._id || savedOrchestra._id;
-
-      // Students to add orchestra to
-      const studentsToUpdate = selectedMembers
-        .map((student) => {
-          // Check if student already has this orchestra
-          if (!student.enrollments.orchestraIds.includes(currentOrchestraId)) {
-            // Only send the minimal data needed for the update
-            return {
-              _id: student._id, // This is needed to identify the student but will be removed before sending to backend
-              enrollments: {
-                ...student.enrollments,
-                orchestraIds: [
-                  ...student.enrollments.orchestraIds,
-                  currentOrchestraId,
-                ],
-              },
-            };
-          }
-          return null; // No update needed
-        })
-        .filter(Boolean) as Partial<Student>[];
-
-      // Students to remove orchestra from (if editing and members were removed)
-      if (orchestra?._id) {
-        const removedStudentIds = orchestra.memberIds.filter(
-          (id) => !formData.memberIds.includes(id)
-        );
-
-        if (removedStudentIds.length > 0) {
-          const studentsToRemoveFrom = students.filter((student) =>
-            removedStudentIds.includes(student._id)
-          );
-
-          for (const student of studentsToRemoveFrom) {
-            await saveStudent({
-              _id: student._id, // This is needed to identify the student but will be removed before sending to backend
-              enrollments: {
-                ...student.enrollments,
-                orchestraIds: student.enrollments.orchestraIds.filter(
-                  (id) => id !== orchestra._id
-                ),
-              },
-            });
-          }
-        }
-      }
-
-      // Save updated students
-      try {
-        await Promise.all(
-          studentsToUpdate.map((student) =>
-            student._id ? saveStudent(student) : null
-          )
-        );
-      } catch (err) {
-        console.error('Error updating students:', err);
-        // Continue with form submission even if student updates fail
-      }
-
-      // Call optional onSave callback
-      if (onSave) {
-        onSave();
-      }
-
-      // Close the form after successful save
-      onClose();
-    } catch (err) {
-      console.error('Error saving orchestra:', err);
-    }
+    // Submit the form
+    submitForm(e);
   };
 
+  // Don't render if not open
   if (!isOpen) return null;
 
   const filteredStudents = getFilteredStudents();
@@ -423,41 +147,24 @@ export function OrchestraForm({
           <X size={20} />
         </button>
 
-        <h2>{orchestra?._id ? 'עריכת תזמורת' : 'הוספת תזמורת חדשה'}</h2>
+        <h2>
+          {orchestra?._id
+            ? isOrchestra
+              ? 'עריכת תזמורת'
+              : 'עריכת הרכב'
+            : isOrchestra
+            ? 'הוספת תזמורת חדשה'
+            : 'הוספת הרכב חדש'}
+        </h2>
 
         {error && <div className='error-message'>{error}</div>}
 
         <form onSubmit={handleSubmit}>
-          {/* Orchestra Information */}
+          {/* Orchestra/Ensemble Information */}
           <div className='form-section'>
-            <h3>פרטי תזמורת</h3>
+            <h3>{isOrchestra ? 'פרטי תזמורת' : 'פרטי הרכב'}</h3>
 
-            {/* Orchestra Name */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='name'>שם התזמורת *</label>
-                <select
-                  id='name'
-                  name='name'
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={errors['name'] ? 'is-invalid' : ''}
-                  required
-                >
-                  <option value=''>בחר שם תזמורת</option>
-                  {VALID_NAMES.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-                {errors['name'] && (
-                  <div className='form-error'>{errors['name']}</div>
-                )}
-              </div>
-            </div>
-
-            {/* Orchestra Type */}
+            {/* Type Selection - First field */}
             <div className='form-row full-width'>
               <div className='form-group'>
                 <label htmlFor='type'>סוג *</label>
@@ -465,9 +172,10 @@ export function OrchestraForm({
                   id='type'
                   name='type'
                   value={formData.type}
-                  onChange={handleChange}
-                  className={errors['type'] ? 'is-invalid' : ''}
+                  onChange={handleInputChange}
+                  className={errors.type ? 'is-invalid' : ''}
                   required
+                  disabled={isSubmitting}
                 >
                   <option value=''>בחר סוג</option>
                   {VALID_TYPES.map((type) => (
@@ -476,9 +184,45 @@ export function OrchestraForm({
                     </option>
                   ))}
                 </select>
-                {errors['type'] && (
-                  <div className='form-error'>{errors['type']}</div>
-                )}
+                {errors.type && <div className='form-error'>{errors.type}</div>}
+              </div>
+            </div>
+
+            {/* Name with validation */}
+            <div className='form-row full-width'>
+              <div className='form-group'>
+                <label htmlFor='name'>
+                  {isOrchestra ? 'שם התזמורת *' : 'שם ההרכב *'}
+                </label>
+                <div className='name-input-container'>
+                  <input
+                    type='text'
+                    id='name'
+                    name='name'
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    className={
+                      errors.name || (!nameValidation.isValid && !isSubmitting)
+                        ? 'is-invalid'
+                        : ''
+                    }
+                    placeholder={
+                      isOrchestra ? 'הכנס שם תזמורת...' : 'הכנס שם הרכב...'
+                    }
+                    required
+                    disabled={isSubmitting}
+                  />
+                  {!nameValidation.isValid &&
+                    nameValidation.message &&
+                    !errors.name &&
+                    !isSubmitting && (
+                      <div className='name-validation-warning'>
+                        <AlertCircle size={16} />
+                        <span>{nameValidation.message}</span>
+                      </div>
+                    )}
+                </div>
+                {errors.name && <div className='form-error'>{errors.name}</div>}
               </div>
             </div>
 
@@ -490,9 +234,10 @@ export function OrchestraForm({
                   id='location'
                   name='location'
                   value={formData.location}
-                  onChange={handleChange}
-                  className={errors['location'] ? 'is-invalid' : ''}
+                  onChange={handleInputChange}
+                  className={errors.location ? 'is-invalid' : ''}
                   required
+                  disabled={isSubmitting}
                 >
                   <option value=''>בחר מקום</option>
                   {VALID_LOCATIONS.map((location) => (
@@ -501,26 +246,30 @@ export function OrchestraForm({
                     </option>
                   ))}
                 </select>
-                {errors['location'] && (
-                  <div className='form-error'>{errors['location']}</div>
+                {errors.location && (
+                  <div className='form-error'>{errors.location}</div>
                 )}
               </div>
             </div>
 
-            {/* Conductor */}
+            {/* Conductor/Instructor - changes based on type */}
             <div className='form-row full-width'>
               <div className='form-group'>
-                <label htmlFor='conductorId'>מנצח *</label>
+                <label htmlFor='conductorId'>
+                  {isOrchestra ? 'מנצח *' : 'מדריך הרכב *'}
+                </label>
                 <select
                   id='conductorId'
                   name='conductorId'
                   value={formData.conductorId}
-                  onChange={handleChange}
-                  className={errors['conductorId'] ? 'is-invalid' : ''}
+                  onChange={handleInputChange}
+                  className={errors.conductorId ? 'is-invalid' : ''}
                   required
-                  disabled={isLoadingConductors}
+                  disabled={isLoadingConductors || isSubmitting}
                 >
-                  <option value=''>בחר מנצח</option>
+                  <option value=''>
+                    {isOrchestra ? 'בחר מנצח' : 'בחר מדריך הרכב'}
+                  </option>
                   {conductors.map((conductor) => (
                     <option key={conductor._id} value={conductor._id}>
                       {conductor.personalInfo.fullName}
@@ -528,18 +277,24 @@ export function OrchestraForm({
                   ))}
                 </select>
                 {isLoadingConductors && (
-                  <div className='loading-text'>טוען מנצחים...</div>
+                  <div className='loading-text'>
+                    {isOrchestra ? 'טוען מנצחים...' : 'טוען מדריכים...'}
+                  </div>
                 )}
-                {errors['conductorId'] && (
-                  <div className='form-error'>{errors['conductorId']}</div>
+                {errors.conductorId && (
+                  <div className='form-error'>{errors.conductorId}</div>
                 )}
               </div>
             </div>
 
-            {/* Members */}
+            {/* Members - changes based on type */}
             <div className='form-row full-width'>
               <div className='form-group'>
-                <label>תלמידים (חברי התזמורת)</label>
+                <label>
+                  {isOrchestra
+                    ? 'תלמידים (חברי התזמורת)'
+                    : 'תלמידים (חברי ההרכב)'}
+                </label>
 
                 {/* Student search input */}
                 <div ref={searchRef} className='search-container'>
@@ -551,28 +306,31 @@ export function OrchestraForm({
                       onChange={handleSearchChange}
                       placeholder='חפש תלמידים להוספה...'
                       className='search-input'
-                      onClick={() => setIsSearchOpen(searchQuery.length > 0)}
+                      onClick={() => searchQuery.length > 0}
+                      disabled={isSubmitting}
                     />
                   </div>
 
                   {/* Search results dropdown */}
-                  {isSearchOpen && filteredStudents.length > 0 && (
-                    <div className='search-results-dropdown'>
-                      {filteredStudents.map((student) => (
-                        <div
-                          key={student._id}
-                          className='search-result-item'
-                          onClick={() => handleAddMember(student)}
-                        >
-                          <User size={16} className='student-icon' />
-                          <span>{student.personalInfo.fullName}</span>
-                          <span className='student-instrument'>
-                            {student.academicInfo.instrument}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {isSearchOpen &&
+                    filteredStudents.length > 0 &&
+                    !isSubmitting && (
+                      <div className='search-results-dropdown'>
+                        {filteredStudents.map((student) => (
+                          <div
+                            key={student._id}
+                            className='search-result-item'
+                            onClick={() => handleAddMember(student)}
+                          >
+                            <User size={16} className='student-icon' />
+                            <span>{student.personalInfo.fullName}</span>
+                            <span className='student-instrument'>
+                              {student.academicInfo.instrument}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Selected members list */}
@@ -588,6 +346,7 @@ export function OrchestraForm({
                           className='remove-btn'
                           onClick={() => handleRemoveMember(member._id)}
                           aria-label={`הסר את ${member.personalInfo.fullName}`}
+                          disabled={isSubmitting}
                         >
                           <XIcon size={14} />
                         </button>
@@ -595,14 +354,15 @@ export function OrchestraForm({
                     ))
                   ) : (
                     <div className='no-members-message'>
-                      לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים לתזמורת.
+                      לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים{' '}
+                      {isOrchestra ? 'לתזמורת' : 'להרכב'}.
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            {/* School Year (hidden, using current school year) */}
+            {/* Hidden school year field */}
             <input
               type='hidden'
               name='schoolYearId'
@@ -612,11 +372,30 @@ export function OrchestraForm({
 
           {/* Form Actions */}
           <div className='form-actions'>
-            <button type='submit' className='btn primary' disabled={isLoading}>
-              {isLoading ? 'שומר...' : orchestra?._id ? 'עדכון' : 'הוספה'}
+            <button
+              type='submit'
+              className='btn primary'
+              disabled={
+                isLoading ||
+                isSubmitting ||
+                (!nameValidation.isValid && !!formData.name)
+              }
+            >
+              {isSubmitting
+                ? 'שומר...'
+                : isLoading
+                ? 'טוען...'
+                : orchestra?._id
+                ? 'עדכון'
+                : 'הוספה'}
             </button>
 
-            <button type='button' className='btn secondary' onClick={onClose}>
+            <button
+              type='button'
+              className='btn secondary'
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               ביטול
             </button>
           </div>

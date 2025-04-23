@@ -151,6 +151,68 @@
             margin-top: 0.25rem;
             font-style: italic;
           }
+
+          // Add these styles to your orchestra-form.scss file
+
+            .name-input-container {
+              position: relative;
+              margin-bottom: 0.25rem;
+
+              input {
+                width: 100%;
+                padding: 0.6rem 0.75rem;
+                border: 1px solid var(--border-input);
+                border-radius: 0.5rem;
+                background-color: var(--bg-input, var(--bg-tertiary));
+                color: var(--text-primary);
+                
+                &:focus {
+                  outline: none;
+                  border-color: var(--primary-color);
+                  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+                }
+                
+                &.is-invalid {
+                  border-color: var(--danger);
+                  background-color: rgba(var(--danger-rgb), 0.05);
+                }
+              }
+            }
+
+            .name-validation-warning {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              margin-top: 0.35rem;
+              padding: 0.4rem 0.6rem;
+              background-color: rgba(var(--warning-rgb, 255, 193, 7), 0.1);
+              border: 1px solid rgba(var(--warning-rgb, 255, 193, 7), 0.3);
+              border-radius: 0.35rem;
+              color: var(--warning, #ff9800);
+              font-size: 0.8rem;
+              
+              svg {
+                flex-shrink: 0;
+              }
+            }
+
+            .form-group {
+              .form-error {
+                display: flex;
+                align-items: center;
+                gap: 0.35rem;
+                color: var(--danger);
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+              }
+
+              .loading-text {
+                color: var(--text-secondary);
+                font-size: 0.8rem;
+                margin-top: 0.25rem;
+                font-style: italic;
+              }
+            }
           
           // Member search container
           .search-container {
