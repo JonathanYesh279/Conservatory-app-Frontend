@@ -1,5 +1,4 @@
 // src/cmps/OrchestraForm.tsx
-import { useRef } from 'react';
 import { X, User, Search, X as XIcon, AlertCircle } from 'lucide-react';
 import { Orchestra } from '../services/orchestraService';
 import { useOrchestraForm } from '../hooks/useOrchestraForm';
@@ -103,9 +102,9 @@ export function OrchestraForm({
     initialMemberIds: orchestra?.memberIds || [],
     onMemberIdsChange: (memberIds) => {
       // Update the formData.memberIds whenever student selection changes
-      handleInputChange({
-        target: { name: 'memberIds', value: memberIds },
-      } as React.ChangeEvent<HTMLInputElement>);
+       handleInputChange({
+         target: { name: 'memberIds', value: memberIds },
+       } as unknown as React.ChangeEvent<HTMLInputElement>);
     },
   });
 
@@ -122,7 +121,7 @@ export function OrchestraForm({
           value: formData.name,
           dataset: { error: nameValidation.message },
         },
-      } as React.ChangeEvent<HTMLInputElement>);
+      } as unknown as React.ChangeEvent<HTMLInputElement>);
       return;
     }
 

@@ -1,7 +1,6 @@
 // src/hooks/useOrchestraForm.ts
 import { useState, useEffect } from 'react';
 import { Orchestra } from '../services/orchestraService';
-import { Student } from '../services/studentService';
 import { Teacher } from '../services/teacherService';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useTeacherStore } from '../store/teacherStore';
@@ -179,10 +178,14 @@ export const useOrchestraForm = ({
 
     // Check for validation errors passed through dataset
     if (dataset?.error) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: dataset.error,
-      }));
+      setErrors((prev) => {
+        if (dataset?.error) {
+          const newErrors = { ...prev };
+          newErrors[name] = dataset.error;
+          return newErrors;
+        }
+        return prev;
+      });
     } else if (errors[name]) {
       // Clear error for this field if it exists
       setErrors((prev) => {
