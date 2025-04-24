@@ -6,6 +6,8 @@ import { useRehearsalStore } from '../store/rehearsalStore';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 
+import { VALID_LOCATIONS } from './OrchestraForm';
+
 // Helper function declarations at the top to prevent "cannot access before initialization" errors
 const formatDateForInput = (date: Date): string => {
   return date.toISOString().split('T')[0];
@@ -70,7 +72,7 @@ export function RehearsalForm({
     date: formatDateForInput(new Date()),
     startTime: '16:00',
     endTime: '18:00',
-    location: 'אולם חזרות ראשי',
+    location: VALID_LOCATIONS[0],
     notes: '',
     isActive: true,
     schoolYearId: currentSchoolYearId,
@@ -88,7 +90,7 @@ export function RehearsalForm({
     dayOfWeek: new Date().getDay(),
     startTime: '16:00',
     endTime: '18:00',
-    location: 'אולם חזרות ראשי',
+    location: VALID_LOCATIONS[0],
     notes: '',
     excludeDates: [],
   });
@@ -139,7 +141,7 @@ export function RehearsalForm({
         date: formatDateForInput(today),
         startTime: '16:00',
         endTime: '18:00',
-        location: 'אולם חזרות ראשי',
+        location: VALID_LOCATIONS[0],
         notes: '',
         isActive: true,
         schoolYearId: currentSchoolYearId,
@@ -157,7 +159,7 @@ export function RehearsalForm({
         dayOfWeek: todayDayOfWeek,
         startTime: '16:00',
         endTime: '18:00',
-        location: 'אולם חזרות ראשי',
+        location: VALID_LOCATIONS[0],
         notes: '',
         excludeDates: [],
       });
@@ -723,8 +725,7 @@ export function RehearsalForm({
                   <MapPin size={16} className='icon' />
                   מיקום *
                 </label>
-                <input
-                  type='text'
+                <select
                   id='location'
                   name='location'
                   value={
@@ -735,7 +736,16 @@ export function RehearsalForm({
                   }
                   className={errors['location'] ? 'is-invalid' : ''}
                   required
-                />
+                >
+                  <option value='' disabled>
+                    בחר מיקום
+                  </option>
+                  {VALID_LOCATIONS.map((location) => (
+                    <option key={location} value={location}>
+                      {location}
+                    </option>
+                  ))}
+                </select>
                 {errors['location'] && (
                   <div className='form-error'>{errors['location']}</div>
                 )}

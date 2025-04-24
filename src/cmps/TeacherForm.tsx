@@ -58,6 +58,7 @@ const VALID_INSTRUMENTS = [
   'בריטון',
   'טרומבון',
   'סקסופון',
+  'אבוב',
 ]
 
 // Constants for student scheduling
@@ -544,14 +545,6 @@ export function TeacherForm({
     }
 
     // Validate conductor specific fields
-    if (
-      isConductor &&
-      (!formData.conducting?.orchestraIds ||
-        formData.conducting.orchestraIds.length === 0)
-    ) {
-      newErrors['conducting.orchestraIds'] = 'יש לבחור לפחות תזמורת אחת למנצח';
-    }
-
     if (formData.roles.length === 0) {
       newErrors['roles'] = 'יש לבחור לפחות תפקיד אחד';
     }
@@ -826,14 +819,13 @@ export function TeacherForm({
             {isConductor && (
               <div className='form-row full-width'>
                 <div className='form-group'>
-                  <label htmlFor='orchestras'>תזמורות (למנצח) *</label>
+                  <label htmlFor='orchestras'>תזמורות (למנצח)</label>
                   <select
                     id='orchestras'
                     name='orchestraIds'
                     multiple
                     value={formData.conducting.orchestraIds || []}
                     onChange={handleOrchestraChange}
-                    required={isConductor}
                     className={
                       errors['conducting.orchestraIds'] ? 'is-invalid' : ''
                     }

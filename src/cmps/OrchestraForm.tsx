@@ -8,7 +8,7 @@ import { useOrchestraStore } from '../store/orchestraStore';
 
 // Constants
 const VALID_TYPES = ['הרכב', 'תזמורת'];
-const VALID_LOCATIONS = [
+export const VALID_LOCATIONS = [
   'אולם ערן',
   'סטודיו קאמרי 1',
   'סטודיו קאמרי 2',
