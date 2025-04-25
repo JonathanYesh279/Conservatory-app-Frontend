@@ -296,7 +296,7 @@ export function OrchestraDetails() {
                   }`}
                   onClick={toggleInfoSection}
                 >
-                  פרטי התזמורת
+                  {selectedOrchestra.type === 'הרכב' ? 'פרטי הרכב' : 'פרטי התזמורת'}
                   {showInfoSection ? (
                     <ChevronUp className='toggle-icon' size={20} />
                   ) : (

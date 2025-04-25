@@ -99,7 +99,10 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
       let savedTeacher: Teacher;
 
       if (teacherId) {
-        // Update existing teacher - pass teacherId as a separate parameter
+        // For updates, log what we're sending
+        console.log(`Updating teacher ${teacherId} with:`, teacherToSave);
+
+        // Update existing teacher using the dedicated update method
         savedTeacher = await teacherService.updateTeacher(
           teacherId,
           teacherToSave
@@ -117,7 +120,9 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
           isLoading: false,
         });
       } else {
-        // Add new teacher
+        // For new teachers, we send the complete object
+        console.log('Creating new teacher:', teacherToSave);
+
         savedTeacher = await teacherService.addTeacher(teacherToSave);
 
         // Safety check on existing teachers

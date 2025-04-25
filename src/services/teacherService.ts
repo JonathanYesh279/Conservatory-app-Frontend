@@ -62,58 +62,64 @@ export interface TeacherScheduleUpdate {
   isActive: boolean;
 }
 
-// Function to sanitize teacher data before sending to backend
-function sanitizeTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
+// Function to prepare data for teacher updates (excludes credentials)
+function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
   // Create a new object with only the properties we want to update
-  const sanitized: any = {};
+  const prepared: any = {};
 
   // Always include these basic fields if present
   if (teacher.personalInfo) {
-    sanitized.personalInfo = { ...teacher.personalInfo };
+    prepared.personalInfo = { ...teacher.personalInfo };
   }
 
+  // Always include roles array if present, ensure it's an array
   if (teacher.roles) {
-    sanitized.roles = [...teacher.roles];
+    console.log('Including roles for update:', teacher.roles);
+    prepared.roles = Array.isArray(teacher.roles) ? [...teacher.roles] : [];
   }
 
   if (teacher.professionalInfo) {
-    sanitized.professionalInfo = { ...teacher.professionalInfo };
+    prepared.professionalInfo = { ...teacher.professionalInfo };
   }
 
   if (teacher.isActive !== undefined) {
-    sanitized.isActive = teacher.isActive;
+    prepared.isActive = teacher.isActive;
   }
 
   // Include conducting orchestras if present
-  if (teacher.conducting?.orchestraIds) {
-    sanitized.conducting = {
-      orchestraIds: [...teacher.conducting.orchestraIds],
+  if (teacher.conducting) {
+    prepared.conducting = {
+      orchestraIds: Array.isArray(teacher.conducting.orchestraIds)
+        ? [...teacher.conducting.orchestraIds]
+        : [],
     };
+  }
+
+  // Include ensemblesIds if present
+  if (teacher.ensemblesIds) {
+    prepared.ensemblesIds = Array.isArray(teacher.ensemblesIds)
+      ? [...teacher.ensemblesIds]
+      : [];
   }
 
   // Include school years if present
   if (teacher.schoolYears) {
-    sanitized.schoolYears = [...teacher.schoolYears];
+    prepared.schoolYears = [...teacher.schoolYears];
   }
 
-  // IMPORTANT: Always include credentials with both email and password
-  sanitized.credentials = {
-    email: teacher.personalInfo?.email || teacher.credentials?.email || '',
-    password:
-      teacher.credentials?.password !== '********' &&
-      teacher.credentials?.password
-        ? teacher.credentials.password
-        : 'placeholder_password', // Use a placeholder that won't actually change the password
-  };
+  // Important: For updates, we exclude credentials completely
+  // This is the key change from the original implementation
 
-  // IMPORTANT: Only include teaching.schedule if the items have all required fields
+  // Include teaching data if present
   if (teacher.teaching) {
-    // Always include studentIds
-    sanitized.teaching = {
-      studentIds: [...(teacher.teaching.studentIds || [])],
-    };
+    prepared.teaching = {};
 
-    // Only include schedule if it exists and has valid items
+    // Include studentIds if present
+    if (Array.isArray(teacher.teaching.studentIds)) {
+      prepared.teaching.studentIds = [...teacher.teaching.studentIds];
+    }
+
+    // Include schedule if it exists and has valid items
     if (teacher.teaching.schedule && teacher.teaching.schedule.length > 0) {
       // Filter out any invalid schedule items
       const validScheduleItems = teacher.teaching.schedule.filter(
@@ -127,25 +133,38 @@ function sanitizeTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
 
       // Only add schedule to the payload if there are valid items
       if (validScheduleItems.length > 0) {
-        sanitized.teaching.schedule = validScheduleItems.map((item) => ({
+        prepared.teaching.schedule = validScheduleItems.map((item) => ({
           studentId: item.studentId,
           day: item.day,
           time: item.time,
           duration: item.duration,
           // Explicitly omit isActive which is not accepted by the backend schema
         }));
-      } else {
-        // If no valid schedule items, send an empty array to clear existing schedule
-        sanitized.teaching.schedule = [];
       }
-    } else {
-      // If no schedule, include an empty array
-      sanitized.teaching.schedule = [];
     }
   }
 
-  console.log('Sanitized teacher data:', JSON.stringify(sanitized, null, 2));
-  return sanitized;
+  console.log(
+    'Prepared teacher data for update:',
+    JSON.stringify(prepared, null, 2)
+  );
+  return prepared;
+}
+
+// Function to prepare data for new teacher creation (includes credentials)
+function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
+  // First get the base data using the update function
+  const prepared = prepareTeacherForUpdate(teacher);
+
+  // Then add credentials for new teacher
+  if (teacher.credentials) {
+    prepared.credentials = {
+      email: teacher.personalInfo?.email || teacher.credentials.email || '',
+      password: teacher.credentials.password || '',
+    };
+  }
+
+  return prepared;
 }
 
 export const teacherService = {
@@ -181,20 +200,22 @@ export const teacherService = {
   },
 
   async addTeacher(teacher: Partial<Teacher>): Promise<Teacher> {
-    return httpService.post('teacher', teacher);
+    const prepared = prepareNewTeacher(teacher);
+    console.log('Creating new teacher with data:', prepared);
+    return httpService.post('teacher', prepared);
   },
 
   async updateTeacher(
     teacherId: string,
     teacher: Partial<Teacher>
   ): Promise<Teacher> {
-    // Make sure we're not sending the _id in the request body
-    const { _id, ...teacherWithoutId } = teacher as any;
+    // Prepare data for update - important that we exclude credentials
+    const prepared = prepareTeacherForUpdate(teacher);
 
-    // Sanitize data before sending to backend
-    const sanitizedTeacher = sanitizeTeacherForUpdate(teacherWithoutId);
+    console.log('Updating teacher with prepared data:', prepared);
 
-    return httpService.put(`teacher/${teacherId}`, sanitizedTeacher);
+    // Send update request
+    return httpService.put(`teacher/${teacherId}`, prepared);
   },
 
   async removeTeacher(teacherId: string): Promise<Teacher> {

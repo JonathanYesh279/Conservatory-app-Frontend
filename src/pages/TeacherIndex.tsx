@@ -32,7 +32,11 @@ export function TeacherIndex() {
   const [teacherToDelete, setTeacherToDelete] = useState<string | null>(null);
   // State to pass back the newly created student
   const [createdStudent, setCreatedStudent] = useState<Student | null>(null);
-  const [newTeacherInfo, setNewTeacherInfo] = useState<{ _id?: string; fullName: string; instrument?: string; } | null>(null);
+  const [newTeacherInfo, setNewTeacherInfo] = useState<{
+    _id?: string;
+    fullName: string;
+    instrument?: string;
+  } | null>(null);
 
   // Define which fields to search in teachers
   const teacherSearchFields = (teacher: Teacher) => [
@@ -123,6 +127,7 @@ export function TeacherIndex() {
       try {
         await removeTeacher(teacherToDelete);
         setTeacherToDelete(null);
+        setIsConfirmDialogOpen(false);
       } catch (err) {
         console.error('Failed to remove teacher:', err);
       }
@@ -205,8 +210,12 @@ export function TeacherIndex() {
         <TeacherForm
           isOpen={isTeacherFormOpen}
           onClose={handleCloseTeacherForm}
-          teacher={teacherToEdit || undefined}
-          onSave={loadTeachers}
+          teacher={teacherToEdit}
+          onSave={() => {
+            console.log('onSave executing in parent component');
+            setIsTeacherFormOpen(false);
+            loadTeachers(); // Refresh the teacher list
+          }}
           onAddNewStudent={handleOpenStudentForm}
           newlyCreatedStudent={createdStudent}
         />

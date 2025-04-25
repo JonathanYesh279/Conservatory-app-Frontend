@@ -36,7 +36,7 @@ interface TeacherFormData {
   conducting: {
     orchestraIds: string[]
   }
-  ensemblesIds: string[] // Changed from ensembleIds to ensemblesIds to match backend schema
+  ensemblesIds: string[]
   schoolYears: Array<{
     schoolYearId: string
     isActive: boolean
@@ -49,7 +49,7 @@ interface TeacherFormData {
 }
 
 // Constants for validation and form selection
-const VALID_RULES = ['מורה', 'מנצח', 'מדריך הרכב', 'מנהל', 'מדריך תאוריה']
+const VALID_RULES = ['מורה', 'מנצח', 'מדריך הרכב', 'מנהל', 'מורה תאוריה']
 const VALID_INSTRUMENTS = [
   'חצוצרה',
   'חליל צד',
@@ -70,8 +70,8 @@ interface TeacherFormProps {
   onClose: () => void
   teacher?: Partial<Teacher>
   onSave?: () => void
-  onAddNewStudent?: (teacherInfo: { fullName: string, instrument: string }) => void;
-  newlyCreatedStudent?: Student | null  // New prop to receive the created student
+  onAddNewStudent?: (teacherInfo: { fullName: string, instrument: string }) => void
+  newlyCreatedStudent?: Student | null
 }
 
 export function TeacherForm({
@@ -82,31 +82,31 @@ export function TeacherForm({
   onAddNewStudent,
   newlyCreatedStudent
 }: TeacherFormProps) {
-  const { saveTeacher, isLoading, error, clearError } = useTeacherStore();
-  const { currentSchoolYear } = useSchoolYearStore();
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-  const [loadingOrchestras, setLoadingOrchestras] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const navigate = useNavigate();
+  const { saveTeacher, isLoading, error, clearError } = useTeacherStore()
+  const { currentSchoolYear } = useSchoolYearStore()
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([])
+  const [loadingOrchestras, setLoadingOrchestras] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const navigate = useNavigate()
 
   // Student management state
-  const [students, setStudents] = useState<Student[]>([]);
-  const [loadingStudents, setLoadingStudents] = useState(false);
-  const [showStudentSearch, setShowStudentSearch] = useState(false);
-  const [selectedStudents, setSelectedStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<Student[]>([])
+  const [loadingStudents, setLoadingStudents] = useState(false)
+  const [showStudentSearch, setShowStudentSearch] = useState(false)
+  const [selectedStudents, setSelectedStudents] = useState<Student[]>([])
 
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => [
     student.personalInfo.fullName,
     student.academicInfo.instrument,
     student.academicInfo.class,
-  ];
+  ]
 
   // Use the search hook for students
   const {
     filteredEntities: filteredStudents,
     handleSearch: handleStudentSearch,
-  } = useSearchbar(students, studentSearchFields);
+  } = useSearchbar(students, studentSearchFields)
 
   // Form state with proper typing
   const [formData, setFormData] = useState<TeacherFormData>({
@@ -128,80 +128,83 @@ export function TeacherForm({
     conducting: {
       orchestraIds: [],
     },
-    ensemblesIds: [], // Changed from ensembleIds to ensemblesIds to match backend schema
+    ensemblesIds: [],
     schoolYears: [],
     credentials: {
       email: '',
       password: '',
     },
     isActive: true,
-  });
+  })
 
   // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [showPassword, setShowPassword] = useState(false)
+  
+  // Determine if this is a new teacher or existing teacher
+  const isNewTeacher = !teacher?._id
 
   // Effect to handle newly created student
   useEffect(() => {
     if (newlyCreatedStudent) {
       // Add the newly created student to the selected students
-      handleAddStudent(newlyCreatedStudent);
+      handleAddStudent(newlyCreatedStudent)
     }
-  }, [newlyCreatedStudent]);
+  }, [newlyCreatedStudent])
 
   // Check for mobile device
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+      setIsMobile(window.innerWidth < 768)
+    }
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
 
     return () => {
-      window.removeEventListener('resize', checkMobile);
-    };
-  }, []);
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   // Load orchestras
   useEffect(() => {
     const fetchOrchestras = async () => {
-      setLoadingOrchestras(true);
+      setLoadingOrchestras(true)
       try {
-        const data = await orchestraService.getOrchestras({ isActive: true });
-        setOrchestras(data);
+        const data = await orchestraService.getOrchestras({ isActive: true })
+        setOrchestras(data)
       } catch (err) {
-        console.error('Failed to load orchestras:', err);
+        console.error('Failed to load orchestras:', err)
       } finally {
-        setLoadingOrchestras(false);
+        setLoadingOrchestras(false)
       }
-    };
+    }
 
-    fetchOrchestras();
-  }, []);
+    fetchOrchestras()
+  }, [])
 
   // Load students for selection
   useEffect(() => {
     const fetchStudents = async () => {
-      setLoadingStudents(true);
+      setLoadingStudents(true)
       try {
         const allStudents = await studentService.getStudents({
           isActive: true,
-        });
-        setStudents(allStudents);
+        })
+        setStudents(allStudents)
       } catch (err) {
-        console.error('Failed to load students:', err);
+        console.error('Failed to load students:', err)
       } finally {
-        setLoadingStudents(false);
+        setLoadingStudents(false)
       }
-    };
+    }
 
-    fetchStudents();
-  }, []);
+    fetchStudents()
+  }, [])
 
   // Check if teacher is conductor or teacher
-  const isConductor = formData.roles.includes('מנצח');
-  const isTeacher = formData.roles.includes('מורה');
+  const isConductor = formData.roles.includes('מנצח')
+  const isTeacher = formData.roles.includes('מורה')
 
   // If editing an existing teacher, populate form data
   useEffect(() => {
@@ -212,22 +215,25 @@ export function TeacherForm({
           teacher.teaching?.studentIds &&
           teacher.teaching.studentIds.length > 0
         ) {
-          setLoadingStudents(true);
+          setLoadingStudents(true)
           try {
             const studentData = await studentService.getStudentsByIds(
               teacher.teaching.studentIds
-            );
-            setSelectedStudents(studentData);
+            )
+            setSelectedStudents(studentData)
           } catch (err) {
-            console.error("Failed to load teacher's students:", err);
+            console.error("Failed to load teacher's students:", err)
           } finally {
-            setLoadingStudents(false);
+            setLoadingStudents(false)
           }
         }
-      };
+      }
 
       // Load the teacher's students
-      mapStudentIdsToStudents();
+      mapStudentIdsToStudents()
+
+      // Log initial roles to make debugging easier
+      console.log('Initial teacher roles:', teacher.roles)
 
       setFormData({
         _id: teacher._id,
@@ -250,14 +256,14 @@ export function TeacherForm({
         conducting: {
           orchestraIds: teacher.conducting?.orchestraIds || [],
         },
-        ensemblesIds: teacher.ensemblesIds || [], // Changed from ensembleIds to ensemblesIds
+        ensemblesIds: teacher.ensemblesIds || [],
         schoolYears: teacher.schoolYears || [],
         credentials: {
           email: teacher.personalInfo?.email || '',
-          password: '********',
+          password: '', // Don't include password for updates
         },
         isActive: teacher.isActive !== false,
-      });
+      })
     } else {
       // Reset form for new teacher with proper defaults
       setFormData({
@@ -279,61 +285,61 @@ export function TeacherForm({
         conducting: {
           orchestraIds: [],
         },
-        ensemblesIds: [], // Changed from ensembleIds to ensemblesIds
+        ensemblesIds: [],
         schoolYears: currentSchoolYear
           ? [
-              {
-                schoolYearId: currentSchoolYear._id,
-                isActive: true,
-              },
-            ]
+            {
+              schoolYearId: currentSchoolYear._id,
+              isActive: true,
+            },
+          ]
           : [],
         credentials: {
           email: '',
           password: '',
         },
         isActive: true,
-      });
+      })
 
       // Reset selected students
-      setSelectedStudents([]);
+      setSelectedStudents([])
     }
 
-    setErrors({});
-    clearError?.();
-  }, [teacher, isOpen, clearError, currentSchoolYear]);
+    setErrors({})
+    clearError?.()
+  }, [teacher, isOpen, clearError, currentSchoolYear])
 
   // Handle input changes
   const handlePersonalInfoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
-    const updatedPersonalInfo = { ...formData.personalInfo, [name]: value };
+    const updatedPersonalInfo = { ...formData.personalInfo, [name]: value }
 
-    // Keep email synchronized with credentials email
+    // Keep email synchronized with credentials email (for new teachers only)
     const updatedCredentials = {
       ...formData.credentials,
       email: name === 'email' ? value : formData.credentials.email,
-    };
+    }
 
     setFormData({
       ...formData,
       personalInfo: updatedPersonalInfo,
       credentials: updatedCredentials,
-    });
+    })
 
     // Clear error for this field if it exists
     if (errors[`personalInfo.${name}`]) {
       setErrors({
         ...errors,
         [`personalInfo.${name}`]: '',
-      });
+      })
     }
-  };
+  }
 
   const handleProfessionalInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     setFormData({
       ...formData,
@@ -341,44 +347,57 @@ export function TeacherForm({
         ...formData.professionalInfo,
         [name]: value,
       },
-    });
+    })
 
     if (errors[`professionalInfo.${name}`]) {
       setErrors({
         ...errors,
         [`professionalInfo.${name}`]: '',
-      });
+      })
     }
-  };
+  }
 
+  // Enhanced handleRolesChange function with better logging
   const handleRolesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value, checked } = e.target;
+    const { value, checked } = e.target
 
-    let updatedRoles = [...formData.roles];
+    let updatedRoles = [...formData.roles]
 
     if (checked) {
       // Add the role if it's not already there
       if (!updatedRoles.includes(value)) {
-        updatedRoles.push(value);
+        updatedRoles.push(value)
+        console.log(`Added role ${value}, new roles:`, updatedRoles)
       }
     } else {
       // Remove the role
-      updatedRoles = updatedRoles.filter((role) => role !== value);
+      updatedRoles = updatedRoles.filter((role) => role !== value)
+      console.log(`Removed role ${value}, new roles:`, updatedRoles)
 
       // Make sure there's at least one role
       if (updatedRoles.length === 0) {
-        updatedRoles = ['מורה'];
+        updatedRoles = ['מורה']
+        console.log('No roles left, defaulting to מורה')
       }
     }
 
+    // Update the form data with the new roles array
     setFormData({
       ...formData,
       roles: updatedRoles,
-    });
-  };
+    })
+
+    // Clear any role-related errors
+    if (errors['roles']) {
+      setErrors({
+        ...errors,
+        roles: '',
+      })
+    }
+  }
 
   const handleCredentialsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
 
     setFormData({
       ...formData,
@@ -386,21 +405,21 @@ export function TeacherForm({
         ...formData.credentials,
         [name]: value,
       },
-    });
+    })
 
     if (errors[`credentials.${name}`]) {
       setErrors({
         ...errors,
         [`credentials.${name}`]: '',
-      });
+      })
     }
-  };
+  }
 
   // Handle orchestra selection (for conductors)
   const handleOrchestraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(
       (option) => option.value
-    );
+    )
 
     setFormData({
       ...formData,
@@ -408,25 +427,25 @@ export function TeacherForm({
         ...formData.conducting,
         orchestraIds: selectedOptions,
       },
-    });
+    })
 
     if (errors['conducting.orchestraIds']) {
       setErrors({
         ...errors,
         'conducting.orchestraIds': '',
-      });
+      })
     }
-  };
+  }
 
   // Handle adding a student to the teacher
   const handleAddStudent = (student: Student) => {
     // Check if student is already selected
     if (selectedStudents.some((s) => s._id === student._id)) {
-      return;
+      return
     }
 
     // Add student to selected students
-    setSelectedStudents([...selectedStudents, student]);
+    setSelectedStudents([...selectedStudents, student])
 
     // Create initial schedule entry for this student
     const newScheduleItem = {
@@ -435,7 +454,7 @@ export function TeacherForm({
       time: '08:00',
       duration: 45,
       isActive: true,
-    };
+    }
 
     // Update form data
     setFormData({
@@ -444,16 +463,16 @@ export function TeacherForm({
         studentIds: [...formData.teaching.studentIds, student._id],
         schedule: [...formData.teaching.schedule, newScheduleItem],
       },
-    });
+    })
 
     // Hide search after selection
-    setShowStudentSearch(false);
-  };
+    setShowStudentSearch(false)
+  }
 
   // Handle removing a student from the teacher
   const handleRemoveStudent = (studentId: string) => {
     // Remove student from selected students
-    setSelectedStudents(selectedStudents.filter((s) => s._id !== studentId));
+    setSelectedStudents(selectedStudents.filter((s) => s._id !== studentId))
 
     // Update form data
     setFormData({
@@ -466,8 +485,8 @@ export function TeacherForm({
           (item) => item.studentId !== studentId
         ),
       },
-    });
-  };
+    })
+  }
 
   // Handle updating schedule for a student
   const handleScheduleChange = (
@@ -478,10 +497,10 @@ export function TeacherForm({
     // Update the schedule item for this student
     const updatedSchedule = formData.teaching.schedule.map((item) => {
       if (item.studentId === studentId) {
-        return { ...item, [field]: value };
+        return { ...item, [field]: value }
       }
-      return item;
-    });
+      return item
+    })
 
     // Update form data
     setFormData({
@@ -490,8 +509,8 @@ export function TeacherForm({
         ...formData.teaching,
         schedule: updatedSchedule,
       },
-    });
-  };
+    })
+  }
 
   // Handle navigating to add a new student
   const handleAddNewStudent = () => {
@@ -499,151 +518,249 @@ export function TeacherForm({
     const teacherInfo = {
       fullName: formData.personalInfo.fullName,
       instrument: formData.professionalInfo.instrument,
-    };
+    }
 
     // Use the callback if provided, passing the in-progress teacher info
     if (onAddNewStudent) {
-      onAddNewStudent(teacherInfo);
+      onAddNewStudent(teacherInfo)
     } else {
       // Fallback to the old approach
-      onClose();
-      navigate('/students/new');
+      onClose()
+      navigate('/students/new')
     }
-  };
+  }
 
-  // Validate form
+  // Validate form based on whether it's a new teacher or update
   const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
+    console.log('Running validation with formData:', formData)
 
     // Required fields validation
     if (!formData.personalInfo?.fullName) {
-      newErrors['personalInfo.fullName'] = 'שם מלא הוא שדה חובה';
+      newErrors['personalInfo.fullName'] = 'שם מלא הוא שדה חובה'
+      console.error('Validation failed: Missing fullName')
     }
 
     if (!formData.personalInfo?.phone) {
-      newErrors['personalInfo.phone'] = 'טלפון הוא שדה חובה';
+      newErrors['personalInfo.phone'] = 'טלפון הוא שדה חובה'
+      console.error('Validation failed: Missing phone')
     } else if (!/^05\d{8}$/.test(formData.personalInfo.phone)) {
       newErrors['personalInfo.phone'] =
-        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)';
+        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
+      console.error(
+        'Validation failed: Phone format invalid',
+        formData.personalInfo.phone
+      )
     }
 
     if (!formData.personalInfo?.email) {
-      newErrors['personalInfo.email'] = 'דוא"ל הוא שדה חובה';
+      newErrors['personalInfo.email'] = 'דוא"ל הוא שדה חובה'
+      console.error('Validation failed: Missing email')
     } else if (
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalInfo.email)
     ) {
-      newErrors['personalInfo.email'] = 'כתובת דוא"ל לא תקינה';
+      newErrors['personalInfo.email'] = 'כתובת דוא"ל לא תקינה'
+      console.error('Validation failed: Email format invalid')
     }
 
     if (!formData.personalInfo?.address) {
-      newErrors['personalInfo.address'] = 'כתובת היא שדה חובה';
+      newErrors['personalInfo.address'] = 'כתובת היא שדה חובה'
+      console.error('Validation failed: Missing address')
     }
 
     // Validate teacher specific fields
     if (isTeacher && !formData.professionalInfo?.instrument) {
-      newErrors['professionalInfo.instrument'] = 'כלי נגינה הוא שדה חובה למורה';
+      newErrors['professionalInfo.instrument'] = 'כלי נגינה הוא שדה חובה למורה'
+      console.error('Validation failed: Teacher requires instrument')
     }
 
-    // Validate conductor specific fields
+    // Validate role selection
     if (formData.roles.length === 0) {
-      newErrors['roles'] = 'יש לבחור לפחות תפקיד אחד';
+      newErrors['roles'] = 'יש לבחור לפחות תפקיד אחד'
+      console.error('Validation failed: No roles selected')
     }
 
-    // For new teachers, password is required
-    if (!formData._id && !formData.credentials.password) {
-      newErrors['credentials.password'] = 'סיסמה היא שדה חובה';
-    }
-
-    // Email in credentials must match email in personal info
-    if (formData.personalInfo.email !== formData.credentials.email) {
-      newErrors['credentials.email'] =
-        'דוא"ל בהרשאות חייב להתאים לדוא"ל בפרטים אישיים';
-    }
-
-    // Validate student schedule
-    formData.teaching.schedule.forEach((scheduleItem, index) => {
-      if (!scheduleItem.day) {
-        newErrors[`teaching.schedule[${index}].day`] = 'יש לבחור יום';
+    // Only validate credentials for new teachers
+    if (isNewTeacher) {
+      // For new teachers, password is required
+      if (!formData.credentials.password) {
+        newErrors['credentials.password'] = 'סיסמה היא שדה חובה'
+        console.error('Validation failed: New teacher requires password')
       }
-      if (!scheduleItem.time) {
-        newErrors[`teaching.schedule[${index}].time`] = 'יש לבחור שעה';
-      }
-    });
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+      // Email in credentials must match email in personal info
+      if (formData.personalInfo.email !== formData.credentials.email) {
+        newErrors['credentials.email'] =
+          'דוא"ל בהרשאות חייב להתאים לדוא"ל בפרטים אישיים'
+        console.error(
+          'Validation failed: Email mismatch between credentials and personal info'
+        )
+      }
+    }
+
+    // Skip schedule validation for updates - this is an important change
+    // For existing teachers, don't validate the schedule items
+    if (!teacher?._id) {
+      // Only validate schedule for new teachers
+      formData.teaching.schedule.forEach((scheduleItem, index) => {
+        if (!scheduleItem.day) {
+          newErrors[`teaching.schedule[${index}].day`] = 'יש לבחור יום'
+          console.error(
+            `Validation failed: Missing day for schedule item ${index}`
+          )
+        }
+        if (!scheduleItem.time) {
+          newErrors[`teaching.schedule[${index}].time`] = 'יש לבחור שעה'
+          console.error(
+            `Validation failed: Missing time for schedule item ${index}`
+          )
+        }
+      })
+    }
+
+    // Log all errors
+    if (Object.keys(newErrors).length > 0) {
+      console.error('Validation errors:', newErrors)
+    } else {
+      console.log('Validation passed successfully')
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
+    console.log('Submit triggered')
 
     if (!validateForm()) {
-      return;
+      console.log('Validation failed')
+      return
     }
 
     try {
-      const teacherId = formData._id;
-      // Remove the _id field from the data to send to the server
-      const { _id, ...dataWithoutId } = formData as any;
+      const teacherId = formData._id
 
-      // Handle password for existing teachers
-      if (teacherId && dataWithoutId.credentials.password === '********') {
-        // Remove password if it's the masked placeholder
-        dataWithoutId.credentials = {
-          email: dataWithoutId.credentials.email,
-          password: '', // Or any appropriate default
-        };
+      // Important: Log roles before submission to verify they're being sent
+      console.log('Submitting teacher with roles:', formData.roles)
+
+      // Create a data object for submission
+      let dataToSend: any
+
+      if (teacherId) {
+        // For updates: explicitly include only what we want to update
+        dataToSend = {
+          personalInfo: formData.personalInfo,
+          roles: formData.roles,
+          professionalInfo: formData.professionalInfo,
+          isActive: formData.isActive
+        }
+
+        // Only include teaching data if there are students
+        if (formData.teaching && formData.teaching.studentIds.length > 0) {
+          dataToSend.teaching = {
+            studentIds: formData.teaching.studentIds
+          }
+          
+          // Only include valid schedule items
+          const validSchedule = formData.teaching.schedule.filter(
+            item => item.studentId && item.day && item.time && item.duration
+          )
+          
+          if (validSchedule.length > 0) {
+            dataToSend.teaching.schedule = validSchedule.map(item => ({
+              studentId: item.studentId,
+              day: item.day,
+              time: item.time,
+              duration: item.duration
+            }))
+          }
+        }
+
+        // Include conducting data if there are orchestras
+        if (formData.conducting && formData.conducting.orchestraIds.length > 0) {
+          dataToSend.conducting = {
+            orchestraIds: formData.conducting.orchestraIds
+          }
+        }
+
+        if (formData.ensemblesIds && formData.ensemblesIds.length > 0) {
+          dataToSend.ensemblesIds = formData.ensemblesIds
+        }
+
+        console.log('Update mode: preparing specific data to update')
+      } else {
+        // For new teachers: include all data including credentials
+        const { _id, ...dataWithoutId } = formData
+        dataToSend = dataWithoutId
+        console.log('Create mode: including all teacher data with credentials')
       }
 
       // Make sure the teacher has the current school year in enrollments
       if (
         currentSchoolYear &&
-        !dataWithoutId.schoolYears?.some(
+        !dataToSend.schoolYears?.some(
           (sy: any) => sy.schoolYearId === currentSchoolYear._id
         )
       ) {
-        dataWithoutId.schoolYears = [
-          ...(dataWithoutId.schoolYears || []),
+        dataToSend.schoolYears = [
+          ...(dataToSend.schoolYears || []),
           { schoolYearId: currentSchoolYear._id, isActive: true },
-        ];
+        ]
       }
 
-      // Remove isActive from teaching.schedule items - this property is not allowed in the backend schema
-      if (dataWithoutId.teaching && dataWithoutId.teaching.schedule) {
-        dataWithoutId.teaching.schedule = dataWithoutId.teaching.schedule.map(
-          (item: any) => ({
-            studentId: item.studentId,
-            day: item.day,
-            time: item.time,
-            duration: item.duration,
-            // isActive property is removed
-          })
-        );
-      }
+      console.log('Final data to be sent:', dataToSend)
+
+      let savedTeacher
 
       // Save or update teacher
       if (teacherId) {
-        // For updates, we need to call updateTeacher separately
-        await saveTeacher(dataWithoutId, teacherId);
+        console.log('About to call saveTeacher for update with data:', dataToSend)
+        try {
+          savedTeacher = await saveTeacher(dataToSend, teacherId)
+          console.log('Update successful, response:', savedTeacher)
+        } catch (updateError) {
+          console.error('Update failed with error:', updateError)
+          throw updateError
+        }
       } else {
-        // For new teachers, add them without an ID
-        await saveTeacher(dataWithoutId);
+        // For new teachers
+        console.log('About to call saveTeacher for new teacher')
+        try {
+          savedTeacher = await saveTeacher(dataToSend)
+          console.log('Create successful, new teacher:', savedTeacher)
+        } catch (createError) {
+          console.error('Create failed with error:', createError)
+          throw createError
+        }
       }
 
+      console.log('Save successful, about to call onSave callback')
       // Call optional onSave callback
       if (onSave) {
-        onSave();
+        onSave()
+        console.log('onSave callback completed')
       }
 
+      console.log('About to call onClose')
       // Close the form after successful save
-      onClose();
+      onClose()
+      console.log('onClose called')
     } catch (err) {
-      console.error('Error saving teacher:', err);
+      console.error('Error saving teacher:', err)
+      // More detailed error display
+      const errorMessage =
+        err instanceof Error ? err.message : 'שגיאה לא ידועה בשמירת המורה'
+      console.error('Error message:', errorMessage)
+      setErrors((prev) => ({
+        ...prev,
+        form: errorMessage,
+      }))
     }
-  };
+  }
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <div className='teacher-form'>
@@ -660,6 +777,7 @@ export function TeacherForm({
         <h2>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
 
         {error && <div className='error-message'>{error}</div>}
+        {errors.form && <div className='error-message'>{errors.form}</div>}
 
         <form onSubmit={handleSubmit}>
           {/* Personal Information */}
@@ -1048,67 +1166,66 @@ export function TeacherForm({
             </div>
           )}
 
-          {/* Authentication */}
-          <div className='form-section'>
-            <h3>הרשאות</h3>
+          {/* Authentication - Only shown for new teachers */}
+          {isNewTeacher && (
+            <div className='form-section'>
+              <h3>הרשאות</h3>
 
-            {/* Email (this should be disabled and synced with the personal email) */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='cred-email'>דוא"ל (להתחברות) *</label>
-                <input
-                  type='email'
-                  id='cred-email'
-                  name='email'
-                  value={formData.credentials.email}
-                  onChange={handleCredentialsChange}
-                  className={errors['credentials.email'] ? 'is-invalid' : ''}
-                  disabled // This should be synced with personal email
-                />
-                {errors['credentials.email'] && (
-                  <div className='form-error'>
-                    {errors['credentials.email']}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Password */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='password'>
-                  סיסמה *
-                  {teacher?._id ? ' (השאר ריק לשמירת הסיסמה הקיימת)' : ''}
-                </label>
-                <div className='password-input-container'>
+              {/* Email (this should be disabled and synced with the personal email) */}
+              <div className='form-row full-width'>
+                <div className='form-group'>
+                  <label htmlFor='cred-email'>דוא"ל (להתחברות) *</label>
                   <input
-                    type={showPassword ? 'text' : 'password'}
-                    id='password'
-                    name='password'
-                    value={formData.credentials.password}
+                    type='email'
+                    id='cred-email'
+                    name='email'
+                    value={formData.credentials.email}
                     onChange={handleCredentialsChange}
-                    className={
-                      errors['credentials.password'] ? 'is-invalid' : ''
-                    }
-                    required={!teacher?._id} // Required only for new teachers
+                    className={errors['credentials.email'] ? 'is-invalid' : ''}
+                    disabled // This should be synced with personal email
                   />
-                  <button
-                    type='button'
-                    className='toggle-password-btn'
-                    onClick={() => setShowPassword(!showPassword)}
-                    aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
+                  {errors['credentials.email'] && (
+                    <div className='form-error'>
+                      {errors['credentials.email']}
+                    </div>
+                  )}
                 </div>
-                {errors['credentials.password'] && (
-                  <div className='form-error'>
-                    {errors['credentials.password']}
+              </div>
+
+              {/* Password */}
+              <div className='form-row full-width'>
+                <div className='form-group'>
+                  <label htmlFor='password'>סיסמה *</label>
+                  <div className='password-input-container'>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id='password'
+                      name='password'
+                      value={formData.credentials.password}
+                      onChange={handleCredentialsChange}
+                      className={
+                        errors['credentials.password'] ? 'is-invalid' : ''
+                      }
+                      required
+                    />
+                    <button
+                      type='button'
+                      className='toggle-password-btn'
+                      onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                    >
+                      {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
                   </div>
-                )}
+                  {errors['credentials.password'] && (
+                    <div className='form-error'>
+                      {errors['credentials.password']}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Form Actions */}
           <div className='form-actions'>
@@ -1123,5 +1240,6 @@ export function TeacherForm({
         </form>
       </div>
     </div>
-  );
+  )
 }
+  
