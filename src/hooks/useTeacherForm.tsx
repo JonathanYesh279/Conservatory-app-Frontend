@@ -682,13 +682,11 @@ export const useTeacherForm = ({
           ];
         }
 
-        let savedTeacher;
-
         // Save or update teacher
         if (teacherId) {
-          savedTeacher = await saveTeacher(dataToSend, teacherId);
+           await saveTeacher(dataToSend, teacherId);
         } else {
-          savedTeacher = await saveTeacher(dataToSend);
+           await saveTeacher(dataToSend);
         }
 
         // Call optional onSave callback

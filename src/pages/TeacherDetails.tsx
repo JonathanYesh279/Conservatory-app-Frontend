@@ -31,6 +31,11 @@ interface StudentReference {
   instrument: string
 }
 
+interface StudentInfo {
+  name: string;
+  instrument: string;
+}
+
 // Define schedule item interface
 interface ScheduleItem {
   studentId: string
@@ -187,7 +192,7 @@ export function TeacherDetails() {
       );
 
       // Create a comprehensive lookup map with multiple ID formats
-      const studentMap = {};
+      const studentMap: Record<string, StudentInfo> = {};
 
       // Create student map with both the original ID and string versions
       studentData.forEach((student) => {
@@ -207,7 +212,7 @@ export function TeacherDetails() {
 
           // Store using each format as a key
           formats.forEach((format) => {
-            studentMap[format] = studentInfo;
+            studentMap[format.toString()] = studentInfo;
           });
         }
       });
@@ -230,10 +235,10 @@ export function TeacherDetails() {
             ];
 
             // Try all formats
-            let studentInfo = null;
+            let studentInfo: StudentInfo | null = null;
             for (const format of idFormats) {
-              if (studentMap[format]) {
-                studentInfo = studentMap[format];
+              if (studentMap[format.toString()]) {
+                studentInfo = studentMap[format.toString()];
                 console.log(
                   `Found student match for ID ${studentId} using format ${format}`
                 );
