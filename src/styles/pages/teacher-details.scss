@@ -378,74 +378,92 @@
       }
     }
     
-    // Schedule grid
-    .schedule-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 0.75rem;
+    .selected-students.schedule-view {
+          margin: 1rem 0;
+  border-radius: 0.75rem;
+  background-color: var(--bg-tertiary);
+  padding: 0.5rem;
+  overflow: hidden;
+  max-height: none; // Remove any max-height restriction
+  
+  .student-schedule-item {
+    background-color: var(--bg-card);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    &:last-child {
+      margin-bottom: 0;
+    }
+    
+    .student-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
       
-      .schedule-item {
+      .student-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+      }
+      
+      .student-details {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background-color: rgba(var(--bg-tertiary-rgb), 0.5);
-        padding: 0.75rem 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-color);
-        transition: all 0.2s ease;
+        gap: 0.75rem;
+        flex-wrap: wrap;
         
-        &:hover {
-          background-color: rgba(var(--bg-tertiary-rgb), 0.7);
-        }
-        
-        .schedule-day-time {
-          display: flex;
-          flex-direction: column;
-          gap: 0.25rem;
-          
-          .day {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-          }
-          
-          .time {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-          }
-        }
-        
-        .schedule-details {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 0.25rem;
-          
-          .duration {
-            font-weight: 500;
-            color: var(--primary-color);
-            font-size: 0.9rem;
-            background-color: rgba(var(--primary-color-rgb), 0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 0.25rem;
-          }
-          
-          .student-name {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            
-            &.clickable {
-              cursor: pointer;
-              
-              &:hover {
-                color: var(--primary-color);
-                text-decoration: underline;
-              }
-            }
-          }
+        span {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          background-color: var(--bg-tertiary);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
         }
       }
     }
+    
+    .schedule-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--bg-secondary);
+      
+      .form-group {
+        label {
+          font-size: 0.75rem;
+          color: var(--text-secondary);
+          margin-bottom: 0.25rem;
+          display: block;
+        }
+        
+        .schedule-value {
+          background-color: var(--bg-tertiary);
+          border-radius: 0.35rem;
+          padding: 0.4rem 0.5rem;
+          color: var(--text-primary);
+          font-weight: 500;
+          height: 31px;
+          display: flex;
+          align-items: center;
+          font-size: 0.85rem;
+          border: 1px solid var(--border-color);
+        }
+      }
+    }
+  }
+  
+  .no-schedule-message {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+}
     
     // Information grid layout
     .info-grid {
@@ -583,109 +601,6 @@
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
-}
-
-// Communication popup styles
-.communication-popup {
-  position: absolute;
-  top: 110%;
-  right: -20px;
-  width: 220px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 1000; // Higher z-index to appear above other elements
-  overflow: hidden;
-  direction: rtl;
-  text-align: right;
-  animation: popup-fade 0.2s ease-in-out;
-}
-
-// Popup animation
-@keyframes popup-fade {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Popup header
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 15px;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #eaeaea;
-}
-
-.popup-header span {
-  font-weight: 600;
-  font-size: 14px;
-  color: #333;
-}
-
-.popup-header .close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #666;
-  padding: 0;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-header .close-btn:hover {
-  color: #333;
-}
-
-// Popup actions
-.popup-actions {
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-// Communication buttons
-.comm-btn {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  font-size: 14px;
-  gap: 8px;
-  color: white;
-}
-
-.comm-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.email-btn {
-  background-color: #D44638;
-}
-
-.email-btn:hover {
-  background-color: #c53b2d;
-}
-
-.whatsapp-btn {
-  background-color: #25D366;
-}
-
-.whatsapp-btn:hover {
-  background-color: #20bd5a;
 }
 
 // Communication Modal Styles
@@ -999,8 +914,7 @@
     );
   }
   
-  .students-grid .student-card,
-  .schedule-grid .schedule-item {
+  .students-grid .student-card {
     background-color: rgba(var(--bg-tertiary-rgb), 0.3);
   }
   
@@ -1009,29 +923,23 @@
     border-color: rgba(var(--primary-color-rgb), 0.25);
   }
   
-  .communication-popup {
-    background-color: #2a2a2a;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
-
-  .popup-header {
-    background-color: #333;
-    border-bottom-color: #444;
-  }
-
-  .popup-header span {
-    color: #eaeaea;
-  }
-
-  .close-btn {
-    color: #aaa;
-  }
-
-  .close-btn:hover {
-    color: #fff;
+  .selected-students.schedule-view {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+    
+    .student-schedule-item {
+      background-color: var(--bg-secondary);
+      
+      .schedule-fields {
+        background-color: rgba(0, 0, 0, 0.1);
+        
+        .schedule-value {
+          background-color: rgba(var(--bg-tertiary-rgb), 0.3);
+          border-color: var(--border-dark);
+        }
+      }
+    }
   }
   
-  // Dark mode adjustments for communication modal
   .communication-modal {
     background-color: var(--bg-secondary);
   }
@@ -1078,45 +986,36 @@
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
   
-  .communication-popup {
-    width: 200px;
-    right: -10px;
-  }
-  
-  .popup-header {
-    padding: 8px 12px;
-  }
-  
-  .comm-btn {
-    padding: 7px 10px;
-    font-size: 13px;
-  }
-
-  .communication-.communication-modal {
-  width: 95%;
-  max-width: 400px;
-}
-
-.schedule-buttons {
-  flex-direction: column;
-}
-
-.modal-header h3 {
-  font-size: 1.1rem;
-}
-
-.comm-method-selection .method-buttons .method-btn {
-  padding: 10px 14px;
-}
-
-.email-form, .whatsapp-form {
-  .form-actions {
-    .cancel-btn, .send-btn {
-      padding: 8px 12px;
-      font-size: 0.9rem;
+  .selected-students.schedule-view {
+    .student-schedule-item {
+      .schedule-fields {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
     }
   }
-}
+
+  .communication-modal {
+    width: 95%;
+    max-width: 400px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .comm-method-selection .method-buttons .method-btn {
+    padding: 10px 14px;
+  }
+
+  .email-form, .whatsapp-form {
+    .form-actions {
+      .cancel-btn, .send-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+    }
+  }
 }
 
 @media (max-width: 480px) {
@@ -1191,11 +1090,25 @@
   }
 
   .email-form, .whatsapp-form {
-    .form-actions {
-      .cancel-btn, .send-btn {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-      }
-    }
-  }
+   .form-actions {
+     .cancel-btn, .send-btn {
+       padding: 8px 12px;
+       font-size: 0.9rem;
+     }
+   }
+ }
+
+ .selected-students.schedule-view {
+   .student-schedule-item {
+     .student-info {
+       flex-direction: column;
+       align-items: flex-start;
+       gap: 0.5rem;
+       
+       .student-details {
+         width: 100%;
+       }
+     }
+   }
+ }
 }

@@ -655,6 +655,134 @@
     
     .form-section {
       margin-bottom: 1.25rem;
+
+      .selected-students {
+        margin: 1rem 0;
+        border-radius: 0.75rem;
+        background-color: var(--bg-tertiary);
+        padding: 0.5rem;
+        overflow: hidden;
+  
+        h4 {
+          font-size: 0.95rem;
+          color: var(--text-primary);
+          margin: 0.5rem 0.75rem 1rem;
+          padding-bottom: 0.35rem;
+          border-bottom: 1px dashed var(--border-color);
+        }
+  
+        .student-schedule-item {
+    background-color: var(--bg-card);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    
+    &:hover {
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .student-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      
+      .student-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+      }
+      
+      .student-details {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        
+        span {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          background-color: var(--bg-tertiary);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+        }
+      }
+      
+      .remove-student-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        
+        &:hover {
+          background-color: var(--bg-tertiary);
+          color: var(--danger);
+        }
+      }
+    }
+    
+    .schedule-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--bg-secondary);
+  
+    .form-group {
+      label {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+        display: block;
+      }
+    
+    select, 
+    input[type="time"] {
+      width: 100%;
+      padding: 0.4rem 0.5rem;
+      border-radius: 0.35rem;
+      border: 1px solid var(--border-input);
+      background-color: var(--bg-input, var(--bg-tertiary));
+      color: var(--text-primary);
+      font-size: 0.85rem;
+      height: 31px; /* Set explicit height to match all inputs */
+      box-sizing: border-box;
+      
+      &:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+    }
+    
+    /* Additional specificity for time inputs to override browser defaults */
+    input[type="time"] {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      padding-right: 0.4rem; /* Adjust padding for the time picker icon */
+      min-height: 0; /* Reset any min-height that might be causing issues */
+      line-height: normal; /* Reset line-height which can affect overall height */
+    }
+    
+    /* Handle time input icon positioning */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      opacity: 0.7;
+      cursor: pointer;
+    }
+  }
+}
+        }
+      }
+
       .student-actions {
         width: 100%;
         display: flex;

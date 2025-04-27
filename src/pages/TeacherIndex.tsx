@@ -210,7 +210,7 @@ export function TeacherIndex() {
         <TeacherForm
           isOpen={isTeacherFormOpen}
           onClose={handleCloseTeacherForm}
-          teacher={teacherToEdit}
+          teacher={teacherToEdit || undefined}
           onSave={() => {
             console.log('onSave executing in parent component');
             setIsTeacherFormOpen(false);

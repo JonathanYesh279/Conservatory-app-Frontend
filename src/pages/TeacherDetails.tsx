@@ -23,7 +23,6 @@ import {
   Copy,
   Check,
 } from 'lucide-react'
-import { TeacherSchedule } from '../cmps/TeacherSchedule'
 
 // Extend for student data reference
 interface StudentReference {
@@ -56,25 +55,30 @@ interface WhatsAppFormData {
 }
 
 export function TeacherDetails() {
-  const { teacherId } = useParams<{ teacherId: string }>()
-  const [teacher, setTeacher] = useState<Teacher | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [flipped, setFlipped] = useState(false)
-  const [students, setStudents] = useState<StudentReference[]>([])
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([])
-  const [orchestrasLoading, setOrchestrasLoading] = useState(false)
-  
-  // New communication modal state
-  const [communicationModalOpen, setCommunicationModalOpen] = useState(false)
-  const [communicationMethod, setCommunicationMethod] = useState<CommunicationMethod | null>(null)
-  const [emailForm, setEmailForm] = useState<EmailFormData>({ subject: '', message: '' })
-  const [whatsAppForm, setWhatsAppForm] = useState<WhatsAppFormData>({ message: '' })
-  const [copied, setCopied] = useState(false)
+  const { teacherId } = useParams<{ teacherId: string }>();
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [flipped, setFlipped] = useState(false);
+  const [students, setStudents] = useState<StudentReference[]>([]);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const [orchestrasLoading, setOrchestrasLoading] = useState(false);
 
-  // State for schedule modal
-  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false)
-  const [initialScheduleView, setInitialScheduleView] = useState<'day' | 'week'>('week')
+  // Schedule state
+  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
+
+  // Communication modal state
+  const [communicationModalOpen, setCommunicationModalOpen] = useState(false);
+  const [communicationMethod, setCommunicationMethod] =
+    useState<CommunicationMethod | null>(null);
+  const [emailForm, setEmailForm] = useState<EmailFormData>({
+    subject: '',
+    message: '',
+  });
+  const [whatsAppForm, setWhatsAppForm] = useState<WhatsAppFormData>({
+    message: '',
+  });
+  const [copied, setCopied] = useState(false);
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
@@ -83,64 +87,194 @@ export function TeacherDetails() {
     schedule: false,
     personalInfo: true,
     professionalInfo: true,
-  })
+  });
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Load teacher data when component mounts
   useEffect(() => {
     if (teacherId) {
-      loadTeacher(teacherId)
+      loadTeacher(teacherId);
     }
-  }, [teacherId])
+  }, [teacherId]);
 
   // Function to load teacher details
   const loadTeacher = async (id: string) => {
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
     try {
-      const teacherData = await teacherService.getTeacherById(id)
-      setTeacher(teacherData)
+      // First load teacher data
+      const teacherData = await teacherService.getTeacherById(id);
+      console.log('Teacher data loaded:', teacherData);
 
-      // Load related students
-      if (teacherData.teaching?.studentIds && teacherData.teaching.studentIds.length > 0) {
-         await loadStudents(teacherData.teaching!.studentIds)
+      // Save teacher data
+      setTeacher(teacherData);
+
+      // Process schedule data separately
+      const schedule = teacherData.teaching?.schedule || [];
+      console.log('Teacher schedule data:', schedule);
+
+      // Initialize with placeholder student names for immediate display
+      if (Array.isArray(schedule) && schedule.length > 0) {
+        const initialItems = schedule
+          .filter((item) => item.isActive !== false)
+          .map((item) => ({
+            ...item,
+            studentName: `תלמיד ${item.studentId.slice(-6)}`, // Temporary
+            instrument: '',
+          }));
+
+        setScheduleItems(initialItems);
+      } else {
+        setScheduleItems([]);
       }
 
-      // Load related orchestras
-      if (teacherData.conducting?.orchestraIds && teacherData.conducting.orchestraIds.length > 0) {
-        setOrchestrasLoading(true)
-        await loadOrchestras(teacherData.conducting!.orchestraIds)
+      // Load students and update schedule items with real names
+      if (
+        teacherData.teaching?.studentIds &&
+        teacherData.teaching.studentIds.length > 0
+      ) {
+        // Load students but don't await here - we'll process the schedule separately after
+        loadStudents(
+          teacherData.teaching.studentIds,
+          teacherData.teaching.schedule
+        );
+      }
+
+      // Load orchestras
+      if (
+        teacherData.conducting?.orchestraIds &&
+        teacherData.conducting.orchestraIds.length > 0
+      ) {
+        setOrchestrasLoading(true);
+        await loadOrchestras(teacherData.conducting.orchestraIds);
       }
     } catch (err) {
-      console.error('Failed to load teacher:', err)
-      setError(err instanceof Error ? err.message : 'שגיאה בטעינת פרטי המורה')
+      console.error('Failed to load teacher:', err);
+      setError(err instanceof Error ? err.message : 'שגיאה בטעינת פרטי המורה');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  // Load student details
-  const loadStudents = async (studentIds: string[]) => {
+  const loadStudents = async (
+    studentIds: string[],
+    scheduleData: any[] = []
+  ) => {
     try {
-      // For each student ID, fetch the student data
-      const studentPromises = studentIds.map((id) =>
-        studentService.getStudentById(id)
-      )
-      const studentData = await Promise.all(studentPromises)
+      if (
+        !studentIds ||
+        !Array.isArray(studentIds) ||
+        studentIds.length === 0
+      ) {
+        console.log('No student IDs provided');
+        return;
+      }
 
-      // Map to simplified reference objects
-      const studentReferences = studentData.map((student) => ({
-        _id: student._id,
-        fullName: student.personalInfo.fullName,
-        instrument: student.academicInfo.instrument,
-      }))
+      console.log('Loading students for IDs:', studentIds);
 
-      setStudents(studentReferences)
+      // Fetch student data
+      const studentData = await studentService.getStudentsByIds(studentIds);
+      console.log('Loaded student data:', studentData);
+
+      // Set students state for the students section
+      setStudents(
+        studentData.map((student) => ({
+          _id: student._id,
+          fullName: student.personalInfo.fullName || 'תלמיד ללא שם',
+          instrument: student.academicInfo.instrument || '',
+        }))
+      );
+
+      // Create a comprehensive lookup map with multiple ID formats
+      const studentMap = {};
+
+      // Create student map with both the original ID and string versions
+      studentData.forEach((student) => {
+        if (student && student._id) {
+          // Add every possible format of the ID as a key
+          const formats = [
+            student._id, // Original format
+            student._id.toString(), // String version
+            student._id.toString().replace(/"/g, ''), // Clean string without quotes
+          ];
+
+          // The value to store for each key format
+          const studentInfo = {
+            name: student.personalInfo?.fullName || 'תלמיד ללא שם',
+            instrument: student.academicInfo?.instrument || '',
+          };
+
+          // Store using each format as a key
+          formats.forEach((format) => {
+            studentMap[format] = studentInfo;
+          });
+        }
+      });
+
+      console.log('Enhanced student map:', studentMap);
+
+      // Only process schedule if we have data
+      if (Array.isArray(scheduleData) && scheduleData.length > 0) {
+        console.log('Processing schedule items with student data');
+
+        const newScheduleItems = scheduleData
+          .filter((item) => item.isActive !== false)
+          .map((item) => {
+            // Try to find the student using various ID formats
+            const studentId = item.studentId;
+            const idFormats = [
+              studentId,
+              studentId.toString(),
+              studentId.toString().replace(/"/g, ''),
+            ];
+
+            // Try all formats
+            let studentInfo = null;
+            for (const format of idFormats) {
+              if (studentMap[format]) {
+                studentInfo = studentMap[format];
+                console.log(
+                  `Found student match for ID ${studentId} using format ${format}`
+                );
+                break;
+              }
+            }
+
+            // If still not found, try partial matching
+            if (!studentInfo) {
+              const studentIdStr = studentId.toString().replace(/"/g, '');
+              const matchingKey = Object.keys(studentMap).find(
+                (key) =>
+                  key.includes(studentIdStr) || studentIdStr.includes(key)
+              );
+
+              if (matchingKey) {
+                studentInfo = studentMap[matchingKey];
+                console.log(
+                  `Found partial match for ID ${studentId} via key ${matchingKey}`
+                );
+              }
+            }
+
+            return {
+              ...item,
+              studentName: studentInfo
+                ? studentInfo.name
+                : `תלמיד ${studentId.toString().slice(-6)}`,
+            };
+          });
+
+        console.log(
+          'New schedule items after mapping to student names:',
+          newScheduleItems
+        );
+        setScheduleItems(newScheduleItems);
+      }
     } catch (err) {
-      console.error('Failed to load students:', err)
+      console.error('Failed to load students:', err);
     }
-  }
+  };
 
   // Load orchestra details
   const loadOrchestras = async (orchestraIds: string[]) => {
@@ -148,119 +282,148 @@ export function TeacherDetails() {
       // Fetch orchestras by IDs
       const orchestraData = await orchestraService.getOrchestrasByIds(
         orchestraIds
-      )
-      setOrchestras(orchestraData)
+      );
+      setOrchestras(orchestraData);
     } catch (err) {
-      console.error('Failed to load orchestras:', err)
+      console.error('Failed to load orchestras:', err);
     } finally {
-      setOrchestrasLoading(false)
+      setOrchestrasLoading(false);
     }
-  }
+  };
 
   // Toggle section visibility
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections((prev) => ({
       ...prev,
       [section]: !prev[section],
-    }))
-  }
+    }));
+  };
 
   const toggleFlip = () => {
-    setFlipped(!flipped)
-  }
+    setFlipped(!flipped);
+  };
 
   const goBack = () => {
-    navigate('/teachers')
-  }
+    navigate('/teachers');
+  };
 
   // Navigate to student details
   const navigateToStudent = (studentId: string) => {
-    navigate(`/students/${studentId}`)
-  }
+    navigate(`/students/${studentId}`);
+  };
 
   // Navigate to orchestra details
   const navigateToOrchestra = (orchestraId: string) => {
-    navigate(`/orchestras/${orchestraId}`)
-  }
+    navigate(`/orchestras/${orchestraId}`);
+  };
 
-  // Open schedule modal with specified view
-  const openScheduleModal = (view: 'day' | 'week') => {
-    setInitialScheduleView(view)
-    setIsScheduleModalOpen(true)
-  }
-
-  // NEW: Open communication modal
+  // Open communication modal
   const openCommunicationModal = () => {
-    setCommunicationModalOpen(true)
-    setCommunicationMethod(null)
-  }
+    setCommunicationModalOpen(true);
+    setCommunicationMethod(null);
+  };
 
-  // NEW: Close communication modal
+  // Close communication modal
   const closeCommunicationModal = () => {
-    setCommunicationModalOpen(false)
-    setCommunicationMethod(null)
-    setEmailForm({ subject: '', message: '' })
-    setWhatsAppForm({ message: '' })
-    setCopied(false)
-  }
+    setCommunicationModalOpen(false);
+    setCommunicationMethod(null);
+    setEmailForm({ subject: '', message: '' });
+    setWhatsAppForm({ message: '' });
+    setCopied(false);
+  };
 
-  // NEW: Select communication method
+  // Select communication method
   const selectCommunicationMethod = (method: CommunicationMethod) => {
-    setCommunicationMethod(method)
-  }
+    setCommunicationMethod(method);
+  };
 
-  // NEW: Handle email form changes
-  const handleEmailFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setEmailForm(prev => ({ ...prev, [name]: value }))
-  }
+  // Handle email form changes
+  const handleEmailFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEmailForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  // NEW: Handle WhatsApp form changes
-  const handleWhatsAppFormChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setWhatsAppForm({ message: e.target.value })
-  }
+  // Handle WhatsApp form changes
+  const handleWhatsAppFormChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setWhatsAppForm({ message: e.target.value });
+  };
 
-  // NEW: Handle send email
+  // Handle send email
   const handleSendEmail = () => {
-    if (!teacher?.personalInfo.email) return
-    
-    const emailContent = `mailto:${teacher.personalInfo.email}?subject=${encodeURIComponent(emailForm.subject)}&body=${encodeURIComponent(emailForm.message)}`
-    window.open(emailContent)
-    closeCommunicationModal()
-  }
+    if (!teacher?.personalInfo.email) return;
 
-  // NEW: Format phone number for WhatsApp
+    const emailContent = `mailto:${
+      teacher.personalInfo.email
+    }?subject=${encodeURIComponent(
+      emailForm.subject
+    )}&body=${encodeURIComponent(emailForm.message)}`;
+    window.open(emailContent);
+    closeCommunicationModal();
+  };
+
+  // Format phone number for WhatsApp
   const formatPhoneForWhatsApp = (phone: string) => {
     if (phone.startsWith('0')) {
-      return `972${phone.substring(1)}`
+      return `972${phone.substring(1)}`;
     }
-    return phone
-  }
+    return phone;
+  };
 
-  // NEW: Handle send WhatsApp
+  // Handle send WhatsApp
   const handleSendWhatsApp = () => {
-    if (!teacher?.personalInfo.phone) return
-    
-    const formattedPhone = formatPhoneForWhatsApp(teacher.personalInfo.phone)
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(whatsAppForm.message)}`
-    window.open(whatsappUrl)
-    closeCommunicationModal()
-  }
+    if (!teacher?.personalInfo.phone) return;
 
-  // NEW: Copy phone or email to clipboard
+    const formattedPhone = formatPhoneForWhatsApp(teacher.personalInfo.phone);
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
+      whatsAppForm.message
+    )}`;
+    window.open(whatsappUrl);
+    closeCommunicationModal();
+  };
+
+  // Copy phone or email to clipboard
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Format a date string
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'לא זמין'
+    if (!dateString) return 'לא זמין';
 
-    const date = new Date(dateString)
-    return date.toLocaleDateString('he-IL')
-  }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('he-IL');
+  };
+
+  // Helper function to format time display
+  const formatTimeDisplay = (time: string) => {
+    // Check if time is already in correct format
+    if (time && time.includes(':')) {
+      return time;
+    }
+
+    // Return default if invalid
+    return time || '08:00';
+  };
+
+  // Get day color for visual differentiation
+  const getDayColor = (day: string) => {
+    const dayColors: Record<string, string> = {
+      ראשון: '#4D55CC',
+      שני: '#28A745',
+      שלישי: '#FFC107',
+      רביעי: '#6f42c1',
+      חמישי: '#fd7e14',
+      שישי: '#20c997',
+      שבת: '#e83e8c',
+    };
+    return dayColors[day] || '#6c757d';
+  };
 
   if (isLoading) {
     return (
@@ -268,7 +431,7 @@ export function TeacherDetails() {
         <RefreshCw className='loading-icon' size={28} />
         <p>טוען פרטי מורה...</p>
       </div>
-    )
+    );
   }
 
   if (error || !teacher) {
@@ -279,19 +442,15 @@ export function TeacherDetails() {
           חזרה לרשימת המורים
         </button>
       </div>
-    )
+    );
   }
 
-  // Enhanced schedule data with student info
-  const enhancedSchedule: ScheduleItem[] = 
-    teacher.teaching?.schedule?.map((lesson: any) => {
-      const student = students.find((s) => s._id === lesson.studentId)
-      return {
-        ...lesson,
-        studentName: student?.fullName || 'תלמיד',
-        instrument: student?.instrument,
-      }
-    }) || []
+  // Check if we have schedule to display
+  const hasSchedule =
+    teacherId &&
+    teacher.teaching?.schedule &&
+    Array.isArray(teacher.teaching.schedule) &&
+    teacher.teaching.schedule.length > 0;
 
   // Get initials for avatar
   const getInitials = (name: string) => {
@@ -300,8 +459,8 @@ export function TeacherDetails() {
       .map((n: string) => n[0])
       .join('')
       .toUpperCase()
-      .substring(0, 2)
-  }
+      .substring(0, 2);
+  };
 
   // Get role color
   const getRoleColor = (role: string) => {
@@ -310,16 +469,40 @@ export function TeacherDetails() {
       מנצח: '#28A745', // Success color
       'מדריך הרכב': '#FFC107', // Warning color
       מנהל: '#DC3545', // Danger color
-    }
-    return roleColors[role] || '#6c757d' // Default color
-  }
+    };
+    return roleColors[role] || '#6c757d'; // Default color
+  };
 
   // Get primary role for visualization
   const primaryRole =
-    teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה'
+    teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה';
 
-  const hasSchedule =
-    teacher.teaching?.schedule && teacher.teaching.schedule.length > 0
+  // Organize scheduleItems by day
+  const scheduleByDay = scheduleItems.reduce((acc, item) => {
+    if (!acc[item.day]) {
+      acc[item.day] = [];
+    }
+    acc[item.day].push(item);
+    return acc;
+  }, {} as Record<string, ScheduleItem[]>);
+
+  // Sort days in correct order
+  const dayOrder = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+
+  // Sort schedule items by time within each day
+  Object.keys(scheduleByDay).forEach((day) => {
+    scheduleByDay[day].sort((a, b) => {
+      if (!a.time || !b.time) return 0;
+      return a.time.localeCompare(b.time);
+    });
+  });
+
+  console.log('Rendering with schedule data:', {
+    hasSchedule,
+    numScheduleItems: scheduleItems.length,
+    scheduleByDay,
+    teacherSchedule: teacher.teaching?.schedule,
+  });
 
   return (
     <div className='teacher-details-content'>
@@ -484,8 +667,8 @@ export function TeacherDetails() {
                     </div>
                   )}
 
-                {/* Teaching Schedule Section */}
-                {hasSchedule && (
+                {/* Teaching Schedule Section - Always show if this teacher is a teacher */}
+                {teacher.roles.includes('מורה') && (
                   <div className='section'>
                     <div
                       className={`section-title clickable ${
@@ -494,7 +677,7 @@ export function TeacherDetails() {
                       onClick={() => toggleSection('schedule')}
                     >
                       <Calendar size={16} />
-                      <span>מערכת שעות</span>
+                      <span>מערכת שעות ({scheduleItems.length})</span>
                       {openSections.schedule ? (
                         <ChevronUp size={18} className='toggle-icon' />
                       ) : (
@@ -504,22 +687,117 @@ export function TeacherDetails() {
 
                     {openSections.schedule && (
                       <div className='section-content'>
-                        <div className='schedule-buttons'>
-                          <button
-                            className='schedule-view-btn weekly'
-                            onClick={() => openScheduleModal('week')}
+                        {scheduleItems.length > 0 ? (
+                          <div className='weekly-schedule'>
+                            {/* Display schedule grouped by day */}
+                            {dayOrder
+                              .filter((day) => scheduleByDay[day])
+                              .map((day) => (
+                                <div key={day} className='schedule-day-group'>
+                                  <div
+                                    className='day-header'
+                                    style={{
+                                      backgroundColor: getDayColor(day),
+                                      color: 'white',
+                                      padding: '6px 10px',
+                                      borderRadius: '4px',
+                                      marginBottom: '8px',
+                                      marginTop: '10px',
+                                      fontWeight: 'bold',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '6px',
+                                    }}
+                                  >
+                                    <Calendar size={14} />
+                                    <span>יום {day}</span>
+                                  </div>
+                                  <div className='day-schedule-items'>
+                                    {scheduleByDay[day].map((item, index) => (
+                                      <div
+                                        key={`${item.studentId}-${index}`}
+                                        className='schedule-item-card'
+                                        style={{
+                                          border:
+                                            '1px solid var(--border-color)',
+                                          borderRadius: '8px',
+                                          padding: '10px',
+                                          marginBottom: '8px',
+                                          backgroundColor:
+                                            'var(--bg-secondary, #f8f9fa)',
+                                          boxShadow:
+                                            '0 1px 3px rgba(0,0,0,0.05)',
+                                        }}
+                                      >
+                                        <div
+                                          className='schedule-item-header'
+                                          style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                          }}
+                                        >
+                                          <div
+                                            className='student-name'
+                                            style={{ fontWeight: 'bold' }}
+                                          >
+                                            {item.studentName}
+                                          </div>
+                                          <div
+                                            className='time-display'
+                                            style={{
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: '4px',
+                                            }}
+                                          >
+                                            <Clock size={14} />
+                                            <span>
+                                              {formatTimeDisplay(item.time)}
+                                            </span>
+                                            <span>({item.duration} דקות)</span>
+                                          </div>
+                                        </div>
+                                        {item.instrument && (
+                                          <div
+                                            className='instrument-display'
+                                            style={{
+                                              fontSize: '0.85rem',
+                                              marginTop: '4px',
+                                              color:
+                                                'var(--text-secondary, #6c757d)',
+                                            }}
+                                          >
+                                            <Music
+                                              size={12}
+                                              style={{ marginLeft: '4px' }}
+                                            />
+                                            <span>{item.instrument}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+
+                            {/* Show message if no schedule days found */}
+                            {Object.keys(scheduleByDay).length === 0 && (
+                              <div
+                                className='no-schedule-message'
+                                style={{ textAlign: 'center', padding: '20px' }}
+                              >
+                                <p>אין כרגע שיעורים במערכת</p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div
+                            className='no-schedule-message'
+                            style={{ textAlign: 'center', padding: '20px' }}
                           >
-                            <Calendar size={16} />
-                            <span>הצג מערכת שבועית</span>
-                          </button>
-                          <button
-                            className='schedule-view-btn daily'
-                            onClick={() => openScheduleModal('day')}
-                          >
-                            <Clock size={16} />
-                            <span>הצג מערכת יומית</span>
-                          </button>
-                        </div>
+                            <p>אין כרגע שיעורים במערכת</p>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -734,17 +1012,7 @@ export function TeacherDetails() {
           </div>
         </div>
 
-        {/* Schedule Modal */}
-        {isScheduleModalOpen && (
-          <TeacherSchedule
-            schedule={enhancedSchedule}
-            isOpen={isScheduleModalOpen}
-            onClose={() => setIsScheduleModalOpen(false)}
-            initialView={initialScheduleView}
-          />
-        )}
-
-        {/* NEW: Communication Modal */}
+        {/* Communication Modal */}
         {communicationModalOpen && (
           <div
             className='communication-modal-overlay'
