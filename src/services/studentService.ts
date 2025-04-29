@@ -84,6 +84,14 @@ export interface StudentFilter {
   showInactive?: boolean;
 }
 
+// Interface for teacher schedule update that matches the backend
+export interface TeacherScheduleUpdate {
+  studentId: string;
+  day: string; // FIXED: Using correct field name
+  time: string; // FIXED: Using correct field name
+  duration: number; // FIXED: Using correct field name
+}
+
 export const studentService = {
   async getStudents(filterBy: StudentFilter = {}): Promise<Student[]> {
     return httpService.get('student', filterBy);
@@ -129,6 +137,24 @@ export const studentService = {
 
   async removeStudent(studentId: string): Promise<Student> {
     return httpService.delete(`student/${studentId}`);
+  },
+
+  // FIXED: Update teacher schedule with correct field names
+  async updateTeacherSchedule(
+    teacherId: string,
+    scheduleData: TeacherScheduleUpdate
+  ): Promise<any> {
+    // Validate data before sending to backend
+    if (
+      !scheduleData.studentId ||
+      !scheduleData.day ||
+      !scheduleData.time ||
+      !scheduleData.duration
+    ) {
+      throw new Error('Invalid schedule data: All fields are required');
+    }
+
+    return httpService.post(`teacher/${teacherId}/schedule`, scheduleData);
   },
 
   // New function to get attendance stats for a student in an orchestra

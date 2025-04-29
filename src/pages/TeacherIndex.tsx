@@ -11,7 +11,7 @@ import { useTeacherStore } from '../store/teacherStore';
 import { Teacher } from '../services/teacherService';
 import { TeacherList } from '../cmps/TeacherList';
 import { TeacherForm } from '../cmps/TeacherForm';
-import { StudentForm } from '../cmps/StudentForm';
+import { StudentForm } from '../cmps/StudentForm/StudentForm';
 import { Student } from '../services/studentService';
 
 export function TeacherIndex() {

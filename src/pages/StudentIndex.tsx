@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
 import { useSearchbar } from '../hooks/useSearchbar.tsx';
 import { Student } from '../services/studentService.ts';
-import { StudentForm } from '../cmps/StudentForm';
+import { StudentForm } from '../cmps/StudentForm/index.ts';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 

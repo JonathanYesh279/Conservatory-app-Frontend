@@ -53,7 +53,7 @@
     
     .close-btn {
       position: absolute;
-      top: 1rem;
+      top: 3.4rem;
       left: 1rem;
       width: 32px;
       height: 32px;
@@ -99,7 +99,6 @@
         margin-bottom: 1rem;
         
         &.full-width {
-          flex-direction: column;
           gap: 0.5rem;
         }
         
@@ -110,7 +109,7 @@
         
         &.three-columns {
           display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
+          grid-template-columns: 2fr 1fr 1fr;
         }
         
         &.lesson-schedule {
@@ -442,6 +441,7 @@
     width: 95%;
     max-height: 90vh;
     padding: 1.25rem;
+    padding-top: 60px;
     
     h2 {
       font-size: 1.2rem;
