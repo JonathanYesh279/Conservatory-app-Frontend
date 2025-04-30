@@ -339,7 +339,7 @@ export function StudentDetails() {
                     onClick={() => toggleSection('orchestras')}
                   >
                     <Music size={16} />
-                    <span>תזמורות</span>
+                    <span>תזמורות/הרכב</span>
                     {openSections.orchestras ? (
                       <ChevronUp size={18} className='toggle-icon' />
                     ) : (

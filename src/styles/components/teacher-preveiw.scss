@@ -196,6 +196,11 @@
   .teacher-preview {
     .preview-header {
       padding: 0.23rem;
+      gap: 0.3rem;
+
+      .badges-container {
+        margin-bottom: 5px;
+      }
       
       .avatar-section .avatar {
         width: 2.5rem;

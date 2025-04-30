@@ -1,5 +1,3 @@
-// src/cmps/StudentForm/StudentForm.tsx
-import React from 'react';
 import { X } from 'lucide-react';
 import { Student } from '../../services/studentService';
 import { useStudentForm } from '../../hooks/useStudentForm';

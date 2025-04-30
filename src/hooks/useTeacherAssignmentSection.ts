@@ -10,9 +10,9 @@ import { Teacher, teacherService } from '../services/teacherService';
 
 // Interface for lesson schedule
 interface LessonSchedule {
-  lessonDay: string;
-  lessonTime: string;
-  lessonDuration: number;
+  day: string;
+  time: string;
+  duration: number;
 }
 
 // Interface for teacher selection with multiple lesson schedules
@@ -87,9 +87,9 @@ export function useTeacherAssignmentSection({
       ).map(([teacherId, assignments]) => {
         // Map each assignment to a lesson schedule
         const lessonSchedules = assignments.map((assignment) => ({
-          lessonDay: assignment.lessonDay,
-          lessonTime: assignment.lessonTime,
-          lessonDuration: assignment.lessonDuration,
+          day: assignment.day,
+          time: assignment.time,
+          duration: assignment.duration,
         }));
 
         return {
@@ -118,9 +118,9 @@ export function useTeacherAssignmentSection({
         teacherId: initialTeacherId,
         lessonSchedules: [
           {
-            lessonDay: DAYS_OF_WEEK[0],
-            lessonTime: '08:00',
-            lessonDuration: 45,
+            day: DAYS_OF_WEEK[0],
+            time: '08:00',
+            duration: 45,
           },
         ],
       };
@@ -220,9 +220,9 @@ export function useTeacherAssignmentSection({
       selection.lessonSchedules.forEach((schedule) => {
         addTeacherAssignment({
           teacherId: selection.teacherId,
-          lessonDay: schedule.lessonDay,
-          lessonTime: schedule.lessonTime,
-          lessonDuration: schedule.lessonDuration,
+          day: schedule.day,
+          time: schedule.time,
+          duration: schedule.duration,
         });
       });
 

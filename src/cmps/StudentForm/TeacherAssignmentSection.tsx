@@ -1,9 +1,7 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState } from 'react';
 import {
-  Clock,
   User,
-  Calendar,
   X,
   Plus,
   UserPlus,
@@ -38,7 +36,6 @@ export function TeacherAssignmentSection({
   newTeacherInfo,
   addTeacherAssignment,
   removeTeacherAssignment,
-  errors,
 }: TeacherAssignmentSectionProps) {
   // Get teachers from store
   const { teachers, isLoading: isLoadingTeachers } = useTeacherStore();

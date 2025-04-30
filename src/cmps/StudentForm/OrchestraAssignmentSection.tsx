@@ -1,12 +1,12 @@
-import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection';
-import { StudentFormData } from '../../hooks/useStudentForm.tsx';
-import { Music, X, Plus } from 'lucide-react';
+import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection'
+import { StudentFormData } from '../../hooks/useStudentForm.tsx'
+import { Music, X } from 'lucide-react'
 
 interface OrchestraAssignmentSectionProps {
-  formData: StudentFormData;
-  addOrchestraAssignment: (orchestraId: string) => void;
-  removeOrchestraAssignment: (orchestraId: string) => void;
-  errors: Record<string, string>;
+  formData: StudentFormData
+  addOrchestraAssignment: (orchestraId: string) => void
+  removeOrchestraAssignment: (orchestraId: string) => void
+  errors: Record<string, string>
 }
 
 export function OrchestraAssignmentSection({
@@ -21,14 +21,13 @@ export function OrchestraAssignmentSection({
     selectedOrchestraId,
     assignedOrchestras,
     handleOrchestraChange,
-    handleAddOrchestraAssignment,
     handleRemoveOrchestraAssignment,
   } = useOrchestraAssignmentSection({
     formData,
     addOrchestraAssignment,
     removeOrchestraAssignment,
     errors,
-  });
+  })
 
   return (
     <div className='form-section'>
@@ -70,7 +69,7 @@ export function OrchestraAssignmentSection({
       <div className='add-orchestra-section'>
         <h4>הוספת תזמורת</h4>
 
-        {/* Orchestra Selection */}
+        {/* Orchestra Selection - automatically adds when changed */}
         <div className='form-row'>
           <div className='form-group'>
             <label htmlFor='orchestra'>בחר תזמורת</label>
@@ -93,21 +92,8 @@ export function OrchestraAssignmentSection({
             )}
           </div>
         </div>
-
-        {/* Button to add the selected orchestra */}
-        {selectedOrchestraId && (
-          <div className='assignment-actions'>
-            <button
-              type='button'
-              className='btn secondary'
-              onClick={handleAddOrchestraAssignment}
-            >
-              <Plus size={16} />
-              הוסף תזמורת
-            </button>
-          </div>
-        )}
+        {/* No "Add Orchestra" button - adding happens directly on selection */}
       </div>
     </div>
-  );
+  )
 }

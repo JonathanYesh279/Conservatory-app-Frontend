@@ -1,5 +1,5 @@
 /* Teacher Assignment Section Styles with fixed row layout */
-.teacher-assignment-section {
+.form-section .teacher-assignment-section {
   margin-bottom: 1rem;
 }
 
@@ -194,6 +194,22 @@
   cursor: pointer;
   margin-top: 0.5rem;
 }
+
+ .assigned-orchestras {
+        .assignments-list {
+          .assignment-card {
+            .assignment-header {
+              display: flex;
+              align-items: center;
+              .orchestra-name {
+                display: flex;
+                gap: 0.4rem;
+              }
+            }
+          }
+        }
+      }
+      
 
 /* Only apply column layout at very small screens */
 @media (max-width: 480px) {
