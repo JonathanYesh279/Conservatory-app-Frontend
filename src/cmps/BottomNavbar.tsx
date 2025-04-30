@@ -1,6 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Home, Calendar, Music, Users, GraduationCap } from 'lucide-react'
-import { useEffect } from 'react'
 import { useNavbar } from '../context/NavbarContext'
 
 export function BottomNavbar() {

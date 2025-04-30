@@ -1,12 +1,12 @@
-import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection'
-import { StudentFormData } from '../../hooks/useStudentForm.tsx'
-import { Music, X } from 'lucide-react'
+import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection';
+import { StudentFormData } from '../../hooks/useStudentForm.tsx';
+import { Music, X } from 'lucide-react';
 
 interface OrchestraAssignmentSectionProps {
-  formData: StudentFormData
-  addOrchestraAssignment: (orchestraId: string) => void
-  removeOrchestraAssignment: (orchestraId: string) => void
-  errors: Record<string, string>
+  formData: StudentFormData;
+  addOrchestraAssignment: (orchestraId: string) => void;
+  removeOrchestraAssignment: (orchestraId: string) => void;
+  errors: Record<string, string>;
 }
 
 export function OrchestraAssignmentSection({
@@ -27,7 +27,7 @@ export function OrchestraAssignmentSection({
     addOrchestraAssignment,
     removeOrchestraAssignment,
     errors,
-  })
+  });
 
   return (
     <div className='form-section'>
@@ -95,5 +95,5 @@ export function OrchestraAssignmentSection({
         {/* No "Add Orchestra" button - adding happens directly on selection */}
       </div>
     </div>
-  )
+  );
 }
