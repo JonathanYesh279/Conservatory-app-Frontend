@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { teacherService, Teacher } from '../services/teacherService'
 import { Orchestra, orchestraService } from '../services/orchestraService'
@@ -16,12 +16,7 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  Clock,
-  X,
-  Send,
-  MessageSquare,
-  Copy,
-  Check,
+  Clock
 } from 'lucide-react'
 
 // Extend for student data reference
@@ -32,8 +27,8 @@ interface StudentReference {
 }
 
 interface StudentInfo {
-  name: string;
-  instrument: string;
+  name: string
+  instrument: string
 }
 
 // Define schedule item interface
@@ -45,18 +40,6 @@ interface ScheduleItem {
   isActive: boolean
   studentName?: string
   instrument?: string
-}
-
-// Communication modal types
-type CommunicationMethod = 'email' | 'whatsapp'
-
-interface EmailFormData {
-  subject: string
-  message: string
-}
-
-interface WhatsAppFormData {
-  message: string
 }
 
 export function TeacherDetails() {
@@ -71,19 +54,7 @@ export function TeacherDetails() {
 
   // Schedule state
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
-
-  // Communication modal state
-  const [communicationModalOpen, setCommunicationModalOpen] = useState(false);
-  const [communicationMethod, setCommunicationMethod] =
-    useState<CommunicationMethod | null>(null);
-  const [emailForm, setEmailForm] = useState<EmailFormData>({
-    subject: '',
-    message: '',
-  });
-  const [whatsAppForm, setWhatsAppForm] = useState<WhatsAppFormData>({
-    message: '',
-  });
-  const [copied, setCopied] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // New refresh trigger
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
@@ -96,12 +67,17 @@ export function TeacherDetails() {
 
   const navigate = useNavigate();
 
-  // Load teacher data when component mounts
+  // Function to manually refresh data
+  const refreshData = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
+
+  // Load teacher data when component mounts or refreshTrigger changes
   useEffect(() => {
     if (teacherId) {
       loadTeacher(teacherId);
     }
-  }, [teacherId]);
+  }, [teacherId, refreshTrigger]);
 
   // Function to load teacher details
   const loadTeacher = async (id: string) => {
@@ -144,6 +120,9 @@ export function TeacherDetails() {
           teacherData.teaching.studentIds,
           teacherData.teaching.schedule
         );
+      } else {
+        // Clear students if there are none
+        setStudents([]);
       }
 
       // Load orchestras
@@ -153,6 +132,9 @@ export function TeacherDetails() {
       ) {
         setOrchestrasLoading(true);
         await loadOrchestras(teacherData.conducting.orchestraIds);
+      } else {
+        // Clear orchestras if there are none
+        setOrchestras([]);
       }
     } catch (err) {
       console.error('Failed to load teacher:', err);
@@ -173,14 +155,38 @@ export function TeacherDetails() {
         studentIds.length === 0
       ) {
         console.log('No student IDs provided');
+        setStudents([]);
         return;
       }
 
       console.log('Loading students for IDs:', studentIds);
 
-      // Fetch student data
-      const studentData = await studentService.getStudentsByIds(studentIds);
-      console.log('Loaded student data:', studentData);
+      // Fetch student data with retry logic
+      let attempts = 0;
+      let studentData: any[] = [];
+
+      while (attempts < 2 && studentData.length < studentIds.length) {
+        attempts++;
+        try {
+          studentData = await studentService.getStudentsByIds(studentIds);
+          console.log(
+            `Attempt ${attempts}: Loaded ${studentData.length}/${studentIds.length} students`
+          );
+
+          // If we still don't have all students but it's not empty, continue
+          if (
+            studentData.length > 0 &&
+            studentData.length < studentIds.length
+          ) {
+            // Add a small delay before retrying
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+        } catch (error) {
+          console.error(`Attempt ${attempts} failed:`, error);
+        }
+      }
+
+      console.log('Final loaded student data:', studentData);
 
       // Set students state for the students section
       setStudents(
@@ -267,6 +273,7 @@ export function TeacherDetails() {
               studentName: studentInfo
                 ? studentInfo.name
                 : `תלמיד ${studentId.toString().slice(-6)}`,
+              instrument: studentInfo ? studentInfo.instrument : '',
             };
           });
 
@@ -302,6 +309,14 @@ export function TeacherDetails() {
       ...prev,
       [section]: !prev[section],
     }));
+
+    // If opening students or schedule section, refresh data
+    if (
+      !openSections[section] &&
+      (section === 'students' || section === 'schedule')
+    ) {
+      refreshData();
+    }
   };
 
   const toggleFlip = () => {
@@ -320,81 +335,6 @@ export function TeacherDetails() {
   // Navigate to orchestra details
   const navigateToOrchestra = (orchestraId: string) => {
     navigate(`/orchestras/${orchestraId}`);
-  };
-
-  // Open communication modal
-  const openCommunicationModal = () => {
-    setCommunicationModalOpen(true);
-    setCommunicationMethod(null);
-  };
-
-  // Close communication modal
-  const closeCommunicationModal = () => {
-    setCommunicationModalOpen(false);
-    setCommunicationMethod(null);
-    setEmailForm({ subject: '', message: '' });
-    setWhatsAppForm({ message: '' });
-    setCopied(false);
-  };
-
-  // Select communication method
-  const selectCommunicationMethod = (method: CommunicationMethod) => {
-    setCommunicationMethod(method);
-  };
-
-  // Handle email form changes
-  const handleEmailFormChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setEmailForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle WhatsApp form changes
-  const handleWhatsAppFormChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setWhatsAppForm({ message: e.target.value });
-  };
-
-  // Handle send email
-  const handleSendEmail = () => {
-    if (!teacher?.personalInfo.email) return;
-
-    const emailContent = `mailto:${
-      teacher.personalInfo.email
-    }?subject=${encodeURIComponent(
-      emailForm.subject
-    )}&body=${encodeURIComponent(emailForm.message)}`;
-    window.open(emailContent);
-    closeCommunicationModal();
-  };
-
-  // Format phone number for WhatsApp
-  const formatPhoneForWhatsApp = (phone: string) => {
-    if (phone.startsWith('0')) {
-      return `972${phone.substring(1)}`;
-    }
-    return phone;
-  };
-
-  // Handle send WhatsApp
-  const handleSendWhatsApp = () => {
-    if (!teacher?.personalInfo.phone) return;
-
-    const formattedPhone = formatPhoneForWhatsApp(teacher.personalInfo.phone);
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(
-      whatsAppForm.message
-    )}`;
-    window.open(whatsappUrl);
-    closeCommunicationModal();
-  };
-
-  // Copy phone or email to clipboard
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   // Format a date string
@@ -524,7 +464,6 @@ export function TeacherDetails() {
                     style={{
                       backgroundColor: getRoleColor(primaryRole),
                     }}
-                    onClick={openCommunicationModal}
                   >
                     {getInitials(teacher.personalInfo.fullName)}
                   </div>
@@ -574,50 +513,70 @@ export function TeacherDetails() {
 
               <div className='card-scroll-area'>
                 {/* Students Section - Collapsible */}
-                {teacher.teaching?.studentIds &&
-                  teacher.teaching.studentIds.length > 0 && (
-                    <div className='section'>
-                      <div
-                        className={`section-title clickable ${
-                          openSections.students ? 'active' : ''
-                        }`}
-                        onClick={() => toggleSection('students')}
-                      >
-                        <Users size={16} />
-                        <span>
-                          תלמידים ({teacher.teaching.studentIds.length})
-                        </span>
-                        {openSections.students ? (
-                          <ChevronUp size={18} className='toggle-icon' />
-                        ) : (
-                          <ChevronDown size={18} className='toggle-icon' />
-                        )}
-                      </div>
+                <div className='section'>
+                  <div
+                    className={`section-title clickable ${
+                      openSections.students ? 'active' : ''
+                    }`}
+                    onClick={() => toggleSection('students')}
+                  >
+                    <Users size={16} />
+                    <span>
+                      תלמידים ({teacher.teaching?.studentIds?.length || 0})
+                    </span>
+                    {openSections.students ? (
+                      <ChevronUp size={18} className='toggle-icon' />
+                    ) : (
+                      <ChevronDown size={18} className='toggle-icon' />
+                    )}
+                  </div>
 
-                      {openSections.students && (
-                        <div className='section-content'>
-                          <div className='students-grid'>
-                            {students.map((student) => (
-                              <div
-                                key={student._id}
-                                className='student-card clickable'
-                                onClick={() => navigateToStudent(student._id)}
-                              >
-                                <div className='student-avatar'>
-                                  {getInitials(student.fullName)}
-                                </div>
-                                <div className='student-info'>
-                                  <span className='student-name'>
-                                    {student.fullName}
-                                  </span>
-                                </div>
+                  {openSections.students && (
+                    <div className='section-content'>
+                      {students.length > 0 ? (
+                        <div className='students-grid'>
+                          {students.map((student) => (
+                            <div
+                              key={student._id}
+                              className='student-card clickable'
+                              onClick={() => navigateToStudent(student._id)}
+                            >
+                              <div className='student-avatar'>
+                                {getInitials(student.fullName)}
                               </div>
-                            ))}
-                          </div>
+                              <div className='student-info'>
+                                <span className='student-name'>
+                                  {student.fullName}
+                                </span>
+                                {student.instrument && (
+                                  <span className='student-instrument'>
+                                    {student.instrument}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : teacher.teaching?.studentIds?.length ? (
+                        <div className='loading-section'>
+                          <RefreshCw size={16} className='loading-icon' />
+                          <span>טוען פרטי תלמידים...</span>
+                          <button
+                            className='refresh-btn'
+                            onClick={refreshData}
+                            aria-label='רענן נתונים'
+                          >
+                            לחץ לרענון
+                          </button>
+                        </div>
+                      ) : (
+                        <div className='no-students-message'>
+                          למורה זה אין תלמידים
                         </div>
                       )}
                     </div>
                   )}
+                </div>
 
                 {/* Orchestras Section - Collapsible */}
                 {teacher.conducting?.orchestraIds &&
@@ -792,6 +751,26 @@ export function TeacherDetails() {
                                 style={{ textAlign: 'center', padding: '20px' }}
                               >
                                 <p>אין כרגע שיעורים במערכת</p>
+                                <button
+                                  className='refresh-btn'
+                                  onClick={refreshData}
+                                  style={{
+                                    padding: '8px 16px',
+                                    marginTop: '10px',
+                                    backgroundColor: 'var(--primary)',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    margin: '0 auto',
+                                  }}
+                                >
+                                  <RefreshCw size={14} />
+                                  רענן נתונים
+                                </button>
                               </div>
                             )}
                           </div>
@@ -824,8 +803,9 @@ export function TeacherDetails() {
               </button>
             </div>
 
-            {/* Personal Info (Back) */}
+            {/* Personal Info (Back) - remaining code kept the same */}
             <div className='card-side card-back'>
+              {/* ... remaining code ... */}
               <div className='card-header'>
                 <div className='teacher-identity'>
                   <div
@@ -833,7 +813,6 @@ export function TeacherDetails() {
                     style={{
                       backgroundColor: getRoleColor(primaryRole),
                     }}
-                    onClick={openCommunicationModal}
                   >
                     {getInitials(teacher.personalInfo.fullName)}
                   </div>
@@ -1016,175 +995,6 @@ export function TeacherDetails() {
             </div>
           </div>
         </div>
-
-        {/* Communication Modal */}
-        {communicationModalOpen && (
-          <div
-            className='communication-modal-overlay'
-            onClick={closeCommunicationModal}
-          >
-            <div
-              className='communication-modal'
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className='modal-header'>
-                <h3>יצירת קשר עם {teacher.personalInfo.fullName}</h3>
-                <button className='close-btn' onClick={closeCommunicationModal}>
-                  <X size={18} />
-                </button>
-              </div>
-
-              {/* Method Selection */}
-              {!communicationMethod && (
-                <div className='comm-method-selection'>
-                  <div className='comm-details'>
-                    {teacher.personalInfo.phone && (
-                      <div className='contact-info-item'>
-                        <Phone size={16} />
-                        <span>{teacher.personalInfo.phone}</span>
-                        <button
-                          className='copy-btn'
-                          onClick={() =>
-                            copyToClipboard(teacher.personalInfo.phone || '')
-                          }
-                          aria-label='העתק מספר טלפון'
-                        >
-                          {copied ? <Check size={16} /> : <Copy size={16} />}
-                        </button>
-                      </div>
-                    )}
-                    {teacher.personalInfo.email && (
-                      <div className='contact-info-item'>
-                        <Mail size={16} />
-                        <span>{teacher.personalInfo.email}</span>
-                        <button
-                          className='copy-btn'
-                          onClick={() =>
-                            copyToClipboard(teacher.personalInfo.email || '')
-                          }
-                          aria-label='העתק כתובת אימייל'
-                        >
-                          {copied ? <Check size={16} /> : <Copy size={16} />}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className='method-buttons'>
-                    {teacher.personalInfo.email && (
-                      <button
-                        className='method-btn email-btn'
-                        onClick={() => selectCommunicationMethod('email')}
-                      >
-                        <Mail size={20} />
-                        <span>שלח אימייל</span>
-                      </button>
-                    )}
-                    {teacher.personalInfo.phone && (
-                      <button
-                        className='method-btn whatsapp-btn'
-                        onClick={() => selectCommunicationMethod('whatsapp')}
-                      >
-                        <MessageSquare size={20} />
-                        <span>שלח הודעת WhatsApp</span>
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Email Form */}
-              {communicationMethod === 'email' && (
-                <div className='email-form'>
-                  <button
-                    className='back-to-methods'
-                    onClick={() => setCommunicationMethod(null)}
-                  >
-                    &larr; חזרה
-                  </button>
-
-                  <div className='form-group'>
-                    <label htmlFor='subject'>נושא</label>
-                    <input
-                      type='text'
-                      id='subject'
-                      name='subject'
-                      value={emailForm.subject}
-                      onChange={handleEmailFormChange}
-                      placeholder='נושא ההודעה'
-                    />
-                  </div>
-                  <div className='form-group'>
-                    <label htmlFor='message'>תוכן ההודעה</label>
-                    <textarea
-                      id='message'
-                      name='message'
-                      value={emailForm.message}
-                      onChange={handleEmailFormChange}
-                      placeholder='הקלד את תוכן ההודעה כאן...'
-                      rows={6}
-                    />
-                  </div>
-                  <div className='form-actions'>
-                    <button
-                      className='cancel-btn'
-                      onClick={closeCommunicationModal}
-                    >
-                      ביטול
-                    </button>
-                    <button
-                      className='send-btn'
-                      onClick={handleSendEmail}
-                      disabled={!emailForm.subject || !emailForm.message}
-                    >
-                      <Send size={16} />
-                      <span>שלח אימייל</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* WhatsApp Form */}
-              {communicationMethod === 'whatsapp' && (
-                <div className='whatsapp-form'>
-                  <button
-                    className='back-to-methods'
-                    onClick={() => setCommunicationMethod(null)}
-                  >
-                    &larr; חזרה
-                  </button>
-
-                  <div className='form-group'>
-                    <label htmlFor='whatsapp-message'>הודעה ל-WhatsApp</label>
-                    <textarea
-                      id='whatsapp-message'
-                      value={whatsAppForm.message}
-                      onChange={handleWhatsAppFormChange}
-                      placeholder='הקלד את תוכן ההודעה כאן...'
-                      rows={6}
-                    />
-                  </div>
-                  <div className='form-actions'>
-                    <button
-                      className='cancel-btn'
-                      onClick={closeCommunicationModal}
-                    >
-                      ביטול
-                    </button>
-                    <button
-                      className='send-btn'
-                      onClick={handleSendWhatsApp}
-                      disabled={!whatsAppForm.message}
-                    >
-                      <Send size={16} />
-                      <span>שלח הודעת WhatsApp</span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

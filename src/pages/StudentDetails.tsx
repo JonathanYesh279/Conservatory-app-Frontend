@@ -34,8 +34,8 @@ export function StudentDetails() {
   const [flipped, setFlipped] = useState(false);
   const [attendanceStats, setAttendanceStats] =
     useState<AttendanceStats | null>(null);
-  const [teacherData, setTeacherData] = useState<TeacherData | null>(null);
-  const [teacherLoading, setTeacherLoading] = useState(false);
+  const [teachersData, setTeachersData] = useState<TeacherData[]>([]);
+  const [teachersLoading, setTeachersLoading] = useState(false);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
@@ -43,7 +43,7 @@ export function StudentDetails() {
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
-    teacher: false,
+    teachers: false, // Changed from 'teacher' to 'teachers'
     orchestras: false,
     tests: false,
     attendance: false,
@@ -66,29 +66,39 @@ export function StudentDetails() {
     }
   }, [studentId, loadStudentById]);
 
-  // Load teacher data when student is loaded
+  // Load teachers data when student is loaded
   useEffect(() => {
     if (selectedStudent?.teacherIds?.length) {
-      setTeacherLoading(true);
-      const fetchTeacher = async () => {
+      setTeachersLoading(true);
+      const fetchTeachers = async () => {
         try {
-          // Fetch the first teacher (assuming one teacher per student for now)
-          const teacher = await teacherService.getTeacherById(
-            selectedStudent.teacherIds[0]
+          // Fetch all teachers assigned to this student
+          const teachers = await Promise.all(
+            selectedStudent.teacherIds.map(async (teacherId) => {
+              try {
+                const teacher = await teacherService.getTeacherById(teacherId);
+                return {
+                  id: teacher._id,
+                  name: teacher.personalInfo.fullName,
+                  instrument: teacher.professionalInfo?.instrument,
+                };
+              } catch (err) {
+                console.error(`Failed to fetch teacher ${teacherId}:`, err);
+                return null;
+              }
+            })
           );
-          setTeacherData({
-            id: teacher._id,
-            name: teacher.personalInfo.fullName,
-            instrument: teacher.professionalInfo?.instrument,
-          });
+
+          // Filter out any failed teacher fetches
+          setTeachersData(teachers.filter((t) => t !== null) as TeacherData[]);
         } catch (error) {
-          console.error('Failed to fetch teacher data:', error);
+          console.error('Failed to fetch teachers data:', error);
         } finally {
-          setTeacherLoading(false);
+          setTeachersLoading(false);
         }
       };
 
-      fetchTeacher();
+      fetchTeachers();
     }
   }, [selectedStudent]);
 
@@ -289,37 +299,47 @@ export function StudentDetails() {
               </div>
 
               <div className='card-scroll-area'>
-                {/* Teacher Section - Collapsible */}
+                {/* Teachers Section - Collapsible */}
                 <div className='section'>
                   <div
                     className={`section-title clickable ${
-                      openSections.teacher ? 'active' : ''
+                      openSections.teachers ? 'active' : ''
                     }`}
-                    onClick={() => toggleSection('teacher')}
+                    onClick={() => toggleSection('teachers')}
                   >
                     <User size={16} />
-                    <span>מורה</span>
-                    {openSections.teacher ? (
+                    <span>מורים ({teachersData.length || 0})</span>
+                    {openSections.teachers ? (
                       <ChevronUp size={18} className='toggle-icon' />
                     ) : (
                       <ChevronDown size={18} className='toggle-icon' />
                     )}
                   </div>
 
-                  {openSections.teacher && (
+                  {openSections.teachers && (
                     <div className='section-content'>
-                      {teacherLoading ? (
+                      {teachersLoading ? (
                         <div className='loading-section'>
                           <RefreshCw size={16} className='loading-icon' />
-                          <span>טוען פרטי מורה...</span>
+                          <span>טוען פרטי מורים...</span>
                         </div>
-                      ) : teacherData ? (
-                        <div
-                          className='teacher-info clickable'
-                          onClick={() => navigateToTeacher(teacherData.id)}
-                        >
-                          <User size={14} />
-                          <span>{teacherData.name}</span>
+                      ) : teachersData.length > 0 ? (
+                        <div className='teachers-list'>
+                          {teachersData.map((teacher) => (
+                            <div
+                              key={teacher.id}
+                              className='teacher-info clickable'
+                              onClick={() => navigateToTeacher(teacher.id)}
+                            >
+                              <User size={14} />
+                              <span>{teacher.name}</span>
+                              {teacher.instrument && (
+                                <span className='teacher-instrument'>
+                                  ({teacher.instrument})
+                                </span>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       ) : (
                         <div className='no-teacher-warning'>

@@ -1,20 +1,20 @@
 // src/services/studentService.ts
-import { httpService } from './httpService';
+import { httpService } from './httpService'
 
 // Define interfaces for attendance data
 export interface AttendanceRecord {
-  date: string;
-  status: 'הגיע/ה' | 'לא הגיע/ה';
-  sessionId: string;
-  notes?: string;
+  date: string
+  status: 'הגיע/ה' | 'לא הגיע/ה'
+  sessionId: string
+  notes?: string
 }
 
 export interface AttendanceStats {
-  attendanceRate: number;
-  attended: number;
-  totalRehearsals: number;
-  recentHistory: AttendanceRecord[];
-  message?: string;
+  attendanceRate: number
+  attended: number
+  totalRehearsals: number
+  recentHistory: AttendanceRecord[]
+  message?: string
 }
 
 export interface Student {
@@ -57,9 +57,9 @@ export interface Student {
     }>;
     teachers?: Array<{
       teacherId: string;
-      lessonDay?: string;
-      lessonTime?: string;
-      lessonDuration?: number;
+      day?: string;
+      time?: string;
+      duration?: number;
       isActive: boolean;
     }>;
   };
@@ -84,12 +84,12 @@ export interface StudentFilter {
   showInactive?: boolean;
 }
 
-// Interface for teacher schedule update that matches the backend
+// Interface for teacher schedule update with correct field names
 export interface TeacherScheduleUpdate {
   studentId: string;
-  day: string; // FIXED: Using correct field name
-  time: string; // FIXED: Using correct field name
-  duration: number; // FIXED: Using correct field name
+  day: string;
+  time: string;
+  duration: number;
 }
 
 export const studentService = {
@@ -139,7 +139,7 @@ export const studentService = {
     return httpService.delete(`student/${studentId}`);
   },
 
-  // FIXED: Update teacher schedule with correct field names
+  // Update teacher schedule with correct field names
   async updateTeacherSchedule(
     teacherId: string,
     scheduleData: TeacherScheduleUpdate
@@ -154,6 +154,7 @@ export const studentService = {
       throw new Error('Invalid schedule data: All fields are required');
     }
 
+    console.log(`Updating teacher ${teacherId} schedule with:`, scheduleData);
     return httpService.post(`teacher/${teacherId}/schedule`, scheduleData);
   },
 

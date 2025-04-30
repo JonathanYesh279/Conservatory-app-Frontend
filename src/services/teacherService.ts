@@ -56,9 +56,9 @@ export interface TeacherFilter {
 
 export interface TeacherScheduleUpdate {
   studentId: string;
-  lessonDay: string;
-  lessonTime: string;
-  lessonDuration: number;
+  day: string;
+  time: string;
+  duration: number;
   isActive: boolean;
 }
 
