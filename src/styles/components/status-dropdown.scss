@@ -1,0 +1,151 @@
+// src/styles/components/StudentDetails/status-dropdown.scss
+
+// Reset all previous styles for the dropdown components
+.status-container,
+.test-status,
+.status-dropdown,
+.dropdown-header,
+.dropdown-icon,
+.dropdown-menu,
+.dropdown-item,
+.success-options-container {
+  all: initial;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+// Container for the status indicator and dropdown
+.status-container {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+}
+
+// The main status text that users click
+.test-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.85rem;
+  font-weight: 500;
+  
+  // Status colors
+  &.passed {
+    color: var(--success);
+  }
+  
+  &.failed {
+    color: var(--danger);
+  }
+  
+  // Highlight when selecting
+  &.selecting {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+  }
+  
+  &:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+}
+
+// The dropdown component wrapper
+.status-dropdown {
+  display: inline-block;
+  position: static;
+}
+
+// The dropdown toggle button
+.dropdown-header {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  margin-left: 4px;
+  
+  svg {
+    color: var(--primary-color);
+    transition: transform 0.2s ease;
+  }
+  
+  &:hover svg {
+    color: var(--primary-dark);
+  }
+}
+
+// Rotate the icon when open
+.dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+// The actual dropdown menu
+.dropdown-menu {
+  position: fixed;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  min-width: 120px;
+  overflow: hidden;
+  
+  // This will be positioned via JavaScript, 
+  // but these are fallback values
+  top: 0;
+  left: 0;
+}
+
+// Each item in the dropdown
+.dropdown-item {
+  display: block;
+  padding: 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+  width: 100%;
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border-color-light);
+  }
+  
+  &:hover {
+    background-color: var(--bg-hover);
+  }
+  
+  &.selected {
+    font-weight: 600;
+    background-color: rgba(var(--primary-color-rgb), 0.05);
+  }
+}
+
+// Dark mode adjustments
+[data-theme="dark"] {
+  .dropdown-menu {
+    background-color: var(--bg-tertiary);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  .dropdown-item {
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    &.selected {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+  
+  .test-status {
+    &.selecting {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+  }
+}

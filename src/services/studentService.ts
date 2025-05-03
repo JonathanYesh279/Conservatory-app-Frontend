@@ -35,7 +35,7 @@ export interface Student {
     class: string;
     tests?: {
       stageTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
+        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה' | 'עבר/ה בהצלחה' | 'עבר/ה בהצטיינות';
         lastTestDate?: string;
         nextTestDate?: string;
         notes?: string;
@@ -48,6 +48,7 @@ export interface Student {
       };
     };
   };
+  // Rest of the interface remains the same
   enrollments: {
     orchestraIds: string[];
     ensembleIds: string[];

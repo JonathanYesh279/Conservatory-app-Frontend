@@ -1,9 +1,9 @@
 // src/hooks/useStudentForm.ts
-import { useState, useEffect, useCallback } from 'react';
-import { useStudentStore } from '../store/studentStore';
-import { useSchoolYearStore } from '../store/schoolYearStore';
-import { Student, studentService } from '../services/studentService';
-import { teacherService } from '../services/teacherService';
+import { useState, useEffect, useCallback } from 'react'
+import { useStudentStore } from '../store/studentStore'
+import { useSchoolYearStore } from '../store/schoolYearStore'
+import { Student, studentService } from '../services/studentService'
+import { teacherService } from '../services/teacherService'
 
 // Export constants for use in other components
 export const VALID_CLASSES = [
@@ -20,8 +20,8 @@ export const VALID_CLASSES = [
   'יא',
   'יב',
   'אחר',
-];
-export const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
+]
+export const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8]
 export const VALID_INSTRUMENTS = [
   'חצוצרה',
   'חליל צד',
@@ -31,80 +31,81 @@ export const VALID_INSTRUMENTS = [
   'טרומבון',
   'סקסופון',
   'אבוב',
-];
-export const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה'];
-export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
-export const LESSON_DURATIONS = [30, 45, 60];
+]
+export const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה']
+export const EXTENDED_TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה', 'עבר/ה בהצלחה', 'עבר/ה בהצטיינות']
+export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי']
+export const LESSON_DURATIONS = [30, 45, 60]
 
 // Teacher assignment interface - using correct field names that match the backend
 export interface TeacherAssignment {
-  teacherId: string;
-  day: string;
-  time: string;
-  duration: number;
+  teacherId: string
+  day: string
+  time: string
+  duration: number
 }
 
 // Orchestra assignment interface
 export interface OrchestraAssignment {
-  orchestraId: string;
+  orchestraId: string
 }
 
 // Define comprehensive type for student form data
 export interface StudentFormData {
-  _id?: string;
+  _id?: string
   personalInfo: {
-    fullName: string;
-    phone?: string;
-    age?: number;
-    address?: string;
-    parentName?: string;
-    parentPhone?: string;
-    parentEmail?: string;
-    studentEmail?: string;
-  };
+    fullName: string
+    phone?: string
+    age?: number
+    address?: string
+    parentName?: string
+    parentPhone?: string
+    parentEmail?: string
+    studentEmail?: string
+  }
   academicInfo: {
-    instrument: string;
-    currentStage: number;
-    class: string;
+    instrument: string
+    currentStage: number
+    class: string
     tests?: {
       stageTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
-        lastTestDate?: string;
-        nextTestDate?: string;
-        notes?: string;
-      };
+        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה' | 'עבר/ה בהצלחה' | 'עבר/ה בהצטיינות'
+        lastTestDate?: string
+        nextTestDate?: string
+        notes?: string
+      }
       technicalTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
-        lastTestDate?: string;
-        nextTestDate?: string;
-        notes?: string;
-      };
-    };
-  };
+        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה'
+        lastTestDate?: string
+        nextTestDate?: string
+        notes?: string
+      }
+    }
+  }
   enrollments: {
-    orchestraIds: string[];
-    ensembleIds: string[];
+    orchestraIds: string[]
+    ensembleIds: string[]
     schoolYears: Array<{
-      schoolYearId: string;
-      isActive: boolean;
-    }>;
-  };
-  teacherIds: string[];
-  teacherAssignments: TeacherAssignment[];
-  orchestraAssignments: OrchestraAssignment[];
-  isActive: boolean;
+      schoolYearId: string
+      isActive: boolean
+    }>
+  }
+  teacherIds: string[]
+  teacherAssignments: TeacherAssignment[]
+  orchestraAssignments: OrchestraAssignment[]
+  isActive: boolean
 }
 
 // Props for the hook
 interface UseStudentFormProps {
-  student?: Partial<Student>;
-  onClose: () => void;
-  onStudentCreated?: (student: Student) => void;
+  student?: Partial<Student>
+  onClose: () => void
+  onStudentCreated?: (student: Student) => void
   newTeacherInfo?: {
-    _id?: string;
-    fullName: string;
-    instrument?: string;
-  } | null;
+    _id?: string
+    fullName: string
+    instrument?: string
+  } | null
 }
 
 // The main hook
@@ -115,19 +116,19 @@ export function useStudentForm({
   newTeacherInfo,
 }: UseStudentFormProps) {
   const { saveStudent, isLoading, error, clearError, loadStudents } =
-    useStudentStore();
-  const { currentSchoolYear } = useSchoolYearStore();
+    useStudentStore()
+  const { currentSchoolYear } = useSchoolYearStore()
 
   // Form data state
   const [formData, setFormData] = useState<StudentFormData>(
     createInitialFormData()
-  );
+  )
 
   // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Submission state
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Create initial form data
   function createInitialFormData(): StudentFormData {
@@ -170,7 +171,7 @@ export function useStudentForm({
       teacherAssignments: [],
       orchestraAssignments: [],
       isActive: true,
-    };
+    }
   }
 
   // Initialize form data when component mounts or when student prop changes
@@ -226,16 +227,16 @@ export function useStudentForm({
             orchestraId: id,
           })) || [],
         isActive: student.isActive !== false,
-      });
+      })
     } else {
       // Reset form for new student with proper defaults
-      const initialData = createInitialFormData();
+      const initialData = createInitialFormData()
 
       // Add current school year
       if (currentSchoolYear) {
         initialData.enrollments.schoolYears = [
           { schoolYearId: currentSchoolYear._id, isActive: true },
-        ];
+        ]
       }
 
       // Handle new teacher case
@@ -247,15 +248,15 @@ export function useStudentForm({
             time: '08:00',
             duration: 45,
           },
-        ];
+        ]
       }
 
-      setFormData(initialData);
+      setFormData(initialData)
     }
 
-    setErrors({});
-    clearError?.();
-  }, [student, clearError, currentSchoolYear, newTeacherInfo]);
+    setErrors({})
+    clearError?.()
+  }, [student, clearError, currentSchoolYear, newTeacherInfo])
 
   // Update personal info
   const updatePersonalInfo = useCallback(
@@ -266,19 +267,19 @@ export function useStudentForm({
           ...prev.personalInfo,
           [field]: value,
         },
-      }));
+      }))
 
       // Clear error if exists
       if (errors[`personalInfo.${field}`]) {
         setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[`personalInfo.${field}`];
-          return newErrors;
-        });
+          const newErrors = { ...prev }
+          delete newErrors[`personalInfo.${field}`]
+          return newErrors
+        })
       }
     },
     [errors]
-  );
+  )
 
   // Update academic info
   const updateAcademicInfo = useCallback(
@@ -289,39 +290,56 @@ export function useStudentForm({
           ...prev.academicInfo,
           [field]: value,
         },
-      }));
+      }))
 
       // Clear error if exists
       if (errors[`academicInfo.${field}`]) {
         setErrors((prev) => {
-          const newErrors = { ...prev };
-          delete newErrors[`academicInfo.${field}`];
-          return newErrors;
-        });
+          const newErrors = { ...prev }
+          delete newErrors[`academicInfo.${field}`]
+          return newErrors
+        })
       }
     },
     [errors]
-  );
+  )
 
-  // Update test info
+  // Update test info with auto-increment logic
   const updateTestInfo = useCallback(
     (testType: 'stageTest' | 'technicalTest', field: string, value: any) => {
-      setFormData((prev) => ({
-        ...prev,
-        academicInfo: {
-          ...prev.academicInfo,
-          tests: {
-            ...prev.academicInfo.tests,
-            [testType]: {
-              ...prev.academicInfo.tests?.[testType],
-              [field]: value,
+      setFormData((prev) => {
+        // Create the updated form data
+        const updatedFormData = {
+          ...prev,
+          academicInfo: {
+            ...prev.academicInfo,
+            tests: {
+              ...prev.academicInfo.tests,
+              [testType]: {
+                ...prev.academicInfo.tests?.[testType],
+                [field]: value,
+              },
             },
           },
-        },
-      }));
+        }
+        
+        // Check if we need to auto-increment the stage
+        if (
+          testType === 'stageTest' && 
+          field === 'status' && 
+          (value === 'עבר/ה' || value === 'עבר/ה בהצלחה' || value === 'עבר/ה בהצטיינות') &&
+          prev.academicInfo.tests?.stageTest?.status === 'לא נבחן' &&
+          prev.academicInfo.currentStage < 8 // Don't increment beyond max
+        ) {
+          // Auto-increment the stage
+          updatedFormData.academicInfo.currentStage = prev.academicInfo.currentStage + 1
+        }
+        
+        return updatedFormData
+      })
     },
     []
-  );
+  )
 
   // Add teacher assignment - using correct field names
   const addTeacherAssignment = useCallback((assignment: TeacherAssignment) => {
@@ -333,26 +351,26 @@ export function useStudentForm({
       assignment.duration === undefined ||
       assignment.duration === null
     ) {
-      console.error('Invalid teacher assignment data:', assignment);
-      return; // Don't add invalid assignments
+      console.error('Invalid teacher assignment data:', assignment)
+      return // Don't add invalid assignments
     }
 
     setFormData((prev) => {
       // Add new assignment
-      const updatedAssignments = [...prev.teacherAssignments, assignment];
+      const updatedAssignments = [...prev.teacherAssignments, assignment]
 
       // Make sure teacherIds contains unique teacher IDs from all assignments
       const uniqueTeacherIds = Array.from(
         new Set(updatedAssignments.map((a) => a.teacherId))
-      );
+      )
 
       return {
         ...prev,
         teacherAssignments: updatedAssignments,
         teacherIds: uniqueTeacherIds,
-      };
-    });
-  }, []);
+      }
+    })
+  }, [])
 
   // Remove teacher assignment - using correct field names
   const removeTeacherAssignment = useCallback(
@@ -362,22 +380,22 @@ export function useStudentForm({
         const updatedAssignments = prev.teacherAssignments.filter(
           (a) =>
             !(a.teacherId === teacherId && a.day === day && a.time === time)
-        );
+        )
 
         // Get unique teacher IDs from remaining assignments
         const remainingTeacherIds = Array.from(
           new Set(updatedAssignments.map((a) => a.teacherId))
-        );
+        )
 
         return {
           ...prev,
           teacherAssignments: updatedAssignments,
           teacherIds: remainingTeacherIds,
-        };
-      });
+        }
+      })
     },
     []
-  );
+  )
 
   // Add orchestra assignment
   const addOrchestraAssignment = useCallback((orchestraId: string) => {
@@ -385,9 +403,9 @@ export function useStudentForm({
       // Check if orchestra already exists
       const exists = prev.orchestraAssignments.some(
         (a) => a.orchestraId === orchestraId
-      );
+      )
 
-      if (exists) return prev; // Already assigned
+      if (exists) return prev // Already assigned
 
       return {
         ...prev,
@@ -398,21 +416,21 @@ export function useStudentForm({
             new Set([...prev.enrollments.orchestraIds, orchestraId])
           ),
         },
-      };
-    });
-  }, []);
+      }
+    })
+  }, [])
 
   // Remove orchestra assignment
   const removeOrchestraAssignment = useCallback((orchestraId: string) => {
     setFormData((prev) => {
       const updatedAssignments = prev.orchestraAssignments.filter(
         (a) => a.orchestraId !== orchestraId
-      );
+      )
 
       // Also remove from orchestraIds in enrollments
       const updatedOrchestraIds = prev.enrollments.orchestraIds.filter(
         (id) => id !== orchestraId
-      );
+      )
 
       return {
         ...prev,
@@ -421,17 +439,17 @@ export function useStudentForm({
           ...prev.enrollments,
           orchestraIds: updatedOrchestraIds,
         },
-      };
-    });
-  }, []);
+      }
+    })
+  }, [])
 
   // Validate form
   const validateForm = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
     // Required fields validation
     if (!formData.personalInfo?.fullName) {
-      newErrors['personalInfo.fullName'] = 'שם מלא הוא שדה חובה';
+      newErrors['personalInfo.fullName'] = 'שם מלא הוא שדה חובה'
     }
 
     if (
@@ -439,7 +457,7 @@ export function useStudentForm({
       !/^05\d{8}$/.test(formData.personalInfo.phone)
     ) {
       newErrors['personalInfo.phone'] =
-        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)';
+        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
     }
 
     if (
@@ -447,64 +465,64 @@ export function useStudentForm({
       !/^05\d{8}$/.test(formData.personalInfo.parentPhone)
     ) {
       newErrors['personalInfo.parentPhone'] =
-        'מספר טלפון הורה לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)';
+        'מספר טלפון הורה לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
     }
 
     if (
       formData.personalInfo?.parentEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalInfo.parentEmail)
     ) {
-      newErrors['personalInfo.parentEmail'] = 'כתובת אימייל הורה לא תקינה';
+      newErrors['personalInfo.parentEmail'] = 'כתובת אימייל הורה לא תקינה'
     }
 
     if (
       formData.personalInfo?.studentEmail &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalInfo.studentEmail)
     ) {
-      newErrors['personalInfo.studentEmail'] = 'כתובת אימייל תלמיד לא תקינה';
+      newErrors['personalInfo.studentEmail'] = 'כתובת אימייל תלמיד לא תקינה'
     }
 
     if (!formData.academicInfo?.instrument) {
-      newErrors['academicInfo.instrument'] = 'כלי נגינה הוא שדה חובה';
+      newErrors['academicInfo.instrument'] = 'כלי נגינה הוא שדה חובה'
     }
 
     if (!formData.academicInfo?.currentStage) {
-      newErrors['academicInfo.currentStage'] = 'שלב נוכחי הוא שדה חובה';
+      newErrors['academicInfo.currentStage'] = 'שלב נוכחי הוא שדה חובה'
     }
 
     if (!formData.academicInfo?.class) {
-      newErrors['academicInfo.class'] = 'כיתה היא שדה חובה';
+      newErrors['academicInfo.class'] = 'כיתה היא שדה חובה'
     }
 
     // Validate teacher assignments if any - using correct field names
     formData.teacherAssignments.forEach((assignment, index) => {
       if (!assignment.day) {
-        newErrors[`teacherAssignment.${index}.day`] = 'יש לבחור יום לשיעור';
+        newErrors[`teacherAssignment.${index}.day`] = 'יש לבחור יום לשיעור'
       }
 
       if (!assignment.time) {
-        newErrors[`teacherAssignment.${index}.time`] = 'יש לבחור שעה לשיעור';
+        newErrors[`teacherAssignment.${index}.time`] = 'יש לבחור שעה לשיעור'
       }
 
       if (!assignment.duration) {
-        newErrors[`teacherAssignment.${index}.duration`] = 'יש לבחור משך שיעור';
+        newErrors[`teacherAssignment.${index}.duration`] = 'יש לבחור משך שיעור'
       }
-    });
+    })
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }, [formData]);
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }, [formData])
 
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault();
+      e.preventDefault()
 
       if (!validateForm()) {
-        return;
+        return
       }
 
-      setIsSubmitting(true);
+      setIsSubmitting(true)
 
       try {
         // Prepare student data for submission
@@ -527,42 +545,42 @@ export function useStudentForm({
           },
           teacherIds: formData.teacherIds.filter((id) => id !== 'new-teacher'),
           isActive: formData.isActive,
-        };
+        }
 
         // Handle new or existing student
-        let savedStudent: Student;
+        let savedStudent: Student
 
         if (formData._id) {
           // Update existing student
           savedStudent = await studentService.updateStudent(
             formData._id,
             studentData
-          );
+          )
         } else {
           // Create new student
-          savedStudent = await saveStudent(studentData);
+          savedStudent = await saveStudent(studentData)
         }
 
-        console.log('Student saved successfully:', savedStudent);
+        console.log('Student saved successfully:', savedStudent)
 
         // Process teacher assignments after student is saved
         const teacherPromises = formData.teacherAssignments
           .filter((a) => a.teacherId !== 'new-teacher') // Filter out new teacher for now
           .map(async (assignment) => {
             try {
-              const { teacherId, day, time, duration } = assignment;
+              const { teacherId, day, time, duration } = assignment
 
               // Ensure all required fields have valid values
               if (!teacherId || !day || !time || !duration) {
                 console.warn(
                   `Skipping invalid schedule for teacher ${teacherId} and student ${savedStudent._id}: Missing required fields`
-                );
-                return;
+                )
+                return
               }
 
               console.log(
                 `Updating teacher ${teacherId} schedule with student ${savedStudent._id}`
-              );
+              )
 
               // Update teacher schedule with student assignment
               // Using the correct field names that match the backend
@@ -571,11 +589,11 @@ export function useStudentForm({
                 day,
                 time,
                 duration,
-              });
+              })
 
               // Also update the teacher's studentIds array to include this student
               try {
-                const teacher = await teacherService.getTeacherById(teacherId);
+                const teacher = await teacherService.getTeacherById(teacherId)
 
                 // Only add if not already in the array
                 if (!teacher.teaching?.studentIds?.includes(savedStudent._id)) {
@@ -591,26 +609,26 @@ export function useStudentForm({
                         schedule: teacher.teaching?.schedule || [],
                       },
                     }
-                  );
+                  )
 
                   console.log(
                     'Updated teacher with student reference:',
                     updatedTeacher
-                  );
+                  )
                 }
               } catch (err) {
-                console.error('Failed to update teacher studentIds:', err);
+                console.error('Failed to update teacher studentIds:', err)
               }
             } catch (err) {
-              console.error('Failed to update teacher schedule:', err);
+              console.error('Failed to update teacher schedule:', err)
             }
-          });
+          })
 
         // Wait for all teacher assignments to complete
-        await Promise.all(teacherPromises);
+        await Promise.all(teacherPromises)
 
         // Refresh student list
-        await loadStudents();
+        await loadStudents()
 
         // Special handling for new teacher case
         if (
@@ -626,7 +644,7 @@ export function useStudentForm({
             (a) =>
               a.teacherId === 'new-teacher' ||
               a.teacherId === newTeacherInfo._id
-          );
+          )
 
           if (newTeacherAssignment) {
             try {
@@ -636,12 +654,12 @@ export function useStudentForm({
                 day: newTeacherAssignment.day,
                 time: newTeacherAssignment.time,
                 duration: newTeacherAssignment.duration,
-              });
+              })
 
               // Update the teacher's studentIds array
               const teacher = await teacherService.getTeacherById(
                 newTeacherInfo._id
-              );
+              )
               await teacherService.updateTeacher(newTeacherInfo._id, {
                 teaching: {
                   studentIds: [
@@ -650,11 +668,11 @@ export function useStudentForm({
                   ],
                   schedule: teacher.teaching?.schedule || [],
                 },
-              });
+              })
 
-              console.log('Updated new teacher with student reference');
+              console.log('Updated new teacher with student reference')
             } catch (err) {
-              console.error('Failed to update new teacher with student:', err);
+              console.error('Failed to update new teacher with student:', err)
             }
           }
 
@@ -669,25 +687,25 @@ export function useStudentForm({
                   lessonDuration: newTeacherAssignment.duration,
                 }
               : undefined,
-          };
+          }
 
           // Call the callback with enhanced student data
           if (onStudentCreated) {
-            onStudentCreated(studentWithTeacherData);
-            return;
+            onStudentCreated(studentWithTeacherData)
+            return
           }
         }
 
         // Close form on successful save
-        onClose();
+        onClose()
       } catch (err) {
-        console.error('Error saving student:', err);
+        console.error('Error saving student:', err)
         setErrors((prev) => ({
           ...prev,
           form: err instanceof Error ? err.message : 'שגיאה בשמירת תלמיד',
-        }));
+        }))
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(false)
       }
     },
     [
@@ -699,7 +717,7 @@ export function useStudentForm({
       onClose,
       newTeacherInfo,
     ]
-  );
+  )
 
   return {
     formData,
@@ -721,5 +739,5 @@ export function useStudentForm({
     // Form submission
     validateForm,
     handleSubmit,
-  };
+  }
 }
