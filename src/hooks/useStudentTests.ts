@@ -39,47 +39,66 @@ export function useStudentTests(
     setShowStageSuccessOptions((prev) => !prev);
   };
 
- const handleTestStatusChange = async (
-   testType: TestType,
-   status: TestStatus
- ) => {
-   if (!student) return;
+  const handleTestStatusChange = async (
+    testType: TestType,
+    status: TestStatus
+  ) => {
+    if (!student) return;
 
-   setIsUpdating(true);
-   setUpdateError(null);
+    setIsUpdating(true);
+    setUpdateError(null);
 
-   try {
-     // Create properly typed updated student data
-     const updatedStudent: Partial<Student> = {
-       _id: student._id, // Add the ID to ensure it's an update operation
-       academicInfo: {
-         // Include the required properties of academicInfo
-         instrument: student.academicInfo.instrument,
-         currentStage: student.academicInfo.currentStage,
-         class: student.academicInfo.class,
-         tests: {
-           // Include only the test you're updating
-           [testType]: {
-             status,
-             lastTestDate: new Date().toISOString(),
-           },
-         },
-       },
-     };
+    try {
+      // Create a properly structured test object
+      const testData = {
+        status,
+        lastTestDate: new Date().toISOString(),
+      };
 
-     // Save the updated student
-     await saveStudent(updatedStudent);
+      // Build tests object with proper typing
+      const tests: Record<string, any> = {};
 
-     // Close dropdowns
-     setShowStageTestOptions(false);
-     setShowStageSuccessOptions(false);
-   } catch (error) {
-     console.error('Failed to update test status:', error);
-     setUpdateError('Failed to update test status');
-   } finally {
-     setIsUpdating(false);
-   }
- };
+      // Include existing test data if available
+      if (student.academicInfo.tests) {
+        // Copy any existing tests
+        if (student.academicInfo.tests.stageTest) {
+          tests.stageTest = { ...student.academicInfo.tests.stageTest };
+        }
+        if (student.academicInfo.tests.technicalTest) {
+          tests.technicalTest = { ...student.academicInfo.tests.technicalTest };
+        }
+      }
+
+      // Add/update the specific test we're changing
+      tests[testType] = {
+        ...(tests[testType] || {}),
+        ...testData,
+      };
+
+      // Create properly typed updated student data
+      const updatedStudent: Partial<Student> = {
+        _id: student._id,
+        academicInfo: {
+          instrument: student.academicInfo.instrument,
+          currentStage: student.academicInfo.currentStage,
+          class: student.academicInfo.class,
+          tests: tests,
+        },
+      };
+
+      // Save the updated student
+      await saveStudent(updatedStudent);
+
+      // Close dropdowns
+      setShowStageTestOptions(false);
+      setShowStageSuccessOptions(false);
+    } catch (error) {
+      console.error('Failed to update test status:', error);
+      setUpdateError('Failed to update test status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return {
     isUpdating,

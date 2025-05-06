@@ -1,5 +1,5 @@
 // src/components/StudentDetails/StatusDropdown.tsx
-import { useState, useRef, useEffect } from 'react'
+import { useRef, useEffect } from 'react'
 import { ChevronDown, Check } from 'lucide-react'
 
 interface StatusDropdownProps {

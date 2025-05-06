@@ -1,5 +1,5 @@
 // src/components/StudentDetails/StudentDetailsMain.tsx
-import { RefreshCw, ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
+import { RefreshCw, ArrowLeft } from 'lucide-react';
 import { useStudentDetailsState } from '../../hooks/useStudentDetailsState';
 import { StudentHeader } from './StudentHeader';
 import { TeachersSection } from './sections/TeachersSection';
@@ -17,6 +17,7 @@ export function StudentDetailsMain() {
     flipped,
     teachersData,
     teachersLoading,
+    teachersError,
     orchestras,
     orchestrasLoading,
     attendanceStats,
@@ -30,6 +31,7 @@ export function StudentDetailsMain() {
     formatDate,
     getInitials,
     getStageColor,
+    retryLoadTeachers,
   } = useStudentDetailsState();
 
   if (isLoading) {
@@ -71,9 +73,11 @@ export function StudentDetailsMain() {
                 <TeachersSection
                   teachersData={teachersData}
                   teachersLoading={teachersLoading}
+                  teachersError={teachersError}
                   isOpen={openSections.teachers}
                   onToggle={() => toggleSection('teachers')}
                   onTeacherClick={navigateToTeacher}
+                  onRetryLoadTeachers={retryLoadTeachers}
                 />
 
                 {/* Orchestras Section */}

@@ -1,9 +1,9 @@
 // src/hooks/useStudentDetailsState.ts
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useStudentStore } from '../store/studentStore';
+import { useTeacherStore } from '../store/teacherStore'; // Import the teacher store
 import { orchestraService } from '../services/orchestraService';
-import { teacherService } from '../services/teacherService';
 import {
   studentService,
   AttendanceStats,
@@ -24,6 +24,8 @@ export interface UseStudentDetailsResult {
   flipped: boolean;
   teachersData: TeacherData[];
   teachersLoading: boolean;
+  teachersError: string | null;
+  teachersFetched: boolean;
   orchestras: any[];
   orchestrasLoading: boolean;
   attendanceStats: AttendanceStats | null;
@@ -41,21 +43,36 @@ export interface UseStudentDetailsResult {
   goBack: () => void;
   navigateToTeacher: (teacherId: string) => void;
   navigateToOrchestra: (orchestraId: string) => void;
-  formatDate: (dateString: string) => string;
+  formatDate: (date: string) => string;
   getInitials: (name: string) => string;
   getStageColor: (stage: number) => string;
+  retryLoadTeachers: () => void;
 }
 
 export function useStudentDetailsState(): UseStudentDetailsResult {
   const { studentId } = useParams<{ studentId: string }>();
-  const { selectedStudent, loadStudentById, isLoading, error } =
-    useStudentStore();
+  const {
+    selectedStudent,
+    loadStudentById,
+    isLoading: studentLoading,
+    error: studentError,
+  } = useStudentStore();
+
+  // Get teacher data from the store
+  const {
+    teachers: allTeachers,
+    loadBasicTeacherData,
+    isLoading: teacherStoreLoading,
+    error: teacherStoreError,
+  } = useTeacherStore();
 
   const [flipped, setFlipped] = useState(false);
   const [attendanceStats, setAttendanceStats] =
     useState<AttendanceStats | null>(null);
   const [teachersData, setTeachersData] = useState<TeacherData[]>([]);
   const [teachersLoading, setTeachersLoading] = useState(false);
+  const [teachersError, setTeachersError] = useState<string | null>(null);
+  const [teachersFetched, setTeachersFetched] = useState(false);
   const [orchestras, setOrchestras] = useState<any[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
   const [loadingAttendance, setLoadingAttendance] = useState(false);
@@ -71,13 +88,10 @@ export function useStudentDetailsState(): UseStudentDetailsResult {
     parentInfo: false,
   });
 
-  // Toggle section visibility
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
+  // First, ensure basic teacher data is loaded on component mount
+  useEffect(() => {
+    loadBasicTeacherData();
+  }, [loadBasicTeacherData]);
 
   // Load student data when component mounts
   useEffect(() => {
@@ -86,41 +100,133 @@ export function useStudentDetailsState(): UseStudentDetailsResult {
     }
   }, [studentId, loadStudentById]);
 
-  // Load teachers data when student is loaded
+  // Toggle section visibility
+  // Update the toggleSection function
+  const toggleSection = useCallback(
+    (section: keyof typeof openSections) => {
+      setOpenSections((prev) => ({
+        ...prev,
+        [section]: !prev[section],
+      }));
+
+      // If we're opening the teachers section, trigger a refresh
+      if (!openSections[section] && section === 'teachers') {
+        setTeachersFetched(false);
+      }
+    },
+    [openSections]
+  );
+
+  // Function to flip the card
+  const toggleFlip = useCallback(() => {
+    setFlipped((prev) => !prev);
+  }, []);
+
+  // Function to reload teachers data
+  const retryLoadTeachers = useCallback(() => {
+    setTeachersFetched(false);
+  }, []);
+
+  // Get teacher data from the store when student is loaded
   useEffect(() => {
-    if (selectedStudent?.teacherIds?.length) {
+    if (selectedStudent?.teacherIds?.length && !teachersFetched) {
       setTeachersLoading(true);
-      const fetchTeachers = async () => {
-        try {
-          // Fetch all teachers assigned to this student
-          const teachers = await Promise.all(
-            selectedStudent.teacherIds.map(async (teacherId) => {
-              try {
-                const teacher = await teacherService.getTeacherById(teacherId);
-                return {
-                  id: teacher._id,
-                  name: teacher.personalInfo.fullName,
-                  instrument: teacher.professionalInfo?.instrument,
-                };
-              } catch (err) {
-                console.error(`Failed to fetch teacher ${teacherId}:`, err);
-                return null;
-              }
+      setTeachersError(null);
+
+      try {
+        // Extract relevant teachers from the store
+        const relevantTeachers = allTeachers.filter((teacher) =>
+          selectedStudent.teacherIds.includes(teacher._id)
+        );
+
+        // If we found all teachers, use them directly
+        if (relevantTeachers.length === selectedStudent.teacherIds.length) {
+          const teacherDataItems: TeacherData[] = relevantTeachers.map(
+            (teacher) => ({
+              id: teacher._id,
+              name: teacher.personalInfo.fullName,
+              instrument: teacher.professionalInfo?.instrument,
             })
           );
 
-          // Filter out any failed teacher fetches
-          setTeachersData(teachers.filter((t) => t !== null) as TeacherData[]);
-        } catch (error) {
-          console.error('Failed to fetch teachers data:', error);
-        } finally {
+          setTeachersData(teacherDataItems);
+          setTeachersFetched(true);
           setTeachersLoading(false);
-        }
-      };
+        } else {
+          // If we're missing some teachers, load them individually
+          const loadMissingTeachers = async () => {
+            try {
+              const missingTeacherIds = selectedStudent.teacherIds.filter(
+                (id) => !relevantTeachers.find((t) => t._id === id)
+              );
 
-      fetchTeachers();
+              console.log(
+                `Loading ${missingTeacherIds.length} missing teachers`
+              );
+
+              const teacherPromises = missingTeacherIds.map((teacherId) =>
+                useTeacherStore
+                  .getState()
+                  .loadTeacherById(teacherId)
+                  .catch((err) => {
+                    console.error(`Failed to load teacher ${teacherId}:`, err);
+                    return null;
+                  })
+              );
+
+              const results = await Promise.allSettled(teacherPromises);
+
+              // Combine loaded teachers with existing ones from the store
+              const loadedTeachers = results
+                .filter(
+                  (result) =>
+                    result.status === 'fulfilled' && result.value !== null
+                )
+                .map((result) => (result as PromiseFulfilledResult<any>).value);
+
+              const allRelevantTeachers = [
+                ...relevantTeachers,
+                ...loadedTeachers,
+              ];
+
+              const teacherDataItems: TeacherData[] = allRelevantTeachers.map(
+                (teacher) => ({
+                  id: teacher._id,
+                  name: teacher.personalInfo.fullName,
+                  instrument: teacher.professionalInfo?.instrument,
+                })
+              );
+
+              setTeachersData(teacherDataItems);
+
+              // Check if we got all the teachers we expected
+              if (teacherDataItems.length < selectedStudent.teacherIds.length) {
+                setTeachersError('Some teacher data could not be loaded');
+              }
+            } catch (error) {
+              console.error('Failed to fetch missing teachers:', error);
+              setTeachersError('Failed to load teacher data');
+            } finally {
+              setTeachersLoading(false);
+              setTeachersFetched(true);
+            }
+          };
+
+          loadMissingTeachers();
+        }
+      } catch (error) {
+        console.error('Error processing teacher data:', error);
+        setTeachersError('Failed to process teacher data');
+        setTeachersLoading(false);
+        setTeachersFetched(true);
+      }
+    } else if (!selectedStudent?.teacherIds?.length) {
+      // No teachers to load
+      setTeachersData([]);
+      setTeachersFetched(true);
+      setTeachersLoading(false);
     }
-  }, [selectedStudent]);
+  }, [selectedStudent, allTeachers, teachersFetched]);
 
   // Load orchestra data when student is loaded
   useEffect(() => {
@@ -182,44 +288,47 @@ export function useStudentDetailsState(): UseStudentDetailsResult {
     }
   }, [selectedStudent, openSections.attendance]);
 
-  const toggleFlip = () => {
-    setFlipped(!flipped);
-  };
-
-  const goBack = () => {
+  // Navigate back to students list
+  const goBack = useCallback(() => {
     navigate('/students');
-  };
+  }, [navigate]);
 
   // Navigate to teacher details
-  const navigateToTeacher = (teacherId: string) => {
-    navigate(`/teachers/${teacherId}`);
-  };
+  const navigateToTeacher = useCallback(
+    (teacherId: string) => {
+      navigate(`/teachers/${teacherId}`);
+    },
+    [navigate]
+  );
 
   // Navigate to orchestra details
-  const navigateToOrchestra = (orchestraId: string) => {
-    navigate(`/orchestras/${orchestraId}`);
-  };
+  const navigateToOrchestra = useCallback(
+    (orchestraId: string) => {
+      navigate(`/orchestras/${orchestraId}`);
+    },
+    [navigate]
+  );
 
   // Format a date string
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     if (!dateString) return 'לא זמין';
 
     const date = new Date(dateString);
     return date.toLocaleDateString('he-IL');
-  };
+  }, []);
 
   // Get initials for avatar
-  const getInitials = (name: string) => {
+  const getInitials = useCallback((name: string) => {
     return name
       .split(' ')
       .map((n: string) => n[0])
       .join('')
       .toUpperCase()
       .substring(0, 2);
-  };
+  }, []);
 
   // Get stage color based on stage number
-  const getStageColor = (stage: number) => {
+  const getStageColor = useCallback((stage: number) => {
     const colors = [
       'var(--stage-1)',
       'var(--stage-2)',
@@ -231,15 +340,17 @@ export function useStudentDetailsState(): UseStudentDetailsResult {
       'var(--stage-8)',
     ];
     return colors[stage - 1] || colors[0];
-  };
+  }, []);
 
   return {
     student: selectedStudent,
-    isLoading,
-    error,
+    isLoading: studentLoading || teacherStoreLoading,
+    error: studentError || teacherStoreError,
     flipped,
     teachersData,
     teachersLoading,
+    teachersError,
+    teachersFetched,
     orchestras,
     orchestrasLoading,
     attendanceStats,
@@ -253,5 +364,6 @@ export function useStudentDetailsState(): UseStudentDetailsResult {
     formatDate,
     getInitials,
     getStageColor,
+    retryLoadTeachers,
   };
 }

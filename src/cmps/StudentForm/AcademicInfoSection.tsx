@@ -24,7 +24,6 @@ export function AcademicInfoSection({
     validStages,
     validInstruments,
     testStatuses,
-    extendedTestStatuses,
     handleAcademicInfoChange,
     handleTestChange,
   } = useAcademicInfoSection({

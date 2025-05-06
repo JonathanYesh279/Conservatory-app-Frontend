@@ -1,4 +1,4 @@
-// src/services/teacherService.ts
+// Enhanced version of src/services/teacherService.ts with better error handling
 import { httpService } from './httpService';
 
 export interface Teacher {
@@ -169,11 +169,23 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
 
 export const teacherService = {
   async getTeachers(filterBy: TeacherFilter = {}): Promise<Teacher[]> {
-    return httpService.get('teacher', filterBy);
+    try {
+      return await httpService.get('teacher', filterBy);
+    } catch (error) {
+      console.error('Failed to get teachers:', error);
+      throw new Error('Failed to load teachers. Please try again later.');
+    }
   },
 
   async getTeacherById(teacherId: string): Promise<Teacher> {
-    return httpService.get(`teacher/${teacherId}`);
+    try {
+      return await httpService.get(`teacher/${teacherId}`);
+    } catch (error) {
+      console.error(`Failed to get teacher with ID ${teacherId}:`, error);
+      throw new Error(
+        `Failed to load teacher details. Please try again later.`
+      );
+    }
   },
 
   async getTeachersByIds(teacherIds: string[]): Promise<Teacher[]> {
@@ -182,13 +194,40 @@ export const teacherService = {
       return [];
     }
 
-    // Fetch teachers with specific IDs
-    const allTeachers = await this.getTeachers();
-    return allTeachers.filter((teacher) => teacherIds.includes(teacher._id));
+    try {
+      // Use Promise.allSettled to handle partial failures
+      const teacherPromises = teacherIds.map((id) =>
+        this.getTeacherById(id).catch((err) => {
+          console.error(`Failed to fetch teacher ${id}:`, err);
+          return null;
+        })
+      );
+
+      const results = await Promise.allSettled(teacherPromises);
+
+      // Filter out failures
+      const successfulTeachers = results
+        .filter(
+          (result) => result.status === 'fulfilled' && result.value !== null
+        )
+        .map((result) => (result as PromiseFulfilledResult<Teacher>).value);
+
+      return successfulTeachers;
+    } catch (error) {
+      console.error('Failed to fetch teachers by IDs:', error);
+      return []; // Return empty array instead of throwing to prevent cascading failures
+    }
   },
 
   async getTeachersByRole(role: string): Promise<Teacher[]> {
-    return httpService.get(`teacher/role/${role}`);
+    try {
+      return await httpService.get(`teacher/role/${role}`);
+    } catch (error) {
+      console.error(`Failed to get teachers with role ${role}:`, error);
+      throw new Error(
+        `Failed to load teachers with role ${role}. Please try again later.`
+      );
+    }
   },
 
   async getTeachersByOrchestraId(orchestraId: string): Promise<Teacher[]> {
@@ -202,7 +241,14 @@ export const teacherService = {
   async addTeacher(teacher: Partial<Teacher>): Promise<Teacher> {
     const prepared = prepareNewTeacher(teacher);
     console.log('Creating new teacher with data:', prepared);
-    return httpService.post('teacher', prepared);
+    try {
+      return await httpService.post('teacher', prepared);
+    } catch (error) {
+      console.error('Failed to add new teacher:', error);
+      throw new Error(
+        'Failed to create new teacher. Please check your inputs and try again.'
+      );
+    }
   },
 
   async updateTeacher(
@@ -214,29 +260,78 @@ export const teacherService = {
 
     console.log('Updating teacher with prepared data:', prepared);
 
-    // Send update request
-    return httpService.put(`teacher/${teacherId}`, prepared);
+    try {
+      // Send update request
+      return await httpService.put(`teacher/${teacherId}`, prepared);
+    } catch (error) {
+      console.error(`Failed to update teacher ${teacherId}:`, error);
+      throw new Error(
+        'Failed to update teacher information. Please try again later.'
+      );
+    }
   },
 
   async removeTeacher(teacherId: string): Promise<Teacher> {
-    return httpService.delete(`teacher/${teacherId}`);
+    try {
+      return await httpService.delete(`teacher/${teacherId}`);
+    } catch (error) {
+      console.error(`Failed to remove teacher ${teacherId}:`, error);
+      throw new Error('Failed to remove teacher. Please try again later.');
+    }
   },
 
   async updateTeacherSchedule(
     teacherId: string,
     scheduleData: TeacherScheduleUpdate
   ): Promise<Teacher> {
-    return httpService.post(`teacher/${teacherId}/schedule`, scheduleData);
+    try {
+      return await httpService.post(
+        `teacher/${teacherId}/schedule`,
+        scheduleData
+      );
+    } catch (error) {
+      console.error(
+        `Failed to update schedule for teacher ${teacherId}:`,
+        error
+      );
+      throw new Error(
+        'Failed to update teacher schedule. Please try again later.'
+      );
+    }
   },
 
   async addOrchestra(teacherId: string, orchestraId: string): Promise<Teacher> {
-    return httpService.post(`teacher/${teacherId}/orchestra`, { orchestraId });
+    try {
+      return await httpService.post(`teacher/${teacherId}/orchestra`, {
+        orchestraId,
+      });
+    } catch (error) {
+      console.error(
+        `Failed to add orchestra ${orchestraId} to teacher ${teacherId}:`,
+        error
+      );
+      throw new Error(
+        'Failed to associate orchestra with teacher. Please try again later.'
+      );
+    }
   },
 
   async removeOrchestra(
     teacherId: string,
     orchestraId: string
   ): Promise<Teacher> {
-    return httpService.delete(`teacher/${teacherId}/orchestra/${orchestraId}`);
+    try {
+      return await httpService.delete(
+        `teacher/${teacherId}/orchestra/${orchestraId}`
+      );
+    } catch (error) {
+      console.error(
+        `Failed to remove orchestra ${orchestraId} from teacher ${teacherId}:`,
+        error
+      );
+      throw new Error(
+        'Failed to remove orchestra from teacher. Please try again later.'
+      );
+    }
   },
 };
