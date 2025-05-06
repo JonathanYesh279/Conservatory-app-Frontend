@@ -4,7 +4,6 @@ import {
   StudentFormData,
   VALID_CLASSES,
   VALID_STAGES,
-  VALID_INSTRUMENTS,
   TEST_STATUSES,
   EXTENDED_TEST_STATUSES,
 } from './useStudentForm.tsx';
@@ -57,7 +56,6 @@ export function useAcademicInfoSection({
     errors,
     validClasses: VALID_CLASSES,
     validStages: VALID_STAGES,
-    validInstruments: VALID_INSTRUMENTS,
     testStatuses: TEST_STATUSES,
     extendedTestStatuses: EXTENDED_TEST_STATUSES,
     handleAcademicInfoChange,

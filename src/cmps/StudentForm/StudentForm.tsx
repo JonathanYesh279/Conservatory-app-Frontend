@@ -3,6 +3,7 @@ import { Student } from '../../services/studentService';
 import { useStudentForm } from '../../hooks/useStudentForm';
 import { PersonalInfoSection } from './PersonalInfoSection';
 import { AcademicInfoSection } from './AcademicInfoSection';
+import { InstrumentSelectionSection } from './InstrumentSelectionSection';
 import { TeacherAssignmentSection } from './TeacherAssignmentSection';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
 
@@ -38,6 +39,10 @@ export function StudentForm({
     removeTeacherAssignment,
     addOrchestraAssignment,
     removeOrchestraAssignment,
+    addInstrument,
+    removeInstrument,
+    setPrimaryInstrument,
+    isPrimaryInstrument,
     handleSubmit,
   } = useStudentForm({
     student,
@@ -71,6 +76,16 @@ export function StudentForm({
             formData={formData}
             updatePersonalInfo={updatePersonalInfo}
             updateAcademicInfo={updateAcademicInfo}
+            errors={errors}
+          />
+
+          {/* Instrument Selection Section - New section */}
+          <InstrumentSelectionSection
+            instruments={formData.academicInfo.instruments}
+            addInstrument={addInstrument}
+            removeInstrument={removeInstrument}
+            isPrimaryInstrument={isPrimaryInstrument}
+            setPrimaryInstrument={setPrimaryInstrument}
             errors={errors}
           />
 

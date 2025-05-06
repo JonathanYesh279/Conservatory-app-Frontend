@@ -30,12 +30,18 @@ export interface Student {
     studentEmail?: string;
   };
   academicInfo: {
-    instrument: string;
+    instrument: string; // Maintain for backward compatibility
+    instruments?: string[]; // New field for multiple instruments
     currentStage: number;
     class: string;
     tests?: {
       stageTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה' | 'עבר/ה בהצלחה' | 'עבר/ה בהצטיינות';
+        status:
+          | 'לא נבחן'
+          | 'עבר/ה'
+          | 'לא עבר/ה'
+          | 'עבר/ה בהצלחה'
+          | 'עבר/ה בהצטיינות';
         lastTestDate?: string;
         nextTestDate?: string;
         notes?: string;
@@ -48,7 +54,6 @@ export interface Student {
       };
     };
   };
-  // Rest of the interface remains the same
   enrollments: {
     orchestraIds: string[];
     ensembleIds: string[];

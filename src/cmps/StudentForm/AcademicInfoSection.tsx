@@ -22,7 +22,6 @@ export function AcademicInfoSection({
   const {
     academicInfo,
     validStages,
-    validInstruments,
     testStatuses,
     handleAcademicInfoChange,
     handleTestChange,
@@ -73,31 +72,8 @@ export function AcademicInfoSection({
     <div className='form-section'>
       <h3>מידע אקדמי</h3>
 
-      {/* Instrument and Stage in one row */}
-      <div className='form-row two-columns'>
-        <div className='form-group'>
-          <label htmlFor='instrument'>כלי נגינה *</label>
-          <select
-            id='instrument'
-            name='instrument'
-            value={academicInfo?.instrument || ''}
-            onChange={handleAcademicInfoChange}
-            className={errors['academicInfo.instrument'] ? 'is-invalid' : ''}
-            required
-          >
-            {validInstruments.map((instrument) => (
-              <option key={instrument} value={instrument}>
-                {instrument}
-              </option>
-            ))}
-          </select>
-          {errors['academicInfo.instrument'] && (
-            <div className='form-error'>
-              {errors['academicInfo.instrument']}
-            </div>
-          )}
-        </div>
-
+      {/* Only Stage */}
+      <div className='form-row'>
         <div className='form-group'>
           <label htmlFor='currentStage'>שלב נוכחי *</label>
           <select

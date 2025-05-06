@@ -1,9 +1,12 @@
 // src/hooks/useStudentForm.ts
 import { useState, useEffect, useCallback } from 'react'
-import { useStudentStore } from '../store/studentStore'
 import { useSchoolYearStore } from '../store/schoolYearStore'
-import { Student, studentService } from '../services/studentService'
-import { teacherService } from '../services/teacherService'
+import { Student } from '../services/studentService'
+import { useFormValidation } from './useFormValidation'
+import { useInstrumentSection } from './useInstrumentSection'
+import { useTeacherSection } from './useTeacherSection'
+import { useOrchestraSection } from './useOrchestraSection'
+import { useStudentApiService } from './useStudentApiService'
 
 // Export constants for use in other components
 export const VALID_CLASSES = [
@@ -50,6 +53,13 @@ export interface OrchestraAssignment {
   orchestraId: string
 }
 
+// Instrument assignment interface
+export interface InstrumentAssignment {
+  id: string
+  name: string
+  isPrimary: boolean
+}
+
 // Define comprehensive type for student form data
 export interface StudentFormData {
   _id?: string
@@ -64,7 +74,7 @@ export interface StudentFormData {
     studentEmail?: string
   }
   academicInfo: {
-    instrument: string
+    instruments: InstrumentAssignment[]
     currentStage: number
     class: string
     tests?: {
@@ -108,27 +118,79 @@ interface UseStudentFormProps {
   } | null
 }
 
-// The main hook
+// Generate unique ID helper
+function generateId(): string {
+  return Math.random().toString(36).substring(2, 9)
+}
+
+// The main hook - now much smaller with logic delegated to specialized hooks
 export function useStudentForm({
   student,
   onClose,
   onStudentCreated,
   newTeacherInfo,
 }: UseStudentFormProps) {
-  const { saveStudent, isLoading, error, clearError, loadStudents } =
-    useStudentStore()
-  const { currentSchoolYear } = useSchoolYearStore()
+  const { currentSchoolYear } = useSchoolYearStore();
 
   // Form data state
   const [formData, setFormData] = useState<StudentFormData>(
     createInitialFormData()
-  )
+  );
 
   // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Submission state
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  // Get validation hook
+  const { validateStudentForm } = useFormValidation();
+
+  // API service
+  const { saveStudentData, isSubmitting, error } = useStudentApiService({
+    onClose,
+    onStudentCreated,
+    newTeacherInfo,
+  });
+
+  // Create a generic update function for nested field updates
+  const updateFormData = useCallback((setter: (prev: any) => any) => {
+    setFormData(setter);
+  }, []);
+
+  // Helper to clear error fields
+  const clearError = useCallback(
+    (field: string) => {
+      if (errors[field]) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
+      }
+    },
+    [errors]
+  );
+
+  // Get instrument section functions
+  const {
+    addInstrument,
+    removeInstrument,
+    setPrimaryInstrument,
+    isPrimaryInstrument,
+  } = useInstrumentSection({
+    instruments: formData.academicInfo.instruments,
+    updateFormData,
+    clearError,
+  });
+
+  // Get teacher section functions
+  const { addTeacherAssignment, removeTeacherAssignment } = useTeacherSection({
+    updateFormData,
+  });
+
+  // Get orchestra section functions
+  const { addOrchestraAssignment, removeOrchestraAssignment } =
+    useOrchestraSection({
+      updateFormData,
+    });
 
   // Create initial form data
   function createInitialFormData(): StudentFormData {
@@ -144,7 +206,7 @@ export function useStudentForm({
         studentEmail: '',
       },
       academicInfo: {
-        instrument: VALID_INSTRUMENTS[0],
+        instruments: [], // Initialize as empty array - no default instrument
         currentStage: 1,
         class: VALID_CLASSES[0],
         tests: {
@@ -171,13 +233,29 @@ export function useStudentForm({
       teacherAssignments: [],
       orchestraAssignments: [],
       isActive: true,
-    }
+    };
   }
 
   // Initialize form data when component mounts or when student prop changes
   useEffect(() => {
     if (student?._id) {
       // Populate form for existing student
+      const instruments = student.academicInfo?.instruments
+        ? student.academicInfo.instruments.map((name, idx) => ({
+            id: generateId(),
+            name,
+            isPrimary: name === student.academicInfo?.instrument || idx === 0,
+          }))
+        : student.academicInfo?.instrument
+        ? [
+            {
+              id: generateId(),
+              name: student.academicInfo.instrument,
+              isPrimary: true,
+            },
+          ]
+        : [];
+
       setFormData({
         _id: student._id,
         personalInfo: {
@@ -191,7 +269,15 @@ export function useStudentForm({
           studentEmail: student.personalInfo?.studentEmail,
         },
         academicInfo: {
-          instrument: student.academicInfo?.instrument || VALID_INSTRUMENTS[0],
+          instruments: instruments.length
+            ? instruments
+            : [
+                {
+                  id: generateId(),
+                  name: VALID_INSTRUMENTS[0],
+                  isPrimary: true,
+                },
+              ],
           currentStage: student.academicInfo?.currentStage || 1,
           class: student.academicInfo?.class || VALID_CLASSES[0],
           tests: {
@@ -227,16 +313,16 @@ export function useStudentForm({
             orchestraId: id,
           })) || [],
         isActive: student.isActive !== false,
-      })
+      });
     } else {
       // Reset form for new student with proper defaults
-      const initialData = createInitialFormData()
+      const initialData = createInitialFormData();
 
       // Add current school year
       if (currentSchoolYear) {
         initialData.enrollments.schoolYears = [
           { schoolYearId: currentSchoolYear._id, isActive: true },
-        ]
+        ];
       }
 
       // Handle new teacher case
@@ -248,15 +334,14 @@ export function useStudentForm({
             time: '08:00',
             duration: 45,
           },
-        ]
+        ];
       }
 
-      setFormData(initialData)
+      setFormData(initialData);
     }
 
-    setErrors({})
-    clearError?.()
-  }, [student, clearError, currentSchoolYear, newTeacherInfo])
+    setErrors({});
+  }, [student, currentSchoolYear, newTeacherInfo]);
 
   // Update personal info
   const updatePersonalInfo = useCallback(
@@ -267,19 +352,13 @@ export function useStudentForm({
           ...prev.personalInfo,
           [field]: value,
         },
-      }))
+      }));
 
       // Clear error if exists
-      if (errors[`personalInfo.${field}`]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev }
-          delete newErrors[`personalInfo.${field}`]
-          return newErrors
-        })
-      }
+      clearError(`personalInfo.${field}`);
     },
-    [errors]
-  )
+    [clearError]
+  );
 
   // Update academic info
   const updateAcademicInfo = useCallback(
@@ -290,19 +369,13 @@ export function useStudentForm({
           ...prev.academicInfo,
           [field]: value,
         },
-      }))
+      }));
 
       // Clear error if exists
-      if (errors[`academicInfo.${field}`]) {
-        setErrors((prev) => {
-          const newErrors = { ...prev }
-          delete newErrors[`academicInfo.${field}`]
-          return newErrors
-        })
-      }
+      clearError(`academicInfo.${field}`);
     },
-    [errors]
-  )
+    [clearError]
+  );
 
   // Update test info with auto-increment logic
   const updateTestInfo = useCallback(
@@ -321,208 +394,44 @@ export function useStudentForm({
               },
             },
           },
-        }
-        
+        };
+
         // Check if we need to auto-increment the stage
         if (
-          testType === 'stageTest' && 
-          field === 'status' && 
-          (value === 'עבר/ה' || value === 'עבר/ה בהצלחה' || value === 'עבר/ה בהצטיינות') &&
+          testType === 'stageTest' &&
+          field === 'status' &&
+          (value === 'עבר/ה' ||
+            value === 'עבר/ה בהצלחה' ||
+            value === 'עבר/ה בהצטיינות') &&
           prev.academicInfo.tests?.stageTest?.status === 'לא נבחן' &&
           prev.academicInfo.currentStage < 8 // Don't increment beyond max
         ) {
           // Auto-increment the stage
-          updatedFormData.academicInfo.currentStage = prev.academicInfo.currentStage + 1
+          updatedFormData.academicInfo.currentStage =
+            prev.academicInfo.currentStage + 1;
         }
-        
-        return updatedFormData
-      })
+
+        return updatedFormData;
+      });
     },
     []
-  )
+  );
 
-  // Add teacher assignment - using correct field names
-  const addTeacherAssignment = useCallback((assignment: TeacherAssignment) => {
-    // Validate that all required fields are present
-    if (
-      !assignment.teacherId ||
-      !assignment.day ||
-      !assignment.time ||
-      assignment.duration === undefined ||
-      assignment.duration === null
-    ) {
-      console.error('Invalid teacher assignment data:', assignment)
-      return // Don't add invalid assignments
-    }
-
-    setFormData((prev) => {
-      // Add new assignment
-      const updatedAssignments = [...prev.teacherAssignments, assignment]
-
-      // Make sure teacherIds contains unique teacher IDs from all assignments
-      const uniqueTeacherIds = Array.from(
-        new Set(updatedAssignments.map((a) => a.teacherId))
-      )
-
-      return {
-        ...prev,
-        teacherAssignments: updatedAssignments,
-        teacherIds: uniqueTeacherIds,
-      }
-    })
-  }, [])
-
-  // Remove teacher assignment - using correct field names
-  const removeTeacherAssignment = useCallback(
-    (teacherId: string, day: string, time: string) => {
-      setFormData((prev) => {
-        // Remove the specific assignment with matching teacherId, day and time
-        const updatedAssignments = prev.teacherAssignments.filter(
-          (a) =>
-            !(a.teacherId === teacherId && a.day === day && a.time === time)
-        )
-
-        // Get unique teacher IDs from remaining assignments
-        const remainingTeacherIds = Array.from(
-          new Set(updatedAssignments.map((a) => a.teacherId))
-        )
-
-        return {
-          ...prev,
-          teacherAssignments: updatedAssignments,
-          teacherIds: remainingTeacherIds,
-        }
-      })
-    },
-    []
-  )
-
-  // Add orchestra assignment
-  const addOrchestraAssignment = useCallback((orchestraId: string) => {
-    setFormData((prev) => {
-      // Check if orchestra already exists
-      const exists = prev.orchestraAssignments.some(
-        (a) => a.orchestraId === orchestraId
-      )
-
-      if (exists) return prev // Already assigned
-
-      return {
-        ...prev,
-        orchestraAssignments: [...prev.orchestraAssignments, { orchestraId }],
-        enrollments: {
-          ...prev.enrollments,
-          orchestraIds: Array.from(
-            new Set([...prev.enrollments.orchestraIds, orchestraId])
-          ),
-        },
-      }
-    })
-  }, [])
-
-  // Remove orchestra assignment
-  const removeOrchestraAssignment = useCallback((orchestraId: string) => {
-    setFormData((prev) => {
-      const updatedAssignments = prev.orchestraAssignments.filter(
-        (a) => a.orchestraId !== orchestraId
-      )
-
-      // Also remove from orchestraIds in enrollments
-      const updatedOrchestraIds = prev.enrollments.orchestraIds.filter(
-        (id) => id !== orchestraId
-      )
-
-      return {
-        ...prev,
-        orchestraAssignments: updatedAssignments,
-        enrollments: {
-          ...prev.enrollments,
-          orchestraIds: updatedOrchestraIds,
-        },
-      }
-    })
-  }, [])
-
-  // Validate form
+  // Validate form and handle submission
   const validateForm = useCallback((): boolean => {
-    const newErrors: Record<string, string> = {}
-
-    // Required fields validation
-    if (!formData.personalInfo?.fullName) {
-      newErrors['personalInfo.fullName'] = 'שם מלא הוא שדה חובה'
-    }
-
-    if (
-      formData.personalInfo?.phone &&
-      !/^05\d{8}$/.test(formData.personalInfo.phone)
-    ) {
-      newErrors['personalInfo.phone'] =
-        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
-    }
-
-    if (
-      formData.personalInfo?.parentPhone &&
-      !/^05\d{8}$/.test(formData.personalInfo.parentPhone)
-    ) {
-      newErrors['personalInfo.parentPhone'] =
-        'מספר טלפון הורה לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
-    }
-
-    if (
-      formData.personalInfo?.parentEmail &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalInfo.parentEmail)
-    ) {
-      newErrors['personalInfo.parentEmail'] = 'כתובת אימייל הורה לא תקינה'
-    }
-
-    if (
-      formData.personalInfo?.studentEmail &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.personalInfo.studentEmail)
-    ) {
-      newErrors['personalInfo.studentEmail'] = 'כתובת אימייל תלמיד לא תקינה'
-    }
-
-    if (!formData.academicInfo?.instrument) {
-      newErrors['academicInfo.instrument'] = 'כלי נגינה הוא שדה חובה'
-    }
-
-    if (!formData.academicInfo?.currentStage) {
-      newErrors['academicInfo.currentStage'] = 'שלב נוכחי הוא שדה חובה'
-    }
-
-    if (!formData.academicInfo?.class) {
-      newErrors['academicInfo.class'] = 'כיתה היא שדה חובה'
-    }
-
-    // Validate teacher assignments if any - using correct field names
-    formData.teacherAssignments.forEach((assignment, index) => {
-      if (!assignment.day) {
-        newErrors[`teacherAssignment.${index}.day`] = 'יש לבחור יום לשיעור'
-      }
-
-      if (!assignment.time) {
-        newErrors[`teacherAssignment.${index}.time`] = 'יש לבחור שעה לשיעור'
-      }
-
-      if (!assignment.duration) {
-        newErrors[`teacherAssignment.${index}.duration`] = 'יש לבחור משך שיעור'
-      }
-    })
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }, [formData])
+    const newErrors = validateStudentForm(formData);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData, validateStudentForm]);
 
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault()
+      e.preventDefault();
 
       if (!validateForm()) {
-        return
+        return;
       }
-
-      setIsSubmitting(true)
 
       try {
         // Prepare student data for submission
@@ -536,193 +445,44 @@ export function useStudentForm({
             studentEmail:
               formData.personalInfo.studentEmail || 'student@example.com',
           },
-          academicInfo: formData.academicInfo,
+          academicInfo: {
+            // Extract primary instrument for backward compatibility
+            instrument:
+              formData.academicInfo.instruments.find((i) => i.isPrimary)
+                ?.name ||
+              formData.academicInfo.instruments[0]?.name ||
+              VALID_INSTRUMENTS[0],
+            instruments: formData.academicInfo.instruments.map((i) => i.name), // Save all instruments as an array
+            currentStage: formData.academicInfo.currentStage,
+            class: formData.academicInfo.class,
+            tests: formData.academicInfo.tests,
+          },
           enrollments: {
-            ...formData.enrollments, // Make sure orchestraIds is correctly populated from assignments
+            ...formData.enrollments,
             orchestraIds: formData.orchestraAssignments.map(
               (a) => a.orchestraId
             ),
           },
           teacherIds: formData.teacherIds.filter((id) => id !== 'new-teacher'),
           isActive: formData.isActive,
-        }
+        };
 
-        // Handle new or existing student
-        let savedStudent: Student
-
-        if (formData._id) {
-          // Update existing student
-          savedStudent = await studentService.updateStudent(
-            formData._id,
-            studentData
-          )
-        } else {
-          // Create new student
-          savedStudent = await saveStudent(studentData)
-        }
-
-        console.log('Student saved successfully:', savedStudent)
-
-        // Process teacher assignments after student is saved
-        const teacherPromises = formData.teacherAssignments
-          .filter((a) => a.teacherId !== 'new-teacher') // Filter out new teacher for now
-          .map(async (assignment) => {
-            try {
-              const { teacherId, day, time, duration } = assignment
-
-              // Ensure all required fields have valid values
-              if (!teacherId || !day || !time || !duration) {
-                console.warn(
-                  `Skipping invalid schedule for teacher ${teacherId} and student ${savedStudent._id}: Missing required fields`
-                )
-                return
-              }
-
-              console.log(
-                `Updating teacher ${teacherId} schedule with student ${savedStudent._id}`
-              )
-
-              // Update teacher schedule with student assignment
-              // Using the correct field names that match the backend
-              await studentService.updateTeacherSchedule(teacherId, {
-                studentId: savedStudent._id,
-                day,
-                time,
-                duration,
-              })
-
-              // Also update the teacher's studentIds array to include this student
-              try {
-                const teacher = await teacherService.getTeacherById(teacherId)
-
-                // Only add if not already in the array
-                if (!teacher.teaching?.studentIds?.includes(savedStudent._id)) {
-                  // Add student to teacher's studentIds
-                  const updatedTeacher = await teacherService.updateTeacher(
-                    teacherId,
-                    {
-                      teaching: {
-                        studentIds: [
-                          ...(teacher.teaching?.studentIds || []),
-                          savedStudent._id,
-                        ],
-                        schedule: teacher.teaching?.schedule || [],
-                      },
-                    }
-                  )
-
-                  console.log(
-                    'Updated teacher with student reference:',
-                    updatedTeacher
-                  )
-                }
-              } catch (err) {
-                console.error('Failed to update teacher studentIds:', err)
-              }
-            } catch (err) {
-              console.error('Failed to update teacher schedule:', err)
-            }
-          })
-
-        // Wait for all teacher assignments to complete
-        await Promise.all(teacherPromises)
-
-        // Refresh student list
-        await loadStudents()
-
-        // Special handling for new teacher case
-        if (
-          newTeacherInfo?._id &&
-          formData.teacherAssignments.some(
-            (a) =>
-              a.teacherId === 'new-teacher' ||
-              a.teacherId === newTeacherInfo._id
-          )
-        ) {
-          // Get the new teacher assignment
-          const newTeacherAssignment = formData.teacherAssignments.find(
-            (a) =>
-              a.teacherId === 'new-teacher' ||
-              a.teacherId === newTeacherInfo._id
-          )
-
-          if (newTeacherAssignment) {
-            try {
-              // Update the schedule for the new teacher
-              await studentService.updateTeacherSchedule(newTeacherInfo._id, {
-                studentId: savedStudent._id,
-                day: newTeacherAssignment.day,
-                time: newTeacherAssignment.time,
-                duration: newTeacherAssignment.duration,
-              })
-
-              // Update the teacher's studentIds array
-              const teacher = await teacherService.getTeacherById(
-                newTeacherInfo._id
-              )
-              await teacherService.updateTeacher(newTeacherInfo._id, {
-                teaching: {
-                  studentIds: [
-                    ...(teacher.teaching?.studentIds || []),
-                    savedStudent._id,
-                  ],
-                  schedule: teacher.teaching?.schedule || [],
-                },
-              })
-
-              console.log('Updated new teacher with student reference')
-            } catch (err) {
-              console.error('Failed to update new teacher with student:', err)
-            }
-          }
-
-          // Prepare student with additional data for teacher creation
-          const studentWithTeacherData = {
-            ...savedStudent,
-            _newTeacherAssociation: true,
-            _lessonDetails: newTeacherAssignment
-              ? {
-                  lessonDay: newTeacherAssignment.day,
-                  lessonTime: newTeacherAssignment.time,
-                  lessonDuration: newTeacherAssignment.duration,
-                }
-              : undefined,
-          }
-
-          // Call the callback with enhanced student data
-          if (onStudentCreated) {
-            onStudentCreated(studentWithTeacherData)
-            return
-          }
-        }
-
-        // Close form on successful save
-        onClose()
+        // Use API service to save student data
+        await saveStudentData(studentData, formData);
       } catch (err) {
-        console.error('Error saving student:', err)
+        console.error('Error during form submission:', err);
         setErrors((prev) => ({
           ...prev,
           form: err instanceof Error ? err.message : 'שגיאה בשמירת תלמיד',
-        }))
-      } finally {
-        setIsSubmitting(false)
+        }));
       }
     },
-    [
-      formData,
-      validateForm,
-      saveStudent,
-      loadStudents,
-      onStudentCreated,
-      onClose,
-      newTeacherInfo,
-    ]
-  )
+    [formData, validateForm, saveStudentData]
+  );
 
   return {
     formData,
     errors,
-    isLoading,
     isSubmitting,
     error,
 
@@ -734,10 +494,14 @@ export function useStudentForm({
     removeTeacherAssignment,
     addOrchestraAssignment,
     removeOrchestraAssignment,
+    addInstrument,
+    removeInstrument,
+    setPrimaryInstrument,
+    isPrimaryInstrument,
     setFormData,
 
     // Form submission
     validateForm,
     handleSubmit,
-  }
+  };
 }

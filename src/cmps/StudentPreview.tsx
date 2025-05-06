@@ -1,13 +1,6 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import {
-  Edit,
-  Trash2,
-  Music,
-  Calendar,
-  Award,
-  Eye,
-} from 'lucide-react';
+import { Edit, Trash2, Music, Calendar, Award, Eye } from 'lucide-react';
 
 interface StudentPreviewProps {
   student: Student;
@@ -41,6 +34,8 @@ export function StudentPreview({
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'עבר/ה':
+      case 'עבר/ה בהצלחה':
+      case 'עבר/ה בהצטיינות':
         return 'var(--success)';
       case 'לא עבר/ה':
         return 'var(--danger)';
@@ -64,6 +59,25 @@ export function StudentPreview({
     if (count === 0) return 'ללא תזמורת';
     if (count === 1) return 'תזמורת אחת';
     return `${count} תזמורות`;
+  };
+
+  // Get formatted instruments text
+  const getInstrumentsText = (): string => {
+    // Handle case where we have the new instruments array
+    if (
+      student.academicInfo.instruments &&
+      student.academicInfo.instruments.length > 0
+    ) {
+      if (student.academicInfo.instruments.length === 1) {
+        return student.academicInfo.instruments[0];
+      }
+
+      // Format multiple instruments nicely
+      return student.academicInfo.instruments.join(', ');
+    }
+
+    // Fallback to the single instrument field for backward compatibility
+    return student.academicInfo.instrument;
   };
 
   const hasOrchestras =
@@ -91,7 +105,9 @@ export function StudentPreview({
             <div
               className='avatar'
               style={{
-                backgroundColor: getStageColor(student.academicInfo.currentStage),
+                backgroundColor: getStageColor(
+                  student.academicInfo.currentStage
+                ),
               }}
             >
               {getInitials(student.personalInfo.fullName)}
@@ -102,7 +118,7 @@ export function StudentPreview({
             <h3 className='student-name'>{student.personalInfo.fullName}</h3>
             <div className='student-subject'>
               <Music size={14} />
-              <span>{student.academicInfo.instrument}</span>
+              <span>{getInstrumentsText()}</span>
             </div>
           </div>
         </div>
