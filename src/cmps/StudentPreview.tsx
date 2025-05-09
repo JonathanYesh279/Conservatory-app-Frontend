@@ -1,6 +1,8 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
 import { Edit, Trash2, Music, Calendar, Award, Eye } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { orchestraService } from '../services/orchestraService';
 
 interface StudentPreviewProps {
   student: Student;
@@ -15,6 +17,35 @@ export function StudentPreview({
   onEdit,
   onRemove,
 }: StudentPreviewProps) {
+  // State to store orchestra names after fetching them
+  const [orchestraNames, setOrchestraNames] = useState<string[]>([]);
+
+  // Fetch orchestra names when component mounts
+  useEffect(() => {
+    const fetchOrchestraNames = async () => {
+      if (
+        student.enrollments?.orchestraIds &&
+        student.enrollments.orchestraIds.length > 0
+      ) {
+        try {
+          // Fetch orchestras by their IDs
+          const orchestras = await orchestraService.getOrchestrasByIds(
+            student.enrollments.orchestraIds
+          );
+
+          // Extract names
+          const names = orchestras.map((orchestra) => orchestra.name);
+          setOrchestraNames(names);
+        } catch (error) {
+          console.error('Error fetching orchestra data:', error);
+          setOrchestraNames([]);
+        }
+      }
+    };
+
+    fetchOrchestraNames();
+  }, [student.enrollments?.orchestraIds]);
+
   // Get stage color based on stage number
   const getStageColor = (stage: number): string => {
     const colors = [
@@ -54,92 +85,109 @@ export function StudentPreview({
       .substring(0, 2);
   };
 
-  // Format orchestra count
-  const getOrchestraText = (count: number): string => {
-    if (count === 0) return 'ללא תזמורת';
-    if (count === 1) return 'תזמורת אחת';
-    return `${count} תזמורות`;
-  };
-
-  // Get formatted instruments text
-  const getInstrumentsText = (): string => {
-    // Handle case where we have the new instruments array
-    if (
-      student.academicInfo.instruments &&
-      student.academicInfo.instruments.length > 0
-    ) {
-      if (student.academicInfo.instruments.length === 1) {
-        return student.academicInfo.instruments[0];
-      }
-
-      // Format multiple instruments nicely
-      return student.academicInfo.instruments.join(', ');
+  // Get formatted orchestras text
+  const getOrchestrasDisplay = (): string => {
+    if (orchestraNames.length === 0) {
+      return 'ללא תזמורת';
     }
 
-    // Fallback to the single instrument field for backward compatibility
-    return student.academicInfo.instrument;
+    // Get orchestra names and join with "||" separator
+    return orchestraNames.join(' || ');
   };
 
-  const hasOrchestras =
-    student.enrollments?.orchestraIds &&
-    student.enrollments.orchestraIds.length > 0;
-  const orchestraCount = hasOrchestras
-    ? student.enrollments.orchestraIds.length
-    : 0;
+  // Get formatted instruments text for display in header
+  const getInstrumentsDisplay = (): string => {
+    if (
+      !student.academicInfo.instrumentProgress ||
+      student.academicInfo.instrumentProgress.length === 0
+    ) {
+      return 'ללא כלי נגינה';
+    }
 
-  // Get test status text and color
+    // Get top two instruments to display
+    const instrumentsToShow = student.academicInfo.instrumentProgress.slice(
+      0,
+      2
+    );
+
+    // Format first two instruments with dash separator
+    return instrumentsToShow.map((i) => i.instrumentName).join(' - ');
+  };
+
+  // Get primary instrument
+  const getPrimaryInstrument = () => {
+    return (
+      student.academicInfo.instrumentProgress?.find((i) => i.isPrimary) ||
+      (student.academicInfo.instrumentProgress?.length > 0
+        ? student.academicInfo.instrumentProgress[0]
+        : null)
+    );
+  };
+
+  const primaryInstrument = getPrimaryInstrument();
+  const currentStage = primaryInstrument?.currentStage || 1;
+
+  // Get test status text and color for primary instrument
   const technicalTestStatus =
-    student.academicInfo.tests?.technicalTest?.status || 'לא נבחן';
+    primaryInstrument?.tests?.technicalTest?.status || 'לא נבחן';
   const stageTestStatus =
-    student.academicInfo.tests?.stageTest?.status || 'לא נבחן';
+    primaryInstrument?.tests?.stageTest?.status || 'לא נבחן';
 
   return (
-    <div
-      className='student-preview'
-      onClick={() => onView(student._id)}
-      style={{ cursor: 'pointer' }}
-    >
+    <div className='student-preview' onClick={() => onView(student._id)}>
       <div className='preview-header'>
-        <div className='header-right-container'>
-          <div className='avatar-section'>
+        {/* Main header row with badges left, student info right */}
+        <div className='header-row'>
+
+                    {/* Right side - avatar and student info */}
+          <div className='student-details'>
+            <div className='avatar-section'>
+              <div
+                className='avatar'
+                style={{
+                  backgroundColor: getStageColor(currentStage),
+                }}
+              >
+                {getInitials(student.personalInfo.fullName)}
+              </div>
+            </div>
+
+            <div className='student-info'>
+              <h3 className='student-name'>{student.personalInfo.fullName}</h3>
+              <div className='student-subject'>
+                <span>{getInstrumentsDisplay()}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Left side - badges */}
+          <div className='badges-container'>
+            {/* Instrument stage badges first */}
+            {student.academicInfo.instrumentProgress &&
+              student.academicInfo.instrumentProgress.length > 0 && (
+                <div className='instrument-badges'>
+                  {student.academicInfo.instrumentProgress.map((instrument) => (
+                    <div
+                      key={instrument.instrumentName}
+                      className='instrument-stage-badge'
+                      style={{
+                        backgroundColor: getStageColor(instrument.currentStage),
+                      }}
+                    >
+                      {instrument.instrumentName}: שלב {instrument.currentStage}
+                    </div>
+                  ))}
+                </div>
+              )}
+            {/* Class badge */}
             <div
-              className='avatar'
+              className='grade-badge'
               style={{
-                backgroundColor: getStageColor(
-                  student.academicInfo.currentStage
-                ),
+                backgroundColor: '#348b49',
               }}
             >
-              {getInitials(student.personalInfo.fullName)}
+              <span>כיתה {student.academicInfo.class}</span>
             </div>
-          </div>
-
-          <div className='student-info'>
-            <h3 className='student-name'>{student.personalInfo.fullName}</h3>
-            <div className='student-subject'>
-              <Music size={14} />
-              <span>{getInstrumentsText()}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className='badges-container'>
-          <div
-            className='stage-badge'
-            style={{
-              backgroundColor: getStageColor(student.academicInfo.currentStage),
-            }}
-          >
-            <span>שלב {student.academicInfo.currentStage}</span>
-          </div>
-
-          <div
-            className='grade-badge'
-            style={{
-              backgroundColor: '#348b49',
-            }}
-          >
-            <span>כיתה {student.academicInfo.class}</span>
           </div>
         </div>
       </div>
@@ -148,31 +196,33 @@ export function StudentPreview({
         <div className='info-row'>
           <div className='info-item'>
             <Award size={16} />
-            <span>{getOrchestraText(orchestraCount)}</span>
+            <span>{getOrchestrasDisplay()}</span>
           </div>
         </div>
 
-        <div className='tests-section'>
-          <div className='test-item'>
-            <div className='test-label'>מבחן טכני:</div>
-            <div
-              className='test-status'
-              style={{ color: getStatusColor(technicalTestStatus) }}
-            >
-              {technicalTestStatus}
+        {primaryInstrument && (
+          <div className='tests-section'>
+            <div className='test-item'>
+              <div className='test-label'>מבחן טכני:</div>
+              <div
+                className='test-status'
+                style={{ color: getStatusColor(technicalTestStatus) }}
+              >
+                {technicalTestStatus}
+              </div>
             </div>
-          </div>
 
-          <div className='test-item'>
-            <div className='test-label'>מבחן שלב:</div>
-            <div
-              className='test-status'
-              style={{ color: getStatusColor(stageTestStatus) }}
-            >
-              {stageTestStatus}
+            <div className='test-item'>
+              <div className='test-label'>מבחן שלב:</div>
+              <div
+                className='test-status'
+                style={{ color: getStatusColor(stageTestStatus) }}
+              >
+                {stageTestStatus}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className='preview-footer'>

@@ -1,9 +1,9 @@
+// src/cmps/StudentForm/StudentForm.tsx
 import { X } from 'lucide-react';
 import { Student } from '../../services/studentService';
 import { useStudentForm } from '../../hooks/useStudentForm';
 import { PersonalInfoSection } from './PersonalInfoSection';
-import { AcademicInfoSection } from './AcademicInfoSection';
-import { InstrumentSelectionSection } from './InstrumentSelectionSection';
+import { InstrumentSection } from './InstrumentSection';
 import { TeacherAssignmentSection } from './TeacherAssignmentSection';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
 
@@ -29,12 +29,10 @@ export function StudentForm({
   const {
     formData,
     errors,
-    isLoading,
     isSubmitting,
     error,
     updatePersonalInfo,
     updateAcademicInfo,
-    updateTestInfo,
     addTeacherAssignment,
     removeTeacherAssignment,
     addOrchestraAssignment,
@@ -42,24 +40,28 @@ export function StudentForm({
     addInstrument,
     removeInstrument,
     setPrimaryInstrument,
-    isPrimaryInstrument,
+    updateInstrumentProgress,
+    updateInstrumentTest,
     handleSubmit,
+    handleCancel, // Use the new cancel handler
+    resetForm,
   } = useStudentForm({
     student,
     onClose,
     onStudentCreated,
     newTeacherInfo,
+    isOpen, // Pass the isOpen prop to track form state
   });
 
   if (!isOpen) return null;
 
   return (
     <div className='student-form'>
-      <div className='overlay' onClick={onClose}></div>
+      <div className='overlay' onClick={handleCancel}></div>
       <div className='form-modal'>
         <button
           className='btn-icon close-btn'
-          onClick={onClose}
+          onClick={handleCancel}
           aria-label='סגור'
         >
           <X size={20} />
@@ -79,22 +81,17 @@ export function StudentForm({
             errors={errors}
           />
 
-          {/* Instrument Selection Section - New section */}
-          <InstrumentSelectionSection
-            instruments={formData.academicInfo.instruments}
+          {/* Instrument Section */}
+          <InstrumentSection
+            instruments={formData.academicInfo.instrumentProgress}
             addInstrument={addInstrument}
             removeInstrument={removeInstrument}
-            isPrimaryInstrument={isPrimaryInstrument}
             setPrimaryInstrument={setPrimaryInstrument}
+            updateInstrumentProgress={updateInstrumentProgress}
+            updateInstrumentTest={updateInstrumentTest}
             errors={errors}
-          />
-
-          {/* Academic Information Section */}
-          <AcademicInfoSection
-            formData={formData}
-            updateAcademicInfo={updateAcademicInfo}
-            updateTestInfo={updateTestInfo}
-            errors={errors}
+            isFormOpen={isOpen}
+            isSubmitting={isSubmitting}
           />
 
           {/* Teacher Assignment Section */}
@@ -119,12 +116,16 @@ export function StudentForm({
             <button
               type='submit'
               className='btn primary'
-              disabled={isLoading || isSubmitting}
+              disabled={isSubmitting}
             >
               {isSubmitting ? 'שומר...' : student?._id ? 'עדכון' : 'הוספה'}
             </button>
 
-            <button type='button' className='btn secondary' onClick={onClose}>
+            <button
+              type='button'
+              className='btn secondary'
+              onClick={handleCancel}
+            >
               ביטול
             </button>
           </div>

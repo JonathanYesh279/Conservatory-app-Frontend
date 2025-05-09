@@ -13,6 +13,11 @@ export function ParentInfoSection({
   isOpen,
   onToggle,
 }: ParentInfoSectionProps) {
+  // Safety check: ensure student and personalInfo exist
+  if (!student || !student.personalInfo) {
+    return null;
+  }
+
   // Helper function to check if parent fields have real values
   const hasRealValue = (value: string | undefined) => {
     if (!value) return false;

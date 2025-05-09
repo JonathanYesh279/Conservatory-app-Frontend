@@ -43,16 +43,23 @@ export function useFormValidation() {
         errors['personalInfo.studentEmail'] = 'כתובת אימייל תלמיד לא תקינה';
       }
 
-      // Check instruments
+      // Check instruments - must have at least one
       if (
-        !formData.academicInfo?.instruments ||
-        formData.academicInfo.instruments.length === 0
+        !formData.academicInfo?.instrumentProgress ||
+        formData.academicInfo.instrumentProgress.length === 0
       ) {
-        errors['academicInfo.instruments'] = 'יש לבחור לפחות כלי נגינה אחד';
+        errors['academicInfo.instrumentProgress'] =
+          'יש לבחור לפחות כלי נגינה אחד';
       }
 
-      if (!formData.academicInfo?.currentStage) {
-        errors['academicInfo.currentStage'] = 'שלב נוכחי הוא שדה חובה';
+      // Check for a primary instrument only if there are instruments
+      if (
+        formData.academicInfo?.instrumentProgress &&
+        formData.academicInfo.instrumentProgress.length > 0 &&
+        !formData.academicInfo.instrumentProgress.some((i) => i.isPrimary)
+      ) {
+        errors['academicInfo.instrumentProgress.primary'] =
+          'יש לבחור כלי נגינה ראשי';
       }
 
       if (!formData.academicInfo?.class) {

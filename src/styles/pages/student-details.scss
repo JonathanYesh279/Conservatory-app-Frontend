@@ -1,4 +1,6 @@
-// Main content
+/* src/assets/styles/studentDetails.css */
+
+/* Student Details Page Layout */
 .student-details-content {
   height: 100%;
   width: 100%;
@@ -7,549 +9,578 @@
   justify-content: center;
   padding: 0;
   overflow: hidden;
+  direction: rtl;
 }
 
-// Page container
 .student-details-page {
   position: relative;
   width: 100%;
   max-width: 700px;
-  height: auto;
-  min-height: calc(100% - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 0 1rem;
-  
-  // Card container
-  .student-card-container {
-    position: relative;
-    width: 100%;
-    height: auto;
-    min-height: 400px;
-    max-height: 75vh;
-    perspective: 1500px;
-    
-    // Card content (both front and back)
-    .card-content {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      min-height: 400px;
-      transform-style: preserve-3d;
-      transition: all 0.5s ease;
-      border-radius: 1rem;
-      box-shadow: var(--shadow-md);
-          
-      // When flipped class is applied
-      &.flipped {
-        .card-front {
-          transform: rotateY(180deg);
-          opacity: 0;
-          pointer-events: none;
-          transition-delay: 0s;
-        }
-        
-        .card-back {
-          transform: rotateY(0deg);
-          opacity: 1;
-          pointer-events: all;
-          transition-delay: 0.15s;
-        }
-      }
-      
-      // Common styles for both sides
-      .card-side {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 1rem;
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        transition: all 0.5s ease;
-        will-change: transform, opacity;
-      }
-      
-      // Front side (Academic Info)
-      .card-front {
-        transform: rotateY(0deg);
-        opacity: 1;
-        z-index: 2;
-        transition-delay: 0.15s;
-      }
-      
-      // Back side (Personal Info)
-      .card-back {
-        transform: rotateY(180deg);
-        opacity: 0;
-        z-index: 1;
-        transition-delay: 0s;
-      }
-    }
-    
-    // Card header (only on personal info card)
-    .card-header {
-      background: linear-gradient(
-        to left,
-        rgba(var(--primary-color-rgb), 0.1),
-        rgba(var(--primary-color-rgb), 0.05)
-      );
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
-      
-      .student-identity {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        
-        .avatar {
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 1.1rem;
-          font-weight: 600;
-          box-shadow: var(--shadow-sm);
-          flex-shrink: 0;
-        }
-        
-        .header-text {
-          .student-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0;
-            color: var(--text-primary);
-          }
-          
-          .instrument {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-            
-            svg {
-              color: var(--primary-color);
-            }
-          }
-        }
-      }
-    }
-    
-    // Scrollable content area
-    .card-scroll-area {
-      flex: 1;
-      padding: 1rem;
-      padding-bottom: 3.5rem; // Space for the button
-      overflow-y: auto;
-      
-      // Section styling
-      .section {
-        margin-bottom: 1.25rem;
-        
-        &:last-child {
-          margin-bottom: 0;
-        }
-        
-        // Collapsible section title with click functionality
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          font-size: 1.4rem;
-          color: var(--text-primary);
-          font-weight: 600;
-          margin-bottom: 0.75rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px dashed var(--border-color);
-          
-          svg {
-            color: var(--primary-color);
-          }
-          
-          // Clickable section title
-          &.clickable {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            margin-bottom: 0.5rem;
-            
-            &:hover {
-              color: var(--primary-color);
-            }
-            
-            // Toggle icon styling
-            .toggle-icon {
-              margin-left: auto;
-              margin-right: 0;
-              color: var(--text-secondary);
-              transition: transform 0.3s ease;
-            }
-          }
-          
-          // Active section styling
-          &.active, .section-active & {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-            
-            .toggle-icon {
-              color: var(--primary-color);
-            }
-          }
-        }
-        
-        // Section content container with animation
-        .section-content {
-          transition: all 0.3s ease;
-          overflow: hidden;
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
-          animation: fadeIn 0.3s ease;
-        }
-      }
-    }
-    
-    // Bottom button for flipping
-    .flip-button {
-      position: absolute;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 100px;
-      font-weight: 500;
-      font-size: 1rem;
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-md);
-      width: calc(100% - 2rem);
-      max-width: 240px;
-      z-index: 5;
-      
-      &:hover {
-        background-color: var(--primary-dark);
-      }
-      
-      &:active {
-        transform: translateX(-50%) translateY(2px);
-      }
-    }
-  }
 }
 
-// Loading section
-.loading-section {
+/* Back Button */
+.sd-back-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
   color: var(--text-secondary);
-  font-size: 0.9rem;
-  padding: 0.5rem 0;
-  
-  .loading-icon {
-    animation: spin 1.5s linear infinite;
-    color: var(--primary-color);
-  }
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
 }
 
-// Information grid layout
-.info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  
-  .info-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-    
-    svg {
-      color: var(--primary-color);
-      margin-top: 0.2rem;
-      flex-shrink: 0;
-    }
-    
-    div {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .info-label {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 0.2rem;
-    }
-    
-    .info-value {
-      color: var(--text-primary);
-      font-weight: 500;
-      font-size: 1rem;
-    }
-  }
+.sd-back-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+  transform: translateX(-3px);
 }
 
-// Tests grid
-.tests-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  
-  .test-card {
-    background-color: var(--bg-tertiary);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    
-    .test-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      
-      h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0;
-      }
-      
-      .test-status {
-        color: var(--text-muted);
-        font-weight: 500;
-        font-size: 0.85rem;
-        
-        &.passed {
-          color: var(--success);
-        }
-        
-        &.failed {
-          color: var(--danger);
-        }
-      }
-    }
-    
-    .test-date {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      
-      svg {
-        color: var(--primary-color);
-      }
-    }
-  }
+/* Card Container */
+.student-card-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-height: 80vh;
+  perspective: 1500px;
 }
 
-// Orchestra grid
-.orchestras-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 1rem;
-  
-  .orchestra-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    background-color: rgba(var(--primary-color-rgb), 0.1);
-    padding: 1.25rem;
-    border-radius: 0.75rem;
-    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
-    color: var(--text-primary);
-    font-weight: 500;
-    font-size: 0.95rem;
-    
-    svg {
-      color: var(--primary-color);
-      font-size: 1.25rem;
-    }
-  }
+/* Card Content (both front and back) */
+.sd-card-content {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: all 0.5s ease;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
 }
 
-// No orchestra warning message
-.no-orchestra-warning {
-  display: inline-block;
-  color: var(--warning);
-  font-size: 0.9rem;
-  background-color: rgba(var(--warning-rgb), 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(var(--warning-rgb), 0.2);
+/* When flipped class is applied */
+.sd-card-content.flipped .sd-card-front {
+  transform: rotateY(180deg);
+  opacity: 0;
+  pointer-events: none;
+  transition-delay: 0s;
 }
 
-// Teacher info styling - NEW
-.teacher-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background-color: rgba(var(--primary-color-rgb), 0.1);
-  border-radius: 0.75rem;
-  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
-  margin-bottom: 1rem;
-  
-  &.clickable {
-    cursor: pointer;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background-color: rgba(var(--primary-color-rgb), 0.15);
-      transform: translateY(-2px);
-    }
-  }
-  
-  svg {
-    color: var(--primary-color);
-  }
+.sd-card-content.flipped .sd-card-back {
+  transform: rotateY(0deg);
+  opacity: 1;
+  pointer-events: all;
+  transition-delay: 0.15s;
 }
 
-.no-teacher-warning {
-  display: inline-block;
-  color: var(--warning);
-  font-size: 0.9rem;
-  background-color: rgba(var(--warning-rgb), 0.1);
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(var(--warning-rgb), 0.2);
-}
-
-// Attendance styling - NEW
-.attendance-container {
+/* Common styles for both sides */
+.sd-card-side {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  overflow: visible;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  transition: all 0.5s ease;
+  will-change: transform, opacity;
 }
 
-.attendance-summary {
+/* Front side (Academic Info) */
+.sd-card-front {
+  transform: rotateY(0deg);
+  opacity: 1;
+  z-index: 2;
+  transition-delay: 0.15s;
+}
+
+/* Back side (Personal Info) */
+.sd-card-back {
+  transform: rotateY(180deg);
+  opacity: 0;
+  z-index: 1;
+  transition-delay: 0s;
+}
+
+/* Card Header */
+.sd-card-header {
+  background: linear-gradient(
+    to left,
+    rgba(var(--primary-color-rgb), 0.1),
+    rgba(var(--primary-color-rgb), 0.05)
+  );
+  padding: 1rem;
   display: flex;
-  gap: 1rem;
-  
-  .attendance-stat {
-    flex: 1;
-    background-color: var(--bg-tertiary);
-    border-radius: 0.75rem;
-    padding: 1rem;
-    border: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    
-    .stat-label {
-      color: var(--text-secondary);
-      font-size: 0.85rem;
-      margin-bottom: 0.5rem;
-    }
-    
-    .attendance-rate,
-    .attendance-count {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: var(--primary-color);
-    }
-  }
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  overflow: visible;
 }
 
-.attendance-history {
+.sd-student-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.sd-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.sd-avatar-clickable {
+  position: relative;
+  overflow: visible;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.sd-avatar-clickable:hover {
+  transform: scale(1.05);
+}
+
+.sd-header-text .sd-student-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.sd-header-text .sd-instrument {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.sd-header-text .sd-instrument svg {
+  color: var(--primary-color);
+}
+
+/* Header Badges */
+.sd-header-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.sd-class-badge {
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  color: white;
+  font-weight: 500;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  background-color: var(--primary-color);
+}
+
+/* Common styles for detailed view pages */
+.sd-card-scroll-area {
+  flex: 1;
+  padding: 1rem;
+  padding-bottom: 3.5rem;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+/* Section styling */
+.sd-section {
+  margin-bottom: 1.25rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sd-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Collapsible section title */
+.sd-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sd-section-title svg {
+  color: var(--primary-color);
+}
+
+/* Clickable section title */
+.sd-section-title.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.sd-section-title.clickable:hover {
+  color: var(--primary-color);
+}
+
+/* Toggle icon styling */
+.sd-toggle-icon {
+  margin-right: auto;
+  margin-left: 0;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.sd-toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Active section styling */
+.sd-section-title.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.sd-section-title.active .sd-toggle-icon {
+  color: var(--primary-color);
+}
+
+/* Section content with animation */
+.sd-section-content {
+  transition: all 0.3s ease;
+  overflow: hidden;
+  padding: 0.75rem;
+  animation: fadeIn 0.3s ease;
+  background-color: var(--bg-tertiary);
+}
+
+/* Information grid layout */
+.sd-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.sd-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.sd-info-item svg {
+  color: var(--primary-color);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.sd-info-item div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sd-info-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.sd-info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Student card grid (for teachers) */
+.sd-students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  overflow: auto;
+  max-height: 180px;
+}
+
+.sd-student-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-card);
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.sd-student-card.clickable {
+  cursor: pointer;
+}
+
+.sd-student-card.clickable:hover {
+  background-color: rgba(var(--bg-tertiary-rgb), 0.8);
+  transform: translateY(-2px);
+}
+
+.sd-student-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.sd-student-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sd-student-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+.sd-student-instrument {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Orchestra grid */
+.sd-orchestras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.sd-orchestra-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  transition: all 0.2s ease;
+}
+
+.sd-orchestra-card.clickable {
+  cursor: pointer;
+}
+
+.sd-orchestra-card.clickable:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.15);
+  transform: translateY(-2px);
+}
+
+.sd-orchestra-card svg {
+  color: var(--primary-color);
+}
+
+.sd-orchestra-card span {
+  text-align: center;
+  font-weight: 500;
+}
+
+.sd-orchestra-type {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Compact Instrument List */
+.sd-compact-instruments-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  
-  .history-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin: 0.5rem 0;
-  }
-  
-  .history-entries {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    
-    .history-entry {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.5rem;
-      border-radius: 0.5rem;
-      background-color: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      
-      .status-indicator {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        
-        &.present {
-          background-color: var(--success);
-        }
-        
-        &.absent {
-          background-color: var(--danger);
-        }
-      }
-      
-      .history-date {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-      }
-      
-      .history-status {
-        margin-right: auto;
-        font-size: 0.85rem;
-        font-weight: 500;
-        
-        &.present {
-          color: var(--success);
-        }
-        
-        &.absent {
-          color: var(--danger);
-        }
-      }
-    }
-  }
 }
 
-.loading-attendance {
+.sd-compact-instrument-card {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+}
+
+.sd-instrument-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.sd-instrument-name-container {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  padding: 1rem;
-  justify-content: center;
-  
-  .loading-icon {
-    animation: spin 1.5s linear infinite;
-  }
+  gap: 0.5rem;
 }
 
-// Loading and error states
-.loading-state,
-.error-state {
+.sd-instrument-icon {
+  color: var(--primary-color);
+}
+
+.sd-instrument-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.sd-primary-badge {
+  display: flex;
+  align-items: center;
+  background-color: #4158d0;
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  margin-right: 0.5rem;
+  gap: 0.2rem;
+}
+
+.sd-stage-badge {
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.sd-test-status-row {
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  align-items: center;
+}
+
+.sd-test-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.sd-test-label {
+  color: var(--text-secondary);
+}
+
+.sd-test-value {
+  font-weight: 600;
+}
+
+.sd-notes-row {
+  padding-top: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.sd-notes-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Bottom button for flipping */
+.sd-flip-button {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  width: calc(100% - 2rem);
+  max-width: 240px;
+  z-index: 5;
+}
+
+.sd-flip-button:hover {
+  background-color: var(--primary-dark);
+}
+
+.sd-flip-button:active {
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* Warning messages */
+.sd-no-teacher-warning,
+.sd-no-orchestra-warning,
+.sd-no-data {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Loading and error states */
+.sd-loading-state,
+.sd-error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -566,67 +597,192 @@
   margin: 0 auto;
 }
 
-.loading-state {
-  .loading-icon {
-    animation: spin 1.5s linear infinite;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
+.sd-loading-state .sd-loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.sd-loading-state p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.sd-error-state p {
+  color: var(--danger);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sd-error-state .btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sd-error-state .btn.primary:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Loading section */
+.sd-loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.sd-loading-section .sd-loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+}
+
+/* Status Dropdown Styling */
+.sd-status-dropdown {
+  position: relative;
+  z-index: 10;
+}
+
+.sd-dropdown-header {
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sd-dropdown-icon {
+  transition: transform 0.3s ease;
+}
+
+.sd-dropdown-icon.open {
+  transform: rotate(180deg);
+}
+
+.sd-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  min-width: 120px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+.sd-dropdown-item {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sd-dropdown-item:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.sd-dropdown-item.selected {
+  background-color: rgba(var(--primary-color-rgb), 0.2);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .sd-info-grid {
+    grid-template-columns: 1fr;
   }
   
-  p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-  }
-}
-
-.error-state {
-  p {
-    color: var(--danger);
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
+  .sd-students-grid,
+  .sd-orchestras-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   
-  .btn.primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background-color: var(--primary-dark);
-    }
+  .sd-test-status-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
   }
 }
 
-// Animation for section opening
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+@media (max-width: 480px) {
+  .student-details-page {
+    padding: 0 0.5rem;
+  }
+  
+  .sd-card-header {
+    padding: 0.75rem;
+  }
+  
+  .sd-student-identity {
+    gap: 0.5rem;
+  }
+  
+  .sd-avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .sd-header-text .sd-student-name {
+    font-size: 1.1rem;
+  }
+  
+  .sd-class-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .sd-card-scroll-area {
+    padding: 0.75rem;
+    padding-bottom: 3.5rem;
+  }
+  
+  .sd-section-title {
+    font-size: 1rem;
+  }
+  
+  .sd-flip-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.25rem;
+  }
+  
+  .sd-students-grid,
+  .sd-orchestras-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 0.4rem;
+  }
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-// Dark mode adjustments
+/* Dark mode specific styles */
 [data-theme="dark"] {
-  .student-card-container .card-side {
+  .sd-card-content .sd-card-side {
     background-color: var(--bg-secondary);
   }
   
-  .back-button {
+  .sd-back-button {
     background-color: rgba(0, 0, 0, 0.3);
-    
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
   }
   
-  .card-header {
+  .sd-back-button:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .sd-card-header {
     background: linear-gradient(
       to left,
       rgba(var(--primary-color-rgb), 0.15),
@@ -634,151 +790,438 @@
     );
   }
   
-  .tests-grid .test-card {
-    background-color: rgba(var(--bg-tertiary-rgb), 0.5);
+  .sd-section {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
   }
   
-  .orchestras-grid .orchestra-card {
+  .sd-section-content {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .sd-student-card {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.3);
+  }
+  
+  .sd-orchestra-card {
     background-color: rgba(var(--primary-color-rgb), 0.15);
     border-color: rgba(var(--primary-color-rgb), 0.25);
   }
   
-  .no-orchestra-warning,
-  .no-teacher-warning {
-    background-color: rgba(var(--warning-rgb), 0.15);
+  .sd-compact-instrument-card {
+    background-color: var(--bg-secondary);
   }
   
-  .attendance-summary .attendance-stat {
-    background-color: rgba(var(--bg-tertiary-rgb), 0.5);
+  .sd-test-status-row {
+    border-top-color: rgba(255, 255, 255, 0.05);
   }
   
-  .attendance-history .history-entry {
-    background-color: var(--bg-tertiary);
+  .sd-notes-row {
+    border-top-color: rgba(255, 255, 255, 0.05);
+  }
+  
+  .sd-dropdown-menu {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-dark);
   }
 }
 
-// Media queries
-@media (max-width: 768px) {
-  .student-details-content { max-height: 100svh; }
-  .student-details-page { height: 100svh; }
-  .info-grid,
-  .tests-grid,
-  .attendance-summary {
-    grid-template-columns: 1fr 1fr;
+/* Add these styles to your studentDetails.css file */
+
+/* Tests grid layout */
+.sd-tests-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.sd-test-card {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.sd-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.sd-test-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.sd-status-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.sd-test-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--bg-tertiary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sd-test-status.selecting {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.sd-test-status.passed {
+  color: var(--success);
+  background-color: rgba(var(--success-rgb), 0.1);
+}
+
+.sd-test-status.failed {
+  color: var(--danger);
+  background-color: rgba(var(--danger-rgb), 0.1);
+}
+
+.sd-test-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.sd-success-options-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 15;
+}
+
+.sd-error-message {
+  background-color: rgba(var(--danger-rgb), 0.1);
+  color: var(--danger);
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid rgba(var(--danger-rgb), 0.2);
+}
+
+.sd-updating-status {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 0.75rem;
+}
+
+/* Custom dropdown styling for this specific dropdown */
+.sd-dropdown {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.sd-success-dropdown {
+  left: 0;
+  top: 0;
+}
+
+/* Add these styles to your studentDetails.css file */
+
+/* Attendance section styles */
+.sd-attendance-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sd-loading-attendance {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  gap: 0.75rem;
+  text-align: center;
+}
+
+.sd-loading-attendance .sd-loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+}
+
+.sd-attendance-summary {
+  display: flex;
+  gap: 1rem;
+  background-color: var(--bg-card);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  justify-content: space-around;
+  text-align: center;
+}
+
+.sd-attendance-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sd-stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.sd-attendance-rate {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.sd-attendance-count {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sd-attendance-history {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+}
+
+.sd-history-title {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.sd-history-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sd-history-entry {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 0.375rem;
+}
+
+.sd-status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.sd-status-indicator.present {
+  background-color: var(--success);
+}
+
+.sd-status-indicator.absent {
+  background-color: var(--danger);
+}
+
+.sd-history-date {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.sd-history-status {
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  margin-left: auto;
+}
+
+.sd-history-status.present {
+  color: var(--success);
+  background-color: rgba(var(--success-rgb), 0.1);
+}
+
+.sd-history-status.absent {
+  color: var(--danger);
+  background-color: rgba(var(--danger-rgb), 0.1);
+}
+
+.sd-no-attendance-history,
+.sd-no-attendance-data {
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  border: 1px solid var(--border-color);
+}
+
+.sd-attendance-message {
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.sd-attendance-message.sd-warning {
+  background-color: rgba(var(--warning-rgb), 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(var(--warning-rgb), 0.2);
+}
+
+.sd-test-value-container {
+  position: relative;
+}
+
+/* Clickable test value */
+.sd-test-value.sd-clickable {
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--border-color);
+  padding: 0.35rem;
+  padding-bottom: 1px;
+}
+
+.sd-test-value.sd-clickable:hover {
+  opacity: 0.8;
+}
+
+/* Test dropdown menu */
+.sd-test-dropdown {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  background-color: var(--bg-card);
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+  width: 150px;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  z-index: 100;
+}
+
+/* Dropdown items */
+.sd-dropdown-item {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-primary);
+  border-radius: 0.25rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.sd-dropdown-item:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.sd-dropdown-item.selected {
+  background-color: rgba(var(--primary-color-rgb), 0.2);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .sd-test-dropdown {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-dark);
+}
+
+/* Success emphasis for different test status colors */
+:root {
+  --success-emphasis: #00ad55;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .sd-test-dropdown {
+    width: 140px;
+    padding: 0.4rem;
   }
   
-  .orchestras-grid {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  .sd-dropdown-item {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  /* Make sure dropdown doesn't go off-screen on mobile */
+  .sd-test-item:last-child .sd-test-dropdown {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sd-attendance-summary {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem;
+  }
+  
+  .sd-attendance-rate {
+    font-size: 1.25rem;
+  }
+  
+  .sd-attendance-count {
+    font-size: 1rem;
+  }
+  
+  .sd-history-entry {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .sd-history-status {
+    margin-left: 0;
   }
 }
 
 @media (max-width: 480px) {
-  .student-details-page {
-    padding: 0 0.5rem;
-    
-    .student-card-container {
-      height: 100%;
-      
-      .card-header {
-        padding: 0.75rem;
-        
-        .student-identity {
-          gap: 0.5rem;
-          
-          .avatar {
-            width: 36px;
-            height: 36px;
-            font-size: 0.9rem;
-          }
-          
-          .header-text .student-name {
-            font-size: 1.1rem;
-          }
-        }
-        
-        .stage-badge {
-          padding: 0.3rem 0.6rem;
-          font-size: 0.8rem;
-        }
-
-        .back-button {
-          width: 32px;
-          height: 32px;
-        }
-
-        .stage-badge, .grade-badge {
-          padding: 0.3rem 0.6rem;
-          font-size: 0.8rem;
-        }
-      }
-      
-      .card-scroll-area {
-        padding: 0.75rem;
-        padding-bottom: 3.5rem;
-        
-        .section-title {
-          font-size: 1.1rem;
-          margin-bottom: 0.6rem;
-        }
-      }
-      
-      .flip-button {
-        font-size: 0.9rem;
-        padding: 0.6rem 1.25rem;
-      }
-    }
-    
-    .info-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-    
-    .info-grid,
-    .tests-grid,
-    .attendance-summary {
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-    }
-    
-    .info-grid .info-item {
-      gap: 0.5rem;
-      
-      .info-value {
-        font-size: 0.95rem;
-      }
-    }
-    
-    .tests-grid .test-card {
-      padding: 0.75rem;
-    }
-    
-    .orchestras-grid {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0.75rem;  
-      
-      .orchestra-card {
-        padding: 1rem;
-        font-size: 0.9rem;
-
-        span {
-          text-align: center;
-    font-weight: 500;
-    font-size: .9rem;
-        }
-      }
-    }
-    
-    .teacher-info {
-      width: fit-content;
-      font-size: 1rem;
-      gap: 0.2rem;
-      padding: .5rem 1rem;
-      border-radius: .5rem;
-      border: 1px solid rgba(var(--warning-rgb), .2);
-    }
-    
-    .attendance-history .history-entry {
-      padding: 0.4rem;
-    }
+  .sd-attendance-history {
+    padding: 0.75rem;
   }
+  
+  .sd-history-title {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .sd-history-entries {
+    gap: 0.4rem;
+  }
+  
+  .sd-history-entry {
+    padding: 0.4rem;
+  }
+}
 
+/* Responsive adjustments for tests section */
+@media (max-width: 768px) {
+  .sd-tests-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  
+  .sd-test-card {
+    padding: 0.75rem;
+  }
 }

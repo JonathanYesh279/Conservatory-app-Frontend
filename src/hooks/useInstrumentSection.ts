@@ -1,18 +1,16 @@
 // src/hooks/useInstrumentSection.ts
 import { useCallback } from 'react';
-import { InstrumentAssignment } from './useStudentForm';
+import { InstrumentProgress } from '../services/studentService';
+import { VALID_INSTRUMENTS } from './useStudentForm';
 
 interface UseInstrumentSectionProps {
-  instruments: InstrumentAssignment[];
+  instrumentProgress: InstrumentProgress[];
   updateFormData: (setter: (prev: any) => any) => void;
   clearError: (field: string) => void;
 }
 
-// Utility to generate unique IDs
-const generateId = (): string => Math.random().toString(36).substring(2, 9);
-
 export function useInstrumentSection({
-  instruments,
+  instrumentProgress,
   updateFormData,
   clearError,
 }: UseInstrumentSectionProps) {
@@ -21,44 +19,61 @@ export function useInstrumentSection({
     (instrumentName: string) => {
       updateFormData((prev) => {
         // Check if instrument already exists
-        const exists = prev.academicInfo.instruments.some(
-          (i) => i.name === instrumentName
+        const exists = prev.academicInfo.instrumentProgress.some(
+          (i) => i.instrumentName === instrumentName
         );
 
         if (exists) return prev; // Already added
 
         const newInstrument = {
-          id: generateId(),
-          name: instrumentName,
-          isPrimary: prev.academicInfo.instruments.length === 0, // Set as primary if it's the first instrument
+          instrumentName,
+          isPrimary: prev.academicInfo.instrumentProgress.length === 0, // Set as primary if it's the first instrument
+          currentStage: 1, // Start at stage 1
+          tests: {
+            stageTest: {
+              status: 'לא נבחן',
+              notes: '',
+              lastTestDate: null,
+              nextTestDate: null,
+            },
+            technicalTest: {
+              status: 'לא נבחן',
+              notes: '',
+              lastTestDate: null,
+              nextTestDate: null,
+            },
+          },
         };
 
         return {
           ...prev,
           academicInfo: {
             ...prev.academicInfo,
-            instruments: [...prev.academicInfo.instruments, newInstrument],
+            instrumentProgress: [
+              ...prev.academicInfo.instrumentProgress,
+              newInstrument,
+            ],
           },
         };
       });
 
       // Clear error if exists
-      clearError('academicInfo.instruments');
+      clearError('academicInfo.instrumentProgress');
     },
     [updateFormData, clearError]
   );
 
   // Remove instrument
   const removeInstrument = useCallback(
-    (instrumentId: string) => {
+    (instrumentName: string) => {
       updateFormData((prev) => {
         // Don't allow removing the last instrument
-        if (prev.academicInfo.instruments.length <= 1) {
+        if (prev.academicInfo.instrumentProgress.length <= 1) {
           return prev;
         }
 
-        const updatedInstruments = prev.academicInfo.instruments.filter(
-          (i) => i.id !== instrumentId
+        const updatedInstruments = prev.academicInfo.instrumentProgress.filter(
+          (i) => i.instrumentName !== instrumentName
         );
 
         // If we removed the primary instrument, set the first one as primary
@@ -77,7 +92,7 @@ export function useInstrumentSection({
           ...prev,
           academicInfo: {
             ...prev.academicInfo,
-            instruments: finalInstruments,
+            instrumentProgress: finalInstruments,
           },
         };
       });
@@ -87,12 +102,12 @@ export function useInstrumentSection({
 
   // Set primary instrument
   const setPrimaryInstrument = useCallback(
-    (instrumentId: string) => {
+    (instrumentName: string) => {
       updateFormData((prev) => {
-        const updatedInstruments = prev.academicInfo.instruments.map(
+        const updatedInstruments = prev.academicInfo.instrumentProgress.map(
           (instrument) => ({
             ...instrument,
-            isPrimary: instrument.id === instrumentId,
+            isPrimary: instrument.instrumentName === instrumentName,
           })
         );
 
@@ -100,7 +115,99 @@ export function useInstrumentSection({
           ...prev,
           academicInfo: {
             ...prev.academicInfo,
-            instruments: updatedInstruments,
+            instrumentProgress: updatedInstruments,
+          },
+        };
+      });
+
+      // Clear primary instrument error if exists
+      clearError('academicInfo.instrumentProgress.primary');
+    },
+    [updateFormData, clearError]
+  );
+
+  // Update instrument progress (like stage level)
+  const updateInstrumentProgress = useCallback(
+    (instrumentName: string, field: string, value: any) => {
+      updateFormData((prev) => {
+        const updatedInstruments = prev.academicInfo.instrumentProgress.map(
+          (instrument) => {
+            if (instrument.instrumentName === instrumentName) {
+              return {
+                ...instrument,
+                [field]: value,
+              };
+            }
+            return instrument;
+          }
+        );
+
+        return {
+          ...prev,
+          academicInfo: {
+            ...prev.academicInfo,
+            instrumentProgress: updatedInstruments,
+          },
+        };
+      });
+
+      // Clear error if exists
+      clearError(`academicInfo.instrumentProgress.${field}`);
+    },
+    [updateFormData, clearError]
+  );
+
+  // Update instrument test
+  const updateInstrumentTest = useCallback(
+    (instrumentName: string, testType: string, field: string, value: any) => {
+      updateFormData((prev) => {
+        const updatedInstruments = prev.academicInfo.instrumentProgress.map(
+          (instrument) => {
+            if (instrument.instrumentName === instrumentName) {
+              // Create tests object if it doesn't exist
+              const tests = instrument.tests || {};
+
+              // Create test type object if it doesn't exist
+              const testObj = tests[testType] || {};
+
+              // Create updated test object
+              const updatedTest = {
+                ...testObj,
+                [field]: value,
+              };
+
+              // Auto-increment stage if stage test is passed
+              let currentStage = instrument.currentStage;
+              if (
+                testType === 'stageTest' &&
+                field === 'status' &&
+                (value === 'עבר/ה' ||
+                  value === 'עבר/ה בהצלחה' ||
+                  value === 'עבר/ה בהצטיינות') &&
+                testObj.status === 'לא נבחן' &&
+                currentStage < 8
+              ) {
+                currentStage += 1;
+              }
+
+              return {
+                ...instrument,
+                currentStage,
+                tests: {
+                  ...tests,
+                  [testType]: updatedTest,
+                },
+              };
+            }
+            return instrument;
+          }
+        );
+
+        return {
+          ...prev,
+          academicInfo: {
+            ...prev.academicInfo,
+            instrumentProgress: updatedInstruments,
           },
         };
       });
@@ -108,18 +215,25 @@ export function useInstrumentSection({
     [updateFormData]
   );
 
-  // Check if instrument is primary
-  const isPrimaryInstrument = useCallback(
-    (instrumentId: string) => {
-      return instruments.some((i) => i.id === instrumentId && i.isPrimary);
-    },
-    [instruments]
-  );
-
   return {
     addInstrument,
     removeInstrument,
     setPrimaryInstrument,
-    isPrimaryInstrument,
+    updateInstrumentProgress,
+    updateInstrumentTest,
+
+    // Helper methods to get information
+    getAvailableInstruments: useCallback(() => {
+      const usedInstrumentNames = instrumentProgress.map(
+        (i) => i.instrumentName
+      );
+      return VALID_INSTRUMENTS.filter(
+        (name) => !usedInstrumentNames.includes(name)
+      );
+    }, [instrumentProgress]),
+
+    getPrimaryInstrument: useCallback(() => {
+      return instrumentProgress.find((i) => i.isPrimary) || null;
+    }, [instrumentProgress]),
   };
 }

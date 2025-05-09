@@ -1,20 +1,46 @@
 // src/services/studentService.ts
-import { httpService } from './httpService'
+import { httpService } from './httpService';
 
 // Define interfaces for attendance data
 export interface AttendanceRecord {
-  date: string
-  status: 'הגיע/ה' | 'לא הגיע/ה'
-  sessionId: string
-  notes?: string
+  date: string;
+  status: 'הגיע/ה' | 'לא הגיע/ה';
+  sessionId: string;
+  notes?: string;
 }
 
 export interface AttendanceStats {
-  attendanceRate: number
-  attended: number
-  totalRehearsals: number
-  recentHistory: AttendanceRecord[]
-  message?: string
+  attendanceRate: number;
+  attended: number;
+  totalRehearsals: number;
+  recentHistory: AttendanceRecord[];
+  message?: string;
+}
+
+// Define interface for instrument progress
+export interface InstrumentProgress {
+  instrumentName: string;
+  isPrimary: boolean;
+  currentStage: number;
+  tests?: {
+    stageTest?: {
+      status:
+        | 'לא נבחן'
+        | 'עבר/ה'
+        | 'לא עבר/ה'
+        | 'עבר/ה בהצלחה'
+        | 'עבר/ה בהצטיינות';
+      lastTestDate?: string;
+      nextTestDate?: string;
+      notes?: string;
+    };
+    technicalTest?: {
+      status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
+      lastTestDate?: string;
+      nextTestDate?: string;
+      notes?: string;
+    };
+  };
 }
 
 export interface Student {
@@ -30,29 +56,8 @@ export interface Student {
     studentEmail?: string;
   };
   academicInfo: {
-    instrument: string; // Maintain for backward compatibility
-    instruments?: string[]; // New field for multiple instruments
-    currentStage: number;
+    instrumentProgress: InstrumentProgress[]; // New field for instrument-specific progress
     class: string;
-    tests?: {
-      stageTest?: {
-        status:
-          | 'לא נבחן'
-          | 'עבר/ה'
-          | 'לא עבר/ה'
-          | 'עבר/ה בהצלחה'
-          | 'עבר/ה בהצטיינות';
-        lastTestDate?: string;
-        nextTestDate?: string;
-        notes?: string;
-      };
-      technicalTest?: {
-        status: 'לא נבחן' | 'עבר/ה' | 'לא עבר/ה';
-        lastTestDate?: string;
-        nextTestDate?: string;
-        notes?: string;
-      };
-    };
   };
   enrollments: {
     orchestraIds: string[];
@@ -114,7 +119,6 @@ export const studentService = {
     }
 
     // Fetch students with specific IDs
-    // Alternative approach would be to add a new endpoint that accepts an array of IDs
     const allStudents = await this.getStudents();
     return allStudents.filter((student) => studentIds.includes(student._id));
   },
@@ -135,7 +139,7 @@ export const studentService = {
     studentId: string,
     student: Partial<Student>
   ): Promise<Student> {
-    // Remove fields that are not allowed in updates according to your Joi schema
+    // Remove fields that are not allowed in updates
     const { _id, createdAt, updatedAt, ...updateData } = student as any;
 
     return httpService.put(`student/${studentId}`, updateData);
@@ -164,7 +168,7 @@ export const studentService = {
     return httpService.post(`teacher/${teacherId}/schedule`, scheduleData);
   },
 
-  // New function to get attendance stats for a student in an orchestra
+  // Get attendance stats for a student in an orchestra
   async getStudentAttendanceStats(
     orchestraId: string,
     studentId: string

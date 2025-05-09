@@ -1,5 +1,5 @@
 // src/components/StudentDetails/sections/TestsSection.tsx
-import { Award, Calendar } from 'lucide-react';
+import { Award, Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import { Student } from '../../../services/studentService';
 import { StatusDropdown } from '../StatusDropdown';
 import { useStudentTests } from '../../../hooks/useStudentTests';
@@ -17,6 +17,10 @@ export function TestsSection({
   onToggle,
   formatDate,
 }: TestsSectionProps) {
+  if (!student || !student.academicInfo) {
+    return null;
+  }
+
   const {
     isUpdating,
     updateError,
@@ -61,27 +65,32 @@ export function TestsSection({
   };
 
   return (
-    <div className='section'>
+    <div className='sd-section'>
       <div
-        className={`section-title clickable ${isOpen ? 'active' : ''}`}
+        className={`sd-section-title clickable ${isOpen ? 'active' : ''}`}
         onClick={onToggle}
       >
         <Award size={16} />
         <span>מבחנים</span>
+        {isOpen ? (
+          <ChevronUp size={18} className='sd-toggle-icon' />
+        ) : (
+          <ChevronDown size={18} className='sd-toggle-icon' />
+        )}
       </div>
 
       {isOpen && (
-        <div className='section-content'>
-          {updateError && <div className='error-message'>{updateError}</div>}
+        <div className='sd-section-content'>
+          {updateError && <div className='sd-error-message'>{updateError}</div>}
 
-          <div className='tests-grid'>
+          <div className='sd-tests-grid'>
             {/* Technical Test Card */}
-            <div className='test-card'>
-              <div className='test-header'>
+            <div className='sd-test-card'>
+              <div className='sd-test-header'>
                 <h3>מבחן טכני</h3>
-                <div className='status-container'>
+                <div className='sd-status-container'>
                   <span
-                    className={`test-status ${getStatusClassName(
+                    className={`sd-test-status ${getStatusClassName(
                       technicalTestStatus
                     )}`}
                   >
@@ -93,7 +102,7 @@ export function TestsSection({
               </div>
 
               {student.academicInfo.tests?.technicalTest?.lastTestDate && (
-                <div className='test-date'>
+                <div className='sd-test-date'>
                   <Calendar size={12} />
                   <span>
                     {formatDate(
@@ -105,12 +114,12 @@ export function TestsSection({
             </div>
 
             {/* Stage Test Card */}
-            <div className='test-card'>
-              <div className='test-header'>
+            <div className='sd-test-card'>
+              <div className='sd-test-header'>
                 <h3>מבחן שלב</h3>
-                <div className='status-container'>
+                <div className='sd-status-container'>
                   <span
-                    className={`test-status ${getStatusClassName(
+                    className={`sd-test-status ${getStatusClassName(
                       stageTestStatus
                     )} ${showStageTestOptions ? 'selecting' : ''}`}
                     onClick={toggleStageTestOptions}
@@ -136,11 +145,12 @@ export function TestsSection({
                         ? 'עבר/ה'
                         : stageTestStatus
                     }
+                    className='sd-dropdown'
                   />
 
                   {/* Success level dropdown */}
                   {showStageSuccessOptions && (
-                    <div className='success-options-container'>
+                    <div className='sd-success-options-container'>
                       <StatusDropdown
                         isOpen={showStageSuccessOptions}
                         onToggle={toggleStageSuccessOptions}
@@ -149,7 +159,7 @@ export function TestsSection({
                           handleTestStatusChange('stageTest', status as any)
                         }
                         selectedValue={stageTestStatus}
-                        className='success-dropdown'
+                        className='sd-success-dropdown'
                       />
                     </div>
                   )}
@@ -157,7 +167,7 @@ export function TestsSection({
               </div>
 
               {student.academicInfo.tests?.stageTest?.lastTestDate && (
-                <div className='test-date'>
+                <div className='sd-test-date'>
                   <Calendar size={12} />
                   <span>
                     {formatDate(
@@ -169,7 +179,7 @@ export function TestsSection({
             </div>
           </div>
 
-          {isUpdating && <div className='updating-status'>Updating...</div>}
+          {isUpdating && <div className='sd-updating-status'>מעדכן...</div>}
         </div>
       )}
     </div>

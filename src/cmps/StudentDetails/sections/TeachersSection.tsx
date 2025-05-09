@@ -1,5 +1,5 @@
 // src/components/StudentDetails/sections/TeachersSection.tsx
-import { User, RefreshCw } from 'lucide-react';
+import { User, RefreshCw, ChevronUp, ChevronDown } from 'lucide-react';
 import { TeacherData } from '../../../hooks/useStudentDetailsState';
 
 interface TeachersSectionProps {
@@ -22,27 +22,32 @@ export function TeachersSection({
   onRetryLoadTeachers,
 }: TeachersSectionProps) {
   return (
-    <div className='section'>
+    <div className='sd-section'>
       <div
-        className={`section-title clickable ${isOpen ? 'active' : ''}`}
+        className={`sd-section-title clickable ${isOpen ? 'active' : ''}`}
         onClick={onToggle}
       >
         <User size={16} />
         <span>מורים ({teachersData.length})</span>
+        {isOpen ? (
+          <ChevronUp size={18} className='sd-toggle-icon' />
+        ) : (
+          <ChevronDown size={18} className='sd-toggle-icon' />
+        )}
       </div>
 
       {isOpen && (
-        <div className='section-content'>
+        <div className='sd-section-content'>
           {teachersLoading ? (
-            <div className='loading-section'>
-              <RefreshCw size={16} className='loading-icon' />
+            <div className='sd-loading-section'>
+              <RefreshCw size={16} className='sd-loading-icon' />
               <span>טוען פרטי מורים...</span>
             </div>
           ) : teachersError ? (
-            <div className='error-section'>
+            <div className='sd-error-section'>
               <span>{teachersError}</span>
               <button
-                className='retry-button'
+                className='sd-retry-button'
                 onClick={onRetryLoadTeachers}
                 aria-label='נסה לטעון מחדש'
               >
@@ -51,25 +56,29 @@ export function TeachersSection({
               </button>
             </div>
           ) : teachersData.length > 0 ? (
-            <div className='teachers-list'>
+            <div className='sd-students-grid'>
               {teachersData.map((teacher) => (
                 <div
                   key={teacher.id}
-                  className='teacher-info clickable'
+                  className='sd-student-card clickable'
                   onClick={() => onTeacherClick(teacher.id)}
                 >
-                  <User size={14} />
-                  <span>{teacher.name}</span>
-                  {teacher.instrument && (
-                    <span className='teacher-instrument'>
-                      ({teacher.instrument})
-                    </span>
-                  )}
+                  <div className='sd-student-avatar'>
+                    {teacher.name.substring(0, 2)}
+                  </div>
+                  <div className='sd-student-info'>
+                    <div className='sd-student-name'>{teacher.name}</div>
+                    {teacher.instrument && (
+                      <div className='sd-student-instrument'>
+                        {teacher.instrument}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className='no-teacher-warning'>לא הוקצה מורה לתלמיד</div>
+            <div className='sd-no-teacher-warning'>לא הוקצה מורה לתלמיד</div>
           )}
         </div>
       )}

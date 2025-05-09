@@ -1,6 +1,6 @@
 // src/hooks/usePersonalInfoSection.ts
 import { useCallback } from 'react';
-import { StudentFormData } from './useStudentForm.tsx';
+import { StudentFormData } from './useStudentForm';
 
 interface UsePersonalInfoSectionProps {
   formData: StudentFormData;
@@ -18,9 +18,18 @@ export function usePersonalInfoSection({
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value, type } = e.target;
 
-      // Convert to number for number inputs, otherwise use string value
-      const processedValue =
-        type === 'number' ? (value ? parseInt(value) : undefined) : value;
+      // Process value based on input type
+      let processedValue = value;
+
+      // Convert to number for number inputs if value exists
+      if (type === 'number' && value) {
+        processedValue = parseInt(value);
+      }
+
+      // Empty string for number inputs should be undefined, not 0
+      if (type === 'number' && value === '') {
+        processedValue = undefined;
+      }
 
       updatePersonalInfo(name, processedValue);
     },

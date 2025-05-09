@@ -15,6 +15,11 @@ export function PersonalInfoSection({
   onToggle,
   formatDate,
 }: PersonalInfoSectionProps) {
+  // Safety check: ensure student and personalInfo exist
+  if (!student || !student.personalInfo) {
+    return null;
+  }
+
   return (
     <div className='section'>
       <div
@@ -31,7 +36,7 @@ export function PersonalInfoSection({
           student.personalInfo.address ||
           student.personalInfo.studentEmail ||
           student.createdAt ||
-          student.academicInfo.class ? (
+          student.academicInfo?.class ? (
             <div className='info-grid'>
               {student.personalInfo.phone && (
                 <div className='info-item'>
@@ -81,15 +86,29 @@ export function PersonalInfoSection({
                 </div>
               )}
 
-              <div className='info-item'>
-                <BookOpen size={14} />
-                <div>
-                  <span className='info-label'>כיתה</span>
-                  <span className='info-value'>
-                    {student.academicInfo.class}
-                  </span>
+              {student.academicInfo?.class && (
+                <div className='info-item'>
+                  <BookOpen size={14} />
+                  <div>
+                    <span className='info-label'>כיתה</span>
+                    <span className='info-value'>
+                      {student.academicInfo.class}
+                    </span>
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {student.personalInfo.age !== undefined && (
+                <div className='info-item'>
+                  <User size={14} />
+                  <div>
+                    <span className='info-label'>גיל</span>
+                    <span className='info-value'>
+                      {student.personalInfo.age}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className='no-data-message'>אין פרטים אישיים</div>
