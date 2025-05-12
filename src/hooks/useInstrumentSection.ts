@@ -20,7 +20,7 @@ export function useInstrumentSection({
       updateFormData((prev) => {
         // Check if instrument already exists
         const exists = prev.academicInfo.instrumentProgress.some(
-          (i) => i.instrumentName === instrumentName
+          (i: InstrumentProgress) => i.instrumentName === instrumentName
         );
 
         if (exists) return prev; // Already added
@@ -73,19 +73,21 @@ export function useInstrumentSection({
         }
 
         const updatedInstruments = prev.academicInfo.instrumentProgress.filter(
-          (i) => i.instrumentName !== instrumentName
+          (i: InstrumentProgress) => i.instrumentName !== instrumentName
         );
 
         // If we removed the primary instrument, set the first one as primary
         let finalInstruments = [...updatedInstruments];
         if (
-          !finalInstruments.some((i) => i.isPrimary) &&
+          !finalInstruments.some((i: InstrumentProgress) => i.isPrimary) &&
           finalInstruments.length > 0
         ) {
-          finalInstruments = finalInstruments.map((instrument, index) => ({
-            ...instrument,
-            isPrimary: index === 0,
-          }));
+          finalInstruments = finalInstruments.map(
+            (instrument: InstrumentProgress, index: number) => ({
+              ...instrument,
+              isPrimary: index === 0,
+            })
+          );
         }
 
         return {
@@ -105,7 +107,7 @@ export function useInstrumentSection({
     (instrumentName: string) => {
       updateFormData((prev) => {
         const updatedInstruments = prev.academicInfo.instrumentProgress.map(
-          (instrument) => ({
+          (instrument: InstrumentProgress) => ({
             ...instrument,
             isPrimary: instrument.instrumentName === instrumentName,
           })
@@ -131,7 +133,7 @@ export function useInstrumentSection({
     (instrumentName: string, field: string, value: any) => {
       updateFormData((prev) => {
         const updatedInstruments = prev.academicInfo.instrumentProgress.map(
-          (instrument) => {
+          (instrument: InstrumentProgress) => {
             if (instrument.instrumentName === instrumentName) {
               return {
                 ...instrument,
@@ -162,13 +164,13 @@ export function useInstrumentSection({
     (instrumentName: string, testType: string, field: string, value: any) => {
       updateFormData((prev) => {
         const updatedInstruments = prev.academicInfo.instrumentProgress.map(
-          (instrument) => {
+          (instrument: InstrumentProgress) => {
             if (instrument.instrumentName === instrumentName) {
               // Create tests object if it doesn't exist
               const tests = instrument.tests || {};
 
               // Create test type object if it doesn't exist
-              const testObj = tests[testType] || {};
+              const testObj = (tests as Record<string, any>)[testType] || {};
 
               // Create updated test object
               const updatedTest = {
@@ -225,15 +227,17 @@ export function useInstrumentSection({
     // Helper methods to get information
     getAvailableInstruments: useCallback(() => {
       const usedInstrumentNames = instrumentProgress.map(
-        (i) => i.instrumentName
+        (i: InstrumentProgress) => i.instrumentName
       );
       return VALID_INSTRUMENTS.filter(
-        (name) => !usedInstrumentNames.includes(name)
+        (name: string) => !usedInstrumentNames.includes(name)
       );
     }, [instrumentProgress]),
 
     getPrimaryInstrument: useCallback(() => {
-      return instrumentProgress.find((i) => i.isPrimary) || null;
+      return (
+        instrumentProgress.find((i: InstrumentProgress) => i.isPrimary) || null
+      );
     }, [instrumentProgress]),
   };
 }

@@ -1,0 +1,311 @@
+// src/styles/components/teacher-assignment-section.scss
+
+.teacher-assignment-section {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  direction: rtl;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+
+  h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  h4 {
+    color: var(--text-primary);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .assigned-teachers-list {
+    margin-bottom: 1.5rem;
+  }
+
+  .teacher-assignment-item {
+    background-color: var(--bg-tertiary);
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .teacher-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .lessons-list {
+    margin-top: 0.5rem;
+  }
+
+  .lesson-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem;
+    background-color: var(--bg-card);
+    border-radius: 4px;
+    margin-bottom: 0.4rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .lesson-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+  }
+
+  .remove-lesson-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+
+    &:hover {
+      background-color: rgba(var(--danger-rgb), 0.1);
+      color: var(--danger);
+    }
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+
+  .form-label {
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    text-align: right;
+  }
+
+  .select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .form-select {
+    width: 100%;
+    padding: 0.5rem;
+    padding-left: 2rem;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    appearance: none;
+    text-align: right;
+    font-size: 0.9rem;
+    
+    &:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    }
+  }
+
+  .select-icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+  }
+
+  .teacher-schedule {
+    background-color: var(--bg-tertiary);
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .schedule-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+
+  .schedule-row {
+    margin-bottom: 0.75rem;
+  }
+
+  .day-group, .time-group, .duration-group {
+    flex: 1;
+  }
+
+  .schedule-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .add-lesson-btn, .save-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+  }
+
+  .add-lesson-btn {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+      background-color: var(--bg-secondary);
+    }
+  }
+
+  .save-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    
+    &:hover {
+      background-color: var(--primary-dark);
+    }
+  }
+
+  .add-teacher-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: var(--primary-dark);
+    }
+  }
+
+  .remove-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: rgba(var(--danger-rgb), 0.1);
+      color: var(--danger);
+    }
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.5rem;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-primary);
+    text-align: right;
+    
+    &:focus {
+      border-color: var(--primary-color);
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+    }
+  }
+
+  /* Dark mode adjustments */
+  [data-theme="dark"] & {
+    background-color: var(--bg-secondary);
+    
+    .teacher-assignment-item {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+    }
+    
+    .lesson-item {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-color);
+    }
+    
+    .form-select, .form-input {
+      background-color: rgba(var(--bg-tertiary-rgb));
+      border-color: var(--border-color);
+    }
+    
+    .teacher-schedule {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+    }
+    
+    .add-lesson-btn {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-color: var(--border-color);
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+      }
+    }
+  }
+
+  /* Media queries */
+  @media (max-width: 768px) {
+    .schedule-row .form-row {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .schedule-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    
+    .lesson-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    
+    .remove-lesson-btn {
+      align-self: flex-end;
+    }
+    
+    .schedule-actions {
+      margin-top: 0.75rem;
+    }
+  }
+}

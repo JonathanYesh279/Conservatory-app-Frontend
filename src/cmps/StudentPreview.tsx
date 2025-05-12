@@ -1,6 +1,6 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import { Edit, Trash2, Music, Calendar, Award, Eye } from 'lucide-react';
+import { Edit, Trash2, Calendar, Award, Eye } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
 
@@ -65,8 +65,8 @@ export function StudentPreview({
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'עבר/ה':
-      case 'עבר/ה בהצלחה':
       case 'עבר/ה בהצטיינות':
+      case 'עבר/ה בהצטיינות יתרה':
         return 'var(--success)';
       case 'לא עבר/ה':
         return 'var(--danger)';

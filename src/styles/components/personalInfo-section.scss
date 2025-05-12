@@ -1,0 +1,128 @@
+// src/styles/components/personal-info-section.scss
+
+.personal-info-section {
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  direction: rtl;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+
+  h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  h4 {
+    color: var(--text-primary);
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    
+    &.full-width {
+      gap: 0.5rem;
+    }
+    
+    &.two-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+    
+    &.three-columns {
+      display: grid;
+      grid-template-columns: 2fr 0.6fr 0.8fr;
+    }
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    
+    label {
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      text-align: right;
+    }
+    
+    input, select {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+      padding: 0.5rem;
+      width: 100%;
+      font-size: 0.9rem;
+      text-align: right;
+      
+      &:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+      
+      &.is-invalid {
+        border-color: var(--danger);
+      }
+    }
+    
+    .form-error {
+      color: var(--danger);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      text-align: right;
+    }
+  }
+
+  /* Dark mode adjustments */
+  [data-theme="dark"] & {
+    background-color: var(--bg-secondary);
+    
+    .form-group select,
+    .form-group input {
+      background-color: rgba(var(--bg-tertiary-rgb));
+      border-color: var(--border-color);
+    }
+  }
+
+  /* Media queries */
+  @media (max-width: 768px) {
+    .form-row {
+      gap: 0.5rem;
+    }
+    
+    h3 {
+      font-size: 1.2rem;
+    }
+    
+    h4 {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    
+    .form-row {
+      &.two-columns,
+      &.three-columns {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  }
+}

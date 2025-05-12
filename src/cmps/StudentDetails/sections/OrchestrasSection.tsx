@@ -40,7 +40,7 @@ export function OrchestrasSection({
 
       {isOpen && (
         <div className='sd-section-content'>
-          {student.academicInfo?.orchestraIds?.length > 0 ? (
+          {(student.academicInfo?.orchestraIds?.length || 0) > 0 ? (
             orchestrasLoading ? (
               <div className='sd-loading-section'>
                 <RefreshCw size={16} className='sd-loading-icon' />

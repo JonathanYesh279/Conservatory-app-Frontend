@@ -88,8 +88,9 @@ export const useStudentSelectionForTeacher = ({
         ];
 
         // Check if any field contains the search query
-        return searchFields.some((field) =>
-          field.toLowerCase().includes(searchQuery.toLowerCase())
+        return searchFields.some(
+          (field) =>
+            field?.toLowerCase().includes(searchQuery.toLowerCase()) || false
         );
       })
       .slice(0, 10); // Limit results for performance

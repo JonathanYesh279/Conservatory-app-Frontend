@@ -24,6 +24,7 @@ interface TeacherState {
   removeTeacher: (teacherId: string) => Promise<void>;
   setSelectedTeacher: (teacher: Teacher | null) => void;
   clearError: () => void;
+  clearSelectedTeacher: () => void;
 }
 
 export const useTeacherStore = create<TeacherState>((set, get) => ({
@@ -172,4 +173,8 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
+
+  clearSelectedTeacher: () => {
+  set({ selectedTeacher: null });
+},
 }));

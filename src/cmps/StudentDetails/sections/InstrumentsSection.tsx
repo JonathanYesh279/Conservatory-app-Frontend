@@ -1,7 +1,7 @@
 // src/cmps/StudentDetails/sections/InstrumentsSection.tsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Music, Star, ChevronUp, ChevronDown, Check } from 'lucide-react';
-import { Student, InstrumentProgress } from '../../../services/studentService';
+import { Student } from '../../../services/studentService';
 
 interface InstrumentsSectionProps {
   student: Student;
@@ -12,7 +12,7 @@ interface InstrumentsSectionProps {
     instrumentName: string,
     testType: 'stageTest' | 'technicalTest',
     status: string
-  ) => Promise<void>;
+  ) => Promise<Student | undefined>;
 }
 
 export function InstrumentsSection({

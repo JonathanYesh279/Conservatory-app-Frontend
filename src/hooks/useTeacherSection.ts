@@ -1,7 +1,12 @@
 // src/hooks/useTeacherSection.ts
 import { useCallback } from 'react';
-import { TeacherAssignment } from './useStudentForm';
 
+interface TeacherAssignment {
+  teacherId: string;
+  day: string;
+  time: string;
+  duration: number | null | undefined;
+}
 interface UseTeacherSectionProps {
   updateFormData: (setter: (prev: any) => any) => void;
 }
@@ -47,13 +52,15 @@ export function useTeacherSection({ updateFormData }: UseTeacherSectionProps) {
       updateFormData((prev) => {
         // Remove the specific assignment with matching teacherId, day and time
         const updatedAssignments = prev.teacherAssignments.filter(
-          (a) =>
+          (a: TeacherAssignment) =>
             !(a.teacherId === teacherId && a.day === day && a.time === time)
         );
 
+        new Set(updatedAssignments.map((a: TeacherAssignment) => a.teacherId));
+
         // Get unique teacher IDs from remaining assignments
         const remainingTeacherIds = Array.from(
-          new Set(updatedAssignments.map((a) => a.teacherId))
+          new Set(updatedAssignments.map((a: TeacherAssignment) => a.teacherId))
         );
 
         return {

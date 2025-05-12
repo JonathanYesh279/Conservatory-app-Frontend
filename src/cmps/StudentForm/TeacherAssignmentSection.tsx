@@ -1,12 +1,6 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState } from 'react';
-import {
-  User,
-  X,
-  Plus,
-  UserPlus,
-  ChevronDown,
-} from 'lucide-react';
+import { User, X, Plus, UserPlus, ChevronDown } from 'lucide-react';
 import {
   StudentFormData,
   TeacherAssignment,
@@ -259,7 +253,7 @@ export function TeacherAssignmentSection({
       {selectedTeacherId && scheduleItems.length > 0 && (
         <div className='teacher-schedule'>
           <div className='schedule-heading'>
-            <h4>מערכת שעות עבור תמיר אקטע (חצוצרה)</h4>
+            <h4>מערכת שעות עבור {getTeacherName(selectedTeacherId)}</h4>
           </div>
 
           {scheduleItems.map((item, index) => (

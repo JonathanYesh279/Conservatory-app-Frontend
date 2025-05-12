@@ -71,6 +71,9 @@ axiosInstance.interceptors.response.use(
         localStorage.setItem('accessToken', accessToken);
 
         // Update Authorization header and retry
+        if (!originalRequest.headers) {
+          originalRequest.headers = {};
+        }
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {

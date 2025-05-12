@@ -1,5 +1,3 @@
-// src/cmps/StudentDetails/StudentHeader.tsx
-import React from 'react';
 import { ArrowLeft, Edit, Trash2, Music } from 'lucide-react';
 import { useStudentDetailsState } from '../../hooks/useStudentDetailsState';
 

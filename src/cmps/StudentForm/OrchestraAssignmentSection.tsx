@@ -1,6 +1,6 @@
 import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection';
 import { StudentFormData } from '../../hooks/useStudentForm.tsx';
-import { Music, X } from 'lucide-react';
+import { Music, Trash2 } from 'lucide-react';
 
 interface OrchestraAssignmentSectionProps {
   formData: StudentFormData;
@@ -30,7 +30,7 @@ export function OrchestraAssignmentSection({
   });
 
   return (
-    <div className='form-section'>
+    <div className='form-section orchestra-assignment-section'>
       <h3>שיוך לתזמורת</h3>
 
       {/* Display current orchestra assignments if any */}
@@ -42,7 +42,7 @@ export function OrchestraAssignmentSection({
               <div key={orchestra.id} className='assignment-card'>
                 <div className='assignment-header'>
                   <div className='orchestra-name'>
-                    <Music size={16} />
+                    <Music size={12} />
                     <span>{orchestra.name}</span>
                     {orchestra.type && (
                       <span className='orchestra-type'>{orchestra.type}</span>
@@ -56,7 +56,7 @@ export function OrchestraAssignmentSection({
                     }
                     aria-label='הסר תזמורת'
                   >
-                    <X size={16} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>

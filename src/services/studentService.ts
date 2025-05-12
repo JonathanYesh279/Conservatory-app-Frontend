@@ -56,8 +56,25 @@ export interface Student {
     studentEmail?: string;
   };
   academicInfo: {
-    instrumentProgress: InstrumentProgress[]; // New field for instrument-specific progress
+    instrument?: string;
+    instrumentProgress: InstrumentProgress[];
     class: string;
+    // Add these missing properties:
+    teacherIds?: string[];
+    orchestraIds?: string[];
+    tests?: {
+      stageTest?: {
+        status: string;
+        notes: string;
+        lastTestDate?: string;
+      };
+      technicalTest?: {
+        status: string;
+        notes: string;
+        lastTestDate?: string;
+      };
+    };
+    currentStage?: number | string;
   };
   enrollments: {
     orchestraIds: string[];

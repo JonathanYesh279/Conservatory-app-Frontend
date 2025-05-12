@@ -31,7 +31,7 @@ export function PersonalInfoSection({
   };
 
   return (
-    <div className='form-section'>
+    <div className='form-section personal-info-section'>
       <h3>פרטים אישיים</h3>
 
       {/* Full Name */}
@@ -53,7 +53,7 @@ export function PersonalInfoSection({
         </div>
       </div>
 
-      {/* Phone and Email - Together in one row */}
+      {/* Phone and Grade - Together in one row */}
       <div className='form-row two-columns'>
         <div className='form-group'>
           <label htmlFor='phone'>טלפון</label>
@@ -71,20 +71,25 @@ export function PersonalInfoSection({
           )}
         </div>
 
-        <div className='form-group'>
-          <label htmlFor='studentEmail'>אימייל תלמיד</label>
-          <input
-            type='email'
-            id='studentEmail'
-            name='studentEmail'
-            value={personalInfo?.studentEmail || ''}
-            onChange={handlePersonalInfoChange}
-            className={errors['personalInfo.studentEmail'] ? 'is-invalid' : ''}
-          />
-          {errors['personalInfo.studentEmail'] && (
-            <div className='form-error'>
-              {errors['personalInfo.studentEmail']}
-            </div>
+        <div className='form-group' style={{ flex: '0.8' }}>
+          <label htmlFor='class'>כיתה *</label>
+          <select
+            id='class'
+            name='class'
+            value={formData.academicInfo?.class || ''}
+            onChange={handleAcademicInfoChange}
+            className={errors['academicInfo.class'] ? 'is-invalid' : ''}
+            required
+            style={{ width: '100%' }}
+          >
+            {VALID_CLASSES.map((grade) => (
+              <option key={grade} value={grade}>
+                {grade}
+              </option>
+            ))}
+          </select>
+          {errors['academicInfo.class'] && (
+            <div className='form-error'>{errors['academicInfo.class']}</div>
           )}
         </div>
       </div>
@@ -115,28 +120,24 @@ export function PersonalInfoSection({
             style={{ width: '100%' }}
           />
         </div>
+      </div>
 
-        <div className='form-group' style={{ flex: '0.8' }}>
-          <label htmlFor='class'>כיתה *</label>
-          <select
-            id='class'
-            name='class'
-            value={formData.academicInfo?.class || ''}
-            onChange={handleAcademicInfoChange}
-            className={errors['academicInfo.class'] ? 'is-invalid' : ''}
-            required
-            style={{ width: '100%' }}
-          >
-            {VALID_CLASSES.map((grade) => (
-              <option key={grade} value={grade}>
-                {grade}
-              </option>
-            ))}
-          </select>
-          {errors['academicInfo.class'] && (
-            <div className='form-error'>{errors['academicInfo.class']}</div>
-          )}
-        </div>
+    {/* Email stand alone full width input */}
+      <div className='form-group'>
+        <label htmlFor='studentEmail'>אימייל תלמיד</label>
+        <input
+          type='email'
+          id='studentEmail'
+          name='studentEmail'
+          value={personalInfo?.studentEmail || ''}
+          onChange={handlePersonalInfoChange}
+          className={errors['personalInfo.studentEmail'] ? 'is-invalid' : ''}
+        />
+        {errors['personalInfo.studentEmail'] && (
+          <div className='form-error'>
+            {errors['personalInfo.studentEmail']}
+          </div>
+        )}
       </div>
 
       <h4>פרטי הורה</h4>

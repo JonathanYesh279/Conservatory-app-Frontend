@@ -26,13 +26,19 @@ export function StudentIndex() {
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
 
   // Define which fields to search in students
-  const studentSearchFields = (student: Student) => [
-    student.personalInfo.fullName,
-    student.academicInfo.instrument,
-    student.academicInfo.class,
-    student.personalInfo.parentName || '',
-    student.personalInfo.studentEmail || '',
-  ];
+  const studentSearchFields = (student: Student) => {
+    const fields = [
+      student.personalInfo.fullName,
+      student.academicInfo.instrument,
+      student.academicInfo.class,
+      student.personalInfo.parentName || '',
+      student.personalInfo.studentEmail || '',
+    ]
+  
+    return fields.filter((field): field is string =>
+      typeof field === 'string'
+    );
+  }
 
   // Use the search hook
   const { filteredEntities: filteredStudents, handleSearch } = useSearchbar(

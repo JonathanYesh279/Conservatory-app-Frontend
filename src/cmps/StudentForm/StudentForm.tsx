@@ -43,14 +43,14 @@ export function StudentForm({
     updateInstrumentProgress,
     updateInstrumentTest,
     handleSubmit,
-    handleCancel, // Use the new cancel handler
+    handleCancel,
     resetForm,
   } = useStudentForm({
     student,
     onClose,
     onStudentCreated,
     newTeacherInfo,
-    isOpen, // Pass the isOpen prop to track form state
+    isOpen,
   });
 
   if (!isOpen) return null;

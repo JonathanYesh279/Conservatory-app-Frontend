@@ -1,5 +1,3 @@
-// src/cmps/StudentDetails/StudentDetailsMain.tsx
-import React from 'react';
 import { useStudentDetailsState } from '../../hooks/useStudentDetailsState';
 import {
   User,

@@ -80,6 +80,7 @@ export function useStudentTests(
         _id: student._id,
         academicInfo: {
           instrument: student.academicInfo.instrument,
+          instrumentProgress: student.academicInfo.instrumentProgress,
           currentStage: student.academicInfo.currentStage,
           class: student.academicInfo.class,
           tests: tests,

@@ -141,7 +141,15 @@ export function OrchestraDetails() {
             },
           }))
 
-          setMembers(memberData)
+          setMembers(
+            memberData.map((member) => ({
+              ...member,
+              academicInfo: {
+                ...member.academicInfo,
+                instrument: member.academicInfo.instrument || '', // Provide a default empty string
+              },
+            })) as OrchestraMember[]
+          );
         } catch (err) {
           console.error('Failed to load members:', err)
         } finally {

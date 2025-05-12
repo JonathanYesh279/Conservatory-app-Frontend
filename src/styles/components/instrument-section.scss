@@ -1,7 +1,6 @@
-/* src/assets/styles/instrumentSection.css */
+// src/styles/components/instrument-section.scss
 
-/* Main form section styles */
-.form-section {
+.instrument-section {
   background-color: var(--bg-card);
   border-radius: 8px;
   padding: 1rem;
@@ -9,366 +8,440 @@
   direction: rtl;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-}
 
-.form-section h3 {
-  color: var(--text-primary);
-  margin-top: 0;
-  margin-bottom: 1rem;
-  font-size: 1.25rem;
-  text-align: right;
-  font-weight: 600;
-}
-
-.form-section h4 {
-  color: var(--text-primary);
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-  text-align: right;
-  font-weight: 600;
-}
-
-/* Instrument list section */
-.instruments-list {
-  margin-bottom: 1.5rem;
-}
-
-.instrument-card {
-  background-color: var(--bg-tertiary);
-  border-radius: 6px;
-  margin-bottom: 0.75rem;
-  padding: 0.75rem;
-  border: 1px solid var(--border-color);
-  box-shadow: var(--shadow-sm);
-}
-
-.instrument-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.instrument-name {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.primary-badge {
-  display: flex;
-  align-items: center;
-  background-color: var(--primary-color);
-  color: white;
-  font-size: 0.75rem;
-  padding: 0.2rem 0.4rem;
-  border-radius: 4px;
-  margin-right: 0.5rem;
-  gap: 0.25rem;
-}
-
-.instrument-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.set-primary-btn {
-  background-color: var(--bg-card);
-  color: var(--text-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.set-primary-btn:hover {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.remove-btn, .expand-btn {
-  background-color: var(--bg-card);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0.25rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.remove-btn:hover {
-  background-color: rgba(var(--danger-rgb), 0.1);
-  color: var(--danger);
-  border-color: var(--danger);
-}
-
-.expand-btn:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.instrument-details {
-  padding: 0.5rem 0;
-}
-
-.details-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.25rem;
-  padding: 0.25rem 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.details-row:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-
-.detail-label {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-}
-
-.detail-value {
-  color: var(--text-primary);
-  font-size: 0.875rem;
-  font-weight: 500;
-}
-
-/* Form inputs and controls */
-.form-row {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  width: 100%;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
-
-.form-group label {
-  color: var(--text-secondary);
-  margin-bottom: 0.25rem;
-  font-size: 0.875rem;
-  text-align: right;
-}
-
-.form-group select,
-.form-group input {
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  color: var(--text-primary);
-  padding: 0.5rem;
-  width: 100%;
-  font-size: 0.9rem;
-  text-align: right;
-}
-
-.form-group select:focus,
-.form-group input:focus {
-  border-color: var(--primary-color);
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
-}
-
-.form-error {
-  color: var(--danger);
-  font-size: 0.75rem;
-  margin-top: 0.25rem;
-  text-align: right;
-}
-
-.form-group .is-invalid {
-  border-color: var(--danger);
-}
-
-/* Checkbox styling */
-.primary-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.primary-checkbox input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-}
-
-.primary-checkbox label {
-  margin-bottom: 0;
-  cursor: pointer;
-}
-
-/* Button styles */
-.add-instrument-btn,
-.add-more-btn {
-  background-color: var(--primary-color);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  width: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.2s;
-}
-
-.add-more-instruments {
-  display: flex;
-  justify-content: flex-start;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-}
-
-.add-instrument-btn.primary {
-  background-color: var(--primary-color);
-}
-
-.add-instrument-btn:hover,
-.add-more-btn:hover {
-  background-color: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-.cancel-btn {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  cursor: pointer;
-  margin-top: 0.5rem;
-  transition: all 0.2s;
-}
-
-.cancel-btn:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-/* Select dropdown styling */
-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: left 0.5rem center;
-  background-size: 1rem;
-  padding-left: 2rem;
-}
-
-/* Dark mode adjustments */
-[data-theme="dark"] {
-  .form-section {
-    background-color: var(--bg-secondary);
+  h3 {
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+    text-align: right;
+    font-weight: 600;
   }
-  
+
+  h4 {
+    color: var(--text-primary);
+    margin-top: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  // Instruments list
+  .instruments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
   .instrument-card {
-    background-color: var(--bg-secondary);
-    border-color: var(--border-dark);
-  }
-  
-  .set-primary-btn, .remove-btn, .expand-btn {
-    background-color: rgba(255, 255, 255, 0.05);
-    border-color: var(--border-dark);
-  }
-  
-  .set-primary-btn:hover {
-    background-color: var(--primary-color);
-  }
-  
-  .remove-btn:hover {
-    background-color: rgba(var(--danger-rgb), 0.2);
-  }
-  
-  .expand-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  .details-row {
-    border-bottom-color: var(--border-dark);
-  }
-  
-  .form-group select,
-  .form-group input {
-    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
-    border-color: var(--border-dark);
-  }
-  
-  .cancel-btn {
-    border-color: var(--border-dark);
-  }
-  
-  .cancel-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-}
-
-
-
-/* Media queries */
-@media (max-width: 768px) {
-  .form-row {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .form-section h3 {
-    font-size: 1.2rem;
-  }
-  
-  .form-section h4 {
-    font-size: 0.95rem;
-  }
-  
-  .instrument-actions {
-    flex-wrap: wrap;
-    justify-content: flex-end;
-  }
-}
-
-@media (max-width: 480px) {
-  .form-section {
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
     padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+      box-shadow: var(--shadow-sm);
+    }
   }
-  
+
   .instrument-header {
-    flex-direction: column;
-    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
     gap: 0.5rem;
   }
-  
-  .instrument-actions {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .details-row {
+
+  .instrument-info {
+    flex: 1;
+    display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: 0.5rem;
   }
-  
-  .detail-value {
+
+  .instrument-name-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .instrument-name {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .stage-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+  }
+
+  .primary-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    margin-right: 0.5rem;
+    gap: 0.25rem;
+  }
+
+  .test-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .test-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.8rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    white-space: nowrap;
+    
+    .test-label {
+      margin-left: 0.25rem;
+      font-weight: 500;
+    }
+
+    &.status-pending {
+      background-color: var(--bg-card);
+      color: var(--text-secondary);
+    }
+
+    &.status-passed {
+      background-color: rgba(var(--success-rgb), 0.1);
+      color: var(--success);
+      border-color: rgba(var(--success-rgb), 0.2);
+    }
+
+    &.status-success {
+      background-color: rgba(var(--success-rgb), 0.15);
+      color: var(--success);
+      border-color: rgba(var(--success-rgb), 0.3);
+    }
+
+    &.status-excellent {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--primary-color);
+      border-color: rgba(var(--primary-color-rgb), 0.2);
+    }
+
+    &.status-failed {
+      background-color: rgba(var(--danger-rgb), 0.1);
+      color: var(--danger);
+      border-color: rgba(var(--danger-rgb), 0.2);
+    }
+  }
+
+  .test-notes {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 0.25rem;
+    font-style: italic;
+    background-color: rgba(var(--bg-tertiary-rgb), 0.5);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+  }
+
+  .instrument-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .set-primary-btn,
+  .remove-btn {
+    background-color: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .set-primary-btn {
+    color: var(--text-secondary);
+    
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.1);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+  }
+
+  .remove-btn {
+    &:hover {
+      background-color: rgba(var(--danger-rgb), 0.1);
+      color: var(--danger);
+      border-color: var(--danger);
+    }
+  }
+
+  // Add instrument form
+  .add-more-instruments {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 0.75rem;
+  }
+
+  .add-more-btn {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 1px dashed var(--primary-color);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
     font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: rgba(var(--primary-color-rgb), 0.05);
+      transform: translateY(-1px);
+    }
+  }
+
+  .add-instrument-form {
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 0.75rem;
+    border: 1px solid var(--border-color);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .form-row {
+    margin-bottom: 0.75rem;
+  }
+
+  .form-group {
+    position: relative;
+    
+    label {
+      display: block;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      text-align: right;
+    }
+    
+    select,
+    input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      text-align: right;
+      
+      &:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+      
+      &.is-invalid {
+        border-color: var(--danger);
+      }
+    }
+    
+    .form-error {
+      color: var(--danger);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      text-align: right;
+    }
+  }
+
+  // Select styling
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 0.5rem center;
+    background-size: 0.8rem;
+    padding-left: 2rem;
+  }
+
+  // Checkbox styling
+  .primary-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    
+    input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      margin: 0;
+      accent-color: var(--primary-color);
+    }
+    
+    label {
+      margin-bottom: 0;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+  }
+
+  // Form actions
+  .form-actions-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .add-instrument-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+  }
+
+  .cancel-btn {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    
+    &:hover {
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+    }
+  }
+
+  // Dark mode adjustments
+  [data-theme="dark"] & {
+    .instrument-card {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+    }
+    
+    .stage-badge,
+    .test-badge:not(.status-passed):not(.status-success):not(.status-excellent):not(.status-failed) {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+    }
+    
+    .set-primary-btn, 
+    .remove-btn {
+      background-color: rgba(255, 255, 255, 0.05);
+      border-color: var(--border-color);
+    }
+    
+    .add-instrument-form {
+      background-color: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-color);
+    }
+    
+    .add-more-btn {
+      background-color: transparent;
+      
+      &:hover {
+        background-color: rgba(var(--primary-color-rgb), 0.1);
+      }
+    }
+    
+    .test-notes {
+      background-color: rgba(0, 0, 0, 0.2);
+    }
+    
+    .form-group select,
+    .form-group input {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-color: var(--border-color);
+    }
+    
+    .cancel-btn {
+      border-color: var(--border-color);
+      
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+  }
+
+  // Media queries
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+    
+    .instrument-name-wrapper {
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.75rem;
+    
+    .instrument-card {
+      padding: 0.6rem;
+    }
+    
+    .instrument-header {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    
+    .instrument-actions {
+      align-self: flex-end;
+    }
+    
+    .test-badges {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 }

@@ -1,6 +1,12 @@
 // src/hooks/useOrchestraSection.ts
 import { useCallback } from 'react';
 
+// Define interfaces for the orchestra-related data
+interface OrchestraAssignment {
+  orchestraId: string;
+  // Add other properties if needed
+}
+
 interface UseOrchestraSectionProps {
   updateFormData: (setter: (prev: any) => any) => void;
 }
@@ -14,7 +20,7 @@ export function useOrchestraSection({
       updateFormData((prev) => {
         // Check if orchestra already exists
         const exists = prev.orchestraAssignments.some(
-          (a) => a.orchestraId === orchestraId
+          (a: OrchestraAssignment) => a.orchestraId === orchestraId
         );
 
         if (exists) return prev; // Already assigned
@@ -39,12 +45,12 @@ export function useOrchestraSection({
     (orchestraId: string) => {
       updateFormData((prev) => {
         const updatedAssignments = prev.orchestraAssignments.filter(
-          (a) => a.orchestraId !== orchestraId
+          (a: OrchestraAssignment) => a.orchestraId !== orchestraId
         );
 
         // Also remove from orchestraIds in enrollments
         const updatedOrchestraIds = prev.enrollments.orchestraIds.filter(
-          (id) => id !== orchestraId
+          (id: string) => id !== orchestraId
         );
 
         return {

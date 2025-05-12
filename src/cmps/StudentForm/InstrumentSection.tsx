@@ -1,19 +1,28 @@
-// src/components/StudentForm/InstrumentSection.tsx
+// src/cmps/StudentForm/InstrumentSection.tsx
 import React, { useState } from 'react';
-import {
-  Music,
-  Star,
-  Plus,
-  Trash2,
-  ChevronDown,
-  ChevronUp,
-} from 'lucide-react';
+import { Music, Star, Plus, Trash2, Check } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
 
 interface InstrumentSectionProps {
   instruments: InstrumentProgress[];
-  onInstrumentsChange: (instruments: InstrumentProgress[]) => void;
-  errors?: Record<string, string>;
+  addInstrument: (instrumentName: string) => void;
+  removeInstrument: (instrumentName: string) => void;
+  setPrimaryInstrument: (instrumentName: string) => void;
+  updateInstrumentProgress: (
+    instrumentName: string,
+    field: string,
+    value: any
+  ) => void;
+  updateInstrumentTest: (
+    instrumentName: string,
+    testType: string,
+    field: string,
+    value: any
+  ) => void;
+  onInstrumentsChange?: (instruments: InstrumentProgress[]) => void;
+  isSubmitting?: boolean;
+  isFormOpen?: boolean;
+  errors: any;
 }
 
 export function InstrumentSection({
@@ -31,9 +40,6 @@ export function InstrumentSection({
       technicalTest: { status: 'לא נבחן', notes: '' },
     },
   });
-  const [expandedInstrumentIndex, setExpandedInstrumentIndex] = useState<
-    number | null
-  >(null);
 
   const instrumentOptions = [
     'כינור',
@@ -77,11 +83,13 @@ export function InstrumentSection({
       setFormData((prev) => ({
         ...prev,
         [parent]: {
-          ...prev[parent as keyof typeof prev],
+          ...((prev[parent as keyof typeof prev] as Record<string, any>) || {}),
           [child]: {
-            ...prev[parent as keyof typeof prev]?.[
-              child as keyof (typeof prev)[keyof typeof prev]
-            ],
+            ...((((prev[parent as keyof typeof prev] as Record<string, any>) ||
+              {})[child as keyof (typeof prev)[keyof typeof prev]] as Record<
+              string,
+              any
+            >) || {}),
             [prop]: value,
           },
         },
@@ -133,7 +141,7 @@ export function InstrumentSection({
     }
 
     updatedInstruments.push(newInstrument);
-    onInstrumentsChange(updatedInstruments);
+    onInstrumentsChange?.(updatedInstruments);
 
     // Reset form
     setFormData({
@@ -159,7 +167,7 @@ export function InstrumentSection({
       updatedInstruments[0].isPrimary = true;
     }
 
-    onInstrumentsChange(updatedInstruments);
+    onInstrumentsChange?.(updatedInstruments);
   };
 
   const handleSetPrimary = (index: number) => {
@@ -170,17 +178,27 @@ export function InstrumentSection({
       inst.isPrimary = i === index;
     });
 
-    onInstrumentsChange(updatedInstruments);
+    onInstrumentsChange?.(updatedInstruments);
   };
 
-  const toggleInstrumentExpand = (index: number) => {
-    setExpandedInstrumentIndex(
-      expandedInstrumentIndex === index ? null : index
-    );
+  // Function to get badge class based on test status
+  const getTestStatusBadge = (status: string) => {
+    switch (status) {
+      case 'עבר/ה':
+        return 'status-passed';
+      case 'עבר/ה בהצלחה':
+        return 'status-success';
+      case 'עבר/ה בהצטיינות':
+        return 'status-excellent';
+      case 'לא עבר/ה':
+        return 'status-failed';
+      default:
+        return 'status-pending';
+    }
   };
 
   return (
-    <div className='form-section'>
+    <div className='form-section instrument-section'>
       <h3>כלי נגינה</h3>
 
       {/* List existing instruments */}
@@ -189,24 +207,66 @@ export function InstrumentSection({
           {instruments.map((instrument, index) => (
             <div key={index} className='instrument-card'>
               <div className='instrument-header'>
-                <div className='instrument-name'>
-                  <Music size={16} />
-                  {instrument.instrumentName}
-                  {instrument.isPrimary && (
-                    <span className='primary-badge'>
-                      <Star size={12} />
-                      ראשי
-                    </span>
+                <div className='instrument-info'>
+                  <div className='instrument-name-wrapper'>
+                    <div className='instrument-name'>
+                      <Music size={16} />
+                      <span>{instrument.instrumentName}</span>
+                      {instrument.isPrimary && (
+                        <span className='primary-badge'>
+                          <Star size={12} />
+                          ראשי
+                        </span>
+                      )}
+                    </div>
+                    <div className='stage-badge'>
+                      שלב {instrument.currentStage}
+                    </div>
+                  </div>
+
+                  <div className='test-badges'>
+                    <div
+                      className={`test-badge ${getTestStatusBadge(
+                        instrument.tests?.technicalTest?.status || 'לא נבחן'
+                      )}`}
+                    >
+                      <span className='test-label'>טכני:</span>
+                      <span className='test-value'>
+                        {instrument.tests?.technicalTest?.status || 'לא נבחן'}
+                      </span>
+                    </div>
+                    <div
+                      className={`test-badge ${getTestStatusBadge(
+                        instrument.tests?.stageTest?.status || 'לא נבחן'
+                      )}`}
+                    >
+                      <span className='test-label'>שלב:</span>
+                      <span className='test-value'>
+                        {instrument.tests?.stageTest?.status || 'לא נבחן'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {(instrument.tests?.stageTest?.notes ||
+                    instrument.tests?.technicalTest?.notes) && (
+                    <div className='test-notes'>
+                      <span>
+                        {instrument.tests?.stageTest?.notes ||
+                          instrument.tests?.technicalTest?.notes}
+                      </span>
+                    </div>
                   )}
                 </div>
+
                 <div className='instrument-actions'>
                   {!instrument.isPrimary && (
                     <button
                       type='button'
                       className='set-primary-btn'
                       onClick={() => handleSetPrimary(index)}
+                      title='הגדר כראשי'
                     >
-                      הגדר כראשי
+                      <Star size={14} />
                     </button>
                   )}
                   <button
@@ -214,62 +274,11 @@ export function InstrumentSection({
                     className='remove-btn'
                     onClick={() => handleRemoveInstrument(index)}
                     aria-label='הסר כלי נגינה'
+                    title='הסר כלי נגינה'
                   >
-                    <Trash2 size={16} />
-                  </button>
-                  <button
-                    type='button'
-                    className='expand-btn'
-                    onClick={() => toggleInstrumentExpand(index)}
-                    aria-label={
-                      expandedInstrumentIndex === index
-                        ? 'צמצם פרטים'
-                        : 'הרחב פרטים'
-                    }
-                  >
-                    {expandedInstrumentIndex === index ? (
-                      <ChevronUp size={16} />
-                    ) : (
-                      <ChevronDown size={16} />
-                    )}
+                    <Trash2 size={14} />
                   </button>
                 </div>
-              </div>
-
-              <div className='instrument-details'>
-                <div className='details-row'>
-                  <span className='detail-label'>שלב</span>
-                  <span className='detail-value'>
-                    {instrument.currentStage}
-                  </span>
-                </div>
-
-                {expandedInstrumentIndex === index && (
-                  <>
-                    <div className='details-row'>
-                      <span className='detail-label'>מבחן טכני</span>
-                      <span className='detail-value'>
-                        {instrument.tests?.technicalTest?.status || 'לא נבחן'}
-                      </span>
-                    </div>
-                    <div className='details-row'>
-                      <span className='detail-label'>מבחן שלב</span>
-                      <span className='detail-value'>
-                        {instrument.tests?.stageTest?.status || 'לא נבחן'}
-                      </span>
-                    </div>
-                    {(instrument.tests?.stageTest?.notes ||
-                      instrument.tests?.technicalTest?.notes) && (
-                      <div className='details-row'>
-                        <span className='detail-label'>הערות</span>
-                        <span className='detail-value'>
-                          {instrument.tests?.stageTest?.notes ||
-                            instrument.tests?.technicalTest?.notes}
-                        </span>
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
             </div>
           ))}
@@ -292,7 +301,7 @@ export function InstrumentSection({
         <div className='add-instrument-form'>
           <h4>הוספת כלי נגינה</h4>
 
-          <div className='form-row'>
+          <div className='form-grid'>
             <div className='form-group'>
               <label htmlFor='instrumentName'>כלי נגינה</label>
               <select
@@ -331,7 +340,7 @@ export function InstrumentSection({
             </div>
           </div>
 
-          <div className='form-row'>
+          <div className='form-grid'>
             <div className='form-group'>
               <label htmlFor='stageTestStatus'>מבחן שלב</label>
               <select
@@ -367,7 +376,7 @@ export function InstrumentSection({
 
           <div className='form-row'>
             <div className='form-group'>
-              <label htmlFor='stageTestNotes'>הערות מבחן שלב</label>
+              <label htmlFor='stageTestNotes'>הערות</label>
               <input
                 type='text'
                 id='stageTestNotes'
@@ -380,26 +389,25 @@ export function InstrumentSection({
           </div>
 
           <div className='form-row'>
-            <div className='form-group'>
-              <div className='primary-checkbox'>
-                <input
-                  type='checkbox'
-                  id='isPrimary'
-                  name='isPrimary'
-                  checked={formData.isPrimary}
-                  onChange={handleInputChange}
-                />
-                <label htmlFor='isPrimary'>כלי נגינה ראשי</label>
-              </div>
+            <div className='primary-checkbox'>
+              <input
+                type='checkbox'
+                id='isPrimary'
+                name='isPrimary'
+                checked={formData.isPrimary}
+                onChange={handleInputChange}
+              />
+              <label htmlFor='isPrimary'>כלי נגינה ראשי</label>
             </div>
           </div>
 
-          <div className='form-row'>
+          <div className='form-actions-row'>
             <button
               type='button'
-              className='add-instrument-btn primary'
+              className='add-instrument-btn'
               onClick={handleAddInstrument}
             >
+              <Check size={16} />
               הוסף
             </button>
             <button

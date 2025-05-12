@@ -40,7 +40,7 @@ export function AttendanceSection({
 
       {isOpen && (
         <div className='sd-section-content'>
-          {student.academicInfo?.orchestraIds?.length > 0 ? (
+          {(student.academicInfo?.orchestraIds?.length || 0) > 0 ? (
             <div className='sd-attendance-container'>
               {/* If we have attendance stats */}
               {loadingAttendance ? (

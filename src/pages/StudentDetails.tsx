@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { useStudentDetailsState } from '../hooks/useStudentDetailsState';
 import { RefreshCw, ArrowLeft, User, Music } from 'lucide-react';
 
 // Import section components
-import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection';
+import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection'
 import { PersonalInfoSection } from '../cmps/StudentDetails/sections/PersonalInfoSection';
 import { ParentInfoSection } from '../cmps/StudentDetails/sections/ParentInfoSection';
 import { TeachersSection } from '../cmps/StudentDetails/sections/TeachersSection';
