@@ -30,6 +30,28 @@ export function useStudentApiService({
       setError(null);
 
       try {
+        console.log('Starting saveStudentData with:', {
+          studentId: studentData._id,
+          hasTeacherAssignments: formData.teacherAssignments.length > 0,
+          teacherAssignments: formData.teacherAssignments,
+          teacherIds: formData.teacherIds,
+        });
+
+        // Fix: Ensure teacherIds are properly populated from teacherAssignments
+        if (formData.teacherAssignments.length > 0) {
+          studentData.teacherIds = Array.from(
+            new Set(formData.teacherAssignments.map((a: any) => a.teacherId))
+          ).filter(
+            (id) =>
+              id !== 'new-teacher' &&
+              id !== undefined &&
+              id !== null &&
+              id !== ''
+          );
+        }
+
+        console.log('TeacherIds after processing:', studentData.teacherIds);
+
         // Handle new or existing student
         let savedStudent: Student;
 

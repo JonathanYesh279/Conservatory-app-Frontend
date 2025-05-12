@@ -135,8 +135,30 @@ export const studentService = {
       return [];
     }
 
-    // Fetch students with specific IDs
-    return httpService.post('student/byIds', { studentIds });
+    try {
+      // Use individual GET requests instead of POST to byIds endpoint
+      // This is a workaround for the 404 error with the batch endpoint
+      const studentPromises = studentIds.map((id) =>
+        this.getStudentById(id).catch((error) => {
+          console.error(`Failed to fetch student ${id}:`, error);
+          return null;
+        })
+      );
+
+      const results = await Promise.allSettled(studentPromises);
+
+      // Filter out failures and nulls
+      const students = results
+        .filter(
+          (result) => result.status === 'fulfilled' && result.value !== null
+        )
+        .map((result) => (result as PromiseFulfilledResult<Student>).value);
+
+      return students;
+    } catch (error) {
+      console.error('Error fetching students by IDs:', error);
+      return []; // Return empty array instead of throwing
+    }
   },
 
   async getStudentsByOrchestraId(orchestraId: string): Promise<Student[]> {

@@ -436,11 +436,7 @@ export function RehearsalForm({
     <div className='rehearsal-form'>
       <div className='overlay' onClick={onClose}></div>
       <div className='form-modal'>
-        <button
-          className='btn-icon close-btn'
-          onClick={onClose}
-          aria-label='סגור'
-        >
+        <button className='close-btn' onClick={onClose} aria-label='סגור'>
           <X size={20} />
         </button>
 
@@ -454,14 +450,14 @@ export function RehearsalForm({
           <div className='mode-toggle'>
             <button
               type='button'
-              className={`btn primary ${formMode === 'single' ? 'active' : ''}`}
+              className={`${formMode === 'single' ? 'active' : ''}`}
               onClick={() => handleSetFormMode('single')}
             >
               חזרה בודדת
             </button>
             <button
               type='button'
-              className={`btn primary ${formMode === 'bulk' ? 'active' : ''}`}
+              className={`${formMode === 'bulk' ? 'active' : ''}`}
               onClick={() => handleSetFormMode('bulk')}
             >
               חזרות מרובות
@@ -771,7 +767,7 @@ export function RehearsalForm({
 
           {/* Form Actions */}
           <div className='form-actions'>
-            <button type='submit' className='btn primary' disabled={isLoading}>
+            <button type='submit' className='primary' disabled={isLoading}>
               {isLoading
                 ? 'שומר...'
                 : formMode === 'bulk'
@@ -781,7 +777,7 @@ export function RehearsalForm({
                 : 'הוספה'}
             </button>
 
-            <button type='button' className='btn secondary' onClick={onClose}>
+            <button type='button' className='secondary' onClick={onClose}>
               ביטול
             </button>
           </div>

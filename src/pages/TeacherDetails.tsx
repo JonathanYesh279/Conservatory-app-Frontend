@@ -161,39 +161,54 @@ export function TeacherDetails() {
 
       console.log('Loading students for IDs:', studentIds);
 
-      // Fetch student data with retry logic
-      let attempts = 0;
+      // Here's the fix - using a safer approach for loading student data
       let studentData: any[] = [];
 
-      while (attempts < 2 && studentData.length < studentIds.length) {
-        attempts++;
-        try {
-          studentData = await studentService.getStudentsByIds(studentIds);
-          console.log(
-            `Attempt ${attempts}: Loaded ${studentData.length}/${studentIds.length} students`
-          );
+      try {
+        // First try to load students by IDs in a single call
+        studentData = await studentService.getStudentsByIds(studentIds);
+        console.log(
+          `Successfully loaded ${studentData.length}/${studentIds.length} students`
+        );
+      } catch (error) {
+        console.error(`Failed to load students by IDs:`, error);
 
-          // If we still don't have all students but it's not empty, continue
-          if (
-            studentData.length > 0 &&
-            studentData.length < studentIds.length
-          ) {
-            // Add a small delay before retrying
-            await new Promise((resolve) => setTimeout(resolve, 500));
-          }
-        } catch (error) {
-          console.error(`Attempt ${attempts} failed:`, error);
-        }
+        // Fallback: try to load each student individually
+        console.log('Falling back to individual student loading');
+        const individualPromises = studentIds.map((id) =>
+          studentService
+            .getStudentById(id)
+            .then((student) => {
+              console.log(`Successfully loaded student ${id}`);
+              return student;
+            })
+            .catch((err) => {
+              console.error(`Failed to load student ${id}:`, err);
+              return null;
+            })
+        );
+
+        const results = await Promise.allSettled(individualPromises);
+        studentData = results
+          .filter(
+            (result) => result.status === 'fulfilled' && result.value !== null
+          )
+          .map((result) => (result as PromiseFulfilledResult<any>).value);
+
+        console.log(
+          `Loaded ${studentData.length}/${studentIds.length} students individually`
+        );
       }
-
-      console.log('Final loaded student data:', studentData);
 
       // Set students state for the students section
       setStudents(
         studentData.map((student) => ({
           _id: student._id,
           fullName: student.personalInfo.fullName || 'תלמיד ללא שם',
-          instrument: student.academicInfo.instrument || '',
+          instrument:
+            student.academicInfo?.instrument ||
+            student.academicInfo?.instrumentProgress?.[0]?.instrumentName ||
+            '',
         }))
       );
 
@@ -213,7 +228,12 @@ export function TeacherDetails() {
           // The value to store for each key format
           const studentInfo = {
             name: student.personalInfo?.fullName || 'תלמיד ללא שם',
-            instrument: student.academicInfo?.instrument || '',
+            instrument:
+              student.academicInfo?.instrument ||
+              (student.academicInfo?.instrumentProgress &&
+              student.academicInfo.instrumentProgress.length > 0
+                ? student.academicInfo.instrumentProgress[0].instrumentName
+                : ''),
           };
 
           // Store using each format as a key

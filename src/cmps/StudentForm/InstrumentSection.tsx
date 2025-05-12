@@ -1,6 +1,6 @@
 // src/cmps/StudentForm/InstrumentSection.tsx
-import React, { useState } from 'react';
-import { Music, Star, Plus, Trash2, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Music, Star, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
 
 interface InstrumentSectionProps {
@@ -27,7 +27,14 @@ interface InstrumentSectionProps {
 
 export function InstrumentSection({
   instruments,
+  addInstrument,
+  removeInstrument,
+  setPrimaryInstrument,
+  updateInstrumentProgress,
+  updateInstrumentTest,
   onInstrumentsChange,
+  isSubmitting,
+  isFormOpen,
   errors = {},
 }: InstrumentSectionProps) {
   const [showForm, setShowForm] = useState(false);
@@ -40,6 +47,11 @@ export function InstrumentSection({
       technicalTest: { status: 'לא נבחן', notes: '' },
     },
   });
+
+  // Add feedback states
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [lastAddedInstrument, setLastAddedInstrument] = useState('');
+  const [formError, setFormError] = useState('');
 
   const instrumentOptions = [
     'כינור',
@@ -62,20 +74,36 @@ export function InstrumentSection({
     'הקשה',
   ];
 
-  const stageOptions = [1, 2, 3, 4, 5, 6];
+  const stageOptions = [1, 2, 3, 4, 5, 6, 7, 8];
 
   const testStatusOptions = [
     'לא נבחן',
     'עבר/ה',
-    'עבר/ה בהצלחה',
     'עבר/ה בהצטיינות',
+    'עבר/ה בהצטיינות יתרה',
     'לא עבר/ה',
   ];
+
+  // Clear success message after timeout
+  useEffect(() => {
+    let timer: number;
+    if (showSuccessMessage) {
+      timer = window.setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 3000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [showSuccessMessage]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
+
+    // Clear any form errors when user makes changes
+    setFormError('');
 
     if (name.includes('.')) {
       // Handle nested objects (e.g. tests.stageTest.status)
@@ -109,8 +137,24 @@ export function InstrumentSection({
     }
   };
 
+  const validateForm = () => {
+    if (!formData.instrumentName) {
+      setFormError('יש לבחור כלי נגינה');
+      return false;
+    }
+
+    // Check if this instrument already exists
+    if (instruments.some((i) => i.instrumentName === formData.instrumentName)) {
+      setFormError('כלי נגינה זה כבר קיים ברשימה');
+      return false;
+    }
+
+    return true;
+  };
+
   const handleAddInstrument = () => {
-    if (!formData.instrumentName) return;
+    // Validate form before adding
+    if (!validateForm()) return;
 
     const newInstrument = {
       instrumentName: formData.instrumentName,
@@ -128,20 +172,71 @@ export function InstrumentSection({
       },
     } as InstrumentProgress;
 
-    // If this is the first instrument or if it's marked as primary, make sure no other is primary
-    const updatedInstruments = [...instruments];
+    // Store the instrument name for the success message
+    setLastAddedInstrument(newInstrument.instrumentName);
 
-    if (newInstrument.isPrimary) {
-      updatedInstruments.forEach((inst) => {
-        inst.isPrimary = false;
-      });
-    } else if (updatedInstruments.length === 0) {
-      // If this is the first instrument, make it primary by default
-      newInstrument.isPrimary = true;
+    // IMPORTANT: Use the provided addInstrument function from props
+    addInstrument(newInstrument.instrumentName);
+
+    // Update stage if not default
+    if (newInstrument.currentStage !== 1) {
+      updateInstrumentProgress(
+        newInstrument.instrumentName,
+        'currentStage',
+        newInstrument.currentStage
+      );
     }
 
-    updatedInstruments.push(newInstrument);
-    onInstrumentsChange?.(updatedInstruments);
+    // Update primary status if true
+    if (newInstrument.isPrimary) {
+      setPrimaryInstrument(newInstrument.instrumentName);
+    }
+
+    // Update test statuses if not default
+    if (
+      newInstrument.tests.stageTest.status !== 'לא נבחן' ||
+      newInstrument.tests.stageTest.notes
+    ) {
+      updateInstrumentTest(
+        newInstrument.instrumentName,
+        'stageTest',
+        'status',
+        newInstrument.tests.stageTest.status
+      );
+
+      if (newInstrument.tests.stageTest.notes) {
+        updateInstrumentTest(
+          newInstrument.instrumentName,
+          'stageTest',
+          'notes',
+          newInstrument.tests.stageTest.notes
+        );
+      }
+    }
+
+    if (
+      newInstrument.tests.technicalTest.status !== 'לא נבחן' ||
+      newInstrument.tests.technicalTest.notes
+    ) {
+      updateInstrumentTest(
+        newInstrument.instrumentName,
+        'technicalTest',
+        'status',
+        newInstrument.tests.technicalTest.status
+      );
+
+      if (newInstrument.tests.technicalTest.notes) {
+        updateInstrumentTest(
+          newInstrument.instrumentName,
+          'technicalTest',
+          'notes',
+          newInstrument.tests.technicalTest.notes
+        );
+      }
+    }
+
+    // Show success message
+    setShowSuccessMessage(true);
 
     // Reset form
     setFormData({
@@ -153,32 +248,23 @@ export function InstrumentSection({
         technicalTest: { status: 'לא נבחן', notes: '' },
       },
     });
+
+    // Close the form
     setShowForm(false);
   };
 
   const handleRemoveInstrument = (index: number) => {
-    const updatedInstruments = [...instruments];
-    const removedInstrument = updatedInstruments[index];
-
-    updatedInstruments.splice(index, 1);
-
-    // If we removed the primary instrument, make the first one primary (if any exist)
-    if (removedInstrument.isPrimary && updatedInstruments.length > 0) {
-      updatedInstruments[0].isPrimary = true;
+    if (index >= 0 && index < instruments.length) {
+      const instrumentToRemove = instruments[index];
+      removeInstrument(instrumentToRemove.instrumentName);
     }
-
-    onInstrumentsChange?.(updatedInstruments);
   };
 
   const handleSetPrimary = (index: number) => {
-    const updatedInstruments = [...instruments];
-
-    // Set all to non-primary first
-    updatedInstruments.forEach((inst, i) => {
-      inst.isPrimary = i === index;
-    });
-
-    onInstrumentsChange?.(updatedInstruments);
+    if (index >= 0 && index < instruments.length) {
+      const instrument = instruments[index];
+      setPrimaryInstrument(instrument.instrumentName);
+    }
   };
 
   // Function to get badge class based on test status
@@ -190,6 +276,8 @@ export function InstrumentSection({
         return 'status-success';
       case 'עבר/ה בהצטיינות':
         return 'status-excellent';
+      case 'עבר/ה בהצטיינות יתרה':
+        return 'status-excellent';
       case 'לא עבר/ה':
         return 'status-failed';
       default:
@@ -200,6 +288,14 @@ export function InstrumentSection({
   return (
     <div className='form-section instrument-section'>
       <h3>כלי נגינה</h3>
+
+      {/* Success Message */}
+      {showSuccessMessage && (
+        <div className='success-message'>
+          <Check size={16} />
+          <span>הכלי {lastAddedInstrument} נוסף בהצלחה</span>
+        </div>
+      )}
 
       {/* List existing instruments */}
       {instruments.length > 0 && (
@@ -301,15 +397,25 @@ export function InstrumentSection({
         <div className='add-instrument-form'>
           <h4>הוספת כלי נגינה</h4>
 
+          {/* Form error message */}
+          {formError && (
+            <div className='form-error-message'>
+              <AlertCircle size={16} />
+              <span>{formError}</span>
+            </div>
+          )}
+
           <div className='form-grid'>
             <div className='form-group'>
-              <label htmlFor='instrumentName'>כלי נגינה</label>
+              <label htmlFor='instrumentName'>כלי נגינה *</label>
               <select
                 id='instrumentName'
                 name='instrumentName'
                 value={formData.instrumentName}
                 onChange={handleInputChange}
-                className={errors.instrumentName ? 'is-invalid' : ''}
+                className={
+                  errors.instrumentName || formError ? 'is-invalid' : ''
+                }
               >
                 <option value=''>בחר כלי נגינה</option>
                 {instrumentOptions.map((option) => (
@@ -413,7 +519,10 @@ export function InstrumentSection({
             <button
               type='button'
               className='cancel-btn'
-              onClick={() => setShowForm(false)}
+              onClick={() => {
+                setShowForm(false);
+                setFormError('');
+              }}
             >
               ביטול
             </button>

@@ -281,12 +281,10 @@
   /* Media queries */
   @media (max-width: 768px) {
     .schedule-row .form-row {
-      flex-direction: column;
       gap: 0.5rem;
     }
     
     .schedule-actions {
-      flex-direction: column;
       gap: 0.5rem;
     }
   }

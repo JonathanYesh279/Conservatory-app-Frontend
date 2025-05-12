@@ -330,7 +330,6 @@ export function TeacherAssignmentSection({
               className='add-lesson-btn'
               onClick={handleAddLesson}
             >
-              <Plus size={16} />
               הוסף שיעור נוסף
             </button>
 
