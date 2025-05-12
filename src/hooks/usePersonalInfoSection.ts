@@ -19,10 +19,10 @@ export function usePersonalInfoSection({
       const { name, value, type } = e.target;
 
       // Process value based on input type
-      let processedValue: string | number | undefined;
+      let processedValue: string | number | undefined = value;
 
-      // Convert to number for number inputs if value exists
-      if (type === 'number' && value) {
+      // Convert to number for number inputs if value exists and isn't empty
+      if (type === 'number' && value !== '') {
         processedValue = parseInt(value);
       }
 

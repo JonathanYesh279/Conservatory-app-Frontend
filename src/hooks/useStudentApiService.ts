@@ -34,17 +34,18 @@ export function useStudentApiService({
         let savedStudent: Student;
 
         if (studentData._id) {
-          // Update existing student
+          // Important: Use the studentService.updateStudent directly when updating
+          // to avoid the issue where a new student is created instead of updating
           savedStudent = await studentService.updateStudent(
             studentData._id,
             studentData
           );
+          console.log('Student updated successfully:', savedStudent);
         } else {
-          // Create new student
+          // For new students, use the store method which calls addStudent
           savedStudent = await saveStudent(studentData);
+          console.log('New student created successfully:', savedStudent);
         }
-
-        console.log('Student saved successfully:', savedStudent);
 
         // Process teacher assignments after student is saved
         const teacherPromises = formData.teacherAssignments

@@ -136,8 +136,7 @@ export const studentService = {
     }
 
     // Fetch students with specific IDs
-    const allStudents = await this.getStudents();
-    return allStudents.filter((student) => studentIds.includes(student._id));
+    return httpService.post('student/byIds', { studentIds });
   },
 
   async getStudentsByOrchestraId(orchestraId: string): Promise<Student[]> {
@@ -149,7 +148,9 @@ export const studentService = {
   },
 
   async addStudent(student: Partial<Student>): Promise<Student> {
-    return httpService.post('student', student);
+    // Ensure we don't accidentally include an _id when creating a new student
+    const { _id, ...newStudentData } = student;
+    return httpService.post('student', newStudentData);
   },
 
   async updateStudent(
@@ -157,12 +158,21 @@ export const studentService = {
     student: Partial<Student>
   ): Promise<Student> {
     // Remove fields that are not allowed in updates
-    const { _id, createdAt, updatedAt, ...updateData } = student as any;
+    const { createdAt, updatedAt, ...updateData } = student as any;
 
+    // Ensure we're not sending the _id in the body when it's already in the URL
+    if (updateData._id) {
+      delete updateData._id;
+    }
+
+    console.log(`Updating student with ID: ${studentId}`);
+    console.log('Update data:', updateData);
+
+    // Use PUT method for updating
     return httpService.put(`student/${studentId}`, updateData);
   },
 
-  async removeStudent(studentId: string): Promise<Student> {
+  async removeStudent(studentId: string): Promise<void> {
     return httpService.delete(`student/${studentId}`);
   },
 

@@ -1,12 +1,12 @@
 // src/hooks/useStudentForm.tsx
-import { useState, useEffect, useCallback } from 'react'
-import { useSchoolYearStore } from '../store/schoolYearStore'
-import { Student, InstrumentProgress } from '../services/studentService'
-import { useFormValidation } from './useFormValidation'
-import { useInstrumentSection } from './useInstrumentSection'
-import { useTeacherSection } from './useTeacherSection'
-import { useOrchestraSection } from './useOrchestraSection'
-import { useStudentApiService } from './useStudentApiService'
+import { useState, useEffect, useCallback } from 'react';
+import { useSchoolYearStore } from '../store/schoolYearStore';
+import { Student, InstrumentProgress } from '../services/studentService';
+import { useFormValidation } from './useFormValidation';
+import { useInstrumentSection } from './useInstrumentSection';
+import { useTeacherSection } from './useTeacherSection';
+import { useOrchestraSection } from './useOrchestraSection';
+import { useStudentApiService } from './useStudentApiService';
 
 // Export constants for use in other components
 export const VALID_CLASSES = [
@@ -23,8 +23,8 @@ export const VALID_CLASSES = [
   'יא',
   'יב',
   'אחר',
-]
-export const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8]
+];
+export const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
 export const VALID_INSTRUMENTS = [
   'חצוצרה',
   'חליל צד',
@@ -34,73 +34,73 @@ export const VALID_INSTRUMENTS = [
   'טרומבון',
   'סקסופון',
   'אבוב',
-]
-export const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה']
+];
+export const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה'];
 export const EXTENDED_TEST_STATUSES = [
   'לא נבחן',
   'עבר/ה',
   'לא עבר/ה',
   'עבר/ה בהצלחה',
   'עבר/ה בהצטיינות',
-]
-export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי']
-export const LESSON_DURATIONS = [30, 45, 60]
+];
+export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+export const LESSON_DURATIONS = [30, 45, 60];
 
 // Teacher assignment interface
 export interface TeacherAssignment {
-  teacherId: string
-  day: string
-  time: string
-  duration: number
+  teacherId: string;
+  day: string;
+  time: string;
+  duration: number;
 }
 
 // Orchestra assignment interface
 export interface OrchestraAssignment {
-  orchestraId: string
+  orchestraId: string;
 }
 
 // Define comprehensive type for student form data with new structure
 export interface StudentFormData {
-  _id?: string
+  _id?: string;
   personalInfo: {
-    fullName: string
-    phone?: string
-    age?: number
-    address?: string
-    parentName?: string
-    parentPhone?: string
-    parentEmail?: string
-    studentEmail?: string
-  }
+    fullName: string;
+    phone?: string;
+    age?: number;
+    address?: string;
+    parentName?: string;
+    parentPhone?: string;
+    parentEmail?: string;
+    studentEmail?: string;
+  };
   academicInfo: {
-    instrumentProgress: InstrumentProgress[]
-    class: string
-  }
+    instrumentProgress: InstrumentProgress[];
+    class: string;
+  };
   enrollments: {
-    orchestraIds: string[]
-    ensembleIds: string[]
+    orchestraIds: string[];
+    ensembleIds: string[];
     schoolYears: Array<{
-      schoolYearId: string
-      isActive: boolean
-    }>
-  }
-  teacherIds: string[]
-  teacherAssignments: TeacherAssignment[]
-  orchestraAssignments: OrchestraAssignment[]
-  isActive: boolean
+      schoolYearId: string;
+      isActive: boolean;
+    }>;
+  };
+  teacherIds: string[];
+  teacherAssignments: TeacherAssignment[];
+  orchestraAssignments: OrchestraAssignment[];
+  isActive: boolean;
 }
 
 // Props for the hook
 interface UseStudentFormProps {
-  student?: Partial<Student>
-  onClose: () => void
-  onStudentCreated?: (student: Student) => void
+  student?: Partial<Student>;
+  onClose: () => void;
+  onStudentCreated?: (student: Student) => void;
   newTeacherInfo?: {
-    _id?: string
-    fullName: string
-    instrument?: string
-  } | null
-  isOpen: boolean // New prop to track form open state
+    _id?: string;
+    fullName: string;
+    instrument?: string;
+  } | null;
+  isOpen: boolean; // New prop to track form open state
 }
 
 // The main hook
@@ -111,42 +111,48 @@ export function useStudentForm({
   newTeacherInfo,
   isOpen,
 }: UseStudentFormProps) {
-  const { currentSchoolYear } = useSchoolYearStore()
+  const { currentSchoolYear } = useSchoolYearStore();
 
-  // Form data state
-  const [formData, setFormData] = useState<StudentFormData>(createInitialFormData())
+  // Initialize with empty form data
+  const [formData, setFormData] = useState<StudentFormData>(
+    createInitialFormData()
+  );
 
   // Validation errors
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   // Track if we should initialize from the student prop
-  const [shouldInitFromStudent, setShouldInitFromStudent] = useState(true)
+  const [shouldInitFromStudent, setShouldInitFromStudent] = useState(true);
 
   // API service
   const { saveStudentData, isSubmitting, error } = useStudentApiService({
     onClose,
     onStudentCreated,
     newTeacherInfo,
-  })
+  });
 
   // Create a generic update function for nested field updates
   const updateFormData = useCallback((setter: (prev: any) => any) => {
-    setFormData(setter)
-  }, [])
+    // Important: Always mutate a copy of the previous state
+    setFormData((prev) => {
+      const updated = setter({ ...prev });
+      return updated;
+    });
+  }, []);
 
   // Helper to clear error fields
   const clearError = useCallback(
     (field: string) => {
       if (errors[field]) {
         setErrors((prev) => {
-          const newErrors = { ...prev }
-          delete newErrors[field]
-          return newErrors
-        })
+          const newErrors = { ...prev };
+          delete newErrors[field];
+          return newErrors;
+        });
       }
     },
     [errors]
-  )
+  );
 
   // Create initial form data
   function createInitialFormData(): StudentFormData {
@@ -174,43 +180,44 @@ export function useStudentForm({
       teacherAssignments: [],
       orchestraAssignments: [],
       isActive: true,
-    }
+    };
   }
 
   // IMPROVED: STRONG RESET MECHANISM
   const resetForm = useCallback(() => {
     // Create a completely fresh initial data
-    const initialData = createInitialFormData()
-    
+    const initialData = createInitialFormData();
+
     // Add current school year
     if (currentSchoolYear) {
       initialData.enrollments.schoolYears = [
         { schoolYearId: currentSchoolYear._id, isActive: true },
-      ]
+      ];
     }
 
     // Set the form data to the fresh initial state
-    setFormData(initialData)
-    
+    setFormData(initialData);
+
     // Clear all errors
-    setErrors({})
-    
-    console.log("Form completely reset to initial state")
-  }, [currentSchoolYear])
+    setErrors({});
+
+    console.log('Form completely reset to initial state');
+  }, [currentSchoolYear]);
 
   // Initialize or reset form data when component mounts or when the isOpen prop changes
   useEffect(() => {
     // If the form is closed, reset it completely
     if (!isOpen) {
       // This sets up the form to be freshly initialized when it opens again
-      setShouldInitFromStudent(true)
-      return
+      setShouldInitFromStudent(true);
+      return;
     }
-    
+
     // If the form is opening and we should initialize from student
     if (isOpen && shouldInitFromStudent) {
       if (student?._id) {
         // Populate form for existing student
+        // IMPORTANT: Include _id in the form data when updating an existing student
         const newFormData = {
           _id: student._id,
           personalInfo: {
@@ -239,16 +246,16 @@ export function useStudentForm({
               orchestraId: id,
             })) || [],
           isActive: student.isActive !== false,
-        }
-        
-        setFormData(newFormData)
+        };
+
+        setFormData(newFormData);
       } else {
         // Reset form for new student with proper defaults
-        resetForm()
-        
+        resetForm();
+
         // Handle new teacher case
         if (newTeacherInfo) {
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             teacherAssignments: [
               {
@@ -257,15 +264,22 @@ export function useStudentForm({
                 time: '08:00',
                 duration: 45,
               },
-            ]
-          }))
+            ],
+          }));
         }
       }
-      
+
       // We've initialized, so don't do it again until the form is closed and reopened
-      setShouldInitFromStudent(false)
+      setShouldInitFromStudent(false);
     }
-  }, [isOpen, student, newTeacherInfo, resetForm, shouldInitFromStudent, currentSchoolYear])
+  }, [
+    isOpen,
+    student,
+    newTeacherInfo,
+    resetForm,
+    shouldInitFromStudent,
+    currentSchoolYear,
+  ]);
 
   // Get instrument section hooks
   const {
@@ -278,20 +292,20 @@ export function useStudentForm({
     instrumentProgress: formData.academicInfo.instrumentProgress,
     updateFormData,
     clearError,
-  })
+  });
 
   // Get teacher section functions
   const { addTeacherAssignment, removeTeacherAssignment } = useTeacherSection({
     updateFormData,
-  })
+  });
 
   // Get orchestra section functions
   const { addOrchestraAssignment, removeOrchestraAssignment } =
     useOrchestraSection({
       updateFormData,
-    })
+    });
 
-  // Update personal info
+  // Update personal info - FIX: simpler implementation to avoid potential issues
   const updatePersonalInfo = useCallback(
     (field: string, value: any) => {
       setFormData((prev) => ({
@@ -300,15 +314,15 @@ export function useStudentForm({
           ...prev.personalInfo,
           [field]: value,
         },
-      }))
+      }));
 
       // Clear error if exists
-      clearError(`personalInfo.${field}`)
+      clearError(`personalInfo.${field}`);
     },
     [clearError]
-  )
+  );
 
-  // Update academic info
+  // Update academic info - FIX: simpler implementation
   const updateAcademicInfo = useCallback(
     (field: string, value: any) => {
       setFormData((prev) => ({
@@ -317,36 +331,38 @@ export function useStudentForm({
           ...prev.academicInfo,
           [field]: value,
         },
-      }))
+      }));
 
       // Clear error if exists
-      clearError(`academicInfo.${field}`)
+      clearError(`academicInfo.${field}`);
     },
     [clearError]
-  )
+  );
 
   // Get validation hook
-  const { validateStudentForm } = useFormValidation()
+  const { validateStudentForm } = useFormValidation();
 
   // Validate form and handle submission
   const validateForm = useCallback((): boolean => {
-    const newErrors = validateStudentForm(formData)
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }, [formData, validateStudentForm])
+    const newErrors = validateStudentForm(formData);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [formData, validateStudentForm]);
 
   // Handle form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
-      e.preventDefault()
+      e.preventDefault();
 
       if (!validateForm()) {
-        return
+        return;
       }
 
       try {
         // Prepare student data for submission
+        // IMPORTANT: Always include the _id field when it exists for updates
         const studentData: Partial<Student> = {
+          _id: formData._id, // Include the _id for existing students
           personalInfo: {
             ...formData.personalInfo,
             parentName: formData.personalInfo.parentName || 'לא צוין',
@@ -368,31 +384,39 @@ export function useStudentForm({
           },
           teacherIds: formData.teacherIds.filter((id) => id !== 'new-teacher'),
           isActive: formData.isActive,
+        };
+
+        // Log the data being sent for debugging
+        console.log('Submitting student data:', studentData);
+        if (studentData._id) {
+          console.log('UPDATING existing student with ID:', studentData._id);
+        } else {
+          console.log('Creating NEW student');
         }
 
         // Use API service to save student data
-        await saveStudentData(studentData, formData)
-        
+        await saveStudentData(studentData, formData);
+
         // After successful save, force reset
-        resetForm()
+        resetForm();
       } catch (err) {
-        console.error('Error during form submission:', err)
+        console.error('Error during form submission:', err);
         setErrors((prev) => ({
           ...prev,
           form: err instanceof Error ? err.message : 'שגיאה בשמירת תלמיד',
-        }))
+        }));
       }
     },
     [formData, validateForm, saveStudentData, resetForm]
-  )
-  
+  );
+
   // Handler for cancel button
   const handleCancel = useCallback(() => {
     // Reset the form first
-    resetForm()
+    resetForm();
     // Then close the form
-    onClose()
-  }, [resetForm, onClose])
+    onClose();
+  }, [resetForm, onClose]);
 
   return {
     formData,
@@ -412,11 +436,11 @@ export function useStudentForm({
     setPrimaryInstrument,
     updateInstrumentProgress,
     updateInstrumentTest,
-    
+
     // Form actions
     resetForm,
     handleCancel,
     validateForm,
     handleSubmit,
-  }
+  };
 }

@@ -113,7 +113,7 @@ export function PersonalInfoSection({
             type='number'
             id='age'
             name='age'
-            value={personalInfo?.age || ''}
+            value={personalInfo?.age === undefined ? '' : personalInfo.age}
             onChange={handlePersonalInfoChange}
             min='6'
             max='99'
@@ -122,7 +122,7 @@ export function PersonalInfoSection({
         </div>
       </div>
 
-    {/* Email stand alone full width input */}
+      {/* Email stand alone full width */}
       <div className='form-group'>
         <label htmlFor='studentEmail'>אימייל תלמיד</label>
         <input
