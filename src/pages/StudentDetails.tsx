@@ -1,8 +1,9 @@
+// src/pages/StudentDetails.tsx
 import { useStudentDetailsState } from '../hooks/useStudentDetailsState';
 import { RefreshCw, ArrowLeft, User, Music } from 'lucide-react';
 
 // Import section components
-import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection'
+import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection';
 import { PersonalInfoSection } from '../cmps/StudentDetails/sections/PersonalInfoSection';
 import { ParentInfoSection } from '../cmps/StudentDetails/sections/ParentInfoSection';
 import { TeachersSection } from '../cmps/StudentDetails/sections/TeachersSection';
@@ -54,6 +55,15 @@ export function StudentDetails() {
       </div>
     );
   }
+
+  // Get teacher IDs directly from student object
+  const teacherIds = student.teacherIds || [];
+
+  // Get orchestra IDs from both possible locations in the student object
+  const orchestraIds = [
+    ...(student.orchestraIds || []),
+    ...(student.enrollments?.orchestraIds || []),
+  ].filter((id) => id); // Remove any undefined/null/empty values
 
   return (
     <div className='student-details-content'>
@@ -131,6 +141,7 @@ export function StudentDetails() {
                   onToggle={() => toggleSection('teachers')}
                   onTeacherClick={navigateToTeacher}
                   onRetryLoadTeachers={retryLoadTeachers}
+                  studentTeacherIds={teacherIds} // Pass teacher IDs directly
                 />
 
                 <OrchestrasSection

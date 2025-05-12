@@ -1,4 +1,3 @@
-// Enhanced version of src/services/teacherService.ts with better error handling
 import { httpService } from './httpService';
 
 export interface Teacher {
@@ -59,7 +58,7 @@ export interface TeacherScheduleUpdate {
   day: string;
   time: string;
   duration: number;
-  isActive: boolean;
+  isActive?: boolean;
 }
 
 // Function to prepare data for teacher updates (excludes credentials)
@@ -138,7 +137,8 @@ function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
           day: item.day,
           time: item.time,
           duration: item.duration,
-          // Explicitly omit isActive which is not accepted by the backend schema
+          // Explicitly include isActive if it's defined
+          ...(item.isActive !== undefined ? { isActive: item.isActive } : {}),
         }));
       }
     }
@@ -167,6 +167,30 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
   return prepared;
 }
 
+// Create a placeholder teacher object for display purposes when API fails
+function createPlaceholderTeacher(teacherId: string): Teacher {
+  return {
+    _id: teacherId,
+    personalInfo: {
+      fullName: 'מורה לא זמין', // "Teacher not available" in Hebrew
+      phone: '',
+      email: '',
+    },
+    professionalInfo: {
+      instrument: '',
+      isActive: false,
+    },
+    roles: ['teacher'],
+    isActive: false,
+    teaching: {
+      studentIds: [],
+      schedule: [],
+    },
+    // Flag this as a placeholder so UI can handle differently
+    placeholder: true as any,
+  };
+}
+
 export const teacherService = {
   async getTeachers(filterBy: TeacherFilter = {}): Promise<Teacher[]> {
     try {
@@ -177,14 +201,29 @@ export const teacherService = {
     }
   },
 
-  async getTeacherById(teacherId: string): Promise<Teacher> {
+  async getTeacherById(teacherId: string): Promise<Teacher | null> {
+    // Input validation
+    if (!teacherId || typeof teacherId !== 'string') {
+      console.error('Invalid teacher ID provided:', teacherId);
+      return null;
+    }
+
     try {
-      return await httpService.get(`teacher/${teacherId}`);
+      console.log(`Fetching teacher with ID: ${teacherId}`);
+      const response = await httpService.get(`teacher/${teacherId}`);
+
+      if (!response || !response._id) {
+        console.warn(`No valid teacher data found for ID ${teacherId}`);
+        return createPlaceholderTeacher(teacherId);
+      }
+
+      console.log(`Teacher data received:`, response);
+      return response;
     } catch (error) {
       console.error(`Failed to get teacher with ID ${teacherId}:`, error);
-      throw new Error(
-        `Failed to load teacher details. Please try again later.`
-      );
+      // Instead of returning null, return a placeholder teacher object
+      // This helps prevent UI errors when teacher data isn't available
+      return createPlaceholderTeacher(teacherId);
     }
   },
 
@@ -199,23 +238,24 @@ export const teacherService = {
       const teacherPromises = teacherIds.map((id) =>
         this.getTeacherById(id).catch((err) => {
           console.error(`Failed to fetch teacher ${id}:`, err);
-          return null;
+          return createPlaceholderTeacher(id);
         })
       );
 
       const results = await Promise.allSettled(teacherPromises);
 
       // Filter out failures
-      const successfulTeachers = results
+      const teachers = results
         .filter(
           (result) => result.status === 'fulfilled' && result.value !== null
         )
         .map((result) => (result as PromiseFulfilledResult<Teacher>).value);
 
-      return successfulTeachers;
+      return teachers;
     } catch (error) {
       console.error('Failed to fetch teachers by IDs:', error);
-      return []; // Return empty array instead of throwing to prevent cascading failures
+      // Return array of placeholder teachers instead of empty array
+      return teacherIds.map((id) => createPlaceholderTeacher(id));
     }
   },
 
@@ -284,11 +324,27 @@ export const teacherService = {
     teacherId: string,
     scheduleData: TeacherScheduleUpdate
   ): Promise<Teacher> {
+    const processedData = { ...scheduleData };
+
+    // Ensure schedule data has expected format
+    if (typeof processedData.isActive === 'undefined') {
+      processedData.isActive = true; // Set default value if missing
+    }
+
+    console.log('Updating teacher schedule with data:', processedData);
+
     try {
-      return await httpService.post(
+      const response = await httpService.post(
         `teacher/${teacherId}/schedule`,
-        scheduleData
+        processedData
       );
+
+      if (!response || !response._id) {
+        console.warn(`Teacher schedule updated but received invalid response`);
+        return createPlaceholderTeacher(teacherId);
+      }
+
+      return response;
     } catch (error) {
       console.error(
         `Failed to update schedule for teacher ${teacherId}:`,

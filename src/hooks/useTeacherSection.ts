@@ -87,7 +87,7 @@ export function useTeacherSection({ updateFormData }: UseTeacherSectionProps) {
         // Only remove teacherId if there are no more assignments for this teacher
         let updatedTeacherIds = [...prev.teacherIds];
         if (remainingTeacherAssignments.length === 0) {
-          updatedTeacherIds = prev.teacherIds.filter((id) => id !== teacherId);
+          updatedTeacherIds = prev.teacherIds.filter((id: any) => id !== teacherId);
           console.log('Removed teacher ID as no more assignments:', teacherId);
         }
 

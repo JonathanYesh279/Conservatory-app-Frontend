@@ -214,9 +214,17 @@
 .sd-section {
   margin-bottom: 1.25rem;
   border-radius: 0.5rem;
-  overflow: hidden;
   background-color: var(--bg-tertiary);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.sd-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .sd-section:last-child {
@@ -276,7 +284,6 @@
 /* Section content with animation */
 .sd-section-content {
   transition: all 0.3s ease;
-  overflow: hidden;
   padding: 0.75rem;
   animation: fadeIn 0.3s ease;
   background-color: var(--bg-tertiary);
@@ -398,7 +405,7 @@
   justify-content: center;
   gap: 0.5rem;
   background-color: rgba(var(--primary-color-rgb), 0.1);
-  padding: 1rem;
+  padding: 0.5rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(var(--primary-color-rgb), 0.2);
   transition: all 0.2s ease;
@@ -426,6 +433,39 @@
   font-size: 0.8rem;
   color: var(--text-secondary);
 }
+
+// teacher assignment element 
+.sd-teacher-card {
+  display: flex;
+  justify-content: space-between;
+
+  .sd-teacher-header {
+    display: flex;
+    gap: 0.8rem;
+
+    .sd-teacher-name {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      .sd-teacher-instrument {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+    }
+
+  }
+
+  .sd-teacher-schedule {
+    .sd-schedule-item {
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+  }
+}
+
 
 /* Compact Instrument List */
 .sd-compact-instruments-list {
@@ -763,7 +803,7 @@
   
   .sd-students-grid,
   .sd-orchestras-grid {
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.4rem;
   }
 }
@@ -803,8 +843,7 @@
   }
   
   .sd-orchestra-card {
-    background-color: rgba(var(--primary-color-rgb), 0.15);
-    border-color: rgba(var(--primary-color-rgb), 0.25);
+    padding: 0.4rem;
   }
   
   .sd-compact-instrument-card {
@@ -1106,7 +1145,7 @@
 .sd-test-dropdown {
   position: absolute;
   top: calc(100% + 5px);
-  left: 0;
+  right: 0;
   background-color: var(--bg-card);
   border-radius: 0.375rem;
   padding: 0.5rem;

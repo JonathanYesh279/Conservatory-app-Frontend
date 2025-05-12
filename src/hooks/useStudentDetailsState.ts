@@ -1,113 +1,253 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import {
-  studentService,
-  Student,
-  InstrumentProgress,
-} from '../services/studentService';
+// src/hooks/useStudentDetailsState.ts - Partial implementation
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { studentService, Student } from '../services/studentService';
 import { teacherService } from '../services/teacherService';
-import { orchestraService, Orchestra } from '../services/orchestraService';
-
-export interface TeacherData {
-  id: string;
-  name: string;
-  instrument: string;
-}
+import { orchestraService } from '../services/orchestraService';
 
 export function useStudentDetailsState() {
   const { studentId } = useParams<{ studentId: string }>();
   const [student, setStudent] = useState<Student | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [teachersData, setTeachersData] = useState<TeacherData[]>([]);
-  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
-  const [teachersLoading, setTeachersLoading] = useState(false);
-  const [teachersError, setTeachersError] = useState<string | null>(null);
-  const [orchestrasLoading, setOrchestrasLoading] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
-  // Collapsible sections state - all sections start collapsed (false) by default
+  // Teachers data
+  const [teachersData, setTeachersData] = useState<{
+    teachers: any[];
+    assignments: any[];
+  }>({
+    teachers: [],
+    assignments: [],
+  });
+  const [teachersLoading, setTeachersLoading] = useState(false);
+  const [teachersError, setTeachersError] = useState<string | null>(null);
+
+  // Orchestras data
+  const [orchestras, setOrchestras] = useState<any[]>([]);
+  const [orchestrasLoading, setOrchestrasLoading] = useState(false);
+
+  // Collapsible sections
   const [openSections, setOpenSections] = useState({
-    personalInfo: false,
-    parentInfo: false,
-    instruments: false,
-    teachers: false,
-    orchestras: false,
+    instruments: true,
+    teachers: true,
+    orchestras: true,
     tests: false,
     attendance: false,
+    personalInfo: true,
+    parentInfo: true,
   });
 
   const navigate = useNavigate();
 
   // Load student data
   useEffect(() => {
-    const loadStudent = async () => {
-      if (!studentId) return;
+    let isMounted = true;
 
+    const fetchStudentData = async () => {
       setIsLoading(true);
+      setError(null);
+
       try {
-        const data = await studentService.getStudentById(studentId);
-        setStudent(data);
+        console.log(`Fetching student data for ID: ${studentId}`);
+        const studentData = await studentService.getStudentById(
+          studentId || ''
+        );
 
-        // Load teachers if student has teacherIds
-        if (data.academicInfo?.teacherIds?.length) {
-          loadTeachers(data.academicInfo.teacherIds);
-        }
+        if (!isMounted) return;
 
-        // Load orchestras if student has orchestraIds
-        if (data.academicInfo?.orchestraIds?.length) {
-          loadOrchestras(data.academicInfo.orchestraIds);
+        if (studentData) {
+          console.log(`Student data fetched successfully:`, studentData);
+          setStudent(studentData);
+
+          // Load teachers immediately if there are teacher IDs
+          if (studentData.teacherIds && studentData.teacherIds.length > 0) {
+            loadTeacherData(studentData.teacherIds);
+          }
+
+          // Load orchestras immediately if there are orchestra IDs
+          const orchestraIds = [
+            ...(studentData.orchestraIds || []),
+            ...(studentData.enrollments?.orchestraIds || []),
+          ].filter((id) => id); // Remove any empty values
+
+          if (orchestraIds.length > 0) {
+            loadOrchestraData(orchestraIds);
+          }
+        } else {
+          setError('לא נמצא תלמיד');
         }
       } catch (err) {
-        console.error('Failed to load student:', err);
+        console.error('Error fetching student:', err);
+        if (!isMounted) return;
         setError(
-          err instanceof Error ? err.message : 'שגיאה בטעינת פרטי התלמיד'
+          err instanceof Error ? err.message : 'שגיאה בטעינת נתוני תלמיד'
         );
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    loadStudent();
+    if (studentId) {
+      console.log('Student fetch effect running, studentId:', studentId);
+      fetchStudentData();
+    } else {
+      setError('חסר מספר מזהה של תלמיד');
+      setIsLoading(false);
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [studentId]);
 
-  // Load teacher details
-  const loadTeachers = async (teacherIds: string[]) => {
+  // Load teacher data
+  const loadTeacherData = async (teacherIds: string[]) => {
+    if (!teacherIds || teacherIds.length === 0) return;
+
     setTeachersLoading(true);
     setTeachersError(null);
+
     try {
-      const teachersList = await teacherService.getTeachersByIds(teacherIds);
-      setTeachersData(
-        teachersList.map((teacher) => ({
-          id: teacher._id,
-          name: teacher.personalInfo.fullName || 'מורה ללא שם',
-          instrument: teacher.professionalInfo?.instrument || '',
-        }))
-      );
+      // Load teachers and their assignments for this student
+      const teachers = await teacherService.getTeachersByIds(teacherIds);
+
+      // Create assignments array from the data we have
+      const assignments = teacherIds.map((teacherId) => {
+        const teacher = teachers.find((t) => t && t._id === teacherId);
+
+        // Find this student's schedule from the teacher's data if available
+        let scheduleItem = null;
+        if (teacher && teacher.teaching && teacher.teaching.schedule) {
+          scheduleItem = teacher.teaching.schedule.find(
+            (item: any) => item.studentId === studentId
+          );
+        }
+
+        // Create an assignment object, either with or without schedule details
+        return scheduleItem
+          ? {
+              teacherId,
+              day: scheduleItem.day,
+              time: scheduleItem.time,
+              duration: scheduleItem.duration,
+              isActive: scheduleItem.isActive !== false,
+            }
+          : {
+              teacherId,
+              // No schedule details available for this teacher-student pair
+            };
+      });
+
+      setTeachersData({
+        teachers,
+        assignments,
+      });
     } catch (err) {
-      console.error('Failed to load teachers:', err);
-      setTeachersError('שגיאה בטעינת פרטי המורים');
+      console.error('Error loading teachers:', err);
+      setTeachersError('שגיאה בטעינת נתוני מורים');
     } finally {
       setTeachersLoading(false);
     }
   };
 
-  // Load orchestra details
-  const loadOrchestras = async (orchestraIds: string[]) => {
+  // Retry loading teachers
+  const retryLoadTeachers = () => {
+    if (student && student.teacherIds) {
+      loadTeacherData(student.teacherIds);
+    }
+  };
+
+  // Load orchestra data
+  const loadOrchestraData = async (orchestraIds: string[]) => {
+    if (!orchestraIds || orchestraIds.length === 0) return;
+
     setOrchestrasLoading(true);
+
     try {
-      const orchestraList = await orchestraService.getOrchestrasByIds(
+      const orchestraData = await orchestraService.getOrchestrasByIds(
         orchestraIds
       );
-      setOrchestras(orchestraList);
+      setOrchestras(orchestraData);
     } catch (err) {
-      console.error('Failed to load orchestras:', err);
+      console.error('Error loading orchestras:', err);
     } finally {
       setOrchestrasLoading(false);
     }
   };
 
-  // Function to update a test status and increment stage if needed
+  // Toggle card flip
+  const toggleFlip = () => {
+    setFlipped(!flipped);
+  };
+
+  // Go back to student list
+  const goBack = () => {
+    navigate('/students');
+  };
+
+  // Toggle section visibility
+  const toggleSection = (sectionKey: keyof typeof openSections) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [sectionKey]: !prev[sectionKey],
+    }));
+  };
+
+  // Navigate to teacher details
+  const navigateToTeacher = (teacherId: string) => {
+    navigate(`/teachers/${teacherId}`);
+  };
+
+  // Navigate to orchestra details
+  const navigateToOrchestra = (orchestraId: string) => {
+    navigate(`/orchestras/${orchestraId}`);
+  };
+
+  // Get initials for avatar display
+  const getInitials = (name: string): string => {
+    if (!name) return '';
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2);
+  };
+
+  // Format a date for display
+  const formatDate = (dateString: string): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('he-IL');
+  };
+
+  // Get instrument stage color
+  const getStageColor = (stage: number): string => {
+    const colors = [
+      '#4D55CC', // Stage 1 - Primary color
+      '#6C63FF', // Stage 2
+      '#8A84FF', // Stage 3
+      '#A79DFF', // Stage 4
+      '#C2BAFF', // Stage 5
+      '#7952B3', // Stage 6
+      '#5E3B9A', // Stage 7
+      '#472980', // Stage 8
+    ];
+
+    return colors[stage - 1] || colors[0];
+  };
+
+  // Find primary instrument
+  const primaryInstrument =
+    student?.academicInfo?.instrumentProgress?.find(
+      (instrument) => instrument.isPrimary
+    ) ||
+    student?.academicInfo?.instrumentProgress?.[0] ||
+    null;
+
+  // Update student test status
   const updateStudentTest = async (
     instrumentName: string,
     testType: 'stageTest' | 'technicalTest',
@@ -116,139 +256,32 @@ export function useStudentDetailsState() {
     if (!student || !studentId) return;
 
     try {
-      // Create a deep copy of the student to update
-      const updatedStudent = JSON.parse(JSON.stringify(student));
-
-      // Find the instrument to update
+      // Update locally first for immediate feedback
+      const updatedStudent = { ...student };
       const instrumentIndex =
         updatedStudent.academicInfo.instrumentProgress.findIndex(
-          (i: InstrumentProgress) => i.instrumentName === instrumentName
+          (i) => i.instrumentName === instrumentName
         );
 
-      if (instrumentIndex === -1) return;
-
-      // Ensure tests object exists
-      if (
-        !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests
-      ) {
-        updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests =
-          {
-            stageTest: { status: 'לא נבחן', notes: '' },
-            technicalTest: { status: 'לא נבחן', notes: '' },
-          };
+      if (instrumentIndex >= 0) {
+        updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+          testType
+        ].status = status;
+        setStudent(updatedStudent);
       }
 
-      // Update the test status
-      updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-        testType
-      ].status = status;
-
-      // Update last test date
-      updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-        testType
-      ].lastTestDate = new Date().toISOString();
-
-      // Check if the stage should be incremented
-      // Only increment if:
-      // 1. It's a stage test (not technical)
-      // 2. The status indicates passing (any type of עבר/ה)
-      if (
-        testType === 'stageTest' &&
-        status.includes('עבר/ה') &&
-        !status.includes('לא עבר/ה')
-      ) {
-        // Increment the current stage
-        updatedStudent.academicInfo.instrumentProgress[
-          instrumentIndex
-        ].currentStage += 1;
-      }
-
-      // Update in the database
-      const response = await studentService.updateStudent(
+      // Send update to server
+      const result = await studentService.updateStudentTest(
         studentId,
-        updatedStudent
+        instrumentName,
+        testType,
+        status
       );
 
-      // Update local state
-      setStudent(response);
-
-      // Show success message or notification if needed
-      console.log(`Updated ${testType} for ${instrumentName} to "${status}"`);
-
-      return response;
-    } catch (error) {
-      console.error('Failed to update test status:', error);
-      // Handle error (show message, etc.)
-    }
-  };
-
-  // Format date helper
-  const formatDate = (dateString: string) => {
-    if (!dateString) return 'לא זמין';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('he-IL');
-  };
-
-  // Toggle section visibility
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
-
-  // Toggle card flipping
-  const toggleFlip = () => {
-    setFlipped((prev) => !prev);
-  };
-
-  // Navigation
-  const goBack = () => {
-    navigate('/students');
-  };
-
-  const navigateToTeacher = (teacherId: string) => {
-    navigate(`/teachers/${teacherId}`);
-  };
-
-  const navigateToOrchestra = (orchestraId: string) => {
-    navigate(`/orchestras/${orchestraId}`);
-  };
-
-  // Get initials for avatar
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
-  };
-
-  // Get stage color for instrument level visualization
-  const getStageColor = (stage: number): string => {
-    const stageColors: Record<number, string> = {
-      1: '#4158d0', // Blue
-      2: '#28A745', // Green
-      3: '#FFC107', // Yellow
-      4: '#e83e8c', // Pink
-      5: '#6f42c1', // Purple
-      6: '#fd7e14', // Orange
-    };
-    return stageColors[stage] || '#6c757d'; // Default gray
-  };
-
-  // Find primary instrument (convenient helper for components)
-  const primaryInstrument =
-    student?.academicInfo.instrumentProgress?.find((i) => i.isPrimary) ||
-    (student?.academicInfo.instrumentProgress?.length
-      ? student.academicInfo.instrumentProgress[0]
-      : null);
-
-  // Retry loading teachers
-  const retryLoadTeachers = () => {
-    if (student?.academicInfo?.teacherIds) {
-      loadTeachers(student.academicInfo.teacherIds);
+      return result;
+    } catch (err) {
+      console.error('Error updating test status:', err);
+      return undefined;
     }
   };
 
@@ -256,22 +289,22 @@ export function useStudentDetailsState() {
     student,
     isLoading,
     error,
+    flipped,
+    toggleFlip,
+    goBack,
+    getInitials,
+    getStageColor,
+    primaryInstrument,
+    openSections,
+    toggleSection,
+    formatDate,
+    navigateToTeacher,
+    navigateToOrchestra,
     teachersData,
     teachersLoading,
     teachersError,
     orchestras,
     orchestrasLoading,
-    openSections,
-    flipped,
-    toggleFlip,
-    toggleSection,
-    formatDate,
-    goBack,
-    navigateToTeacher,
-    navigateToOrchestra,
-    getInitials,
-    getStageColor,
-    primaryInstrument,
     retryLoadTeachers,
     updateStudentTest,
   };
