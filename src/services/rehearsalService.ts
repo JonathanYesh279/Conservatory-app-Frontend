@@ -112,34 +112,62 @@ export const rehearsalService = {
     rehearsalIds: string[];
   }> {
     try {
-      console.log('Bulk create data being sent:', data);
+      // Validate that we have the required fields before sending
+      if (!data.orchestraId) {
+        throw new Error('Orchestra ID is required for bulk rehearsal creation');
+      }
 
-      // Ensure schoolYearId is included in the request
       if (!data.schoolYearId) {
         throw new Error(
           'School year ID is required for bulk rehearsal creation'
         );
       }
 
+      if (!data.startDate || !data.endDate) {
+        throw new Error(
+          'Start date and end date are required for bulk rehearsal creation'
+        );
+      }
+
+      // Ensure dayOfWeek is a number
+      const dayOfWeek = Number(data.dayOfWeek);
+      if (isNaN(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+        throw new Error('Day of week must be a number between 0 and 6');
+      }
+
       // Create a formatted object with all required fields
-      const formattedData: BulkRehearsalData = {
+      const formattedData = {
         orchestraId: data.orchestraId,
         startDate: data.startDate,
         endDate: data.endDate,
-        dayOfWeek: Number(data.dayOfWeek),
+        dayOfWeek: dayOfWeek,
         startTime: data.startTime,
         endTime: data.endTime,
         location: data.location,
         notes: data.notes || '',
         excludeDates: data.excludeDates || [],
-        schoolYearId: data.schoolYearId, // Ensure this is passed to backend
+        schoolYearId: data.schoolYearId,
       };
 
-      // Execute the API call
+      console.log('Sending bulk create data:', formattedData);
+
+      // Get the current auth token
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        throw new Error('Authentication required for bulk rehearsal creation');
+      }
+
+      // Execute the API call with authentication headers
       const response = await httpService.post(
         'rehearsal/bulk-create',
-        formattedData
+        formattedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
+
       return response;
     } catch (error) {
       console.error('Error in bulk create:', error);

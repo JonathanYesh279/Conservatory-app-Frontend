@@ -32,7 +32,16 @@ axiosInstance.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
+      // Make sure this line is working correctly
       config.headers.Authorization = `Bearer ${token}`;
+
+      // Add debugging for token
+      console.log(
+        'Sending request with token:',
+        token.substring(0, 10) + '...'
+      );
+    } else {
+      console.warn('No auth token found for request to:', config.url);
     }
     return config;
   },

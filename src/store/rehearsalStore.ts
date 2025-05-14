@@ -172,11 +172,21 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
   bulkCreateRehearsals: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      // Ensure schoolYearId is present
+      // Get the current school year if not provided
       if (!data.schoolYearId) {
-        // Try to get it from the school year store
         const schoolYearStore = useSchoolYearStore.getState();
-        const schoolYearId = schoolYearStore.currentSchoolYear?._id;
+        let schoolYearId = schoolYearStore.currentSchoolYear?._id;
+
+        // If currentSchoolYear is not loaded yet, try to load it
+        if (!schoolYearId) {
+          console.log('Current school year not found, attempting to load...');
+          try {
+            await schoolYearStore.loadCurrentSchoolYear();
+            schoolYearId = schoolYearStore.currentSchoolYear?._id;
+          } catch (err) {
+            console.error('Failed to load current school year:', err);
+          }
+        }
 
         if (!schoolYearId) {
           throw new Error(
@@ -187,24 +197,58 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
         data.schoolYearId = schoolYearId;
       }
 
+      console.log('Using school year ID for bulk create:', data.schoolYearId);
+
+      // Validate required fields
+      if (!data.orchestraId) {
+        throw new Error('Orchestra ID is required for bulk rehearsal creation');
+      }
+
+      if (!data.startDate || !data.endDate) {
+        throw new Error('Start date and end date are required');
+      }
+
+      if (data.dayOfWeek === undefined || data.dayOfWeek === null) {
+        throw new Error('Day of week is required');
+      }
+
+      if (!data.startTime || !data.endTime) {
+        throw new Error('Start time and end time are required');
+      }
+
+      if (!data.location) {
+        throw new Error('Location is required');
+      }
+
+      // Convert dayOfWeek to number if it's a string
+      const dayOfWeek =
+        typeof data.dayOfWeek === 'string'
+          ? parseInt(data.dayOfWeek, 10)
+          : data.dayOfWeek;
+
+      if (isNaN(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+        throw new Error('Day of week must be a number between 0 and 6');
+      }
+
       // Create a formatted object with all required fields
       const formattedData: BulkRehearsalData = {
         orchestraId: data.orchestraId,
         startDate: data.startDate,
         endDate: data.endDate,
-        dayOfWeek: Number(data.dayOfWeek),
+        dayOfWeek: dayOfWeek,
         startTime: data.startTime,
         endTime: data.endTime,
         location: data.location,
         notes: data.notes || '',
         excludeDates: data.excludeDates || [],
-        schoolYearId: data.schoolYearId, // Ensure schoolYearId is included
+        schoolYearId: data.schoolYearId,
       };
 
-      console.log('Sending bulk create data:', formattedData);
+      console.log('Formatted data for bulk create:', formattedData);
 
       // Execute API call
       const result = await rehearsalService.bulkCreateRehearsals(formattedData);
+      console.log('Bulk create result:', result);
 
       // After bulk creating, refresh the rehearsal list
       if (formattedData.orchestraId) {

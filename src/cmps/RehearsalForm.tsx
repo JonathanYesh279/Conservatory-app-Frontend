@@ -82,13 +82,29 @@ export function RehearsalForm({
 
   // Load data on mount
   useEffect(() => {
-    if (!currentSchoolYear) {
-      loadCurrentSchoolYear();
-    }
+    const initializeFormData = async () => {
+      // Load current school year if not already loaded
+      if (!currentSchoolYear) {
+        try {
+          await loadCurrentSchoolYear();
+        } catch (err) {
+          console.error('Failed to load current school year:', err);
+          setFormError('Failed to load current school year. Please try again.');
+        }
+      }
 
-    if (orchestras.length === 0) {
-      loadOrchestras();
-    }
+      // Load orchestras if not already loaded
+      if (orchestras.length === 0) {
+        try {
+          await loadOrchestras();
+        } catch (err) {
+          console.error('Failed to load orchestras:', err);
+          setFormError('Failed to load orchestras. Please try again.');
+        }
+      }
+    };
+
+    initializeFormData();
 
     if (clearError) {
       clearError();
@@ -104,6 +120,11 @@ export function RehearsalForm({
   // Update form data when school year changes
   useEffect(() => {
     if (currentSchoolYear?._id) {
+      console.log(
+        'Updating form data with school year ID:',
+        currentSchoolYear._id
+      );
+
       setSingleFormData((prev) => ({
         ...prev,
         schoolYearId: currentSchoolYear._id,
@@ -350,8 +371,12 @@ export function RehearsalForm({
 
     // Check if school year is loaded
     if (!currentSchoolYear?._id) {
-      setFormError('שנת הלימודים לא נטענה. אנא רענן את הדף.');
-      return;
+      try {
+        await loadCurrentSchoolYear();
+      } catch (err) {
+        setFormError('שנת הלימודים לא נטענה. אנא רענן את הדף.');
+        return;
+      }
     }
 
     // Validate form
@@ -364,7 +389,7 @@ export function RehearsalForm({
         // Submit single rehearsal
         const rehearsalData = {
           ...singleFormData,
-          schoolYearId: currentSchoolYear._id,
+          schoolYearId: currentSchoolYear?._id || singleFormData.schoolYearId,
         };
 
         console.log('Saving single rehearsal:', rehearsalData);
@@ -374,7 +399,7 @@ export function RehearsalForm({
         const bulkData = {
           ...bulkFormData,
           dayOfWeek: Number(bulkFormData.dayOfWeek),
-          schoolYearId: currentSchoolYear._id,
+          schoolYearId: currentSchoolYear?._id || bulkFormData.schoolYearId,
         };
 
         console.log('Creating bulk rehearsals:', bulkData);
@@ -741,7 +766,7 @@ export function RehearsalForm({
               </div>
             </div>
 
-            {/* Hidden school year field */}
+            {/* Hidden school year field - but now explicitly set its value from current school year */}
             <input
               type='hidden'
               name='schoolYearId'
@@ -751,11 +776,7 @@ export function RehearsalForm({
 
           {/* Form actions */}
           <div className='form-actions'>
-            <button
-              type='submit'
-              className='primary'
-              disabled={isLoading || !currentSchoolYear?._id}
-            >
+            <button type='submit' className='primary' disabled={isLoading}>
               {isLoading
                 ? 'שומר...'
                 : formMode === 'bulk'
