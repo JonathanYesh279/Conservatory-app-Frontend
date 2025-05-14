@@ -1,5 +1,5 @@
 // src/hooks/useStudentDetailsState.ts - Partial implementation
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { studentService, Student } from '../services/studentService';
 import { teacherService } from '../services/teacherService';
@@ -67,7 +67,7 @@ export function useStudentDetailsState() {
 
           // Load orchestras immediately if there are orchestra IDs
           const orchestraIds = [
-            ...(studentData.orchestraIds || []),
+            ...(studentData.academicInfo.orchestraIds || []),
             ...(studentData.enrollments?.orchestraIds || []),
           ].filter((id) => id); // Remove any empty values
 
@@ -248,42 +248,78 @@ export function useStudentDetailsState() {
     null;
 
   // Update student test status
-  const updateStudentTest = async (
-    instrumentName: string,
-    testType: 'stageTest' | 'technicalTest',
-    status: string
-  ) => {
-    if (!student || !studentId) return;
+ const updateStudentTest = async (
+   instrumentName: string,
+   testType: 'stageTest' | 'technicalTest',
+   status: string
+ ) => {
+   if (!student || !studentId) return;
 
-    try {
-      // Update locally first for immediate feedback
-      const updatedStudent = { ...student };
-      const instrumentIndex =
-        updatedStudent.academicInfo.instrumentProgress.findIndex(
-          (i) => i.instrumentName === instrumentName
-        );
+   try {
+     // Optimistic update for UI - make a deep copy to avoid directly modifying state
+     const updatedStudent = JSON.parse(JSON.stringify(student));
 
-      if (instrumentIndex >= 0) {
-        updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-          testType
-        ].status = status;
-        setStudent(updatedStudent);
-      }
+     // Find the instrument in the instrumentProgress array
+     const instrumentIndex =
+       updatedStudent.academicInfo.instrumentProgress.findIndex(
+         (i) => i.instrumentName === instrumentName
+       );
 
-      // Send update to server
-      const result = await studentService.updateStudentTest(
-        studentId,
-        instrumentName,
-        testType,
-        status
-      );
+     if (instrumentIndex >= 0) {
+       // Initialize tests object structure if it doesn't exist
+       if (
+         !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests
+       ) {
+         updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests =
+           {};
+       }
 
-      return result;
-    } catch (err) {
-      console.error('Error updating test status:', err);
-      return undefined;
-    }
-  };
+       if (
+         !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+           testType
+         ]
+       ) {
+         updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+           testType
+         ] = {
+           status: 'לא נבחן',
+           notes: '',
+         };
+       }
+
+       // Update the test status
+       updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+         testType
+       ].status = status;
+
+       // Update the last test date
+       updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+         testType
+       ].lastTestDate = new Date().toISOString();
+
+       // Update local state for immediate feedback
+       setStudent(updatedStudent);
+     }
+
+     // Call the API
+     const result = await studentService.updateStudentTest(
+       studentId,
+       instrumentName,
+       testType,
+       status
+     );
+
+     // Update with server response to ensure consistency
+     if (result) {
+       setStudent(result);
+     }
+
+     return result;
+   } catch (err) {
+     console.error('Error updating test status:', err);
+     return undefined;
+   }
+ };
 
   return {
     student,

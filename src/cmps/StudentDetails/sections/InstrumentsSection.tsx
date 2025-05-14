@@ -72,8 +72,15 @@ export function InstrumentsSection({
     // Close dropdown
     setActiveDropdown(null);
 
-    // Update the test status
-    await updateStudentTest(instrumentName, testType, status);
+    try {
+      // Update the test status
+      await updateStudentTest(instrumentName, testType, status);
+    } catch (error) {
+      console.error(
+        `Failed to update ${testType} for ${instrumentName}:`,
+        error
+      );
+    }
   };
 
   // Helper function to get status color

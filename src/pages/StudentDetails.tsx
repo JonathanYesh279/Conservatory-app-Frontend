@@ -61,7 +61,7 @@ export function StudentDetails() {
 
   // Get orchestra IDs from both possible locations in the student object
   const orchestraIds = [
-    ...(student.orchestraIds || []),
+    ...(student.academicInfo.orchestraIds || []),
     ...(student.enrollments?.orchestraIds || []),
   ].filter((id) => id); // Remove any undefined/null/empty values
 

@@ -176,8 +176,15 @@ export const useTeacherForm = ({
     }
   }, [scheduleItems]);
 
-  // If editing an existing teacher, populate form data
+  // Reset form data when initialTeacher changes
   useEffect(() => {
+    console.log('useTeacherForm - initialTeacher changed:', initialTeacher);
+
+    // Clear errors and previous error messages first
+    setErrors({});
+    clearError?.();
+
+    // Reset form state when initialTeacher changes
     if (initialTeacher?._id) {
       // Initialize schedule items from teacher data
       if (
@@ -197,6 +204,9 @@ export const useTeacherForm = ({
 
         console.log('Setting initial schedule items:', validScheduleItems);
         setScheduleItems(validScheduleItems);
+      } else {
+        // Clear schedule items if no valid schedule
+        setScheduleItems([]);
       }
 
       setFormData({
@@ -230,6 +240,7 @@ export const useTeacherForm = ({
       });
     } else {
       // Reset form for new teacher with proper defaults
+      console.log('Resetting form for new teacher');
       setFormData({
         personalInfo: {
           fullName: '',
@@ -263,9 +274,6 @@ export const useTeacherForm = ({
       // Reset scheduleItems
       setScheduleItems([]);
     }
-
-    setErrors({});
-    clearError?.();
   }, [initialTeacher, clearError, currentSchoolYear]);
 
   // Handle input changes
@@ -684,9 +692,9 @@ export const useTeacherForm = ({
 
         // Save or update teacher
         if (teacherId) {
-           await saveTeacher(dataToSend, teacherId);
+          await saveTeacher(dataToSend, teacherId);
         } else {
-           await saveTeacher(dataToSend);
+          await saveTeacher(dataToSend);
         }
 
         // Call optional onSave callback

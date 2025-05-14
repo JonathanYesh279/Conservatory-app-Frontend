@@ -1,104 +1,183 @@
 // src/hooks/useStudentApiService.ts
 import { useState } from 'react';
-import { StudentFormData } from './useStudentForm';
+import { StudentFormData, TeacherAssignment } from './useStudentForm';
 import { studentService } from '../services/studentService';
+import { teacherService } from '../services/teacherService';
 
 interface UseStudentApiServiceProps {
+  onClose?: () => void;
+  onStudentCreated?: (student: any) => void;
   onError?: (error: Error) => void;
+  newTeacherInfo?: {
+    _id?: string;
+    fullName: string;
+    instrument?: string;
+  } | null;
 }
 
 export const useStudentApiService = ({
+  onClose,
+  onStudentCreated,
   onError,
+  newTeacherInfo,
 }: UseStudentApiServiceProps = {}) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const saveStudentData = async (data: {
-    studentId?: string;
-    formData: StudentFormData;
-    hasTeacherAssignments?: boolean;
-    teacherAssignments?: any[];
-    teacherIds?: string[];
-  }) => {
-    const {
-      studentId,
-      formData,
-      hasTeacherAssignments = false,
-      teacherAssignments = [],
-      teacherIds = [],
-    } = data;
-
-    setIsLoading(true);
+  const saveStudentData = async (
+    studentData: Partial<any>,
+    formData: StudentFormData
+  ) => {
+    setIsSubmitting(true);
     setError(null);
 
     try {
       console.log('Starting saveStudentData with:', {
-        studentId,
-        hasTeacherAssignments,
-        teacherAssignments: Array.isArray(teacherAssignments)
-          ? teacherAssignments.length
-          : 0,
-        teacherIds: Array.isArray(teacherIds) ? teacherIds : [],
+        studentId: studentData._id,
+        teacherAssignments: formData.teacherAssignments.length,
+        teacherIds: formData.teacherIds,
       });
 
       // Process teacherIds to ensure it's an array with unique values
-      const processedTeacherIds = Array.isArray(teacherIds)
-        ? [...new Set(teacherIds.filter(Boolean))] // Remove duplicates and null/undefined
+      const processedTeacherIds = Array.isArray(formData.teacherIds)
+        ? [...new Set(formData.teacherIds.filter(Boolean))] // Remove duplicates and null/undefined
         : [];
 
       console.log('TeacherIds after processing:', processedTeacherIds);
 
       // Prepare student data for API
-      const studentData = {
-        personalInfo: formData.personalInfo || {},
-        academicInfo: formData.academicInfo || {},
+      const apiStudentData = {
+        ...studentData,
         teacherIds: processedTeacherIds,
-        // Add any other fields needed for the API
-        enrollments: formData.enrollments || {},
+        enrollments: {
+          ...formData.enrollments,
+          orchestraIds: formData.orchestraAssignments.map((a) => a.orchestraId),
+        },
       };
 
       // Create or update student based on whether we have an ID
       let savedStudent;
-      if (studentId) {
-        console.log(`UPDATING existing student with ID: ${studentId}`);
-        // Update existing student
+      if (studentData._id) {
+        console.log(`UPDATING existing student with ID: ${studentData._id}`);
         savedStudent = await studentService.updateStudent(
-          studentId,
-          studentData
+          studentData._id,
+          apiStudentData
         );
       } else {
         console.log('Creating NEW student');
-        // Create new student
-        savedStudent = await studentService.addStudent(studentData);
+        savedStudent = await studentService.addStudent(apiStudentData);
       }
 
       console.log(
-        `${studentId ? 'Updated' : 'New'} student ${
+        `${studentData._id ? 'Updated' : 'New'} student ${
           savedStudent._id
         } created successfully:`,
         savedStudent
       );
 
-      setIsLoading(false);
+      // Update teacher schedules - but don't let failures here fail the entire operation
+      if (formData.teacherAssignments.length > 0) {
+        try {
+          await updateTeacherSchedules(
+            formData.teacherAssignments,
+            savedStudent._id
+          );
+        } catch (scheduleErr) {
+          console.error(
+            'Error updating teacher schedules, but student was saved:',
+            scheduleErr
+          );
+          // Don't throw error here, we still want to consider the student creation successful
+        }
+      }
+
+      // Notify parent component
+      if (onStudentCreated) {
+        onStudentCreated(savedStudent);
+      }
+
+      // Close the form
+      if (onClose) {
+        onClose();
+      }
+
+      setIsSubmitting(false);
       return savedStudent;
     } catch (err) {
       console.error('Error saving student data:', err);
-      const error =
+      const errorObj =
         err instanceof Error ? err : new Error('Failed to save student data');
 
-      setError(error);
-      setIsLoading(false);
+      setError(errorObj);
+      setIsSubmitting(false);
 
       if (onError) {
-        onError(error);
+        onError(errorObj);
       }
 
-      throw error;
+      throw errorObj;
     }
   };
 
+  // Helper function to update teacher schedules
+  // Helper function to update teacher schedules
+  const updateTeacherSchedules = async (
+    teacherAssignments: TeacherAssignment[],
+    studentId: string
+  ) => {
+    console.log(
+      `Updating teacher schedules for student ${studentId} with ${teacherAssignments.length} assignments`
+    );
+
+    // Process each assignment sequentially to avoid race conditions
+    for (const assignment of teacherAssignments) {
+      if (!assignment.teacherId || assignment.teacherId === 'new-teacher') {
+        console.log('Skipping assignment with invalid teacherId:', assignment);
+        continue;
+      }
+
+      try {
+        const scheduleData = {
+          studentId,
+          day: assignment.day,
+          time: assignment.time,
+          duration: assignment.duration,
+          isActive: true,
+        };
+
+        console.log(
+          `Updating schedule for teacher ${assignment.teacherId}:`,
+          scheduleData
+        );
+        const result = await studentService.updateTeacherSchedule(
+          assignment.teacherId,
+          scheduleData
+        );
+
+        if (result && result.success === false) {
+          console.warn(
+            `Schedule update had issues for teacher ${assignment.teacherId}:`,
+            result.message
+          );
+        } else {
+          console.log(
+            `Successfully updated schedule for teacher ${assignment.teacherId}`
+          );
+        }
+      } catch (scheduleErr) {
+        console.error(
+          `Error updating schedule for teacher ${assignment.teacherId}:`,
+          scheduleErr
+        );
+        // Continue with other updates even if one fails
+      }
+    }
+
+    console.log(`Completed teacher schedule updates for student ${studentId}`);
+  };
+
   return {
-    isLoading,
+    isSubmitting,
     error,
     saveStudentData,
   };

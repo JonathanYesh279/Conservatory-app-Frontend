@@ -11,11 +11,11 @@ interface TeacherState {
   selectedTeacher: Teacher | null;
   isLoading: boolean;
   error: string | null;
-  dataInitialized: boolean; // New flag to track if data has been initialized
+  dataInitialized: boolean;
 
   // Actions
   loadTeachers: (filterBy?: TeacherFilter) => Promise<Teacher[]>;
-  loadBasicTeacherData: () => Promise<void>; // New method to load essential data
+  loadBasicTeacherData: () => Promise<void>;
   loadTeacherById: (teacherId: string) => Promise<Teacher>;
   saveTeacher: (
     teacher: Partial<Teacher>,
@@ -48,7 +48,7 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     }
   },
 
-  // New method to load basic teacher data for the entire app
+  // Method to load basic teacher data for the entire app
   loadBasicTeacherData: async () => {
     // Only load if not already initialized
     if (get().dataInitialized) return;
@@ -127,12 +127,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         teachers.push(savedTeacher);
       }
 
+      // IMPORTANT FIX: Always clear the selectedTeacher after saving
+      // This ensures the form will be empty for new teachers
       set({
         teachers,
-        selectedTeacher: savedTeacher,
+        selectedTeacher: null, // Clear the selected teacher
         isLoading: false,
       });
 
+      console.log('Teacher saved successfully, cleared selectedTeacher');
       return savedTeacher;
     } catch (err) {
       const errorMsg =
@@ -167,6 +170,10 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
   },
 
   setSelectedTeacher: (teacher) => {
+    console.log(
+      'Setting selected teacher:',
+      teacher?.personalInfo?.fullName || 'null'
+    );
     set({ selectedTeacher: teacher });
   },
 
@@ -175,6 +182,7 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
   },
 
   clearSelectedTeacher: () => {
-  set({ selectedTeacher: null });
-},
+    console.log('Clearing selected teacher');
+    set({ selectedTeacher: null });
+  },
 }));

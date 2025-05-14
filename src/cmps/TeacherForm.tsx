@@ -32,6 +32,9 @@ export function TeacherForm({
   onAddNewStudent,
   newlyCreatedStudent,
 }: TeacherFormProps) {
+  // Debug log to see what teacher data is coming into the form
+  console.log('TeacherForm received teacher:', teacher || 'none (new teacher)');
+
   // Use our custom hook for teacher form logic
   const {
     formData,
@@ -58,7 +61,7 @@ export function TeacherForm({
     updateStudentIds,
     handleSubmit,
   } = useTeacherForm({
-    initialTeacher: teacher || null,
+    initialTeacher: teacher || null, // Explicitly pass null if teacher is undefined
     onClose,
     onSave,
   });

@@ -22,6 +22,8 @@ export function TeacherIndex() {
     loadTeachers,
     removeTeacher,
     clearSelectedTeacher,
+    setSelectedTeacher,
+    selectedTeacher,
   } = useTeacherStore();
 
   // State for modal forms and dialogs
@@ -66,16 +68,50 @@ export function TeacherIndex() {
     loadTeachers();
   }, [loadTeachers]);
 
+  // Debug useEffect to monitor selectedTeacher state changes
+  useEffect(() => {
+    console.log(
+      'Current selectedTeacher state in store:',
+      selectedTeacher ? selectedTeacher.personalInfo?.fullName : 'null'
+    );
+  }, [selectedTeacher]);
+
+  // Reset form state whenever isTeacherFormOpen changes to false
+  useEffect(() => {
+    if (!isTeacherFormOpen) {
+      console.log('Form closed, clearing teacher state');
+      setTeacherToEdit(null);
+      clearSelectedTeacher();
+      setCreatedStudent(null);
+    }
+  }, [isTeacherFormOpen, clearSelectedTeacher]);
+
   // Handler functions for teacher CRUD operations
   const handleAddTeacher = () => {
+    // Important: First clear all teacher state before opening the form
+    console.log('Adding new teacher, clearing previous teacher data');
+
+    // Reset all teacher states properly
+    clearSelectedTeacher(); // Clear the store state first
     setTeacherToEdit(null);
-    clearSelectedTeacher();
-    setIsTeacherFormOpen(true);
+    setCreatedStudent(null);
+
+    // Make sure the form is closed before opening it again
+    // This ensures the useEffect for form closing will trigger
+    // which helps reset state completely
+    setIsTeacherFormOpen(false);
+
+    // Now, after states are cleared, open the form in the next tick
+    setTimeout(() => {
+      console.log('Opening empty teacher form');
+      setIsTeacherFormOpen(true);
+    }, 10); // Small delay to ensure state updates have happened
   };
 
   const handleCloseTeacherForm = () => {
+    console.log('Closing teacher form');
+    // First close the form, then the useEffect will clean up the state
     setIsTeacherFormOpen(false);
-    setTeacherToEdit(null);
   };
 
   const handleOpenStudentForm = (teacherInfo?: {
@@ -94,6 +130,7 @@ export function TeacherIndex() {
 
   const handleCloseStudentForm = () => {
     setIsStudentFormOpen(false);
+    setNewTeacherInfo(null); // Clear teacher info when closing student form
   };
 
   const handleStudentCreated = (student: Student) => {
@@ -106,7 +143,9 @@ export function TeacherIndex() {
 
   const handleEditTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId) || null;
+    console.log('Editing teacher:', teacher?.personalInfo?.fullName);
     setTeacherToEdit(teacher);
+    setSelectedTeacher(teacher); // Update the store as well
     setIsTeacherFormOpen(true);
   };
 
@@ -141,6 +180,18 @@ export function TeacherIndex() {
 
   // Only admin can add new teachers
   const canAddTeacher = isAdmin;
+
+  // Handle successful save of a teacher
+  const handleSaveSuccess = () => {
+    console.log('Teacher saved successfully, cleaning up form state');
+    setIsTeacherFormOpen(false);
+    // The store's selectedTeacher is now cleared automatically in the saveTeacher method
+    setTeacherToEdit(null);
+    setCreatedStudent(null);
+
+    // Refresh teacher list
+    loadTeachers();
+  };
 
   return (
     <div className='app-container'>
@@ -207,18 +258,16 @@ export function TeacherIndex() {
         />
 
         {/* Teacher Form Modal */}
-        <TeacherForm
-          isOpen={isTeacherFormOpen}
-          onClose={handleCloseTeacherForm}
-          teacher={teacherToEdit || undefined}
-          onSave={() => {
-            console.log('onSave executing in parent component');
-            setIsTeacherFormOpen(false);
-            loadTeachers(); // Refresh the teacher list
-          }}
-          onAddNewStudent={handleOpenStudentForm}
-          newlyCreatedStudent={createdStudent}
-        />
+        {isTeacherFormOpen && (
+          <TeacherForm
+            isOpen={isTeacherFormOpen}
+            onClose={handleCloseTeacherForm}
+            teacher={teacherToEdit || undefined}
+            onSave={handleSaveSuccess}
+            onAddNewStudent={handleOpenStudentForm}
+            newlyCreatedStudent={createdStudent}
+          />
+        )}
 
         {/* Student Form Modal */}
         <StudentForm

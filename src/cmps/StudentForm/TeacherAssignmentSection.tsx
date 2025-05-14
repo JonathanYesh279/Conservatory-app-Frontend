@@ -120,25 +120,25 @@ export function TeacherAssignmentSection({
   };
 
   // Save all lessons for current teacher
-  const handleSaveTeacherLessons = () => {
-    // Add all current schedule items as assignments
-    scheduleItems.forEach((item) => {
-      // Use correct field names for backend
-      const scheduleToSend = {
-        teacherId: item.teacherId,
-        day: item.day,
-        time: item.time,
-        duration: item.duration,
-      };
+const handleSaveTeacherLessons = () => {
+  // Add all current schedule items as assignments
+  scheduleItems.forEach((item) => {
+    // Use correct field names for backend
+    const scheduleToSend = {
+      teacherId: item.teacherId,
+      day: item.day,
+      time: item.time,
+      duration: item.duration,
+    };
 
-      addTeacherAssignment(scheduleToSend);
-    });
+    addTeacherAssignment(scheduleToSend);
+  });
 
-    // Reset states to add another teacher
-    setSelectedTeacherId('');
-    setScheduleItems([]);
-    setShowTeacherSelect(true);
-  };
+  // Reset states to add another teacher
+  setSelectedTeacherId('');
+  setScheduleItems([]);
+  setShowTeacherSelect(false); // Changed from true to false to show the added teacher
+};
 
   // Add a different teacher
   const handleAddTeacher = () => {

@@ -360,7 +360,6 @@ export function useStudentForm({
 
       try {
         // Prepare student data for submission
-        // IMPORTANT: Always include the _id field when it exists for updates
         const studentData: Partial<Student> = {
           _id: formData._id, // Include the _id for existing students
           personalInfo: {
@@ -376,13 +375,7 @@ export function useStudentForm({
             instrumentProgress: formData.academicInfo.instrumentProgress,
             class: formData.academicInfo.class,
           },
-          enrollments: {
-            ...formData.enrollments,
-            orchestraIds: formData.orchestraAssignments.map(
-              (a) => a.orchestraId
-            ),
-          },
-          teacherIds: formData.teacherIds.filter((id) => id !== 'new-teacher'),
+          // We'll let the API service handle the enrollments
           isActive: formData.isActive,
         };
 

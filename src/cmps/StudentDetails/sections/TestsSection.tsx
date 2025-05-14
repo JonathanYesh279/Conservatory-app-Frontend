@@ -39,8 +39,8 @@ export function TestsSection({
 
   // Define success level options
   const successLevelOptions = [
-    { value: 'עבר/ה בהצלחה', label: 'בהצלחה' },
     { value: 'עבר/ה בהצטיינות', label: 'בהצטיינות' },
+    { value: 'עבר/ה בהצטיינות יתרה', label: 'בהצטיינות יתרה' },
   ];
 
   const stageTestStatus =
@@ -59,8 +59,8 @@ export function TestsSection({
 
   // Display a simplified version of the status for the UI
   const getDisplayStatus = (status: string) => {
-    if (status === 'עבר/ה בהצלחה') return 'עבר/ה בהצלחה';
     if (status === 'עבר/ה בהצטיינות') return 'עבר/ה בהצטיינות';
+    if (status === 'עבר/ה בהצטיינות יתרה') return 'עבר/ה בהצטיינות יתרה';
     return status;
   };
 

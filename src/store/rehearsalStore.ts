@@ -6,6 +6,7 @@ import {
   RehearsalFilter,
   rehearsalService,
 } from '../services/rehearsalService';
+import { useSchoolYearStore } from './schoolYearStore';
 
 interface RehearsalState {
   rehearsals: Rehearsal[];
@@ -20,9 +21,7 @@ interface RehearsalState {
   loadRehearsalsByOrchestraId: (orchestraId: string) => Promise<void>;
   saveRehearsal: (rehearsal: Partial<Rehearsal>) => Promise<Rehearsal>;
   removeRehearsal: (rehearsalId: string) => Promise<void>;
-  bulkCreateRehearsals: (
-    data: BulkRehearsalData & { schoolYearId?: string }
-  ) => Promise<{
+  bulkCreateRehearsals: (data: BulkRehearsalData) => Promise<{
     insertedCount: number;
     rehearsalIds: string[];
   }>;
@@ -88,6 +87,19 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
   saveRehearsal: async (rehearsalToSave) => {
     set({ isLoading: true, error: null });
     try {
+      // Ensure schoolYearId is present
+      if (!rehearsalToSave.schoolYearId) {
+        // Try to get it from the school year store
+        const schoolYearStore = useSchoolYearStore.getState();
+        const schoolYearId = schoolYearStore.currentSchoolYear?._id;
+
+        if (!schoolYearId) {
+          throw new Error('School year ID is required but not available');
+        }
+
+        rehearsalToSave.schoolYearId = schoolYearId;
+      }
+
       let savedRehearsal: Rehearsal;
 
       if (rehearsalToSave._id) {
@@ -109,6 +121,7 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
         });
       } else {
         // Add new rehearsal
+        console.log('Adding new rehearsal with data:', rehearsalToSave);
         savedRehearsal = await rehearsalService.addRehearsal(rehearsalToSave);
 
         set({
@@ -159,8 +172,22 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
   bulkCreateRehearsals: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      // Create a formatted object with only the fields the backend expects,
-      // omitting schoolYearId which is causing validation errors
+      // Ensure schoolYearId is present
+      if (!data.schoolYearId) {
+        // Try to get it from the school year store
+        const schoolYearStore = useSchoolYearStore.getState();
+        const schoolYearId = schoolYearStore.currentSchoolYear?._id;
+
+        if (!schoolYearId) {
+          throw new Error(
+            'School year ID is required for bulk rehearsal creation but not available'
+          );
+        }
+
+        data.schoolYearId = schoolYearId;
+      }
+
+      // Create a formatted object with all required fields
       const formattedData: BulkRehearsalData = {
         orchestraId: data.orchestraId,
         startDate: data.startDate,
@@ -171,6 +198,7 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
         location: data.location,
         notes: data.notes || '',
         excludeDates: data.excludeDates || [],
+        schoolYearId: data.schoolYearId, // Ensure schoolYearId is included
       };
 
       console.log('Sending bulk create data:', formattedData);

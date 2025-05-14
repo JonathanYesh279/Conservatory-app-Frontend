@@ -31,7 +31,8 @@ export interface BulkRehearsalData {
   endTime: string;
   location: string;
   notes?: string;
-  excludeDates: string[]; 
+  excludeDates: string[];
+  schoolYearId: string; // Required to match backend schema
 }
 
 export interface RehearsalFilter {
@@ -71,6 +72,12 @@ export const rehearsalService = {
       rehearsal.dayOfWeek = date.getDay();
     }
 
+    // Check for schoolYearId
+    if (!rehearsal.schoolYearId) {
+      throw new Error('School year ID is required for rehearsal creation');
+    }
+
+    console.log('Adding rehearsal with data:', rehearsal);
     return httpService.post('rehearsal', rehearsal);
   },
 
@@ -100,29 +107,35 @@ export const rehearsalService = {
   },
 
   // Bulk rehearsals creation
-  async bulkCreateRehearsals(
-    data: BulkRehearsalData & { schoolYearId?: string }
-  ): Promise<{
+  async bulkCreateRehearsals(data: BulkRehearsalData): Promise<{
     insertedCount: number;
     rehearsalIds: string[];
   }> {
     try {
       console.log('Bulk create data being sent:', data);
 
-      // Create a new object with only the fields expected by the backend
+      // Ensure schoolYearId is included in the request
+      if (!data.schoolYearId) {
+        throw new Error(
+          'School year ID is required for bulk rehearsal creation'
+        );
+      }
+
+      // Create a formatted object with all required fields
       const formattedData: BulkRehearsalData = {
         orchestraId: data.orchestraId,
         startDate: data.startDate,
         endDate: data.endDate,
-        dayOfWeek: Number(data.dayOfWeek), // Ensure dayOfWeek is a number
+        dayOfWeek: Number(data.dayOfWeek),
         startTime: data.startTime,
         endTime: data.endTime,
         location: data.location,
         notes: data.notes || '',
         excludeDates: data.excludeDates || [],
+        schoolYearId: data.schoolYearId, // Ensure this is passed to backend
       };
 
-      // Execute the API call, omitting the schoolYearId
+      // Execute the API call
       const response = await httpService.post(
         'rehearsal/bulk-create',
         formattedData
