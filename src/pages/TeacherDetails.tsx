@@ -92,49 +92,52 @@ export function TeacherDetails() {
       setTeacher(teacherData);
 
       // Process schedule data separately
-      const schedule = teacherData.teaching?.schedule || [];
-      console.log('Teacher schedule data:', schedule);
+      if (teacherData) {
+        // Add null check here
+        const schedule = teacherData.teaching?.schedule || [];
+        console.log('Teacher schedule data:', schedule);
 
-      // Initialize with placeholder student names for immediate display
-      if (Array.isArray(schedule) && schedule.length > 0) {
-        const initialItems = schedule
-          .filter((item) => item.isActive !== false)
-          .map((item) => ({
-            ...item,
-            studentName: `תלמיד ${item.studentId.slice(-6)}`, // Temporary
-            instrument: '',
-          }));
+        // Initialize with placeholder student names for immediate display
+        if (Array.isArray(schedule) && schedule.length > 0) {
+          const initialItems = schedule
+            .filter((item) => item.isActive !== false)
+            .map((item) => ({
+              ...item,
+              studentName: `תלמיד ${item.studentId.slice(-6)}`, // Temporary
+              instrument: '',
+            }));
 
-        setScheduleItems(initialItems);
-      } else {
-        setScheduleItems([]);
-      }
+          setScheduleItems(initialItems);
+        } else {
+          setScheduleItems([]);
+        }
 
-      // Load students and update schedule items with real names
-      if (
-        teacherData.teaching?.studentIds &&
-        teacherData.teaching.studentIds.length > 0
-      ) {
-        // Load students but don't await here - we'll process the schedule separately after
-        loadStudents(
-          teacherData.teaching.studentIds,
-          teacherData.teaching.schedule
-        );
-      } else {
-        // Clear students if there are none
-        setStudents([]);
-      }
+        // Load students and update schedule items with real names
+        if (
+          teacherData.teaching?.studentIds &&
+          teacherData.teaching.studentIds.length > 0
+        ) {
+          // Load students but don't await here - we'll process the schedule separately after
+          loadStudents(
+            teacherData.teaching.studentIds,
+            teacherData.teaching.schedule
+          );
+        } else {
+          // Clear students if there are none
+          setStudents([]);
+        }
 
-      // Load orchestras
-      if (
-        teacherData.conducting?.orchestraIds &&
-        teacherData.conducting.orchestraIds.length > 0
-      ) {
-        setOrchestrasLoading(true);
-        await loadOrchestras(teacherData.conducting.orchestraIds);
-      } else {
-        // Clear orchestras if there are none
-        setOrchestras([]);
+        // Load orchestras
+        if (
+          teacherData.conducting?.orchestraIds &&
+          teacherData.conducting.orchestraIds.length > 0
+        ) {
+          setOrchestrasLoading(true);
+          await loadOrchestras(teacherData.conducting.orchestraIds);
+        } else {
+          // Clear orchestras if there are none
+          setOrchestras([]);
+        }
       }
     } catch (err) {
       console.error('Failed to load teacher:', err);

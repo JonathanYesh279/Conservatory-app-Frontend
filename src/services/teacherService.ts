@@ -40,6 +40,7 @@ export interface Teacher {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+  placeholder?: boolean;
 }
 
 export interface TeacherFilter {

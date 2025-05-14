@@ -241,9 +241,9 @@ export function StudentDetailsMain() {
 
         {openSections.teachers && (
           <div className='section-content'>
-            {teachersData.length > 0 ? (
+            {teachersData.teachers && teachersData.teachers.length > 0 ? (
               <div className='students-grid'>
-                {teachersData.map((teacher) => (
+                {teachersData.teachers.map((teacher: any) => (
                   <div
                     key={teacher.id}
                     className='student-card clickable'

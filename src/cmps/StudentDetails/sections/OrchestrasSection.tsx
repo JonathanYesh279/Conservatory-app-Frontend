@@ -31,7 +31,6 @@ export function OrchestrasSection({
   // Use useMemo to prevent recalculation on every render
   const studentOrchestraIds = student
     ? [
-        ...(student.orchestraIds || []),
         ...(student.enrollments?.orchestraIds || []),
       ].filter((id) => id)
     : []; // Remove any undefined/null/empty values

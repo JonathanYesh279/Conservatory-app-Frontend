@@ -1,5 +1,6 @@
 // src/services/studentService.ts
 import { httpService } from './httpService';
+import { Teacher } from './teacherService';
 
 // Define interfaces for attendance data
 export interface AttendanceRecord {
@@ -113,12 +114,22 @@ export interface StudentFilter {
   showInactive?: boolean;
 }
 
+export interface TeacherAssignment {
+  teacherId: string;
+  day: string;
+  time: string;
+  duration: number;
+  location?: string;
+  isActive?: boolean;
+}
+
 // Interface for teacher schedule update with correct field names
 export interface TeacherScheduleUpdate {
   studentId: string;
   day: string;
   time: string;
   duration: number;
+  isActive?: boolean; // Make this optional with proper type
 }
 
 export const studentService = {
@@ -214,7 +225,7 @@ export const studentService = {
     console.log('Updating teacher schedule with data:', processedData);
 
     try {
-      const response = await httpService.post(
+      const response = await httpService.post<Teacher>(
         `teacher/${teacherId}/schedule`,
         processedData
       );

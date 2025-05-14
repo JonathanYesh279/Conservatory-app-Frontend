@@ -5,8 +5,6 @@ import {
   User,
   RefreshCw,
   Music,
-  Clock,
-  Calendar,
 } from 'lucide-react';
 import { Teacher } from '../../../services/teacherService';
 import { TeacherAssignment } from '../../../services/studentService';
@@ -200,11 +198,6 @@ export function TeachersSection({
                   matchingTeacher && matchingTeacher.personalInfo
                     ? matchingTeacher.personalInfo.fullName
                     : `מורה ${assignment.teacherId.slice(-4)}`;
-
-                const teacherInitials =
-                  matchingTeacher && matchingTeacher.personalInfo
-                    ? getTeacherInitials(matchingTeacher.personalInfo.fullName)
-                    : 'מ';
 
                 const teacherInstrument =
                   matchingTeacher &&

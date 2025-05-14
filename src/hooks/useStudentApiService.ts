@@ -1,8 +1,8 @@
 // src/hooks/useStudentApiService.ts
 import { useState } from 'react';
 import { StudentFormData, TeacherAssignment } from './useStudentForm';
-import { studentService } from '../services/studentService';
-import { teacherService } from '../services/teacherService';
+import { Teacher } from '../services/teacherService';
+import { studentService } from '../services/studentService'
 
 interface UseStudentApiServiceProps {
   onClose?: () => void;
@@ -15,11 +15,16 @@ interface UseStudentApiServiceProps {
   } | null;
 }
 
+// Define a response type that might include success/message
+interface ScheduleUpdateResponse extends Teacher {
+  success?: boolean;
+  message?: string;
+}
+
 export const useStudentApiService = ({
   onClose,
   onStudentCreated,
   onError,
-  newTeacherInfo,
 }: UseStudentApiServiceProps = {}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -120,7 +125,6 @@ export const useStudentApiService = ({
   };
 
   // Helper function to update teacher schedules
-  // Helper function to update teacher schedules
   const updateTeacherSchedules = async (
     teacherAssignments: TeacherAssignment[],
     studentId: string
@@ -149,15 +153,18 @@ export const useStudentApiService = ({
           `Updating schedule for teacher ${assignment.teacherId}:`,
           scheduleData
         );
-        const result = await studentService.updateTeacherSchedule(
+
+        // Cast the result to our extended interface that might have success/message
+        const result = (await studentService.updateTeacherSchedule(
           assignment.teacherId,
           scheduleData
-        );
+        )) as ScheduleUpdateResponse;
 
-        if (result && result.success === false) {
+        // Use optional chaining and type guards to safely check properties
+        if (result && 'success' in result && result.success === false) {
           console.warn(
             `Schedule update had issues for teacher ${assignment.teacherId}:`,
-            result.message
+            result.message || 'Unknown error'
           );
         } else {
           console.log(

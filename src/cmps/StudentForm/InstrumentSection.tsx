@@ -32,9 +32,6 @@ export function InstrumentSection({
   setPrimaryInstrument,
   updateInstrumentProgress,
   updateInstrumentTest,
-  onInstrumentsChange,
-  isSubmitting,
-  isFormOpen,
   errors = {},
 }: InstrumentSectionProps) {
   const [showForm, setShowForm] = useState(false);
@@ -194,17 +191,17 @@ export function InstrumentSection({
 
     // Update test statuses if not default
     if (
-      newInstrument.tests.stageTest.status !== 'לא נבחן' ||
+      newInstrument.tests?.stageTest?.status !== 'לא נבחן' ||
       newInstrument.tests.stageTest.notes
     ) {
       updateInstrumentTest(
         newInstrument.instrumentName,
         'stageTest',
         'status',
-        newInstrument.tests.stageTest.status
+        newInstrument.tests?.stageTest?.status
       );
 
-      if (newInstrument.tests.stageTest.notes) {
+      if (newInstrument.tests?.stageTest?.notes) {
         updateInstrumentTest(
           newInstrument.instrumentName,
           'stageTest',
@@ -215,17 +212,17 @@ export function InstrumentSection({
     }
 
     if (
-      newInstrument.tests.technicalTest.status !== 'לא נבחן' ||
+      newInstrument.tests?.technicalTest?.status !== 'לא נבחן' ||
       newInstrument.tests.technicalTest.notes
     ) {
       updateInstrumentTest(
         newInstrument.instrumentName,
         'technicalTest',
         'status',
-        newInstrument.tests.technicalTest.status
+        newInstrument.tests?.technicalTest?.status
       );
 
-      if (newInstrument.tests.technicalTest.notes) {
+      if (newInstrument.tests?.technicalTest?.notes) {
         updateInstrumentTest(
           newInstrument.instrumentName,
           'technicalTest',

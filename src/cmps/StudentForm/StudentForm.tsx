@@ -44,7 +44,6 @@ export function StudentForm({
     updateInstrumentTest,
     handleSubmit,
     handleCancel,
-    resetForm,
   } = useStudentForm({
     student,
     onClose,
@@ -69,7 +68,7 @@ export function StudentForm({
 
         <h2>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
 
-        {error && <div className='error-message'>{error}</div>}
+        {error && <div className='error-message'>{error.message || String(error)}</div>}
         {errors.form && <div className='error-message'>{errors.form}</div>}
 
         <form onSubmit={handleSubmit}>

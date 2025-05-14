@@ -16,7 +16,7 @@ interface TeacherState {
   // Actions
   loadTeachers: (filterBy?: TeacherFilter) => Promise<Teacher[]>;
   loadBasicTeacherData: () => Promise<void>;
-  loadTeacherById: (teacherId: string) => Promise<Teacher>;
+  loadTeacherById: (teacherId: string) => Promise<Teacher | null>; // Update return type
   saveTeacher: (
     teacher: Partial<Teacher>,
     teacherId?: string
@@ -70,7 +70,7 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     }
   },
 
-  loadTeacherById: async (teacherId: string) => {
+  loadTeacherById: async (teacherId: string): Promise<Teacher | null> => {
     set({ isLoading: true, error: null });
     try {
       // First check if this teacher is already in the store
@@ -85,11 +85,15 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
 
       // Update the teachers array with this teacher
       const updatedTeachers = [...get().teachers];
-      const index = updatedTeachers.findIndex((t) => t._id === teacher._id);
-      if (index >= 0) {
-        updatedTeachers[index] = teacher;
-      } else {
-        updatedTeachers.push(teacher);
+
+      if (teacher) {
+        // Add null check
+        const index = updatedTeachers.findIndex((t) => t._id === teacher._id);
+        if (index >= 0) {
+          updatedTeachers[index] = teacher;
+        } else {
+          updatedTeachers.push(teacher);
+        }
       }
 
       set({

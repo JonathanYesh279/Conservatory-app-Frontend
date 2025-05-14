@@ -1,6 +1,6 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState } from 'react';
-import { User, X, Plus, UserPlus, ChevronDown } from 'lucide-react';
+import { User, X, UserPlus, ChevronDown } from 'lucide-react';
 import {
   StudentFormData,
   TeacherAssignment,
@@ -9,7 +9,7 @@ import {
 } from '../../hooks/useStudentForm';
 import { useTeacherStore } from '../../store/teacherStore';
 
-interface TeacherAssignmentSectionProps {
+export interface TeacherAssignmentSectionProps {
   formData: StudentFormData;
   newTeacherInfo?: {
     _id?: string;

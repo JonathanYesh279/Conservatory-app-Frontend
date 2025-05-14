@@ -262,7 +262,7 @@ export function useStudentDetailsState() {
      // Find the instrument in the instrumentProgress array
      const instrumentIndex =
        updatedStudent.academicInfo.instrumentProgress.findIndex(
-         (i) => i.instrumentName === instrumentName
+         (i: { instrumentName: string }) => i.instrumentName === instrumentName
        );
 
      if (instrumentIndex >= 0) {
