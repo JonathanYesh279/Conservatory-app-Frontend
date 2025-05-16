@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { studentService, Student } from '../services/studentService';
 import { teacherService } from '../services/teacherService';
 import { orchestraService } from '../services/orchestraService';
+import { TestStatus } from '../services/studentService'
 
 export function useStudentDetailsState() {
   const { studentId } = useParams<{ studentId: string }>();
@@ -262,9 +263,9 @@ export function useStudentDetailsState() {
     setIsUpdatingTest(true);
 
     try {
-      console.log(
-        `Updating ${testType} for ${instrumentName} to status: ${status}`
-      );
+      console.log(`Updating ${testType} for ${instrumentName} to status: ${status}`);
+
+       const typedStatus = status as TestStatus;
 
       // Find the instrument in the student's instrumentProgress array
       const instrumentIndex = student.academicInfo.instrumentProgress.findIndex(
@@ -359,7 +360,7 @@ export function useStudentDetailsState() {
         studentId,
         instrumentName,
         testType,
-        status
+        typedStatus
       );
 
       // Update with server response to ensure consistency
