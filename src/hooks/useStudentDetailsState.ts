@@ -1,4 +1,4 @@
-// src/hooks/useStudentDetailsState.ts - Partial implementation
+// src/hooks/useStudentDetailsState.ts
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { studentService, Student } from '../services/studentService';
@@ -11,6 +11,7 @@ export function useStudentDetailsState() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flipped, setFlipped] = useState(false);
+  const [isUpdatingTest, setIsUpdatingTest] = useState(false);
 
   // Teachers data
   const [teachersData, setTeachersData] = useState<{
@@ -247,79 +248,139 @@ export function useStudentDetailsState() {
     student?.academicInfo?.instrumentProgress?.[0] ||
     null;
 
-  // Update student test status
- const updateStudentTest = async (
-   instrumentName: string,
-   testType: 'stageTest' | 'technicalTest',
-   status: string
- ) => {
-   if (!student || !studentId) return;
+  // Update student test status - IMPROVED VERSION
+  const updateStudentTest = async (
+    instrumentName: string,
+    testType: 'stageTest' | 'technicalTest',
+    status: string
+  ) => {
+    if (!student || !studentId) {
+      console.error('Cannot update test: No student or studentId available');
+      return undefined;
+    }
 
-   try {
-     // Optimistic update for UI - make a deep copy to avoid directly modifying state
-     const updatedStudent = JSON.parse(JSON.stringify(student));
+    setIsUpdatingTest(true);
 
-     // Find the instrument in the instrumentProgress array
-     const instrumentIndex =
-       updatedStudent.academicInfo.instrumentProgress.findIndex(
-         (i: { instrumentName: string }) => i.instrumentName === instrumentName
-       );
+    try {
+      console.log(
+        `Updating ${testType} for ${instrumentName} to status: ${status}`
+      );
 
-     if (instrumentIndex >= 0) {
-       // Initialize tests object structure if it doesn't exist
-       if (
-         !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests
-       ) {
-         updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests =
-           {};
-       }
+      // Find the instrument in the student's instrumentProgress array
+      const instrumentIndex = student.academicInfo.instrumentProgress.findIndex(
+        (i) => i.instrumentName === instrumentName
+      );
 
-       if (
-         !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-           testType
-         ]
-       ) {
-         updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-           testType
-         ] = {
-           status: 'לא נבחן',
-           notes: '',
-         };
-       }
+      if (instrumentIndex === -1) {
+        console.error(`Instrument ${instrumentName} not found in student data`);
+        return undefined;
+      }
 
-       // Update the test status
-       updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-         testType
-       ].status = status;
+      // Get the current instrument data
+      const instrument =
+        student.academicInfo.instrumentProgress[instrumentIndex];
 
-       // Update the last test date
-       updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
-         testType
-       ].lastTestDate = new Date().toISOString();
+      // Get previous test status
+      const previousStatus = instrument.tests?.[testType]?.status || 'לא נבחן';
 
-       // Update local state for immediate feedback
-       setStudent(updatedStudent);
-     }
+      console.log(`Previous status: ${previousStatus}, New status: ${status}`);
 
-     // Call the API
-     const result = await studentService.updateStudentTest(
-       studentId,
-       instrumentName,
-       testType,
-       status
-     );
+      // Optimistic update for UI - create a deep copy to avoid modifying state directly
+      const updatedStudent = JSON.parse(JSON.stringify(student));
 
-     // Update with server response to ensure consistency
-     if (result) {
-       setStudent(result);
-     }
+      // Ensure tests object structure exists
+      if (
+        !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests
+      ) {
+        updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests =
+          {};
+      }
 
-     return result;
-   } catch (err) {
-     console.error('Error updating test status:', err);
-     return undefined;
-   }
- };
+      if (
+        !updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+          testType
+        ]
+      ) {
+        updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+          testType
+        ] = {
+          status: 'לא נבחן',
+          notes: '',
+        };
+      }
+
+      // Update the test status
+      updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+        testType
+      ].status = status;
+      updatedStudent.academicInfo.instrumentProgress[instrumentIndex].tests[
+        testType
+      ].lastTestDate = new Date().toISOString();
+
+      // Increment stage if:
+      // 1. This is a stage test
+      // 2. New status indicates passing (עבר/ה or higher)
+      // 3. Previous status was non-passing (לא נבחן or לא עבר/ה)
+      // 4. Current stage is less than 8
+      const passingStatuses = [
+        'עבר/ה',
+        'עבר/ה בהצטיינות',
+        'עבר/ה בהצטיינות יתרה',
+      ];
+      const failingStatuses = ['לא נבחן', 'לא עבר/ה'];
+
+      if (
+        testType === 'stageTest' &&
+        passingStatuses.includes(status) &&
+        failingStatuses.includes(previousStatus) &&
+        updatedStudent.academicInfo.instrumentProgress[instrumentIndex]
+          .currentStage < 8
+      ) {
+        console.log(
+          `Incrementing stage for ${instrumentName} from ${
+            updatedStudent.academicInfo.instrumentProgress[instrumentIndex]
+              .currentStage
+          } to ${
+            updatedStudent.academicInfo.instrumentProgress[instrumentIndex]
+              .currentStage + 1
+          }`
+        );
+        // Increment the stage
+        updatedStudent.academicInfo.instrumentProgress[
+          instrumentIndex
+        ].currentStage += 1;
+      }
+
+      // Update local state for immediate feedback
+      setStudent(updatedStudent);
+
+      // Call the API
+      const result = await studentService.updateStudentTest(
+        studentId,
+        instrumentName,
+        testType,
+        status
+      );
+
+      // Update with server response to ensure consistency
+      if (result) {
+        console.log(
+          'Server update successful, updating component state',
+          result
+        );
+        setStudent(result);
+        return result;
+      } else {
+        console.warn('Server returned empty result for test update');
+        return updatedStudent;
+      }
+    } catch (err) {
+      console.error('Error updating test status:', err);
+      return undefined;
+    } finally {
+      setIsUpdatingTest(false);
+    }
+  };
 
   return {
     student,
@@ -343,5 +404,6 @@ export function useStudentDetailsState() {
     orchestrasLoading,
     retryLoadTeachers,
     updateStudentTest,
+    isUpdatingTest,
   };
 }

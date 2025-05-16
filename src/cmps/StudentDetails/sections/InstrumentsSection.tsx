@@ -1,6 +1,13 @@
 // src/cmps/StudentDetails/sections/InstrumentsSection.tsx
 import { useState } from 'react';
-import { Music, Star, ChevronUp, ChevronDown, Check } from 'lucide-react';
+import {
+  Music,
+  Star,
+  ChevronUp,
+  ChevronDown,
+  Check,
+  RefreshCw,
+} from 'lucide-react';
 import { Student } from '../../../services/studentService';
 
 interface InstrumentsSectionProps {
@@ -13,6 +20,7 @@ interface InstrumentsSectionProps {
     testType: 'stageTest' | 'technicalTest',
     status: string
   ) => Promise<Student | undefined>;
+  isUpdatingTest?: boolean;
 }
 
 export function InstrumentsSection({
@@ -21,6 +29,7 @@ export function InstrumentsSection({
   onToggle,
   getStageColor,
   updateStudentTest,
+  isUpdatingTest = false,
 }: InstrumentsSectionProps) {
   // State for test dropdowns
   const [activeDropdown, setActiveDropdown] = useState<{
@@ -28,7 +37,7 @@ export function InstrumentsSection({
     testType: 'stageTest' | 'technicalTest';
   } | null>(null);
 
-  // Test status options
+  // Test status options - include all possible statuses
   const testStatusOptions = [
     { value: 'לא נבחן', label: 'לא נבחן' },
     { value: 'עבר/ה', label: 'עבר/ה' },
@@ -50,6 +59,11 @@ export function InstrumentsSection({
     instrumentName: string,
     testType: 'stageTest' | 'technicalTest'
   ) => {
+    if (isUpdatingTest) {
+      // Don't allow toggling dropdown while update is in progress
+      return;
+    }
+
     if (
       activeDropdown &&
       activeDropdown.instrumentName === instrumentName &&
@@ -69,12 +83,18 @@ export function InstrumentsSection({
     testType: 'stageTest' | 'technicalTest',
     status: string
   ) => {
+    if (isUpdatingTest) {
+      // Don't allow multiple simultaneous updates
+      return;
+    }
+
     // Close dropdown
     setActiveDropdown(null);
 
     try {
       // Update the test status
       await updateStudentTest(instrumentName, testType, status);
+      console.log(`Updated ${testType} for ${instrumentName} to ${status}`);
     } catch (error) {
       console.error(
         `Failed to update ${testType} for ${instrumentName}:`,
@@ -117,6 +137,13 @@ export function InstrumentsSection({
 
       {isOpen && (
         <div className='sd-section-content'>
+          {isUpdatingTest && (
+            <div className='sd-updating-indicator'>
+              <RefreshCw size={16} className='spin' />
+              <span>מעדכן נתונים...</span>
+            </div>
+          )}
+
           {student.academicInfo.instrumentProgress.length > 0 ? (
             <div className='sd-compact-instruments-list'>
               {student.academicInfo.instrumentProgress.map((instrument) => (
@@ -153,7 +180,9 @@ export function InstrumentsSection({
                       <span className='sd-test-label'>מבחן טכני:</span>
                       <div className='sd-test-value-container'>
                         <span
-                          className='sd-test-value sd-clickable'
+                          className={`sd-test-value sd-clickable ${
+                            isUpdatingTest ? 'disabled' : ''
+                          }`}
                           style={{
                             color: getStatusColor(
                               instrument.tests?.technicalTest?.status ||
@@ -171,7 +200,8 @@ export function InstrumentsSection({
                         </span>
 
                         {/* Dropdown menu for technical test */}
-                        {activeDropdown &&
+                        {!isUpdatingTest &&
+                          activeDropdown &&
                           activeDropdown.instrumentName ===
                             instrument.instrumentName &&
                           activeDropdown.testType === 'technicalTest' && (
@@ -210,7 +240,9 @@ export function InstrumentsSection({
                       <span className='sd-test-label'>מבחן שלב:</span>
                       <div className='sd-test-value-container'>
                         <span
-                          className='sd-test-value sd-clickable'
+                          className={`sd-test-value sd-clickable ${
+                            isUpdatingTest ? 'disabled' : ''
+                          }`}
                           style={{
                             color: getStatusColor(
                               instrument.tests?.stageTest?.status || 'לא נבחן'
@@ -227,7 +259,8 @@ export function InstrumentsSection({
                         </span>
 
                         {/* Dropdown menu for stage test */}
-                        {activeDropdown &&
+                        {!isUpdatingTest &&
+                          activeDropdown &&
                           activeDropdown.instrumentName ===
                             instrument.instrumentName &&
                           activeDropdown.testType === 'stageTest' && (
@@ -270,6 +303,33 @@ export function InstrumentsSection({
                         {instrument.tests?.stageTest?.notes ||
                           instrument.tests?.technicalTest?.notes}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Show last test date if available */}
+                  {(instrument.tests?.stageTest?.lastTestDate ||
+                    instrument.tests?.technicalTest?.lastTestDate) && (
+                    <div className='sd-test-dates'>
+                      {instrument.tests?.stageTest?.lastTestDate && (
+                        <div className='sd-test-date'>
+                          <span className='sd-date-label'>מבחן שלב:</span>
+                          <span className='sd-date-value'>
+                            {new Date(
+                              instrument.tests.stageTest.lastTestDate
+                            ).toLocaleDateString('he-IL')}
+                          </span>
+                        </div>
+                      )}
+                      {instrument.tests?.technicalTest?.lastTestDate && (
+                        <div className='sd-test-date'>
+                          <span className='sd-date-label'>מבחן טכני:</span>
+                          <span className='sd-date-value'>
+                            {new Date(
+                              instrument.tests.technicalTest.lastTestDate
+                            ).toLocaleDateString('he-IL')}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

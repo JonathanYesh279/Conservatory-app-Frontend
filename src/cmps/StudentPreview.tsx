@@ -3,6 +3,7 @@ import { Student } from '../services/studentService';
 import { Edit, Trash2, Calendar, Award, Eye } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
+import { studentService } from '../services/studentService'; // Use studentService directly
 
 interface StudentPreviewProps {
   student: Student;
@@ -17,34 +18,69 @@ export function StudentPreview({
   onEdit,
   onRemove,
 }: StudentPreviewProps) {
+  // Local state for the current student data
+  const [currentStudent, setCurrentStudent] = useState<Student>(student);
+
   // State to store orchestra names after fetching them
   const [orchestraNames, setOrchestraNames] = useState<string[]>([]);
 
-  // Fetch orchestra names when component mounts
-  useEffect(() => {
-    const fetchOrchestraNames = async () => {
-      if (
-        student.enrollments?.orchestraIds &&
-        student.enrollments.orchestraIds.length > 0
-      ) {
-        try {
-          // Fetch orchestras by their IDs
-          const orchestras = await orchestraService.getOrchestrasByIds(
-            student.enrollments.orchestraIds
-          );
+  // Track if we've already fetched updated data to prevent infinite loops
+  const [hasRefreshed, setHasRefreshed] = useState(false);
 
-          // Extract names
-          const names = orchestras.map((orchestra) => orchestra.name);
-          setOrchestraNames(names);
+  // Update the component when the original student prop changes
+  useEffect(() => {
+    setCurrentStudent(student);
+    setHasRefreshed(false); // Reset refresh flag when student prop changes
+  }, [student]);
+
+  // Fetch the latest student data once when component mounts
+  useEffect(() => {
+    // Only fetch once per student and only if we haven't already refreshed
+    if (student?._id && !hasRefreshed) {
+      const getLatestStudentData = async () => {
+        try {
+          const latestStudent = await studentService.getStudentById(
+            student._id
+          );
+          setCurrentStudent(latestStudent);
+          setHasRefreshed(true); // Mark as refreshed to prevent further calls
         } catch (error) {
-          console.error('Error fetching orchestra data:', error);
-          setOrchestraNames([]);
+          console.error('Error fetching latest student data:', error);
         }
+      };
+
+      getLatestStudentData();
+    }
+  }, [student?._id, hasRefreshed]);
+
+  // Fetch orchestra names when component mounts or currentStudent changes
+  useEffect(() => {
+    if (
+      !currentStudent?.enrollments?.orchestraIds ||
+      currentStudent.enrollments.orchestraIds.length === 0
+    ) {
+      setOrchestraNames([]);
+      return;
+    }
+
+    const fetchOrchestraNames = async () => {
+      try {
+        // Fetch orchestras by their IDs
+        const orchestras = await orchestraService.getOrchestrasByIds(
+          currentStudent.enrollments.orchestraIds
+        );
+
+        // Extract names
+        const names = orchestras.map((orchestra) => orchestra.name);
+        setOrchestraNames(names);
+      } catch (error) {
+        console.error('Error fetching orchestra data:', error);
+        setOrchestraNames([]);
       }
     };
 
     fetchOrchestraNames();
-  }, [student.enrollments?.orchestraIds]);
+  }, [currentStudent?.enrollments?.orchestraIds]);
 
   // Get stage color based on stage number
   const getStageColor = (stage: number): string => {
@@ -77,6 +113,7 @@ export function StudentPreview({
 
   // Get initials for avatar
   const getInitials = (name: string): string => {
+    if (!name) return '';
     return name
       .split(' ')
       .map((n) => n[0])
@@ -98,28 +135,30 @@ export function StudentPreview({
   // Get formatted instruments text for display in header
   const getInstrumentsDisplay = (): string => {
     if (
-      !student.academicInfo.instrumentProgress ||
-      student.academicInfo.instrumentProgress.length === 0
+      !currentStudent?.academicInfo?.instrumentProgress ||
+      currentStudent.academicInfo.instrumentProgress.length === 0
     ) {
       return 'ללא כלי נגינה';
     }
 
     // Get top two instruments to display
-    const instrumentsToShow = student.academicInfo.instrumentProgress.slice(
-      0,
-      2
-    );
+    const instrumentsToShow =
+      currentStudent.academicInfo.instrumentProgress.slice(0, 2);
 
     // Format first two instruments with dash separator
     return instrumentsToShow.map((i) => i.instrumentName).join(' - ');
   };
 
-  // Get primary instrument
+  // Get primary instrument with null safety
   const getPrimaryInstrument = () => {
+    if (!currentStudent?.academicInfo?.instrumentProgress) {
+      return null;
+    }
+
     return (
-      student.academicInfo.instrumentProgress?.find((i) => i.isPrimary) ||
-      (student.academicInfo.instrumentProgress?.length > 0
-        ? student.academicInfo.instrumentProgress[0]
+      currentStudent.academicInfo.instrumentProgress.find((i) => i.isPrimary) ||
+      (currentStudent.academicInfo.instrumentProgress.length > 0
+        ? currentStudent.academicInfo.instrumentProgress[0]
         : null)
     );
   };
@@ -133,13 +172,20 @@ export function StudentPreview({
   const stageTestStatus =
     primaryInstrument?.tests?.stageTest?.status || 'לא נבחן';
 
+  // If we don't have a currentStudent yet, use the original student
+  const displayStudent = currentStudent || student;
+
+  // Ensure we have a valid student before rendering
+  if (!displayStudent || !displayStudent.personalInfo) {
+    return null;
+  }
+
   return (
-    <div className='student-preview' onClick={() => onView(student._id)}>
+    <div className='student-preview' onClick={() => onView(displayStudent._id)}>
       <div className='preview-header'>
         {/* Main header row with badges left, student info right */}
         <div className='header-row'>
-
-                    {/* Right side - avatar and student info */}
+          {/* Right side - avatar and student info */}
           <div className='student-details'>
             <div className='avatar-section'>
               <div
@@ -148,12 +194,14 @@ export function StudentPreview({
                   backgroundColor: getStageColor(currentStage),
                 }}
               >
-                {getInitials(student.personalInfo.fullName)}
+                {getInitials(displayStudent.personalInfo.fullName)}
               </div>
             </div>
 
             <div className='student-info'>
-              <h3 className='student-name'>{student.personalInfo.fullName}</h3>
+              <h3 className='student-name'>
+                {displayStudent.personalInfo.fullName}
+              </h3>
               <div className='student-subject'>
                 <span>{getInstrumentsDisplay()}</span>
               </div>
@@ -163,20 +211,25 @@ export function StudentPreview({
           {/* Left side - badges */}
           <div className='badges-container'>
             {/* Instrument stage badges first */}
-            {student.academicInfo.instrumentProgress &&
-              student.academicInfo.instrumentProgress.length > 0 && (
+            {displayStudent.academicInfo?.instrumentProgress &&
+              displayStudent.academicInfo.instrumentProgress.length > 0 && (
                 <div className='instrument-badges'>
-                  {student.academicInfo.instrumentProgress.map((instrument) => (
-                    <div
-                      key={instrument.instrumentName}
-                      className='instrument-stage-badge'
-                      style={{
-                        backgroundColor: getStageColor(instrument.currentStage),
-                      }}
-                    >
-                      {instrument.instrumentName}: שלב {instrument.currentStage}
-                    </div>
-                  ))}
+                  {displayStudent.academicInfo.instrumentProgress.map(
+                    (instrument) => (
+                      <div
+                        key={instrument.instrumentName}
+                        className='instrument-stage-badge'
+                        style={{
+                          backgroundColor: getStageColor(
+                            instrument.currentStage
+                          ),
+                        }}
+                      >
+                        {instrument.instrumentName}: שלב{' '}
+                        {instrument.currentStage}
+                      </div>
+                    )
+                  )}
                 </div>
               )}
             {/* Class badge */}
@@ -186,7 +239,7 @@ export function StudentPreview({
                 backgroundColor: '#348b49',
               }}
             >
-              <span>כיתה {student.academicInfo.class}</span>
+              <span>כיתה {displayStudent.academicInfo.class}</span>
             </div>
           </div>
         </div>
@@ -231,7 +284,7 @@ export function StudentPreview({
             className='action-btn view'
             onClick={(e) => {
               e.stopPropagation();
-              onView(student._id);
+              onView(displayStudent._id);
             }}
             aria-label='הצג פרטי תלמיד'
           >
@@ -242,7 +295,7 @@ export function StudentPreview({
             className='action-btn edit'
             onClick={(e) => {
               e.stopPropagation();
-              onEdit(student._id);
+              onEdit(displayStudent._id);
             }}
             aria-label='ערוך תלמיד'
           >
@@ -254,7 +307,7 @@ export function StudentPreview({
               className='action-btn delete'
               onClick={(e) => {
                 e.stopPropagation();
-                onRemove(student._id);
+                onRemove(displayStudent._id);
               }}
               aria-label='מחק תלמיד'
             >
@@ -265,7 +318,9 @@ export function StudentPreview({
 
         <div className='date-info'>
           <Calendar size={14} />
-          <span>{new Date(student.createdAt).toLocaleDateString('he-IL')}</span>
+          <span>
+            {new Date(displayStudent.createdAt).toLocaleDateString('he-IL')}
+          </span>
         </div>
       </div>
     </div>

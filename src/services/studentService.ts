@@ -288,16 +288,38 @@ export const studentService = {
     }
   },
 
+  // Fixed and improved updateStudentTest method
   async updateStudentTest(
     studentId: string,
     instrumentName: string,
     testType: 'stageTest' | 'technicalTest',
-    status: string
+    status: TestStatus
   ): Promise<Student> {
-    return httpService.put(`student/${studentId}/test`, {
-      instrumentName,
-      testType,
-      status,
-    });
+    try {
+      console.log(
+        `Sending test update request: Student ID ${studentId}, Instrument: ${instrumentName}, Test Type: ${testType}, Status: ${status}`
+      );
+
+      // Structure the request data according to API expectations
+      const requestData = {
+        instrumentName,
+        testType,
+        status,
+      };
+
+      // Make the API call to update the test status
+      const updatedStudent = await httpService.put<Student>(
+        `student/${studentId}/test`,
+        requestData
+      );
+
+      console.log('Test update successful, server response:', updatedStudent);
+      return updatedStudent;
+    } catch (error) {
+      console.error('Failed to update student test status:', error);
+      throw new Error(
+        error instanceof Error ? error.message : 'Failed to update test status'
+      );
+    }
   },
 };
