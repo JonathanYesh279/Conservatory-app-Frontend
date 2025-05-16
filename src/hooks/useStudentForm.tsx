@@ -169,7 +169,7 @@ export function useStudentForm({
       },
       academicInfo: {
         instrumentProgress: [], // Start with empty array - no default instrument
-        class: VALID_CLASSES[0],
+        class: 'א', // Set a default class value
       },
       enrollments: {
         orchestraIds: [],

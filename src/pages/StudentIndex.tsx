@@ -1,6 +1,10 @@
 // src/pages/StudentIndex.tsx
-import { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState, useCallback } from 'react';
+import {
+  Outlet,
+  useNavigate,
+  useLocation,
+} from 'react-router-dom';
 import { useStudentStore } from '../store/studentStore.ts';
 import { StudentList } from '../cmps/StudentList.tsx';
 import { Header } from '../cmps/Header.tsx';
@@ -20,6 +24,7 @@ export function StudentIndex() {
   const { loadCurrentSchoolYear } = useSchoolYearStore();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [shouldRefreshList, setShouldRefreshList] = useState(false);
 
   // Add state for the confirmation dialog
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
@@ -33,12 +38,10 @@ export function StudentIndex() {
       student.academicInfo.class,
       student.personalInfo.parentName || '',
       student.personalInfo.studentEmail || '',
-    ]
-  
-    return fields.filter((field): field is string =>
-      typeof field === 'string'
-    );
-  }
+    ];
+
+    return fields.filter((field): field is string => typeof field === 'string');
+  };
 
   // Use the search hook
   const { filteredEntities: filteredStudents, handleSearch } = useSearchbar(
@@ -51,22 +54,54 @@ export function StudentIndex() {
   const { user } = useAuth();
 
   const isAdmin = user?.roles.includes('מנהל');
-  const isDetailPage = location.pathname.includes('/students/') && !location.pathname.endsWith('/students/');
+  const isDetailPage =
+    location.pathname.includes('/students/') &&
+    !location.pathname.endsWith('/students/');
 
+  // Load students on mount and when returning to the page
   useEffect(() => {
     loadStudents();
     loadCurrentSchoolYear();
   }, [loadStudents, loadCurrentSchoolYear]);
+
+  // Add a new effect to refresh the list when necessary
+  useEffect(() => {
+    if (shouldRefreshList) {
+      loadStudents()
+        .then(() => {
+          console.log('Student list refreshed successfully');
+          setShouldRefreshList(false);
+        })
+        .catch((error) => {
+          console.error('Failed to refresh student list:', error);
+          setShouldRefreshList(false);
+        });
+    }
+  }, [shouldRefreshList, loadStudents]);
+
+  // Effect to refresh the list when navigating back to the list view
+  useEffect(() => {
+    if (!isDetailPage && location.pathname === '/students') {
+      setShouldRefreshList(true);
+    }
+  }, [location.pathname, isDetailPage]);
 
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsFormOpen(true);
   };
 
-  const handleCloseForm = () => {
+  const handleCloseForm = useCallback(() => {
     setIsFormOpen(false);
     setSelectedStudent(null);
-  };
+    // Set the refresh flag when closing the form (after add/edit)
+    setShouldRefreshList(true);
+  }, []);
+
+  const handleStudentCreated = useCallback(() => {
+    console.log('Student created/updated, refreshing list');
+    setShouldRefreshList(true);
+  }, []);
 
   const handleEditStudent = (studentId: string) => {
     const student = students.find((s) => s._id === studentId) || null;
@@ -93,6 +128,8 @@ export function StudentIndex() {
       try {
         await removeStudent(studentToDelete);
         setStudentToDelete(null);
+        // Refresh the list after removing a student
+        setShouldRefreshList(true);
       } catch (err) {
         console.error('Failed to remove student:', err);
       }
@@ -154,12 +191,18 @@ export function StudentIndex() {
           />
         )}
 
-        <Outlet context={{ loadStudents }} />
+        <Outlet
+          context={{
+            loadStudents,
+            refreshList: () => setShouldRefreshList(true),
+          }}
+        />
 
         {/* Student Form Modal */}
         <StudentForm
           isOpen={isFormOpen}
           onClose={handleCloseForm}
+          onStudentCreated={handleStudentCreated}
           student={selectedStudent || undefined}
         />
 
