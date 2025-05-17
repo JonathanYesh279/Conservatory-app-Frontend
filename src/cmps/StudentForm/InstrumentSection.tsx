@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Music, Star, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
+import { ConfirmDialog } from '../ConfirmDialog';
 
 interface InstrumentSectionProps {
   instruments: InstrumentProgress[];
@@ -44,6 +45,12 @@ export function InstrumentSection({
       technicalTest: { status: 'לא נבחן', notes: '' },
     },
   });
+
+  // Add state for confirmation dialog
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [instrumentToRemove, setInstrumentToRemove] = useState<string | null>(
+    null
+  );
 
   // Add feedback states
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -105,20 +112,32 @@ export function InstrumentSection({
     if (name.includes('.')) {
       // Handle nested objects (e.g. tests.stageTest.status)
       const [parent, child, prop] = name.split('.');
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...((prev[parent as keyof typeof prev] as Record<string, any>) || {}),
-          [child]: {
-            ...((((prev[parent as keyof typeof prev] as Record<string, any>) ||
-              {})[child as keyof (typeof prev)[keyof typeof prev]] as Record<
-              string,
-              any
-            >) || {}),
-            [prop]: value,
-          },
-        },
-      }));
+      setFormData((prev) => {
+        // Get the parent object with a fallback to an empty object
+        const parentObj =
+          (prev[parent as keyof typeof prev] as Record<string, any>) || {};
+
+        // Get the child object with a fallback to an empty object
+        const childObj = parentObj[child] || {};
+
+        // Create updated child with the new property value
+        const updatedChild = {
+          ...childObj,
+          [prop]: value,
+        };
+
+        // Create updated parent with the new child object
+        const updatedParent = {
+          ...parentObj,
+          [child]: updatedChild,
+        };
+
+        // Return the updated form data
+        return {
+          ...prev,
+          [parent]: updatedParent,
+        };
+      });
     } else if (name === 'isPrimary') {
       // Handle checkbox
       setFormData((prev) => ({
@@ -250,11 +269,20 @@ export function InstrumentSection({
     setShowForm(false);
   };
 
-  const handleRemoveInstrument = (index: number) => {
-    if (index >= 0 && index < instruments.length) {
-      const instrumentToRemove = instruments[index];
-      removeInstrument(instrumentToRemove.instrumentName);
+  // Initiate the removal process by showing confirmation dialog
+  const initiateRemoveInstrument = (instrumentName: string) => {
+    setInstrumentToRemove(instrumentName);
+    setIsConfirmDialogOpen(true);
+  };
+
+  // Confirm the removal after user accepts the dialog
+  const confirmRemoveInstrument = () => {
+    if (instrumentToRemove) {
+      // Call the actual removeInstrument function from props
+      removeInstrument(instrumentToRemove);
+      setInstrumentToRemove(null);
     }
+    setIsConfirmDialogOpen(false);
   };
 
   const handleSetPrimary = (index: number) => {
@@ -365,7 +393,9 @@ export function InstrumentSection({
                   <button
                     type='button'
                     className='remove-btn'
-                    onClick={() => handleRemoveInstrument(index)}
+                    onClick={() =>
+                      initiateRemoveInstrument(instrument.instrumentName)
+                    }
                     aria-label='הסר כלי נגינה'
                     title='הסר כלי נגינה'
                   >
@@ -526,6 +556,20 @@ export function InstrumentSection({
           </div>
         </div>
       )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={confirmRemoveInstrument}
+        title='הסרת כלי נגינה'
+        message={`האם אתה בטוח שברצונך להסיר את ${
+          instrumentToRemove ? instrumentToRemove : 'כלי הנגינה'
+        }?`}
+        confirmText='הסר'
+        cancelText='ביטול'
+        type='warning'
+      />
     </div>
   );
 }

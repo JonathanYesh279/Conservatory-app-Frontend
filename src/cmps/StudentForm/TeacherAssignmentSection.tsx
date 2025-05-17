@@ -1,6 +1,13 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState } from 'react';
-import { User, X, UserPlus, ChevronDown } from 'lucide-react';
+import {
+  User,
+  X,
+  UserPlus,
+  ChevronDown,
+  Music,
+  Clock,
+} from 'lucide-react';
 import {
   StudentFormData,
   TeacherAssignment,
@@ -8,6 +15,7 @@ import {
   LESSON_DURATIONS,
 } from '../../hooks/useStudentForm';
 import { useTeacherStore } from '../../store/teacherStore';
+import { ConfirmDialog } from '../ConfirmDialog';
 
 export interface TeacherAssignmentSectionProps {
   formData: StudentFormData;
@@ -49,6 +57,14 @@ export function TeacherAssignmentSection({
       duration: number;
     }[]
   >([]);
+
+  // State for confirmation dialog
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [assignmentToRemove, setAssignmentToRemove] = useState<{
+    teacherId: string;
+    day: string;
+    time: string;
+  } | null>(null);
 
   // Group existing assignments by teacher for display
   const teacherAssignmentsByTeacher: Record<string, TeacherAssignment[]> = {};
@@ -120,31 +136,54 @@ export function TeacherAssignmentSection({
   };
 
   // Save all lessons for current teacher
-const handleSaveTeacherLessons = () => {
-  // Add all current schedule items as assignments
-  scheduleItems.forEach((item) => {
-    // Use correct field names for backend
-    const scheduleToSend = {
-      teacherId: item.teacherId,
-      day: item.day,
-      time: item.time,
-      duration: item.duration,
-    };
+  const handleSaveTeacherLessons = () => {
+    // Add all current schedule items as assignments
+    scheduleItems.forEach((item) => {
+      // Use correct field names for backend
+      const scheduleToSend = {
+        teacherId: item.teacherId,
+        day: item.day,
+        time: item.time,
+        duration: item.duration,
+      };
 
-    addTeacherAssignment(scheduleToSend);
-  });
+      addTeacherAssignment(scheduleToSend);
+    });
 
-  // Reset states to add another teacher
-  setSelectedTeacherId('');
-  setScheduleItems([]);
-  setShowTeacherSelect(false); // Changed from true to false to show the added teacher
-};
+    // Reset states to add another teacher
+    setSelectedTeacherId('');
+    setScheduleItems([]);
+    setShowTeacherSelect(false); // Changed from true to false to show the added teacher
+  };
 
   // Add a different teacher
   const handleAddTeacher = () => {
     setShowTeacherSelect(true);
     setSelectedTeacherId('');
     setScheduleItems([]);
+  };
+
+  // Start the assignment removal process with confirmation
+  const initiateRemoveAssignment = (
+    teacherId: string,
+    day: string,
+    time: string
+  ) => {
+    setAssignmentToRemove({ teacherId, day, time });
+    setIsConfirmDialogOpen(true);
+  };
+
+  // Confirm removing the assignment
+  const confirmRemoveAssignment = () => {
+    if (assignmentToRemove) {
+      removeTeacherAssignment(
+        assignmentToRemove.teacherId,
+        assignmentToRemove.day,
+        assignmentToRemove.time
+      );
+      setAssignmentToRemove(null);
+    }
+    setIsConfirmDialogOpen(false);
   };
 
   // Get teacher name by ID
@@ -165,6 +204,31 @@ const handleSaveTeacherLessons = () => {
       : 'מורה לא ידוע';
   };
 
+  // Get teacher instrument by ID
+  const getTeacherInstrument = (teacherId: string) => {
+    if (teacherId === 'new-teacher' && newTeacherInfo?.instrument) {
+      return newTeacherInfo.instrument;
+    }
+
+    const teacher = teachers.find((t) => t._id === teacherId);
+    return teacher?.professionalInfo?.instrument || '';
+  };
+
+  // Format a time string with proper padding
+  const formatTime = (time: string) => {
+    return time || '--:--';
+  };
+
+  // Format duration with units
+  const formatDuration = (duration: number) => {
+    return `${duration} דקות`;
+  };
+
+  // Format day of week
+  const formatDay = (day: string) => {
+    return day || 'יום ?';
+  };
+
   return (
     <div className='form-section teacher-assignment-section'>
       <h3>שיוך מורה</h3>
@@ -175,38 +239,57 @@ const handleSaveTeacherLessons = () => {
           {Object.entries(teacherAssignmentsByTeacher).map(
             ([teacherId, assignments]) => (
               <div key={teacherId} className='teacher-assignment-item'>
-                <div className='teacher-name'>
-                  <User size={16} />
-                  <span>{getTeacherName(teacherId)}</span>
-                </div>
-                <div className='lessons-list'>
-                  {assignments.map((assignment, index) => (
-                    <div
-                      key={`${assignment.teacherId}-${assignment.day}-${assignment.time}-${index}`}
-                      className='lesson-item'
-                    >
-                      <div className='lesson-info'>
-                        <span>
-                          {assignment.day}, {assignment.time},{' '}
-                          {assignment.duration} דקות
-                        </span>
+                {/* Teacher header - similar to instrument card */}
+                <div className='instrument-card'>
+                  <div className='instrument-header'>
+                    <div className='instrument-info'>
+                      <div className='instrument-name-wrapper'>
+                        <div className='instrument-name'>
+                          <User size={16} />
+                          <span>{getTeacherName(teacherId)}</span>
+                        </div>
+                        {getTeacherInstrument(teacherId) && (
+                          <div className='instrument-badge'>
+                            <Music size={12} />
+                            <span>{getTeacherInstrument(teacherId)}</span>
+                          </div>
+                        )}
                       </div>
-                      <button
-                        type='button'
-                        className='remove-lesson-btn'
-                        onClick={() =>
-                          removeTeacherAssignment(
-                            assignment.teacherId,
-                            assignment.day,
-                            assignment.time
-                          )
-                        }
-                        aria-label='הסר שיעור'
-                      >
-                        <X size={14} />
-                      </button>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Display lessons for this teacher */}
+                  <div className='lessons-list'>
+                    {assignments.map((assignment, index) => (
+                      <div
+                        key={`${assignment.teacherId}-${assignment.day}-${assignment.time}-${index}`}
+                        className='lesson-item'
+                      >
+                        <div className='lesson-info'>
+                          <Clock size={14} />
+                          <span>
+                            {formatDay(assignment.day)},{' '}
+                            {formatTime(assignment.time)},{' '}
+                            {formatDuration(assignment.duration)}
+                          </span>
+                        </div>
+                        <button
+                          type='button'
+                          className='remove-btn'
+                          onClick={() =>
+                            initiateRemoveAssignment(
+                              assignment.teacherId,
+                              assignment.day,
+                              assignment.time
+                            )
+                          }
+                          aria-label='הסר שיעור'
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             )
@@ -371,6 +454,18 @@ const handleSaveTeacherLessons = () => {
             הוסף מורה
           </button>
         )}
+
+      {/* Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={confirmRemoveAssignment}
+        title='הסרת שיעור'
+        message='האם אתה בטוח שברצונך להסיר את השיעור הזה?'
+        confirmText='הסר'
+        cancelText='ביטול'
+        type='warning'
+      />
     </div>
   );
 }
