@@ -1189,6 +1189,218 @@
   --success-emphasis: #00ad55;
 }
 
+/* Enhanced test grid layout for the Tests Section */
+.sd-tests-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Instrument test card in the Tests section */
+.sd-instrument-test-card {
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.sd-instrument-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.sd-instrument-test-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+/* Test item layout */
+.sd-test-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sd-test-item {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.sd-test-item-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Test date styling */
+.sd-test-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-right: auto;
+  padding-right: 0.75rem;
+}
+
+/* Undo toast for test updates */
+.sd-undo-toast {
+  position: fixed;
+  bottom: 1rem;
+  left: 1rem;
+  background-color: var(--success);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  font-size: 0.85rem;
+  max-width: 12rem;
+  animation: slideUp 0.3s ease forwards;
+}
+
+.sd-undo-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 0.25rem;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: background 0.2s;
+}
+
+.sd-undo-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Status specific classes for test values */
+.sd-test-value.not-tested {
+  color: var(--text-muted);
+  background-color: rgba(var(--text-muted-rgb), 0.1);
+}
+
+.sd-test-value.passed {
+  color: var(--success);
+  background-color: rgba(var(--success-rgb), 0.1);
+}
+
+.sd-test-value.excellent {
+  color: var(--success);
+  background-color: rgba(var(--success-rgb), 0.2);
+  font-weight: 600;
+}
+
+.sd-test-value.excellent-plus {
+  color: var(--success-emphasis, #00ad55);
+  background-color: rgba(var(--success-rgb), 0.25);
+  font-weight: 600;
+}
+
+.sd-test-value.failed {
+   color: var(--danger);
+  background-color: rgba(var(--danger-rgb), 0.15);
+  font-weight: 600;
+}
+
+/* Clickable test value with styling for interaction */
+.sd-test-value.sd-clickable {
+  cursor: pointer;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.sd-test-value.sd-clickable:hover {
+  border-color: var(--border-color);
+  background-color: var(--bg-tertiary);
+}
+
+.sd-test-value.sd-clickable.disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Animation for undo toast */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Updating indicator styles */
+.sd-updating-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+}
+
+.sd-updating-indicator .spin {
+  animation: spin 1.5s linear infinite;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .sd-instrument-test-card {
+    padding: 0.75rem;
+  }
+  
+  .sd-test-item-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .sd-undo-toast {
+    left: 1rem;
+    right: 1rem;
+    bottom: 1rem;
+    max-width: none;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] {
+  .sd-instrument-test-card {
+    background-color: var(--bg-secondary);
+  }
+  
+  .sd-test-value.passed {
+    background-color: rgba(var(--success-rgb), 0.15);
+  }
+  
+  .sd-test-value.failed {
+    background-color: rgba(var(--danger-rgb), 0.15);
+  }
+  
+  .sd-test-value.sd-clickable:hover {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.3);
+  }
+}
+
 /* Responsive adjustments */
 @media (max-width: 480px) {
   .sd-test-dropdown {

@@ -1,13 +1,5 @@
-// src/cmps/StudentDetails/sections/InstrumentsSection.tsx
-import { useState } from 'react';
-import {
-  Music,
-  Star,
-  ChevronUp,
-  ChevronDown,
-  Check,
-  RefreshCw,
-} from 'lucide-react';
+// src/components/StudentDetails/sections/InstrumentsSection.tsx
+import { Music, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { Student } from '../../../services/studentService';
 
 interface InstrumentsSectionProps {
@@ -15,12 +7,6 @@ interface InstrumentsSectionProps {
   isOpen: boolean;
   onToggle: () => void;
   getStageColor: (stage: number) => string;
-  updateStudentTest: (
-    instrumentName: string,
-    testType: 'stageTest' | 'technicalTest',
-    status: string
-  ) => Promise<Student | undefined>;
-  isUpdatingTest?: boolean;
 }
 
 export function InstrumentsSection({
@@ -28,24 +14,7 @@ export function InstrumentsSection({
   isOpen,
   onToggle,
   getStageColor,
-  updateStudentTest,
-  isUpdatingTest = false,
 }: InstrumentsSectionProps) {
-  // State for test dropdowns
-  const [activeDropdown, setActiveDropdown] = useState<{
-    instrumentName: string;
-    testType: 'stageTest' | 'technicalTest';
-  } | null>(null);
-
-  // Test status options - include all possible statuses
-  const testStatusOptions = [
-    { value: 'לא נבחן', label: 'לא נבחן' },
-    { value: 'עבר/ה', label: 'עבר/ה' },
-    { value: 'לא עבר/ה', label: 'לא עבר/ה' },
-    { value: 'עבר/ה בהצטיינות', label: 'עבר/ה בהצטיינות' },
-    { value: 'עבר/ה בהצטיינות יתרה', label: 'עבר/ה בהצטיינות יתרה' },
-  ];
-
   if (
     !student ||
     !student.academicInfo ||
@@ -54,70 +23,27 @@ export function InstrumentsSection({
     return null;
   }
 
-  // Toggle dropdown for a specific test and instrument
-  const toggleDropdown = (
-    instrumentName: string,
-    testType: 'stageTest' | 'technicalTest'
-  ) => {
-    if (isUpdatingTest) {
-      // Don't allow toggling dropdown while update is in progress
-      return;
-    }
-
-    if (
-      activeDropdown &&
-      activeDropdown.instrumentName === instrumentName &&
-      activeDropdown.testType === testType
-    ) {
-      // Close if clicking on the same one
-      setActiveDropdown(null);
-    } else {
-      // Open a new dropdown
-      setActiveDropdown({ instrumentName, testType });
-    }
-  };
-
-  // Handle test status selection
-  const handleTestStatusSelect = async (
-    instrumentName: string,
-    testType: 'stageTest' | 'technicalTest',
-    status: string
-  ) => {
-    if (isUpdatingTest) {
-      // Don't allow multiple simultaneous updates
-      return;
-    }
-
-    // Close dropdown
-    setActiveDropdown(null);
-
-    try {
-      // Update the test status
-      await updateStudentTest(instrumentName, testType, status);
-      console.log(`Updated ${testType} for ${instrumentName} to ${status}`);
-    } catch (error) {
-      console.error(
-        `Failed to update ${testType} for ${instrumentName}:`,
-        error
-      );
-    }
-  };
-
-  // Helper function to get status color
+  // Helper function to get status color - updated to match TestSection
   const getStatusColor = (status: string): string => {
-    if (status.includes('עבר/ה')) {
-      if (status.includes('בהצטיינות יתרה')) {
-        return 'var(--primary-color)'; // Special color for highest achievement
-      }
-      if (status.includes('בהצטיינות')) {
-        return 'var(--success-emphasis)'; // Enhanced success color
-      }
-      return 'var(--success)'; // Regular success color
+    if (status === 'עבר/ה בהצטיינות יתרה') {
+      return 'var(--success-emphasis)'; // Darker green for highest achievement
+    }
+    if (status === 'עבר/ה בהצטיינות' || status === 'עבר/ה') {
+      return 'var(--success)'; // Regular green for pass
     }
     if (status === 'לא עבר/ה') {
-      return 'var(--danger)'; // Danger color for failed
+      return 'var(--danger)'; // Strong red for fail
     }
-    return 'var(--text-secondary)'; // Neutral for not tested
+    return 'var(--text-muted)'; // Gray for not tested
+  };
+
+  // Helper function to get the status class
+  const getStatusClassName = (status: string) => {
+    if (status === 'לא נבחן') return 'not-tested';
+    if (status === 'לא עבר/ה') return 'failed';
+    if (status === 'עבר/ה בהצטיינות יתרה') return 'excellent-plus';
+    if (status === 'עבר/ה בהצטיינות') return 'excellent';
+    return 'passed';
   };
 
   return (
@@ -137,13 +63,6 @@ export function InstrumentsSection({
 
       {isOpen && (
         <div className='sd-section-content'>
-          {isUpdatingTest && (
-            <div className='sd-updating-indicator'>
-              <RefreshCw size={16} className='spin' />
-              <span>מעדכן נתונים...</span>
-            </div>
-          )}
-
           {student.academicInfo.instrumentProgress.length > 0 ? (
             <div className='sd-compact-instruments-list'>
               {student.academicInfo.instrumentProgress.map((instrument) => (
@@ -173,125 +92,40 @@ export function InstrumentsSection({
                     </div>
                   </div>
 
-                  {/* Test status display with dropdown functionality */}
+                  {/* Test status display - read-only with updated colors */}
                   <div className='sd-test-status-row'>
                     {/* Technical Test */}
                     <div className='sd-test-item'>
                       <span className='sd-test-label'>מבחן טכני:</span>
-                      <div className='sd-test-value-container'>
-                        <span
-                          className={`sd-test-value sd-clickable ${
-                            isUpdatingTest ? 'disabled' : ''
-                          }`}
-                          style={{
-                            color: getStatusColor(
-                              instrument.tests?.technicalTest?.status ||
-                                'לא נבחן'
-                            ),
-                          }}
-                          onClick={() =>
-                            toggleDropdown(
-                              instrument.instrumentName,
-                              'technicalTest'
-                            )
-                          }
-                        >
-                          {instrument.tests?.technicalTest?.status || 'לא נבחן'}
-                        </span>
-
-                        {/* Dropdown menu for technical test */}
-                        {!isUpdatingTest &&
-                          activeDropdown &&
-                          activeDropdown.instrumentName ===
-                            instrument.instrumentName &&
-                          activeDropdown.testType === 'technicalTest' && (
-                            <div className='sd-test-dropdown'>
-                              {testStatusOptions.map((option) => (
-                                <div
-                                  key={option.value}
-                                  className={`sd-dropdown-item ${
-                                    (instrument.tests?.technicalTest?.status ||
-                                      'לא נבחן') === option.value
-                                      ? 'selected'
-                                      : ''
-                                  }`}
-                                  onClick={() =>
-                                    handleTestStatusSelect(
-                                      instrument.instrumentName,
-                                      'technicalTest',
-                                      option.value
-                                    )
-                                  }
-                                >
-                                  {(instrument.tests?.technicalTest?.status ||
-                                    'לא נבחן') === option.value && (
-                                    <Check size={12} />
-                                  )}
-                                  {option.label}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                      </div>
+                      <span
+                        className={`sd-test-value ${getStatusClassName(
+                          instrument.tests?.technicalTest?.status || 'לא נבחן'
+                        )}`}
+                        style={{
+                          color: getStatusColor(
+                            instrument.tests?.technicalTest?.status || 'לא נבחן'
+                          ),
+                        }}
+                      >
+                        {instrument.tests?.technicalTest?.status || 'לא נבחן'}
+                      </span>
                     </div>
 
                     {/* Stage Test */}
                     <div className='sd-test-item'>
                       <span className='sd-test-label'>מבחן שלב:</span>
-                      <div className='sd-test-value-container'>
-                        <span
-                          className={`sd-test-value sd-clickable ${
-                            isUpdatingTest ? 'disabled' : ''
-                          }`}
-                          style={{
-                            color: getStatusColor(
-                              instrument.tests?.stageTest?.status || 'לא נבחן'
-                            ),
-                          }}
-                          onClick={() =>
-                            toggleDropdown(
-                              instrument.instrumentName,
-                              'stageTest'
-                            )
-                          }
-                        >
-                          {instrument.tests?.stageTest?.status || 'לא נבחן'}
-                        </span>
-
-                        {/* Dropdown menu for stage test */}
-                        {!isUpdatingTest &&
-                          activeDropdown &&
-                          activeDropdown.instrumentName ===
-                            instrument.instrumentName &&
-                          activeDropdown.testType === 'stageTest' && (
-                            <div className='sd-test-dropdown'>
-                              {testStatusOptions.map((option) => (
-                                <div
-                                  key={option.value}
-                                  className={`sd-dropdown-item ${
-                                    (instrument.tests?.stageTest?.status ||
-                                      'לא נבחן') === option.value
-                                      ? 'selected'
-                                      : ''
-                                  }`}
-                                  onClick={() =>
-                                    handleTestStatusSelect(
-                                      instrument.instrumentName,
-                                      'stageTest',
-                                      option.value
-                                    )
-                                  }
-                                >
-                                  {(instrument.tests?.stageTest?.status ||
-                                    'לא נבחן') === option.value && (
-                                    <Check size={12} />
-                                  )}
-                                  {option.label}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                      </div>
+                      <span
+                        className={`sd-test-value ${getStatusClassName(
+                          instrument.tests?.stageTest?.status || 'לא נבחן'
+                        )}`}
+                        style={{
+                          color: getStatusColor(
+                            instrument.tests?.stageTest?.status || 'לא נבחן'
+                          ),
+                        }}
+                      >
+                        {instrument.tests?.stageTest?.status || 'לא נבחן'}
+                      </span>
                     </div>
                   </div>
 
@@ -303,33 +137,6 @@ export function InstrumentsSection({
                         {instrument.tests?.stageTest?.notes ||
                           instrument.tests?.technicalTest?.notes}
                       </span>
-                    </div>
-                  )}
-
-                  {/* Show last test date if available */}
-                  {(instrument.tests?.stageTest?.lastTestDate ||
-                    instrument.tests?.technicalTest?.lastTestDate) && (
-                    <div className='sd-test-dates'>
-                      {instrument.tests?.stageTest?.lastTestDate && (
-                        <div className='sd-test-date'>
-                          <span className='sd-date-label'>מבחן שלב:</span>
-                          <span className='sd-date-value'>
-                            {new Date(
-                              instrument.tests.stageTest.lastTestDate
-                            ).toLocaleDateString('he-IL')}
-                          </span>
-                        </div>
-                      )}
-                      {instrument.tests?.technicalTest?.lastTestDate && (
-                        <div className='sd-test-date'>
-                          <span className='sd-date-label'>מבחן טכני:</span>
-                          <span className='sd-date-value'>
-                            {new Date(
-                              instrument.tests.technicalTest.lastTestDate
-                            ).toLocaleDateString('he-IL')}
-                          </span>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

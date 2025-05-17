@@ -34,6 +34,7 @@ export function StudentDetails() {
     orchestrasLoading,
     retryLoadTeachers,
     updateStudentTest,
+    isUpdatingTest,
   } = useStudentDetailsState();
 
   if (isLoading) {
@@ -58,12 +59,6 @@ export function StudentDetails() {
 
   // Get teacher IDs directly from student object
   const teacherIds = student.teacherIds || [];
-
-  // Get orchestra IDs from both possible locations in the student object
-  // const orchestraIds = [
-  //   ...(student.academicInfo.orchestraIds || []),
-  //   ...(student.enrollments?.orchestraIds || []),
-  // ].filter((id) => id); // Remove any undefined/null/empty values
 
   return (
     <div className='student-details-content'>
@@ -122,14 +117,13 @@ export function StudentDetails() {
 
               {/* Main academic content area with all sections */}
               <div className='sd-card-scroll-area'>
-                {/* Use the separate InstrumentsSection component */}
+                {/* Use the separate InstrumentsSection component - now read-only */}
                 {student.academicInfo.instrumentProgress?.length > 0 && (
                   <InstrumentsSection
                     student={student}
                     isOpen={openSections.instruments}
                     onToggle={() => toggleSection('instruments')}
                     getStageColor={getStageColor}
-                    updateStudentTest={updateStudentTest}
                   />
                 )}
 
@@ -153,11 +147,15 @@ export function StudentDetails() {
                   onOrchestraClick={navigateToOrchestra}
                 />
 
+                {/* Updated TestsSection with test update functionality */}
                 <TestsSection
                   student={student}
                   isOpen={openSections.tests}
                   onToggle={() => toggleSection('tests')}
                   formatDate={formatDate}
+                  updateStudentTest={updateStudentTest}
+                  isUpdatingTest={isUpdatingTest}
+                  getStageColor={getStageColor}
                 />
 
                 <AttendanceSection
