@@ -32,7 +32,7 @@ export const useOrchestraForm = ({
 }: UseOrchestraFormProps) => {
   const { saveOrchestra, isLoading, error, clearError } = useOrchestraStore();
   const { currentSchoolYear } = useSchoolYearStore();
-  const { loadTeachers } = useTeacherStore();
+  const { loadTeachers, loadTeacherByRole } = useTeacherStore();
   const { students, saveStudent } = useStudentStore();
 
   // Form data state
@@ -96,42 +96,65 @@ export const useOrchestraForm = ({
     clearError?.();
   }, [initialOrchestra, currentSchoolYear, clearError, isSubmitting]);
 
-  // Load conductors when type changes
+  // Load appropriate teachers (conductors or ensemble instructors) when type changes
   useEffect(() => {
     // Skip if submitting
     if (isSubmitting) return;
 
-    const fetchConductors = async () => {
+    const fetchAppropriateTeachers = async () => {
       setIsLoadingConductors(true);
+      setConductors([]); // Clear previous conductors while loading
+
       try {
-        // Role to search for based on type
         const role = formData.type === 'תזמורת' ? 'מנצח' : 'מדריך הרכב';
+        console.log(`Fetching teachers with role: ${role}`);
 
-        // Fetch teachers with appropriate role
-        const conductorResponse = await loadTeachers({
-          role,
-          isActive: true,
-        });
+        // Use loadTeacherByRole if available
+        if (typeof loadTeacherByRole === 'function') {
+          const teachersWithRole = await loadTeacherByRole(role);
 
-        if (Array.isArray(conductorResponse)) {
-          setConductors(conductorResponse);
-        } else {
-          // Fallback if API doesn't return directly
-          const teacherStore = useTeacherStore.getState();
-          const filteredConductors = teacherStore.teachers.filter((teacher) =>
-            teacher.roles.includes(role)
-          );
-          setConductors(filteredConductors);
+          if (Array.isArray(teachersWithRole)) {
+            console.log(
+              `Found ${teachersWithRole.length} teachers with role ${role}`
+            );
+            setConductors(teachersWithRole);
+          } else {
+            console.error(
+              `Expected array of teachers, but got:`,
+              teachersWithRole
+            );
+            setConductors([]);
+          }
+        }
+        // Fallback to filtering teachers manually if loadTeacherByRole is not available
+        else {
+          const allTeachers = await loadTeachers({ role, isActive: true });
+
+          if (Array.isArray(allTeachers)) {
+            // Further ensure we only include teachers with the exact role
+            const filteredTeachers = allTeachers.filter(
+              (teacher) => teacher.roles && teacher.roles.includes(role)
+            );
+
+            console.log(
+              `Filtered ${filteredTeachers.length} teachers with role ${role}`
+            );
+            setConductors(filteredTeachers);
+          } else {
+            console.error(`Expected array of teachers, but got:`, allTeachers);
+            setConductors([]);
+          }
         }
       } catch (err) {
-        console.error(`Failed to load conductors:`, err);
+        console.error(`Failed to load teachers for role:`, err);
+        setConductors([]);
       } finally {
         setIsLoadingConductors(false);
       }
     };
 
-    fetchConductors();
-  }, [formData.type, loadTeachers, isSubmitting]);
+    fetchAppropriateTeachers();
+  }, [formData.type, loadTeacherByRole, loadTeachers, isSubmitting]);
 
   // Handle input changes
   const handleInputChange = (
@@ -148,7 +171,7 @@ export const useOrchestraForm = ({
       const updatedData = {
         ...formData,
         type: value,
-        conductorId: '',
+        conductorId: '', // Always reset conductorId when type changes
       };
 
       // Update the name if it contains the type

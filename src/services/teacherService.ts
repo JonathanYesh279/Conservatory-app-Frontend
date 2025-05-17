@@ -1,3 +1,4 @@
+// src/services/teacherService.ts
 import { httpService } from './httpService';
 
 export interface Teacher {
@@ -262,7 +263,29 @@ export const teacherService = {
 
   async getTeachersByRole(role: string): Promise<Teacher[]> {
     try {
-      return await httpService.get(`teacher/role/${role}`);
+      console.log(`Fetching teachers with role '${role}' from API`);
+      const response = await httpService.get(`teacher/role/${role}`);
+
+      if (!Array.isArray(response)) {
+        console.warn(
+          `API response for getTeachersByRole is not an array:`,
+          response
+        );
+        return [];
+      }
+
+      // Filter to ensure we only get active teachers with the exact role
+      const filteredTeachers = response.filter(
+        (teacher) =>
+          teacher.isActive !== false &&
+          teacher.roles &&
+          teacher.roles.includes(role)
+      );
+
+      console.log(
+        `Found ${filteredTeachers.length} active teachers with role '${role}'`
+      );
+      return filteredTeachers;
     } catch (error) {
       console.error(`Failed to get teachers with role ${role}:`, error);
       throw new Error(

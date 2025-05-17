@@ -16,7 +16,8 @@ interface TeacherState {
   // Actions
   loadTeachers: (filterBy?: TeacherFilter) => Promise<Teacher[]>;
   loadBasicTeacherData: () => Promise<void>;
-  loadTeacherById: (teacherId: string) => Promise<Teacher | null>; // Update return type
+  loadTeacherById: (teacherId: string) => Promise<Teacher | null>;
+  loadTeacherByRole: (role: string) => Promise<Teacher[]>; // Added function
   saveTeacher: (
     teacher: Partial<Teacher>,
     teacherId?: string
@@ -67,6 +68,58 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
           : 'Failed to load essential teacher data';
       set({ error: errorMsg, isLoading: false });
       console.error('Teacher data initialization failed:', errorMsg);
+    }
+  },
+
+  // New method to load teachers by role
+  loadTeacherByRole: async (role: string): Promise<Teacher[]> => {
+    console.log(`Loading teachers with role: ${role}`);
+    set({ isLoading: true, error: null });
+    try {
+      // First check if we can find teachers with this role in the store
+      const cachedTeachers = get().teachers.filter(
+        (teacher) =>
+          teacher.roles && teacher.roles.includes(role) && teacher.isActive
+      );
+
+      // If we have cached teachers with this role, use them
+      if (cachedTeachers.length > 0) {
+        console.log(
+          `Found ${cachedTeachers.length} cached teachers with role ${role}`
+        );
+        set({ isLoading: false });
+        return cachedTeachers;
+      }
+
+      // Otherwise, fetch from API
+      console.log(`Fetching teachers with role ${role} from API`);
+      const teachers = await teacherService.getTeachersByRole(role);
+
+      // Update our local cache with these teachers
+      const currentTeachers = get().teachers;
+      const mergedTeachers = [...currentTeachers];
+
+      teachers.forEach((newTeacher) => {
+        const existingIndex = mergedTeachers.findIndex(
+          (t) => t._id === newTeacher._id
+        );
+        if (existingIndex >= 0) {
+          mergedTeachers[existingIndex] = newTeacher;
+        } else {
+          mergedTeachers.push(newTeacher);
+        }
+      });
+
+      set({ teachers: mergedTeachers, isLoading: false });
+      return teachers;
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error
+          ? err.message
+          : `Failed to load teachers with role ${role}`;
+      set({ error: errorMsg, isLoading: false });
+      console.error(`Error loading teachers with role ${role}:`, err);
+      return [];
     }
   },
 
