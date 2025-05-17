@@ -1,13 +1,6 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
-import React, { useState } from 'react';
-import {
-  User,
-  X,
-  UserPlus,
-  ChevronDown,
-  Music,
-  Clock,
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, X, UserPlus, Music, Clock, Calendar, Plus } from 'lucide-react';
 import {
   StudentFormData,
   TeacherAssignment,
@@ -38,9 +31,10 @@ export function TeacherAssignmentSection({
   newTeacherInfo,
   addTeacherAssignment,
   removeTeacherAssignment,
+  errors,
 }: TeacherAssignmentSectionProps) {
   // Get teachers from store
-  const { teachers, isLoading: isLoadingTeachers } = useTeacherStore();
+  const teacherStore = useTeacherStore();
 
   // State for adding a new teacher
   const [showTeacherSelect, setShowTeacherSelect] = useState(
@@ -49,22 +43,74 @@ export function TeacherAssignmentSection({
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
 
   // State for schedule details
-  const [scheduleItems, setScheduleItems] = useState<
+  const [scheduleItems, setScheduleItems] = useState([
     {
-      teacherId: string;
-      day: string;
-      time: string;
-      duration: number;
-    }[]
-  >([]);
+      teacherId: '',
+      day: DAYS_OF_WEEK[0],
+      time: '08:00',
+      duration: 45,
+    },
+  ]);
 
   // State for confirmation dialog
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [assignmentToRemove, setAssignmentToRemove] = useState<{
-    teacherId: string;
-    day: string;
-    time: string;
-  } | null>(null);
+  const [assignmentToRemove, setAssignmentToRemove] = useState({
+    teacherId: '',
+    day: '',
+    time: '',
+  });
+
+  // Load required teachers if they're not already loaded
+  useEffect(() => {
+    const loadRequiredTeachers = async () => {
+      // If we have teacherIds but no teachers loaded, load them
+      if (
+        formData.teacherIds &&
+        formData.teacherIds.length > 0 &&
+        teacherStore.teachers.length === 0
+      ) {
+        console.log('Loading teachers for IDs:', formData.teacherIds);
+
+        try {
+          // First try loading all teachers
+          await teacherStore.loadTeachers();
+
+          // If specific teachers aren't loaded, load them individually
+          const missingTeachers = formData.teacherIds.filter(
+            (id) => !teacherStore.teachers.find((t) => t._id === id)
+          );
+
+          if (missingTeachers.length > 0) {
+            console.log('Loading missing teachers:', missingTeachers);
+            for (const teacherId of missingTeachers) {
+              await teacherStore.loadTeacherById(teacherId);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to load required teachers:', err);
+        }
+      }
+    };
+
+    loadRequiredTeachers();
+  }, [formData.teacherIds, teacherStore]);
+
+  // Debug teacherIds and loaded teachers
+  useEffect(() => {
+    console.log('TeacherAssignmentSection - teacherIds:', formData.teacherIds);
+    console.log(
+      'TeacherAssignmentSection - teacherAssignments:',
+      formData.teacherAssignments
+    );
+    console.log(
+      'TeacherAssignmentSection - teachers loaded:',
+      teacherStore.teachers.length
+    );
+  }, [
+    formData.teacherIds,
+    formData.teacherAssignments,
+    teacherStore.teachers.length,
+  ]);
 
   // Group existing assignments by teacher for display
   const teacherAssignmentsByTeacher: Record<string, TeacherAssignment[]> = {};
@@ -74,6 +120,40 @@ export function TeacherAssignmentSection({
     }
     teacherAssignmentsByTeacher[assignment.teacherId].push(assignment);
   });
+
+  // If no assignments but we have teacherIds, create dummy assignments for display
+  // This helps when a student has teacherIds but no schedule information
+  useEffect(() => {
+    if (
+      Object.keys(teacherAssignmentsByTeacher).length === 0 &&
+      formData.teacherIds &&
+      formData.teacherIds.length > 0
+    ) {
+      console.log(
+        'Creating default assignments for teacherIds:',
+        formData.teacherIds
+      );
+
+      // Create a default assignment for each teacherId if none exists
+      formData.teacherIds.forEach((teacherId) => {
+        if (
+          !formData.teacherAssignments.some((a) => a.teacherId === teacherId)
+        ) {
+          addTeacherAssignment({
+            teacherId,
+            day: DAYS_OF_WEEK[0],
+            time: '08:00',
+            duration: 45,
+          });
+        }
+      });
+    }
+  }, [
+    formData.teacherIds,
+    formData.teacherAssignments,
+    addTeacherAssignment,
+    teacherAssignmentsByTeacher,
+  ]);
 
   // Handler for teacher selection
   const handleTeacherChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -91,7 +171,14 @@ export function TeacherAssignmentSection({
         },
       ]);
     } else {
-      setScheduleItems([]);
+      setScheduleItems([
+        {
+          teacherId: '',
+          day: DAYS_OF_WEEK[0],
+          time: '08:00',
+          duration: 45,
+        },
+      ]);
     }
   };
 
@@ -103,10 +190,12 @@ export function TeacherAssignmentSection({
   ) => {
     setScheduleItems((prev) => {
       const updated = [...prev];
-      updated[index] = {
-        ...updated[index],
-        [field]: field === 'duration' ? Number(value) : value,
-      };
+      if (updated[index]) {
+        updated[index] = {
+          ...updated[index],
+          [field]: field === 'duration' ? Number(value) : value,
+        };
+      }
       return updated;
     });
   };
@@ -139,28 +228,44 @@ export function TeacherAssignmentSection({
   const handleSaveTeacherLessons = () => {
     // Add all current schedule items as assignments
     scheduleItems.forEach((item) => {
-      // Use correct field names for backend
-      const scheduleToSend = {
-        teacherId: item.teacherId,
-        day: item.day,
-        time: item.time,
-        duration: item.duration,
-      };
+      if (item.teacherId) {
+        // Use correct field names for backend
+        const scheduleToSend = {
+          teacherId: item.teacherId,
+          day: item.day,
+          time: item.time,
+          duration: item.duration,
+        };
 
-      addTeacherAssignment(scheduleToSend);
+        addTeacherAssignment(scheduleToSend);
+      }
     });
 
     // Reset states to add another teacher
     setSelectedTeacherId('');
-    setScheduleItems([]);
-    setShowTeacherSelect(false); // Changed from true to false to show the added teacher
+    setScheduleItems([
+      {
+        teacherId: '',
+        day: DAYS_OF_WEEK[0],
+        time: '08:00',
+        duration: 45,
+      },
+    ]);
+    setShowTeacherSelect(false);
   };
 
   // Add a different teacher
   const handleAddTeacher = () => {
     setShowTeacherSelect(true);
     setSelectedTeacherId('');
-    setScheduleItems([]);
+    setScheduleItems([
+      {
+        teacherId: '',
+        day: DAYS_OF_WEEK[0],
+        time: '08:00',
+        duration: 45,
+      },
+    ]);
   };
 
   // Start the assignment removal process with confirmation
@@ -175,13 +280,12 @@ export function TeacherAssignmentSection({
 
   // Confirm removing the assignment
   const confirmRemoveAssignment = () => {
-    if (assignmentToRemove) {
+    if (assignmentToRemove.teacherId) {
       removeTeacherAssignment(
         assignmentToRemove.teacherId,
         assignmentToRemove.day,
         assignmentToRemove.time
       );
-      setAssignmentToRemove(null);
     }
     setIsConfirmDialogOpen(false);
   };
@@ -194,14 +298,14 @@ export function TeacherAssignmentSection({
       } (המורה החדש)`;
     }
 
-    const teacher = teachers.find((t) => t._id === teacherId);
+    const teacher = teacherStore.teachers.find((t) => t._id === teacherId);
     return teacher
       ? `${teacher.personalInfo.fullName} ${
           teacher.professionalInfo?.instrument
             ? `(${teacher.professionalInfo.instrument})`
             : ''
         }`
-      : 'מורה לא ידוע';
+      : `מורה (${teacherId.substring(0, 6)}...)`;
   };
 
   // Get teacher instrument by ID
@@ -210,7 +314,7 @@ export function TeacherAssignmentSection({
       return newTeacherInfo.instrument;
     }
 
-    const teacher = teachers.find((t) => t._id === teacherId);
+    const teacher = teacherStore.teachers.find((t) => t._id === teacherId);
     return teacher?.professionalInfo?.instrument || '';
   };
 
@@ -231,7 +335,12 @@ export function TeacherAssignmentSection({
 
   return (
     <div className='form-section teacher-assignment-section'>
-      <h3>שיוך מורה</h3>
+      <h3>
+        שיוך מורה{' '}
+        {formData.teacherIds.length > 0
+          ? `(${formData.teacherIds.length})`
+          : ''}
+      </h3>
 
       {/* Display current teacher assignments if any */}
       {Object.keys(teacherAssignmentsByTeacher).length > 0 && (
@@ -239,7 +348,7 @@ export function TeacherAssignmentSection({
           {Object.entries(teacherAssignmentsByTeacher).map(
             ([teacherId, assignments]) => (
               <div key={teacherId} className='teacher-assignment-item'>
-                {/* Teacher header - similar to instrument card */}
+                {/* Teacher header - styled like instrument card */}
                 <div className='instrument-card'>
                   <div className='instrument-header'>
                     <div className='instrument-info'>
@@ -248,12 +357,6 @@ export function TeacherAssignmentSection({
                           <User size={16} />
                           <span>{getTeacherName(teacherId)}</span>
                         </div>
-                        {getTeacherInstrument(teacherId) && (
-                          <div className='instrument-badge'>
-                            <Music size={12} />
-                            <span>{getTeacherInstrument(teacherId)}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -266,12 +369,15 @@ export function TeacherAssignmentSection({
                         className='lesson-item'
                       >
                         <div className='lesson-info'>
+                          <Calendar size={14} />
+                          <span>{formatDay(assignment.day)}</span>
+                        </div>
+                        <div className='lesson-info'>
                           <Clock size={14} />
-                          <span>
-                            {formatDay(assignment.day)},{' '}
-                            {formatTime(assignment.time)},{' '}
-                            {formatDuration(assignment.duration)}
-                          </span>
+                          <span>{formatTime(assignment.time)}</span>
+                        </div>
+                        <div className='lesson-info'>
+                          <span>{formatDuration(assignment.duration)}</span>
                         </div>
                         <button
                           type='button'
@@ -297,16 +403,22 @@ export function TeacherAssignmentSection({
         </div>
       )}
 
+      {/* Display any errors */}
+      {errors && errors['teacherAssignments'] && (
+        <div className='form-error'>{errors['teacherAssignments']}</div>
+      )}
+
       {/* Teacher Selection */}
       {showTeacherSelect && (
-        <div className='form-group'>
-          <div className='form-label'>בחירת מורה</div>
-          <div className='select-wrapper'>
+        <div className='teacher-selection-panel'>
+          <div className='form-group'>
+            <label htmlFor='teacherSelect'>בחירת מורה</label>
             <select
+              id='teacherSelect'
               className='form-select'
               value={selectedTeacherId}
               onChange={handleTeacherChange}
-              disabled={isLoadingTeachers}
+              disabled={teacherStore.isLoading}
             >
               <option value=''>בחר מורה</option>
               {newTeacherInfo && (
@@ -318,7 +430,7 @@ export function TeacherAssignmentSection({
                   (המורה החדש)
                 </option>
               )}
-              {teachers.map((teacher) => (
+              {teacherStore.teachers.map((teacher) => (
                 <option key={teacher._id} value={teacher._id}>
                   {teacher.personalInfo.fullName}{' '}
                   {teacher.professionalInfo?.instrument
@@ -327,7 +439,9 @@ export function TeacherAssignmentSection({
                 </option>
               ))}
             </select>
-            <ChevronDown size={16} className='select-icon' />
+            {teacherStore.isLoading && (
+              <div className='loading-indicator'>טוען מורים...</div>
+            )}
           </div>
         </div>
       )}
@@ -343,28 +457,27 @@ export function TeacherAssignmentSection({
             <div key={index} className='schedule-row'>
               <div className='form-row'>
                 <div className='form-group day-group'>
-                  <div className='form-label'>יום</div>
-                  <div className='select-wrapper'>
-                    <select
-                      className='form-select'
-                      value={item.day}
-                      onChange={(e) =>
-                        handleScheduleChange(index, 'day', e.target.value)
-                      }
-                    >
-                      {DAYS_OF_WEEK.map((day) => (
-                        <option key={day} value={day}>
-                          {day}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className='select-icon' />
-                  </div>
+                  <label htmlFor={`day-${index}`}>יום</label>
+                  <select
+                    id={`day-${index}`}
+                    className='form-select'
+                    value={item.day}
+                    onChange={(e) =>
+                      handleScheduleChange(index, 'day', e.target.value)
+                    }
+                  >
+                    {DAYS_OF_WEEK.map((day) => (
+                      <option key={day} value={day}>
+                        {day}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className='form-group time-group'>
-                  <div className='form-label'>שעה</div>
+                  <label htmlFor={`time-${index}`}>שעה</label>
                   <input
+                    id={`time-${index}`}
                     type='time'
                     className='form-input'
                     value={item.time}
@@ -375,23 +488,21 @@ export function TeacherAssignmentSection({
                 </div>
 
                 <div className='form-group duration-group'>
-                  <div className='form-label'>משך</div>
-                  <div className='select-wrapper'>
-                    <select
-                      className='form-select'
-                      value={item.duration}
-                      onChange={(e) =>
-                        handleScheduleChange(index, 'duration', e.target.value)
-                      }
-                    >
-                      {LESSON_DURATIONS.map((duration) => (
-                        <option key={duration} value={duration}>
-                          {duration}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown size={16} className='select-icon' />
-                  </div>
+                  <label htmlFor={`duration-${index}`}>משך</label>
+                  <select
+                    id={`duration-${index}`}
+                    className='form-select'
+                    value={item.duration}
+                    onChange={(e) =>
+                      handleScheduleChange(index, 'duration', e.target.value)
+                    }
+                  >
+                    {LESSON_DURATIONS.map((duration) => (
+                      <option key={duration} value={duration}>
+                        {duration} דקות
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {index > 0 && (
@@ -399,6 +510,7 @@ export function TeacherAssignmentSection({
                     type='button'
                     className='remove-btn'
                     onClick={() => handleRemoveLesson(index)}
+                    aria-label='הסר שיעור'
                   >
                     <X size={16} />
                   </button>
@@ -413,6 +525,7 @@ export function TeacherAssignmentSection({
               className='add-lesson-btn'
               onClick={handleAddLesson}
             >
+              <Plus size={14} />
               הוסף שיעור נוסף
             </button>
 
@@ -428,32 +541,18 @@ export function TeacherAssignmentSection({
       )}
 
       {/* Add teacher button */}
-      {Object.keys(teacherAssignmentsByTeacher).length > 0 &&
-        !showTeacherSelect &&
-        !selectedTeacherId && (
-          <button
-            type='button'
-            className='add-teacher-btn'
-            onClick={handleAddTeacher}
-          >
-            <UserPlus size={16} />
-            הוסף מורה נוסף
-          </button>
-        )}
-
-      {/* Initial state - no teachers yet */}
-      {Object.keys(teacherAssignmentsByTeacher).length === 0 &&
-        !showTeacherSelect &&
-        !selectedTeacherId && (
-          <button
-            type='button'
-            className='add-teacher-btn'
-            onClick={handleAddTeacher}
-          >
-            <UserPlus size={16} />
-            הוסף מורה
-          </button>
-        )}
+      {!showTeacherSelect && !selectedTeacherId && (
+        <button
+          type='button'
+          className='add-teacher-btn'
+          onClick={handleAddTeacher}
+        >
+          <UserPlus size={16} />
+          {Object.keys(teacherAssignmentsByTeacher).length > 0
+            ? 'הוסף מורה נוסף'
+            : 'הוסף מורה'}
+        </button>
+      )}
 
       {/* Confirmation Dialog */}
       <ConfirmDialog

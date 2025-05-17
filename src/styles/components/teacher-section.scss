@@ -1,0 +1,531 @@
+// // src/styles/components/teacher-section.scss
+
+// .teacher-assignment-section {
+//   background-color: var(--bg-card);
+//   border-radius: 8px;
+//   padding: 1rem;
+//   margin-bottom: 1.5rem;
+//   direction: rtl;
+//   box-shadow: var(--shadow-sm);
+//   border: 1px solid var(--border-color);
+
+//   h3 {
+//     color: var(--text-primary);
+//     margin-top: 0;
+//     margin-bottom: 1rem;
+//     font-size: 1.25rem;
+//     text-align: right;
+//     font-weight: 600;
+//   }
+
+//   h4 {
+//     color: var(--text-primary);
+//     margin-top: 0.75rem;
+//     margin-bottom: 1rem;
+//     font-size: 1rem;
+//     text-align: right;
+//     font-weight: 600;
+//   }
+
+//   // Success message style
+//   .success-message {
+//     background-color: rgba(var(--success-rgb, 40, 167, 69), 0.1);
+//     color: var(--success, #28a745);
+//     border: 1px solid rgba(var(--success-rgb, 40, 167, 69), 0.2);
+//     border-radius: 8px;
+//     padding: 0.75rem;
+//     margin-bottom: 1rem;
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+//     animation: fadeIn 0.3s ease-in-out;
+    
+//     svg {
+//       color: var(--success, #28a745);
+//     }
+//   }
+  
+//   // Form error message
+//   .form-error-message {
+//     background-color: rgba(var(--danger-rgb, 220, 53, 69), 0.1);
+//     color: var(--danger, #dc3545);
+//     border: 1px solid rgba(var(--danger-rgb, 220, 53, 69), 0.2);
+//     border-radius: 8px;
+//     padding: 0.75rem;
+//     margin-bottom: 1rem;
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+    
+//     svg {
+//       color: var(--danger, #dc3545);
+//     }
+//   }
+  
+//   // Animation for feedback and form transitions
+//   @keyframes fadeIn {
+//     from {
+//       opacity: 0;
+//       transform: translateY(-10px);
+//     }
+//     to {
+//       opacity: 1;
+//       transform: translateY(0);
+//     }
+//   }
+
+//   // Teacher assignments list
+//   .assigned-teachers-list {
+//     display: flex;
+//     flex-direction: column;
+//     gap: 0.75rem;
+//     margin-bottom: 1rem;
+//   }
+
+//   .teacher-assignment-item {
+//     background-color: var(--bg-tertiary);
+//     border-radius: 8px;
+//     padding: 0.75rem;
+//     border: 1px solid var(--border-color);
+    
+//     &:hover {
+//       box-shadow: var(--shadow-sm);
+//     }
+//   }
+
+//   .instrument-header {
+//     display: flex;
+//     justify-content: space-between;
+//     gap: 0.5rem;
+
+//       .instrument-name {
+//         gap: 0.5rem;
+//       }
+//   }
+
+//   .instrument-info {
+//     flex: 1;
+//     display: flex;
+//     flex-direction: column;
+//     gap: 0.5rem;
+//   }
+
+//   .instrument-name-wrapper {
+//     display: flex;
+//     align-items: center;
+//     justify-content: space-between;
+//     flex-wrap: wrap;
+//     gap: 0.5rem;
+//   }
+
+//   .instrument-name {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.5rem;
+//     color: var(--text-primary);
+//     font-weight: 500;
+//   }
+  
+//   .instrument-badge {
+//     display: flex;
+//     align-items: center;
+//     gap: 0.25rem;
+//     font-size: 0.8rem;
+//     color: var(--text-secondary);
+//     margin-top: 0.25rem;
+//   }
+
+//   // Lesson items styling - ROW STRUCTURE
+//   .lessons-list {
+//     display: flex;
+//     gap: 0.5rem;
+//     margin-top: 0.5rem;
+//   }
+
+//   .lesson-item {
+//     display: flex;
+//     align-items: center;
+//     background-color: var(--bg-card);
+//     border-radius: 6px;
+//     padding: 0.5rem 0.75rem;
+//     border: 1px solid var(--border-color);
+    
+//     .lesson-info {
+//       display: flex;
+//       align-items: center;
+//       gap: 0.5rem;
+//       color: var(--text-secondary);
+//       font-size: 0.9rem;
+//       margin-left: 1rem;
+//       white-space: nowrap;
+      
+//       svg {
+//         color: var(--text-secondary);
+//       }
+//     }
+    
+//     .remove-btn {
+//       background-color: var(--bg-tertiary);
+//       color: var(--text-secondary);
+//       border: 1px solid var(--border-color);
+//       border-radius: 4px;
+//       width: 28px;
+//       height: 28px;
+//       display: flex;
+//       align-items: center;
+//       justify-content: center;
+//       cursor: pointer;
+//       transition: all 0.15s ease;
+//       margin-right: auto;
+      
+//       &:hover {
+//         background-color: rgba(var(--danger-rgb), 0.1);
+//         color: var(--danger);
+//         border-color: var(--danger);
+//       }
+//     }
+//   }
+
+//   // Teacher selection panel
+//   .teacher-selection-panel {
+//     background-color: var(--bg-tertiary);
+//     border-radius: 8px;
+//     padding: 0.75rem 1rem;
+//     margin-top: 0.75rem;
+//     border: 1px solid var(--border-color);
+//     animation: fadeIn 0.3s ease-in-out;
+    
+//     .form-group {
+//       position: relative;
+      
+//       label {
+//         display: block;
+//         color: var(--text-secondary);
+//         margin-bottom: 0.25rem;
+//         font-size: 0.875rem;
+//         text-align: right;
+//       }
+      
+//       select {
+//         width: 100%;
+//         background-color: rgba(var(--bg-tertiary-rgb));
+//         border: 1px solid var(--border-color);
+//         border-radius: 6px;
+//         color: var(--text-primary);
+//         padding: 0.5rem;
+//         font-size: 0.9rem;
+//         text-align: right;
+        
+//         &:focus {
+//           border-color: var(--primary-color);
+//           outline: none;
+//           box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+//         }
+//       }
+      
+//       .loading-indicator {
+//         margin-top: 0.5rem;
+//         font-size: 0.85rem;
+//         color: var(--text-secondary);
+//         display: flex;
+//         align-items: center;
+//         gap: 0.5rem;
+        
+//         svg {
+//           animation: spin 1s linear infinite;
+//         }
+        
+//         @keyframes spin {
+//           from { transform: rotate(0deg); }
+//           to { transform: rotate(360deg); }
+//         }
+//       }
+//     }
+//   }
+
+//   // Schedule section styling
+//   .teacher-schedule {
+//     background-color: var(--bg-tertiary);
+//     border-radius: 8px;
+//     padding: 0.75rem 1rem;
+//     margin-top: 1rem;
+//     border: 1px solid var(--border-color);
+//     animation: fadeIn 0.3s ease-in-out;
+    
+//     .schedule-heading {
+//       margin-bottom: 0.75rem;
+      
+//       h4 {
+//         margin-top: 0;
+//       }
+//     }
+    
+//     .schedule-row {
+//       margin-bottom: 0.75rem;
+      
+//       .form-row {
+//         display: flex;
+//         flex-direction: row;
+//         gap: 0.75rem;
+//         align-items: flex-end;
+        
+//         .form-group {
+//           flex: 1;
+//           position: relative;
+          
+//           &.day-group {
+//             flex: 1.25;
+//           }
+          
+//           &.time-group {
+//             flex: 1;
+//           }
+          
+//           &.duration-group {
+//             flex: 0.8;
+//           }
+          
+//           label {
+//             display: block;
+//             color: var(--text-secondary);
+//             margin-bottom: 0.25rem;
+//             font-size: 0.875rem;
+//             text-align: right;
+//           }
+          
+//           .form-input, 
+//           .form-select {
+//             width: 100%;
+//             background-color: rgba(var(--bg-tertiary-rgb));
+//             border: 1px solid var(--border-color);
+//             border-radius: 6px;
+//             color: var(--text-primary);
+//             padding: 0.5rem;
+//             font-size: 0.9rem;
+//             text-align: right;
+            
+//             &:focus {
+//               border-color: var(--primary-color);
+//               outline: none;
+//               box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+//             }
+//           }
+//         }
+        
+//         .remove-btn {
+//           background-color: var(--bg-card);
+//           color: var(--text-secondary);
+//           border: 1px solid var(--border-color);
+//           border-radius: 4px;
+//           width: 28px;
+//           height: 28px;
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           cursor: pointer;
+//           transition: all 0.15s ease;
+          
+//           &:hover {
+//             background-color: rgba(var(--danger-rgb), 0.1);
+//             color: var(--danger);
+//             border-color: var(--danger);
+//           }
+//         }
+//       }
+//     }
+    
+//     .schedule-actions {
+//       display: flex;
+//       justify-content: space-between;
+//       margin-top: 1rem;
+      
+//       button {
+//         display: flex;
+//         align-items: center;
+//         gap: 0.5rem;
+//         border-radius: 6px;
+//         padding: 0.5rem 1rem;
+//         font-size: 0.9rem;
+//         cursor: pointer;
+//         transition: all 0.2s;
+        
+//         &.add-lesson-btn {
+//           background-color: transparent;
+//           color: var(--text-primary);
+//           border: 1px solid var(--border-color);
+          
+//           &:hover {
+//             background-color: var(--bg-card);
+//             transform: translateY(-1px);
+//           }
+          
+//           svg {
+//             color: var(--primary-color);
+//           }
+//         }
+        
+//         &.save-btn {
+//           background-color: var(--primary-color);
+//           color: white;
+//           border: none;
+          
+//           &:hover {
+//             background-color: var(--primary-dark);
+//             transform: translateY(-1px);
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   // Add teacher button - STYLED LIKE ADD INSTRUMENT BUTTON
+//   .add-teacher-btn {
+//     background-color: transparent;
+//     color: var(--primary-color);
+//     border: 1px dashed var(--primary-color);
+//     border-radius: 6px;
+//     padding: 0.5rem 1rem;
+//     font-size: 0.9rem;
+//     cursor: pointer;
+//     display: flex;
+//     align-items: center;
+//     justify-content: center;
+//     gap: 0.5rem;
+//     transition: all 0.2s;
+//     width: 100%;
+//     margin-top: 1rem;
+    
+//     &:hover {
+//       background-color: rgba(var(--primary-color-rgb), 0.05);
+//       transform: translateY(-1px);
+//     }
+    
+//     svg {
+//       color: var(--primary-color);
+//     }
+//   }
+
+//   // Select styling
+//   select {
+//     appearance: none;
+//     -webkit-appearance: none;
+//     -moz-appearance: none;
+//     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+//     background-repeat: no-repeat;
+//     background-position: left 0.1rem center;
+//     background-size: 0.8rem;
+//     padding-left: 2rem;
+//   }
+
+//   // Form error display
+//   .form-error {
+//     color: var(--danger);
+//     font-size: 0.75rem;
+//     margin-top: 0.25rem;
+//     text-align: right;
+//   }
+
+//   // Dark mode adjustments
+//   [data-theme="dark"] & {
+//     .teacher-assignment-item {
+//       background-color: rgba(255, 255, 255, 0.05);
+//       border-color: var(--border-color);
+//     }
+    
+//     .lesson-item {
+//       background-color: rgba(255, 255, 255, 0.05);
+//       border-color: var(--border-color);
+//     }
+    
+//     .remove-btn {
+//       background-color: rgba(255, 255, 255, 0.05);
+//       border-color: var(--border-color);
+//     }
+    
+//     .teacher-selection-panel,
+//     .teacher-schedule {
+//       background-color: rgba(255, 255, 255, 0.03);
+//       border-color: var(--border-color);
+//     }
+    
+//     .add-teacher-btn {
+//       background-color: transparent;
+      
+//       &:hover {
+//         background-color: rgba(var(--primary-color-rgb), 0.1);
+//       }
+//     }
+    
+//     .form-group select,
+//     .form-group .form-input {
+//       background-color: rgba(var(--bg-tertiary-rgb));
+//       border-color: var(--border-color);
+//     }
+    
+//     .schedule-actions {
+//       .add-lesson-btn {
+//         border-color: var(--border-color);
+        
+//         &:hover {
+//           background-color: rgba(255, 255, 255, 0.05);
+//         }
+//       }
+//     }
+    
+//     .success-message {
+//       background-color: rgba(var(--success-rgb, 40, 167, 69), 0.05);
+//       border-color: rgba(var(--success-rgb, 40, 167, 69), 0.15);
+//     }
+    
+//     .form-error-message {
+//       background-color: rgba(var(--danger-rgb, 220, 53, 69), 0.05);
+//       border-color: rgba(var(--danger-rgb, 220, 53, 69), 0.15);
+//     }
+//   }
+
+//   // Media queries
+//   @media (max-width: 768px) {
+//     .schedule-row .form-row {
+//       flex-direction: column;
+//       gap: 0.5rem;
+//     }
+    
+//     .lesson-item {
+//       flex-wrap: wrap;
+      
+//       .remove-btn {
+//         margin-right: auto;
+//       }
+//     }
+//   }
+
+//   @media (max-width: 480px) {    
+//     .teacher-assignment-item {
+//       padding: 0.6rem;
+//     }
+    
+//     .lessons-list {
+//       margin-top: 0.75rem;
+
+//       .lesson-item {
+//         display: flex;
+//         flex-direction: row;
+//       }
+//     }
+    
+//     .success-message,
+//     .form-error-message {
+//       padding: 0.6rem;
+//       font-size: 0.85rem;
+//     }
+    
+//     .schedule-actions {
+//       gap: 0.5rem;
+      
+//       button {
+//         width: 100%;
+//         justify-content: center;
+//       }
+//     }
+//   }
+// }
