@@ -1,6 +1,6 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState, useEffect } from 'react';
-import { User, X, UserPlus, Music, Clock, Calendar, Plus } from 'lucide-react';
+import { User, Trash2, UserPlus, Clock, Calendar, Plus } from 'lucide-react';
 import {
   StudentFormData,
   TeacherAssignment,
@@ -391,7 +391,7 @@ export function TeacherAssignmentSection({
                           }
                           aria-label='הסר שיעור'
                         >
-                          <X size={14} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     ))}
