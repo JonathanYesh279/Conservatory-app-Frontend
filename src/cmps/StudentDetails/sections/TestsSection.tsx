@@ -9,7 +9,6 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { Student } from '../../../services/studentService';
-import { StatusDropdown } from '../StatusDropdown';
 
 interface TestsSectionProps {
   student: Student;
