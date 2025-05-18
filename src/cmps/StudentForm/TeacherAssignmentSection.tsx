@@ -1,44 +1,43 @@
 // src/cmps/StudentForm/TeacherAssignmentSection.tsx
 import React, { useState, useEffect } from 'react';
-import { User, Trash2, UserPlus, Clock, Calendar, Plus } from 'lucide-react';
+import { User, Trash2, X, AlertCircle } from 'lucide-react';
+import { useFormikContext } from 'formik';
 import {
   StudentFormData,
-  TeacherAssignment,
   DAYS_OF_WEEK,
   LESSON_DURATIONS,
 } from '../../hooks/useStudentForm';
 import { useTeacherStore } from '../../store/teacherStore';
+import { Teacher } from '../../services/teacherService';
 import { ConfirmDialog } from '../ConfirmDialog';
 
 export interface TeacherAssignmentSectionProps {
-  formData: StudentFormData;
   newTeacherInfo?: {
     _id?: string;
     fullName: string;
     instrument?: string;
   } | null;
-  addTeacherAssignment: (assignment: TeacherAssignment) => void;
-  removeTeacherAssignment: (
-    teacherId: string,
-    day: string,
-    time: string
-  ) => void;
-  errors: Record<string, string>;
+  isSubmitting?: boolean;
 }
 
 export function TeacherAssignmentSection({
-  formData,
   newTeacherInfo,
-  addTeacherAssignment,
-  removeTeacherAssignment,
-  errors,
+  isSubmitting = false,
 }: TeacherAssignmentSectionProps) {
+  // Get Formik context for form operations
+  const { values, setFieldValue, errors, touched } =
+    useFormikContext<StudentFormData>();
+
   // Get teachers from store
-  const teacherStore = useTeacherStore();
+  const {
+    teachers,
+    loadTeachers,
+    isLoading: isLoadingTeachers,
+  } = useTeacherStore();
 
   // State for adding a new teacher
   const [showTeacherSelect, setShowTeacherSelect] = useState(
-    formData.teacherAssignments.length === 0
+    values.teacherAssignments.length === 0
   );
   const [selectedTeacherId, setSelectedTeacherId] = useState('');
 
@@ -60,32 +59,23 @@ export function TeacherAssignmentSection({
     time: '',
   });
 
+  // Check for validation errors
+  const hasErrors = touched.teacherAssignments && errors.teacherAssignments;
+
   // Load required teachers if they're not already loaded
   useEffect(() => {
     const loadRequiredTeachers = async () => {
       // If we have teacherIds but no teachers loaded, load them
       if (
-        formData.teacherIds &&
-        formData.teacherIds.length > 0 &&
-        teacherStore.teachers.length === 0
+        values.teacherIds &&
+        values.teacherIds.length > 0 &&
+        teachers.length === 0
       ) {
-        console.log('Loading teachers for IDs:', formData.teacherIds);
+        console.log('Loading teachers for IDs:', values.teacherIds);
 
         try {
-          // First try loading all teachers
-          await teacherStore.loadTeachers();
-
-          // If specific teachers aren't loaded, load them individually
-          const missingTeachers = formData.teacherIds.filter(
-            (id) => !teacherStore.teachers.find((t) => t._id === id)
-          );
-
-          if (missingTeachers.length > 0) {
-            console.log('Loading missing teachers:', missingTeachers);
-            for (const teacherId of missingTeachers) {
-              await teacherStore.loadTeacherById(teacherId);
-            }
-          }
+          // Load all teachers
+          await loadTeachers();
         } catch (err) {
           console.error('Failed to load required teachers:', err);
         }
@@ -93,28 +83,14 @@ export function TeacherAssignmentSection({
     };
 
     loadRequiredTeachers();
-  }, [formData.teacherIds, teacherStore]);
-
-  // Debug teacherIds and loaded teachers
-  useEffect(() => {
-    console.log('TeacherAssignmentSection - teacherIds:', formData.teacherIds);
-    console.log(
-      'TeacherAssignmentSection - teacherAssignments:',
-      formData.teacherAssignments
-    );
-    console.log(
-      'TeacherAssignmentSection - teachers loaded:',
-      teacherStore.teachers.length
-    );
-  }, [
-    formData.teacherIds,
-    formData.teacherAssignments,
-    teacherStore.teachers.length,
-  ]);
+  }, [values.teacherIds, teachers.length, loadTeachers]);
 
   // Group existing assignments by teacher for display
-  const teacherAssignmentsByTeacher: Record<string, TeacherAssignment[]> = {};
-  formData.teacherAssignments.forEach((assignment) => {
+  const teacherAssignmentsByTeacher: Record<
+    string,
+    (typeof values.teacherAssignments)[0][]
+  > = {};
+  values.teacherAssignments.forEach((assignment) => {
     if (!teacherAssignmentsByTeacher[assignment.teacherId]) {
       teacherAssignmentsByTeacher[assignment.teacherId] = [];
     }
@@ -122,40 +98,27 @@ export function TeacherAssignmentSection({
   });
 
   // If no assignments but we have teacherIds, create dummy assignments for display
-  // This helps when a student has teacherIds but no schedule information
   useEffect(() => {
     if (
       Object.keys(teacherAssignmentsByTeacher).length === 0 &&
-      formData.teacherIds &&
-      formData.teacherIds.length > 0
+      values.teacherIds &&
+      values.teacherIds.length > 0
     ) {
-      console.log(
-        'Creating default assignments for teacherIds:',
-        formData.teacherIds
-      );
-
       // Create a default assignment for each teacherId if none exists
-      formData.teacherIds.forEach((teacherId) => {
-        if (
-          !formData.teacherAssignments.some((a) => a.teacherId === teacherId)
-        ) {
-          addTeacherAssignment({
-            teacherId,
-            day: DAYS_OF_WEEK[0],
-            time: '08:00',
-            duration: 45,
-          });
-        }
-      });
-    }
-  }, [
-    formData.teacherIds,
-    formData.teacherAssignments,
-    addTeacherAssignment,
-    teacherAssignmentsByTeacher,
-  ]);
+      const newAssignments = values.teacherIds.map((teacherId) => ({
+        teacherId,
+        day: DAYS_OF_WEEK[0],
+        time: '08:00',
+        duration: 45,
+      }));
 
-  // Handler for teacher selection
+      if (newAssignments.length > 0) {
+        setFieldValue('teacherAssignments', newAssignments);
+      }
+    }
+  }, [values.teacherIds, teacherAssignmentsByTeacher, setFieldValue]);
+
+  // Handle teacher selection
   const handleTeacherChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const teacherId = e.target.value;
     setSelectedTeacherId(teacherId);
@@ -182,7 +145,7 @@ export function TeacherAssignmentSection({
     }
   };
 
-  // Handler for schedule detail changes
+  // Handle schedule detail changes
   const handleScheduleChange = (
     index: number,
     field: string,
@@ -215,7 +178,7 @@ export function TeacherAssignmentSection({
     ]);
   };
 
-  // Remove a lesson time
+  // Remove a lesson time from the schedule items
   const handleRemoveLesson = (index: number) => {
     setScheduleItems((prev) => {
       const updated = [...prev];
@@ -224,22 +187,24 @@ export function TeacherAssignmentSection({
     });
   };
 
-  // Save all lessons for current teacher
+  // Save all lessons for current teacher to Formik
   const handleSaveTeacherLessons = () => {
-    // Add all current schedule items as assignments
-    scheduleItems.forEach((item) => {
-      if (item.teacherId) {
-        // Use correct field names for backend
-        const scheduleToSend = {
-          teacherId: item.teacherId,
-          day: item.day,
-          time: item.time,
-          duration: item.duration,
-        };
+    // Get valid schedule items
+    const validItems = scheduleItems.filter((item) => item.teacherId);
 
-        addTeacherAssignment(scheduleToSend);
-      }
-    });
+    if (validItems.length === 0) return;
+
+    // Add to teacherAssignments
+    setFieldValue('teacherAssignments', [
+      ...values.teacherAssignments,
+      ...validItems,
+    ]);
+
+    // Add to teacherIds if not already there
+    const teacherId = validItems[0].teacherId;
+    if (!values.teacherIds.includes(teacherId)) {
+      setFieldValue('teacherIds', [...values.teacherIds, teacherId]);
+    }
 
     // Reset states to add another teacher
     setSelectedTeacherId('');
@@ -281,11 +246,30 @@ export function TeacherAssignmentSection({
   // Confirm removing the assignment
   const confirmRemoveAssignment = () => {
     if (assignmentToRemove.teacherId) {
-      removeTeacherAssignment(
-        assignmentToRemove.teacherId,
-        assignmentToRemove.day,
-        assignmentToRemove.time
+      // Filter out the assignment to remove
+      const updatedAssignments = values.teacherAssignments.filter(
+        (assignment) =>
+          !(
+            assignment.teacherId === assignmentToRemove.teacherId &&
+            assignment.day === assignmentToRemove.day &&
+            assignment.time === assignmentToRemove.time
+          )
       );
+
+      setFieldValue('teacherAssignments', updatedAssignments);
+
+      // Check if all assignments for this teacher are gone
+      const remainingTeacherAssignments = updatedAssignments.filter(
+        (assignment) => assignment.teacherId === assignmentToRemove.teacherId
+      );
+
+      // If no more assignments for this teacher, remove from teacherIds
+      if (remainingTeacherAssignments.length === 0) {
+        const updatedTeacherIds = values.teacherIds.filter(
+          (id) => id !== assignmentToRemove.teacherId
+        );
+        setFieldValue('teacherIds', updatedTeacherIds);
+      }
     }
     setIsConfirmDialogOpen(false);
   };
@@ -298,7 +282,7 @@ export function TeacherAssignmentSection({
       } (המורה החדש)`;
     }
 
-    const teacher = teacherStore.teachers.find((t) => t._id === teacherId);
+    const teacher = teachers.find((t) => t._id === teacherId);
     return teacher
       ? `${teacher.personalInfo.fullName} ${
           teacher.professionalInfo?.instrument
@@ -306,16 +290,6 @@ export function TeacherAssignmentSection({
             : ''
         }`
       : `מורה (${teacherId.substring(0, 6)}...)`;
-  };
-
-  // Get teacher instrument by ID
-  const getTeacherInstrument = (teacherId: string) => {
-    if (teacherId === 'new-teacher' && newTeacherInfo?.instrument) {
-      return newTeacherInfo.instrument;
-    }
-
-    const teacher = teacherStore.teachers.find((t) => t._id === teacherId);
-    return teacher?.professionalInfo?.instrument || '';
   };
 
   // Format a time string with proper padding
@@ -337,10 +311,16 @@ export function TeacherAssignmentSection({
     <div className='form-section teacher-assignment-section'>
       <h3>
         שיוך מורה{' '}
-        {formData.teacherIds.length > 0
-          ? `(${formData.teacherIds.length})`
-          : ''}
+        {values.teacherIds.length > 0 ? `(${values.teacherIds.length})` : ''}
       </h3>
+
+      {/* Display validation errors */}
+      {hasErrors && typeof errors.teacherAssignments === 'string' && (
+        <div className='form-error-message'>
+          <AlertCircle size={16} />
+          <span>{errors.teacherAssignments}</span>
+        </div>
+      )}
 
       {/* Display current teacher assignments if any */}
       {Object.keys(teacherAssignmentsByTeacher).length > 0 && (
@@ -369,11 +349,9 @@ export function TeacherAssignmentSection({
                         className='lesson-item'
                       >
                         <div className='lesson-info'>
-                          <Calendar size={14} />
                           <span>{formatDay(assignment.day)}</span>
                         </div>
                         <div className='lesson-info'>
-                          <Clock size={14} />
                           <span>{formatTime(assignment.time)}</span>
                         </div>
                         <div className='lesson-info'>
@@ -390,6 +368,7 @@ export function TeacherAssignmentSection({
                             )
                           }
                           aria-label='הסר שיעור'
+                          disabled={isSubmitting}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -403,11 +382,6 @@ export function TeacherAssignmentSection({
         </div>
       )}
 
-      {/* Display any errors */}
-      {errors && errors['teacherAssignments'] && (
-        <div className='form-error'>{errors['teacherAssignments']}</div>
-      )}
-
       {/* Teacher Selection */}
       {showTeacherSelect && (
         <div className='teacher-selection-panel'>
@@ -418,7 +392,7 @@ export function TeacherAssignmentSection({
               className='form-select'
               value={selectedTeacherId}
               onChange={handleTeacherChange}
-              disabled={teacherStore.isLoading}
+              disabled={isLoadingTeachers || isSubmitting}
             >
               <option value=''>בחר מורה</option>
               {newTeacherInfo && (
@@ -430,7 +404,7 @@ export function TeacherAssignmentSection({
                   (המורה החדש)
                 </option>
               )}
-              {teacherStore.teachers.map((teacher) => (
+              {teachers.map((teacher) => (
                 <option key={teacher._id} value={teacher._id}>
                   {teacher.personalInfo.fullName}{' '}
                   {teacher.professionalInfo?.instrument
@@ -439,7 +413,7 @@ export function TeacherAssignmentSection({
                 </option>
               ))}
             </select>
-            {teacherStore.isLoading && (
+            {isLoadingTeachers && (
               <div className='loading-indicator'>טוען מורים...</div>
             )}
           </div>
@@ -465,6 +439,7 @@ export function TeacherAssignmentSection({
                     onChange={(e) =>
                       handleScheduleChange(index, 'day', e.target.value)
                     }
+                    disabled={isSubmitting}
                   >
                     {DAYS_OF_WEEK.map((day) => (
                       <option key={day} value={day}>
@@ -484,6 +459,7 @@ export function TeacherAssignmentSection({
                     onChange={(e) =>
                       handleScheduleChange(index, 'time', e.target.value)
                     }
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -496,6 +472,7 @@ export function TeacherAssignmentSection({
                     onChange={(e) =>
                       handleScheduleChange(index, 'duration', e.target.value)
                     }
+                    disabled={isSubmitting}
                   >
                     {LESSON_DURATIONS.map((duration) => (
                       <option key={duration} value={duration}>
@@ -511,6 +488,7 @@ export function TeacherAssignmentSection({
                     className='remove-btn'
                     onClick={() => handleRemoveLesson(index)}
                     aria-label='הסר שיעור'
+                    disabled={isSubmitting}
                   >
                     <X size={16} />
                   </button>
@@ -524,8 +502,8 @@ export function TeacherAssignmentSection({
               type='button'
               className='add-lesson-btn'
               onClick={handleAddLesson}
+              disabled={isSubmitting}
             >
-              <Plus size={14} />
               הוסף שיעור נוסף
             </button>
 
@@ -533,6 +511,7 @@ export function TeacherAssignmentSection({
               type='button'
               className='save-btn'
               onClick={handleSaveTeacherLessons}
+              disabled={isSubmitting}
             >
               שמור שיעורים למורה
             </button>
@@ -546,8 +525,9 @@ export function TeacherAssignmentSection({
           type='button'
           className='add-teacher-btn'
           onClick={handleAddTeacher}
+          disabled={isSubmitting}
         >
-          <UserPlus size={16} />
+          <User size={16} />
           {Object.keys(teacherAssignmentsByTeacher).length > 0
             ? 'הוסף מורה נוסף'
             : 'הוסף מורה'}

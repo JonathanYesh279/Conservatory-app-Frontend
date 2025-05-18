@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { Music, Star, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
-import { ConfirmDialog } from '../ConfirmDialog';
 
 interface InstrumentSectionProps {
   instruments: InstrumentProgress[];
@@ -45,12 +44,6 @@ export function InstrumentSection({
       technicalTest: { status: 'לא נבחן', notes: '' },
     },
   });
-
-  // Add state for confirmation dialog
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
-  const [instrumentToRemove, setInstrumentToRemove] = useState<string | null>(
-    null
-  );
 
   // Add feedback states
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -114,24 +107,23 @@ export function InstrumentSection({
       const [parent, child, prop] = name.split('.');
       setFormData((prev) => {
         // Get the parent object with a fallback to an empty object
-        const parentObj =
-          (prev[parent as keyof typeof prev] as Record<string, any>) || {};
-
+        const parentObj = (prev[parent as keyof typeof prev] as Record<string, any>) || {};
+        
         // Get the child object with a fallback to an empty object
         const childObj = parentObj[child] || {};
-
+        
         // Create updated child with the new property value
         const updatedChild = {
           ...childObj,
           [prop]: value,
         };
-
+        
         // Create updated parent with the new child object
         const updatedParent = {
           ...parentObj,
           [child]: updatedChild,
         };
-
+        
         // Return the updated form data
         return {
           ...prev,
@@ -269,20 +261,10 @@ export function InstrumentSection({
     setShowForm(false);
   };
 
-  // Initiate the removal process by showing confirmation dialog
-  const initiateRemoveInstrument = (instrumentName: string) => {
-    setInstrumentToRemove(instrumentName);
-    setIsConfirmDialogOpen(true);
-  };
-
-  // Confirm the removal after user accepts the dialog
-  const confirmRemoveInstrument = () => {
-    if (instrumentToRemove) {
-      // Call the actual removeInstrument function from props
-      removeInstrument(instrumentToRemove);
-      setInstrumentToRemove(null);
-    }
-    setIsConfirmDialogOpen(false);
+  // Fixed function: now it actually passes the instrument name to the removeInstrument prop
+  const handleRemoveInstrument = (instrumentName: string) => {
+    // Call the removeInstrument function from props with the instrument name
+    removeInstrument(instrumentName);
   };
 
   const handleSetPrimary = (index: number) => {
@@ -393,9 +375,7 @@ export function InstrumentSection({
                   <button
                     type='button'
                     className='remove-btn'
-                    onClick={() =>
-                      initiateRemoveInstrument(instrument.instrumentName)
-                    }
+                    onClick={() => handleRemoveInstrument(instrument.instrumentName)}
                     aria-label='הסר כלי נגינה'
                     title='הסר כלי נגינה'
                   >
@@ -556,20 +536,6 @@ export function InstrumentSection({
           </div>
         </div>
       )}
-
-      {/* Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={isConfirmDialogOpen}
-        onClose={() => setIsConfirmDialogOpen(false)}
-        onConfirm={confirmRemoveInstrument}
-        title='הסרת כלי נגינה'
-        message={`האם אתה בטוח שברצונך להסיר את ${
-          instrumentToRemove ? instrumentToRemove : 'כלי הנגינה'
-        }?`}
-        confirmText='הסר'
-        cancelText='ביטול'
-        type='warning'
-      />
     </div>
   );
 }

@@ -1,11 +1,13 @@
 // src/cmps/StudentForm/StudentForm.tsx
 import { X } from 'lucide-react';
+import { Formik, Form } from 'formik';
 import { Student } from '../../services/studentService';
 import { useStudentForm } from '../../hooks/useStudentForm';
 import { PersonalInfoSection } from './PersonalInfoSection';
 import { InstrumentSection } from './InstrumentSection';
 import { TeacherAssignmentSection } from './TeacherAssignmentSection';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
+import { studentValidationSchema } from '../../validations/studentValidation';
 
 interface StudentFormProps {
   isOpen: boolean;
@@ -26,6 +28,7 @@ export function StudentForm({
   onStudentCreated,
   newTeacherInfo,
 }: StudentFormProps) {
+  // Get all necessary functions from the hook
   const {
     formData,
     errors,
@@ -42,7 +45,7 @@ export function StudentForm({
     setPrimaryInstrument,
     updateInstrumentProgress,
     updateInstrumentTest,
-    handleSubmit,
+    handleSubmit, // Keep the original handleSubmit function
     handleCancel,
   } = useStudentForm({
     student,
@@ -68,67 +71,83 @@ export function StudentForm({
 
         <h2>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
 
-        {error && <div className='error-message'>{error.message || String(error)}</div>}
+        {error && (
+          <div className='error-message'>{error.message || String(error)}</div>
+        )}
         {errors.form && <div className='error-message'>{errors.form}</div>}
 
-        <form onSubmit={handleSubmit}>
-          {/* Personal Information Section */}
-          <PersonalInfoSection
-            formData={formData}
-            updatePersonalInfo={updatePersonalInfo}
-            updateAcademicInfo={updateAcademicInfo}
-            errors={errors}
-          />
+        <Formik
+          initialValues={formData}
+          validationSchema={studentValidationSchema}
+          onSubmit={handleSubmit} // Use the existing handleSubmit function
+          enableReinitialize
+        >
+          {({ isSubmitting: formikSubmitting }) => (
+            <Form>
+              {/* Personal Information Section */}
+              <PersonalInfoSection
+                formData={formData}
+                updatePersonalInfo={updatePersonalInfo}
+                updateAcademicInfo={updateAcademicInfo}
+                errors={errors}
+              />
 
-          {/* Instrument Section */}
-          <InstrumentSection
-            instruments={formData.academicInfo.instrumentProgress}
-            addInstrument={addInstrument}
-            removeInstrument={removeInstrument}
-            setPrimaryInstrument={setPrimaryInstrument}
-            updateInstrumentProgress={updateInstrumentProgress}
-            updateInstrumentTest={updateInstrumentTest}
-            errors={errors}
-            isFormOpen={isOpen}
-            isSubmitting={isSubmitting}
-          />
+              {/* Instrument Section */}
+              <InstrumentSection
+                instruments={formData.academicInfo.instrumentProgress}
+                addInstrument={addInstrument}
+                removeInstrument={removeInstrument}
+                setPrimaryInstrument={setPrimaryInstrument}
+                updateInstrumentProgress={updateInstrumentProgress}
+                updateInstrumentTest={updateInstrumentTest}
+                errors={errors}
+                isFormOpen={isOpen}
+                isSubmitting={isSubmitting || formikSubmitting}
+              />
 
-          {/* Teacher Assignment Section */}
-          <TeacherAssignmentSection
-            formData={formData}
-            newTeacherInfo={newTeacherInfo}
-            addTeacherAssignment={addTeacherAssignment}
-            removeTeacherAssignment={removeTeacherAssignment}
-            errors={errors}
-          />
+              {/* Teacher Assignment Section */}
+              <TeacherAssignmentSection
+                formData={formData}
+                newTeacherInfo={newTeacherInfo}
+                addTeacherAssignment={addTeacherAssignment}
+                removeTeacherAssignment={removeTeacherAssignment}
+                errors={errors}
+              />
 
-          {/* Orchestra Assignment Section */}
-          <OrchestraAssignmentSection
-            formData={formData}
-            addOrchestraAssignment={addOrchestraAssignment}
-            removeOrchestraAssignment={removeOrchestraAssignment}
-            errors={errors}
-          />
+              {/* Orchestra Assignment Section */}
+              <OrchestraAssignmentSection
+                formData={formData}
+                addOrchestraAssignment={addOrchestraAssignment}
+                removeOrchestraAssignment={removeOrchestraAssignment}
+                errors={errors}
+              />
 
-          {/* Form Actions */}
-          <div className='form-actions'>
-            <button
-              type='submit'
-              className='btn primary'
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'שומר...' : student?._id ? 'עדכון' : 'הוספה'}
-            </button>
+              {/* Form Actions */}
+              <div className='form-actions'>
+                <button
+                  type='submit'
+                  className='btn primary'
+                  disabled={isSubmitting || formikSubmitting}
+                >
+                  {isSubmitting || formikSubmitting
+                    ? 'שומר...'
+                    : student?._id
+                    ? 'עדכון'
+                    : 'הוספה'}
+                </button>
 
-            <button
-              type='button'
-              className='btn secondary'
-              onClick={handleCancel}
-            >
-              ביטול
-            </button>
-          </div>
-        </form>
+                <button
+                  type='button'
+                  className='btn secondary'
+                  onClick={handleCancel}
+                  disabled={isSubmitting || formikSubmitting}
+                >
+                  ביטול
+                </button>
+              </div>
+            </Form>
+          )}
+        </Formik>
       </div>
     </div>
   );

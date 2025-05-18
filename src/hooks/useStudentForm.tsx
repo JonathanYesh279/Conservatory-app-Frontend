@@ -7,6 +7,7 @@ import { useInstrumentSection } from './useInstrumentSection';
 import { useTeacherSection } from './useTeacherSection';
 import { useOrchestraSection } from './useOrchestraSection';
 import { useStudentApiService } from './useStudentApiService';
+import { FormikHelpers } from 'formik';
 
 // Export constants for use in other components
 export const VALID_CLASSES = [
@@ -349,34 +350,48 @@ export function useStudentForm({
     return Object.keys(newErrors).length === 0;
   }, [formData, validateStudentForm]);
 
-  // Handle form submission
+  // Handle form submission - FIXED VERSION
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    async (
+      values: StudentFormData,
+      formikHelpers?: FormikHelpers<StudentFormData>
+    ) => {
+      // No need for e.preventDefault() as Formik handles this
 
       if (!validateForm()) {
+        if (formikHelpers) {
+          formikHelpers.setSubmitting(false);
+        }
         return;
       }
 
       try {
-        // Prepare student data for submission
+        // Prepare student data for submission using current values from Formik
         const studentData: Partial<Student> = {
-          _id: formData._id, // Include the _id for existing students
+          _id: values._id || formData._id, // Try to get from values or fall back to formData
           personalInfo: {
-            ...formData.personalInfo,
-            parentName: formData.personalInfo.parentName || 'לא צוין',
-            parentPhone: formData.personalInfo.parentPhone || '0500000000',
+            ...(values.personalInfo || formData.personalInfo),
+            parentName:
+              (values.personalInfo || formData.personalInfo).parentName ||
+              'לא צוין',
+            parentPhone:
+              (values.personalInfo || formData.personalInfo).parentPhone ||
+              '0500000000',
             parentEmail:
-              formData.personalInfo.parentEmail || 'parent@example.com',
+              (values.personalInfo || formData.personalInfo).parentEmail ||
+              'parent@example.com',
             studentEmail:
-              formData.personalInfo.studentEmail || 'student@example.com',
+              (values.personalInfo || formData.personalInfo).studentEmail ||
+              'student@example.com',
           },
           academicInfo: {
-            instrumentProgress: formData.academicInfo.instrumentProgress,
-            class: formData.academicInfo.class,
+            instrumentProgress: (values.academicInfo || formData.academicInfo)
+              .instrumentProgress,
+            class: (values.academicInfo || formData.academicInfo).class,
           },
           // We'll let the API service handle the enrollments
-          isActive: formData.isActive,
+          isActive:
+            values.isActive !== undefined ? values.isActive : formData.isActive,
         };
 
         // Log the data being sent for debugging
@@ -387,17 +402,27 @@ export function useStudentForm({
           console.log('Creating NEW student');
         }
 
-        // Use API service to save student data
-        await saveStudentData(studentData, formData);
+        // Use API service to save student data - pass either the Formik values or our formData
+        await saveStudentData(studentData, values || formData);
 
         // After successful save, force reset
         resetForm();
+
+        // If we have formikHelpers, set submitting to false
+        if (formikHelpers) {
+          formikHelpers.setSubmitting(false);
+        }
       } catch (err) {
         console.error('Error during form submission:', err);
         setErrors((prev) => ({
           ...prev,
           form: err instanceof Error ? err.message : 'שגיאה בשמירת תלמיד',
         }));
+
+        // If we have formikHelpers, set submitting to false
+        if (formikHelpers) {
+          formikHelpers.setSubmitting(false);
+        }
       }
     },
     [formData, validateForm, saveStudentData, resetForm]

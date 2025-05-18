@@ -1,0 +1,295 @@
+/* src/styles/formik-components.scss */
+/* This file should be imported in your main.scss file */
+
+/* Required field styling */
+.required-mark {
+  color: #ff3b30;
+  margin-right: 4px;
+  font-weight: bold;
+}
+
+/* Form validation styling */
+.form-error {
+  color: #ff3b30;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+}
+
+.form-error-message {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 59, 48, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  color: #ff3b30;
+  font-size: 0.9rem;
+}
+
+.form-error-message svg {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* Success message styling */
+.success-message {
+  display: flex;
+  align-items: center;
+  background-color: rgba(52, 199, 89, 0.1);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 16px;
+  color: #34c759;
+  font-size: 0.9rem;
+}
+
+.success-message svg {
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+/* Form field styling */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.form-group .label-icon {
+  margin-left: 8px;
+  display: flex;
+}
+
+/* Input states */
+input.is-invalid,
+select.is-invalid,
+textarea.is-invalid {
+  border-color: #ff3b30;
+  background-color: rgba(255, 59, 48, 0.05);
+}
+
+input:disabled,
+select:disabled,
+textarea:disabled,
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Form layout helpers */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row.full-width > .form-group {
+  flex: 1;
+}
+
+.form-row.two-columns > .form-group {
+  flex: 1;
+}
+
+.form-row.three-columns > .form-group {
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .form-row {
+    gap: 8px;
+  }
+  
+  .form-row.two-columns > .form-group,
+  .form-row.three-columns > .form-group {
+    flex: auto;
+  }
+}
+
+/* Checkbox specific styling */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.form-checkbox input[type="checkbox"] {
+  margin-left: 8px;
+}
+
+.form-checkbox label {
+  font-weight: normal;
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  border-top: 1px solid #eaeaea;
+  padding-top: 16px;
+}
+
+/* Button styling - extend existing button styles */
+button.save-btn,
+button.add-lesson-btn,
+button.add-more-btn,
+button.add-instrument-btn,
+button.add-teacher-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 120px;
+}
+
+button.remove-btn {
+  background: transparent;
+  border: none;
+  color: #ff3b30;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+button.remove-btn:hover {
+  background-color: rgba(255, 59, 48, 0.1);
+}
+
+/* Status badges */
+.status-passed {
+  background-color: #00c853;
+}
+
+.status-success {
+  background-color: #2979ff;
+}
+
+.status-excellent {
+  background-color: #aa00ff;
+}
+
+.status-failed {
+  background-color: #ff3b30;
+}
+
+.status-pending {
+  background-color: #757575;
+}
+
+/* Instrument card specific styles */
+.instrument-card {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.instrument-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.instrument-info {
+  flex: 1;
+}
+
+.instrument-name-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.instrument-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.primary-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #ffc107;
+  color: #212121;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 8px;
+}
+
+.stage-badge {
+  background-color: #3f51b5;
+  color: white;
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.test-badges {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.test-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: white;
+  font-size: 0.75rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.test-label {
+  font-weight: 500;
+}
+
+.test-notes {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #757575;
+}
+
+.instrument-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.set-primary-btn {
+  background: transparent;
+  border: none;
+  color: #ffc107;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.set-primary-btn:hover {
+  background-color: rgba(255, 193, 7, 0.1);
+}

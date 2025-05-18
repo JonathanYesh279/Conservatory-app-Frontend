@@ -31,10 +31,10 @@ export function useStudentDetailsState() {
 
   // Collapsible sections
   const [openSections, setOpenSections] = useState({
-    instruments: true,
-    teachers: true,
-    orchestras: true,
-    tests: true, // Changed to true to make tests section open by default
+    instruments: false,
+    teachers: false,
+    orchestras: false,
+    tests: false, 
     attendance: false,
     personalInfo: true,
     parentInfo: true,
