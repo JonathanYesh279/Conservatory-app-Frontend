@@ -1,6 +1,6 @@
 // src/hooks/useStudentApiService.ts
 import { useState } from 'react';
-import { StudentFormData, TeacherAssignment } from './useStudentForm';
+import { StudentFormData, TeacherAssignment } from '../constants/formConstants';
 import { Teacher } from '../services/teacherService';
 import { studentService } from '../services/studentService'
 

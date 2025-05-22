@@ -34,9 +34,9 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <div className='form-group' style={style}>
-      <label htmlFor={props.id || name}>
+      <label htmlFor={props.id || name} className={required ? 'required-field' : ''}>
         {labelIcon && <span className='label-icon'>{labelIcon}</span>}
-        {label} {required && <span className='required-mark'>*</span>}
+        {label}
       </label>
 
       {props.as === 'select' ? (
@@ -63,7 +63,10 @@ export const FormField: React.FC<FormFieldProps> = ({
           className={inputClasses}
           type={props.type || 'text'}
           disabled={disabled}
-          {...field}
+          value={field.value === undefined ? (props.type === 'number' ? '' : '') : field.value}
+          onChange={field.onChange}
+          onBlur={field.onBlur}
+          name={field.name}
           {...props}
         />
       )}
@@ -98,8 +101,8 @@ export const FormCheckbox: React.FC<Omit<FormFieldProps, 'as'>> = ({
         {...field}
         {...props}
       />
-      <label htmlFor={props.id || name}>
-        {label} {required && <span className='required-mark'>*</span>}
+      <label htmlFor={props.id || name} className={required ? 'required-field' : ''}>
+        {label}
       </label>
 
       {meta.touched && meta.error ? (

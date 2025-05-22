@@ -1,0 +1,10 @@
+// Base form styles
+
+// Required field marker
+label.required-field::after,
+.required-field::after {
+  content: " *";
+  color: var(--danger);
+  font-weight: bold;
+  display: inline-block;
+}

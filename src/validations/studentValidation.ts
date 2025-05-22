@@ -6,7 +6,7 @@ import {
   TEST_STATUSES,
   DAYS_OF_WEEK,
   LESSON_DURATIONS,
-} from '../hooks/useStudentForm';
+} from '../constants/formConstants';
 
 // Define common validation patterns
 const phoneRegExp = /^05\d{8}$/;
@@ -83,7 +83,9 @@ export const studentValidationSchema = Yup.object({
   }),
 
   academicInfo: Yup.object({
-    instrumentProgress: Yup.array().of(instrumentProgressSchema),
+    instrumentProgress: Yup.array()
+      .of(instrumentProgressSchema)
+      .min(1, 'חובה להוסיף לפחות כלי נגינה אחד'), // Added min(1) to require at least one instrument
     class: Yup.string()
       .required('כיתה היא שדה חובה')
       .oneOf(VALID_CLASSES, 'כיתה לא תקינה'),

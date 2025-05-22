@@ -6,7 +6,7 @@ import {
   StudentFormData,
   DAYS_OF_WEEK,
   LESSON_DURATIONS,
-} from '../../hooks/useStudentForm';
+} from '../../constants/formConstants';
 import { useTeacherStore } from '../../store/teacherStore';
 import { Teacher } from '../../services/teacherService';
 import { ConfirmDialog } from '../ConfirmDialog';
@@ -17,15 +17,13 @@ export interface TeacherAssignmentSectionProps {
     fullName: string;
     instrument?: string;
   } | null;
-  isSubmitting?: boolean;
 }
 
 export function TeacherAssignmentSection({
   newTeacherInfo,
-  isSubmitting = false,
 }: TeacherAssignmentSectionProps) {
   // Get Formik context for form operations
-  const { values, setFieldValue, errors, touched } =
+  const { values, setFieldValue, errors, touched, isSubmitting } =
     useFormikContext<StudentFormData>();
 
   // Get teachers from store
@@ -386,7 +384,7 @@ export function TeacherAssignmentSection({
       {showTeacherSelect && (
         <div className='teacher-selection-panel'>
           <div className='form-group'>
-            <label htmlFor='teacherSelect'>בחירת מורה</label>
+            <label htmlFor='teacherSelect' className='required-field'>בחירת מורה</label>
             <select
               id='teacherSelect'
               className='form-select'

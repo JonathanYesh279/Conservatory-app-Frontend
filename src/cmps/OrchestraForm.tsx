@@ -1,47 +1,25 @@
 // src/cmps/OrchestraForm.tsx
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, User, Search, X as XIcon, AlertCircle } from 'lucide-react';
-import { Orchestra } from '../services/orchestraService';
-import { useOrchestraForm } from '../hooks/useOrchestraForm';
-import { useStudentSelection } from '../hooks/useStudentSelection';
-import { useNameValidation } from '../hooks/useNameValidation';
+import { Formik, Form, FormikHelpers } from 'formik';
+import { Orchestra, orchestraService } from '../services/orchestraService';
+import { Student, studentService } from '../services/studentService';
+import { Teacher, teacherService } from '../services/teacherService';
 import { useOrchestraStore } from '../store/orchestraStore';
+import { useTeacherStore } from '../store/teacherStore';
+import { useStudentStore } from '../store/studentStore';
+import { useSchoolYearStore } from '../store/schoolYearStore';
+import { FormField } from './FormComponents/FormField';
+import {
+  OrchestraFormData,
+  initialOrchestraFormValues,
+  createOrchestraValidationSchema,
+} from '../validations/orchestraValidation';
 
-// Constants
-const VALID_TYPES = ['הרכב', 'תזמורת'];
-export const VALID_LOCATIONS = [
-  'אולם ערן',
-  'סטודיו קאמרי 1',
-  'סטודיו קאמרי 2',
-  'אולפן הקלטות',
-  'חדר חזרות 1',
-  'חדר חזרות 2',
-  'חדר מחשבים',
-  'חדר 1',
-  'חדר 2',
-  'חדר חזרות',
-  'חדר 5',
-  'חדר 6',
-  'חדר 7',
-  'חדר 8',
-  'חדר 9',
-  'חדר 10',
-  'חדר 11',
-  'חדר 12',
-  'חדר 13',
-  'חדר 14',
-  'חדר 15',
-  'חדר 16',
-  'חדר 17',
-  'חדר 18',
-  'חדר 19',
-  'חדר 20',
-  'חדר 21',
-  'חדר 22',
-  'חדר 23',
-  'חדר 24',
-  'חדר 25',
-  'חדר 26',
-];
+import {
+  VALID_TYPES,
+  VALID_LOCATIONS
+} from '../validations/constants';
 
 interface OrchestraFormProps {
   isOpen: boolean;
@@ -56,83 +34,299 @@ export function OrchestraForm({
   orchestra,
   onSave,
 }: OrchestraFormProps) {
+  // State
+  const [conductors, setConductors] = useState<Teacher[]>([]);
+  const [isLoadingConductors, setIsLoadingConductors] = useState(false);
+  const [selectedMembers, setSelectedMembers] = useState<Student[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoadingStudents, setIsLoadingStudents] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Store access
+  const { orchestras, saveOrchestra, isLoading } = useOrchestraStore();
+  const { currentSchoolYear } = useSchoolYearStore();
+  const { students, saveStudent, loadStudents } = useStudentStore();
+  const { loadTeacherByRole, loadTeachers } = useTeacherStore();
+
   // Get all existing orchestra names for validation
-  const { orchestras } = useOrchestraStore();
   const existingOrchestraNames = orchestras.map((o) => o.name);
 
-  // Create form with main business logic in a custom hook
-  const {
-    formData,
-    conductors,
-    errors,
-    isLoading,
-    isSubmitting,
-    isLoadingConductors,
-    error,
-    handleInputChange,
-    handleSubmit: submitForm,
-    isOrchestra,
-  } = useOrchestraForm({
-    initialOrchestra: orchestra,
-    onClose,
-    onSave,
-  });
+  // Initialize form values
+  const getInitialFormValues = useCallback((): OrchestraFormData => {
+    if (orchestra?._id) {
+      return {
+        _id: orchestra._id,
+        name: orchestra.name || '',
+        type: orchestra.type || 'תזמורת',
+        conductorId: orchestra.conductorId || '',
+        memberIds: orchestra.memberIds || [],
+        rehearsalIds: orchestra.rehearsalIds || [],
+        schoolYearId: orchestra.schoolYearId || currentSchoolYear?._id || '',
+        location: orchestra.location || 'חדר 1',
+        isActive: orchestra.isActive !== false,
+      };
+    } else {
+      return {
+        ...initialOrchestraFormValues,
+        schoolYearId: currentSchoolYear?._id || '',
+      };
+    }
+  }, [orchestra, currentSchoolYear]);
 
-  // Name validation with dedicated hook
-  const nameValidation = useNameValidation({
-    name: formData.name,
-    existingNames: existingOrchestraNames,
-    type: formData.type,
-    originalName: orchestra?.name,
-    isSubmitting, // Pass submission state to prevent validation during submit
-  });
+  // Load students if needed
+  useEffect(() => {
+    if (students.length === 0) {
+      loadStudents({ isActive: true });
+    }
+  }, [students.length, loadStudents]);
 
-  // Student selection with dedicated hook
-  const {
-    selectedMembers,
-    searchQuery,
-    isSearchOpen,
-    isLoading: isLoadingStudents,
-    searchRef,
-    handleSearchChange,
-    getFilteredStudents,
-    handleAddMember,
-    handleRemoveMember,
-  } = useStudentSelection({
-    initialMemberIds: orchestra?.memberIds || [],
-    onMemberIdsChange: (memberIds) => {
-      // Update the formData.memberIds whenever student selection changes
-       handleInputChange({
-         target: { name: 'memberIds', value: memberIds },
-       } as unknown as React.ChangeEvent<HTMLInputElement>);
-    },
-  });
+  // Initialize selected members
+  useEffect(() => {
+    if (students.length > 0 && orchestra?.memberIds?.length > 0) {
+      setIsLoadingStudents(true);
+      // Find matching students
+      const members = students.filter((student) =>
+        orchestra.memberIds.includes(student._id)
+      );
+      setSelectedMembers(members);
+      setIsLoadingStudents(false);
+    } else {
+      setSelectedMembers([]);
+    }
+  }, [orchestra?.memberIds, students]);
 
-  // Handle form submission with validation
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Check if name validation passes
-    if (!nameValidation.isValid && nameValidation.message) {
-      // Add name validation error to form errors
-      handleInputChange({
-        target: {
-          name: 'name',
-          value: formData.name,
-          dataset: { error: nameValidation.message },
-        },
-      } as unknown as React.ChangeEvent<HTMLInputElement>);
-      return;
+  // Close search dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setIsSearchOpen(false);
+      }
     }
 
-    // Submit the form
-    submitForm(e);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Load appropriate teachers based on type
+  const loadAppropriateTeachers = useCallback(async (type: string) => {
+    setIsLoadingConductors(true);
+    setConductors([]); // Clear previous conductors while loading
+
+    try {
+      const role = type === 'תזמורת' ? 'מנצח' : 'מדריך הרכב';
+      console.log(`Fetching teachers with role: ${role}`);
+
+      // Use loadTeacherByRole if available
+      if (typeof loadTeacherByRole === 'function') {
+        const teachersWithRole = await loadTeacherByRole(role);
+
+        if (Array.isArray(teachersWithRole)) {
+          console.log(
+            `Found ${teachersWithRole.length} teachers with role ${role}`
+          );
+          setConductors(teachersWithRole);
+        } else {
+          console.error(
+            `Expected array of teachers, but got:`,
+            teachersWithRole
+          );
+          setConductors([]);
+        }
+      }
+      // Fallback to filtering teachers manually
+      else {
+        const allTeachers = await loadTeachers({ role, isActive: true });
+
+        if (Array.isArray(allTeachers)) {
+          // Further ensure we only include teachers with the exact role
+          const filteredTeachers = allTeachers.filter(
+            (teacher) => teacher.roles && teacher.roles.includes(role)
+          );
+
+          console.log(
+            `Filtered ${filteredTeachers.length} teachers with role ${role}`
+          );
+          setConductors(filteredTeachers);
+        } else {
+          console.error(`Expected array of teachers, but got:`, allTeachers);
+          setConductors([]);
+        }
+      }
+    } catch (err) {
+      console.error(`Failed to load teachers for role:`, err);
+      setConductors([]);
+    } finally {
+      setIsLoadingConductors(false);
+    }
+  }, [loadTeacherByRole, loadTeachers]);
+
+  // Search handlers
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+      setIsSearchOpen(e.target.value.length > 0);
+    },
+    []
+  );
+
+  // Get filtered students
+  const getFilteredStudents = useCallback(() => {
+    if (!searchQuery) return [];
+
+    return students
+      .filter(
+        (student) =>
+          // Filter by name match
+          student.personalInfo.fullName.includes(searchQuery) &&
+          // Filter out already selected students
+          !selectedMembers.some((member) => member._id === student._id)
+      )
+      .slice(0, 10); // Limit to 10 results for performance
+  }, [searchQuery, students, selectedMembers]);
+
+  // Add/remove members
+  const handleAddMember = useCallback(
+    (student: Student, setFieldValue: (field: string, value: any) => void) => {
+      // First create the updated members array
+      const updatedMembers = [...selectedMembers, student];
+      
+      // Then update the state
+      setSelectedMembers(updatedMembers);
+      
+      // Then update form values separately
+      setFieldValue(
+        'memberIds', 
+        updatedMembers.map((member) => member._id)
+      );
+
+      setSearchQuery('');
+      setIsSearchOpen(false);
+    },
+    [selectedMembers]
+  );
+
+  const handleRemoveMember = useCallback(
+    (studentId: string, setFieldValue: (field: string, value: any) => void) => {
+      setSelectedMembers((prev) => {
+        const updatedMembers = prev.filter(
+          (member) => member._id !== studentId
+        );
+        
+        // Update form values
+        setFieldValue(
+          'memberIds', 
+          updatedMembers.map((member) => member._id)
+        );
+        
+        return updatedMembers;
+      });
+    },
+    []
+  );
+
+  // Update student references to this orchestra
+  const updateStudentReferences = async (
+    orchestraId: string,
+    oldMemberIds: string[],
+    newMemberIds: string[]
+  ) => {
+    try {
+      // Students to add orchestra to
+      const studentsToAdd = newMemberIds.filter(
+        (id) => !oldMemberIds.includes(id)
+      );
+
+      // Students to remove orchestra from
+      const studentsToRemove = oldMemberIds.filter(
+        (id) => !newMemberIds.includes(id)
+      );
+
+      console.log('Updating student references:', {
+        adding: studentsToAdd.length,
+        removing: studentsToRemove.length,
+      });
+
+      // Process additions
+      for (const studentId of studentsToAdd) {
+        const student = students.find((s) => s._id === studentId);
+        if (
+          student &&
+          !student.enrollments.orchestraIds.includes(orchestraId)
+        ) {
+          await saveStudent({
+            _id: student._id,
+            enrollments: {
+              ...student.enrollments,
+              orchestraIds: [...student.enrollments.orchestraIds, orchestraId],
+            },
+          });
+        }
+      }
+
+      // Process removals
+      for (const studentId of studentsToRemove) {
+        const student = students.find((s) => s._id === studentId);
+        if (student) {
+          await saveStudent({
+            _id: student._id,
+            enrollments: {
+              ...student.enrollments,
+              orchestraIds: student.enrollments.orchestraIds.filter(
+                (id) => id !== orchestraId
+              ),
+            },
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error updating student references:', err);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = async (
+    values: OrchestraFormData,
+    { setSubmitting }: FormikHelpers<OrchestraFormData>
+  ) => {
+    setApiError(null);
+    
+    try {
+      console.log('Submitting orchestra form with data:', values);
+
+      // Save orchestra
+      const savedOrchestra = await saveOrchestra(values);
+      console.log('Orchestra saved successfully:', savedOrchestra);
+
+      // Update students with orchestra references
+      await updateStudentReferences(
+        savedOrchestra._id,
+        orchestra?.memberIds || [],
+        values.memberIds
+      );
+
+      // Call onSave callback
+      if (onSave) {
+        onSave();
+      }
+
+      // Close the form
+      onClose();
+    } catch (err) {
+      console.error('Error saving orchestra:', err);
+      const errorMessage =
+        err instanceof Error ? err.message : 'שגיאה לא ידועה בשמירת התזמורת/הרכב';
+      setApiError(errorMessage);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // Don't render if not open
   if (!isOpen) return null;
-
-  const filteredStudents = getFilteredStudents();
 
   return (
     <div className='orchestra-form'>
@@ -146,259 +340,245 @@ export function OrchestraForm({
           <X size={20} />
         </button>
 
-        <h2>
-          {orchestra?._id
-            ? isOrchestra
-              ? 'עריכת תזמורת'
-              : 'עריכת הרכב'
-            : isOrchestra
-            ? 'הוספת תזמורת חדשה'
-            : 'הוספת הרכב חדש'}
-        </h2>
+        <Formik
+          initialValues={getInitialFormValues()}
+          validationSchema={createOrchestraValidationSchema(
+            existingOrchestraNames,
+            orchestra?.name
+          )}
+          onSubmit={handleSubmit}
+          enableReinitialize
+        >
+          {({ values, errors, touched, isSubmitting, setFieldValue }) => {
+            const isOrchestra = values.type === 'תזמורת';
+            
+            // Load appropriate teachers when type changes
+            useEffect(() => {
+              loadAppropriateTeachers(values.type);
+            }, [values.type]);
 
-        {error && <div className='error-message'>{error}</div>}
+            const filteredStudents = getFilteredStudents();
 
-        <form onSubmit={handleSubmit}>
-          {/* Orchestra/Ensemble Information */}
-          <div className='form-section'>
-            <h3>{isOrchestra ? 'פרטי תזמורת' : 'פרטי הרכב'}</h3>
+            return (
+              <Form>
+                <h2>
+                  {orchestra?._id
+                    ? isOrchestra
+                      ? 'עריכת תזמורת'
+                      : 'עריכת הרכב'
+                    : isOrchestra
+                    ? 'הוספת תזמורת חדשה'
+                    : 'הוספת הרכב חדש'}
+                </h2>
 
-            {/* Type Selection - First field */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='type'>סוג *</label>
-                <select
-                  id='type'
-                  name='type'
-                  value={formData.type}
-                  onChange={handleInputChange}
-                  className={errors.type ? 'is-invalid' : ''}
-                  required
-                  disabled={isSubmitting}
-                >
-                  <option value=''>בחר סוג</option>
-                  {VALID_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                {errors.type && <div className='form-error'>{errors.type}</div>}
-              </div>
-            </div>
+                {apiError && <div className='error-message'>{apiError}</div>}
 
-            {/* Name with validation */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='name'>
-                  {isOrchestra ? 'שם התזמורת *' : 'שם ההרכב *'}
-                </label>
-                <div className='name-input-container'>
-                  <input
-                    type='text'
-                    id='name'
-                    name='name'
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className={
-                      errors.name || (!nameValidation.isValid && !isSubmitting)
-                        ? 'is-invalid'
-                        : ''
-                    }
-                    placeholder={
-                      isOrchestra ? 'הכנס שם תזמורת...' : 'הכנס שם הרכב...'
-                    }
-                    required
-                    disabled={isSubmitting}
-                  />
-                  {!nameValidation.isValid &&
-                    nameValidation.message &&
-                    !errors.name &&
-                    !isSubmitting && (
-                      <div className='name-validation-warning'>
-                        <AlertCircle size={16} />
-                        <span>{nameValidation.message}</span>
-                      </div>
-                    )}
-                </div>
-                {errors.name && <div className='form-error'>{errors.name}</div>}
-              </div>
-            </div>
+                {/* Orchestra/Ensemble Information */}
+                <div className='form-section'>
+                  <h3>{isOrchestra ? 'פרטי תזמורת' : 'פרטי הרכב'}</h3>
 
-            {/* Location */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='location'>מקום *</label>
-                <select
-                  id='location'
-                  name='location'
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className={errors.location ? 'is-invalid' : ''}
-                  required
-                  disabled={isSubmitting}
-                >
-                  <option value=''>בחר מקום</option>
-                  {VALID_LOCATIONS.map((location) => (
-                    <option key={location} value={location}>
-                      {location}
-                    </option>
-                  ))}
-                </select>
-                {errors.location && (
-                  <div className='form-error'>{errors.location}</div>
-                )}
-              </div>
-            </div>
-
-            {/* Conductor/Instructor - changes based on type */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label htmlFor='conductorId'>
-                  {isOrchestra ? 'מנצח *' : 'מדריך הרכב *'}
-                </label>
-                <select
-                  id='conductorId'
-                  name='conductorId'
-                  value={formData.conductorId}
-                  onChange={handleInputChange}
-                  className={errors.conductorId ? 'is-invalid' : ''}
-                  required
-                  disabled={isLoadingConductors || isSubmitting}
-                >
-                  <option value=''>
-                    {isOrchestra ? 'בחר מנצח' : 'בחר מדריך הרכב'}
-                  </option>
-                  {conductors.map((conductor) => (
-                    <option key={conductor._id} value={conductor._id}>
-                      {conductor.personalInfo.fullName}
-                    </option>
-                  ))}
-                </select>
-                {isLoadingConductors && (
-                  <div className='loading-text'>
-                    {isOrchestra ? 'טוען מנצחים...' : 'טוען מדריכים...'}
+                  {/* Type Selection - First field */}
+                  <div className='form-row full-width'>
+                    <FormField
+                      label="סוג"
+                      name="type"
+                      as="select"
+                      required
+                      disabled={isSubmitting}
+                    >
+                      <option value=''>בחר סוג</option>
+                      {VALID_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                    </FormField>
                   </div>
-                )}
-                {errors.conductorId && (
-                  <div className='form-error'>{errors.conductorId}</div>
-                )}
-              </div>
-            </div>
 
-            {/* Members - changes based on type */}
-            <div className='form-row full-width'>
-              <div className='form-group'>
-                <label>
-                  {isOrchestra
-                    ? 'תלמידים (חברי התזמורת)'
-                    : 'תלמידים (חברי ההרכב)'}
-                </label>
-
-                {/* Student search input */}
-                <div ref={searchRef} className='search-container'>
-                  <div className='search-input-wrapper'>
-                    <Search className='search-icon' size={16} />
-                    <input
-                      type='text'
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      placeholder='חפש תלמידים להוספה...'
-                      className='search-input'
-                      onClick={() => searchQuery.length > 0}
+                  {/* Name field */}
+                  <div className='form-row full-width'>
+                    <FormField
+                      label={isOrchestra ? 'שם התזמורת' : 'שם ההרכב'}
+                      name="name"
+                      type="text"
+                      required
+                      placeholder={
+                        isOrchestra ? 'הכנס שם תזמורת...' : 'הכנס שם הרכב...'
+                      }
                       disabled={isSubmitting}
                     />
                   </div>
 
-                  {/* Search results dropdown */}
-                  {isSearchOpen &&
-                    filteredStudents.length > 0 &&
-                    !isSubmitting && (
-                      <div className='search-results-dropdown'>
-                        {filteredStudents.map((student) => (
-                          <div
-                            key={student._id}
-                            className='search-result-item'
-                            onClick={() => handleAddMember(student)}
-                          >
-                            <User size={16} className='student-icon' />
-                            <span>{student.personalInfo.fullName}</span>
-                            <span className='student-instrument'>
-                              {student.academicInfo.instrument}
-                            </span>
-                          </div>
+                  {/* Location */}
+                  <div className='form-row full-width'>
+                    <FormField
+                      label="מקום"
+                      name="location"
+                      as="select"
+                      required
+                      disabled={isSubmitting}
+                    >
+                      <option value=''>בחר מקום</option>
+                      {VALID_LOCATIONS.map((location) => (
+                        <option key={location} value={location}>
+                          {location}
+                        </option>
+                      ))}
+                    </FormField>
+                  </div>
+
+                  {/* Conductor/Instructor - changes based on type */}
+                  <div className='form-row full-width'>
+                    <div className='form-group'>
+                      <label 
+                        htmlFor='conductorId'
+                        className={errors.conductorId && touched.conductorId ? 'required-field is-invalid' : 'required-field'}
+                      >
+                        {isOrchestra ? 'מנצח' : 'מדריך הרכב'}
+                      </label>
+                      <select
+                        id='conductorId'
+                        name='conductorId'
+                        value={values.conductorId}
+                        onChange={(e) => {
+                          setFieldValue('conductorId', e.target.value);
+                        }}
+                        className={errors.conductorId && touched.conductorId ? 'is-invalid' : ''}
+                        required
+                        disabled={isLoadingConductors || isSubmitting}
+                      >
+                        <option value=''>
+                          {isOrchestra ? 'בחר מנצח' : 'בחר מדריך הרכב'}
+                        </option>
+                        {conductors.map((conductor) => (
+                          <option key={conductor._id} value={conductor._id}>
+                            {conductor.personalInfo.fullName}
+                          </option>
                         ))}
-                      </div>
-                    )}
-                </div>
-
-                {/* Selected members list */}
-                <div className='selected-members-list'>
-                  {isLoadingStudents ? (
-                    <div className='loading-text'>טוען תלמידים...</div>
-                  ) : selectedMembers.length > 0 ? (
-                    selectedMembers.map((member) => (
-                      <div key={member._id} className='member-badge'>
-                        <span>{member.personalInfo.fullName}</span>
-                        <button
-                          type='button'
-                          className='remove-btn'
-                          onClick={() => handleRemoveMember(member._id)}
-                          aria-label={`הסר את ${member.personalInfo.fullName}`}
-                          disabled={isSubmitting}
-                        >
-                          <XIcon size={14} />
-                        </button>
-                      </div>
-                    ))
-                  ) : (
-                    <div className='no-members-message'>
-                      לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים{' '}
-                      {isOrchestra ? 'לתזמורת' : 'להרכב'}.
+                      </select>
+                      {isLoadingConductors && (
+                        <div className='loading-text'>
+                          {isOrchestra ? 'טוען מנצחים...' : 'טוען מדריכים...'}
+                        </div>
+                      )}
+                      {errors.conductorId && touched.conductorId && (
+                        <div className='form-error'>{errors.conductorId}</div>
+                      )}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Members - changes based on type */}
+                  <div className='form-row full-width'>
+                    <div className='form-group'>
+                      <label>
+                        {isOrchestra
+                          ? 'תלמידים (חברי התזמורת)'
+                          : 'תלמידים (חברי ההרכב)'}
+                      </label>
+
+                      {/* Student search input */}
+                      <div ref={searchRef} className='search-container'>
+                        <div className='search-input-wrapper'>
+                          <Search className='search-icon' size={16} />
+                          <input
+                            type='text'
+                            value={searchQuery}
+                            onChange={handleSearchChange}
+                            placeholder='חפש תלמידים להוספה...'
+                            className='search-input'
+                            onClick={() => searchQuery.length > 0}
+                            disabled={isSubmitting}
+                          />
+                        </div>
+
+                        {/* Search results dropdown */}
+                        {isSearchOpen &&
+                          filteredStudents.length > 0 &&
+                          !isSubmitting && (
+                            <div className='search-results-dropdown'>
+                              {filteredStudents.map((student) => (
+                                <div
+                                  key={student._id}
+                                  className='search-result-item'
+                                  onClick={() => handleAddMember(student, setFieldValue)}
+                                >
+                                  <User size={16} className='student-icon' />
+                                  <span>{student.personalInfo.fullName}</span>
+                                  <span className='student-instrument'>
+                                    {student.academicInfo.instrument}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+
+                      {/* Selected members list */}
+                      <div className='selected-members-list'>
+                        {isLoadingStudents ? (
+                          <div className='loading-text'>טוען תלמידים...</div>
+                        ) : selectedMembers.length > 0 ? (
+                          selectedMembers.map((member) => (
+                            <div key={member._id} className='member-badge'>
+                              <span>{member.personalInfo.fullName}</span>
+                              <button
+                                type='button'
+                                className='remove-btn'
+                                onClick={() => handleRemoveMember(member._id, setFieldValue)}
+                                aria-label={`הסר את ${member.personalInfo.fullName}`}
+                                disabled={isSubmitting}
+                              >
+                                <XIcon size={14} />
+                              </button>
+                            </div>
+                          ))
+                        ) : (
+                          <div className='no-members-message'>
+                            לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים{' '}
+                            {isOrchestra ? 'לתזמורת' : 'להרכב'}.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Hidden school year field */}
+                  <input
+                    type='hidden'
+                    name='schoolYearId'
+                    value={values.schoolYearId}
+                  />
                 </div>
-              </div>
-            </div>
 
-            {/* Hidden school year field */}
-            <input
-              type='hidden'
-              name='schoolYearId'
-              value={formData.schoolYearId}
-            />
-          </div>
+                {/* Form Actions */}
+                <div className='form-actions'>
+                  <button
+                    type='submit'
+                    className='btn primary'
+                    disabled={isLoading || isSubmitting}
+                  >
+                    {isSubmitting
+                      ? 'שומר...'
+                      : isLoading
+                      ? 'טוען...'
+                      : orchestra?._id
+                      ? 'עדכון'
+                      : 'הוספה'}
+                  </button>
 
-          {/* Form Actions */}
-          <div className='form-actions'>
-            <button
-              type='submit'
-              className='btn primary'
-              disabled={
-                isLoading ||
-                isSubmitting ||
-                (!nameValidation.isValid && !!formData.name)
-              }
-            >
-              {isSubmitting
-                ? 'שומר...'
-                : isLoading
-                ? 'טוען...'
-                : orchestra?._id
-                ? 'עדכון'
-                : 'הוספה'}
-            </button>
-
-            <button
-              type='button'
-              className='btn secondary'
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              ביטול
-            </button>
-          </div>
-        </form>
+                  <button
+                    type='button'
+                    className='btn secondary'
+                    onClick={onClose}
+                    disabled={isSubmitting}
+                  >
+                    ביטול
+                  </button>
+                </div>
+              </Form>
+            );
+          }}
+        </Formik>
       </div>
     </div>
   );

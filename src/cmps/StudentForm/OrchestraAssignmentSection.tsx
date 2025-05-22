@@ -1,33 +1,83 @@
-import { useOrchestraAssignmentSection } from '../../hooks/useOrchestraAssignmentSection';
-import { StudentFormData } from '../../hooks/useStudentForm.tsx';
+// src/cmps/StudentForm/OrchestraAssignmentSection.tsx
+import { useState, useEffect } from 'react';
+import { useFormikContext } from 'formik';
 import { Music, Trash2 } from 'lucide-react';
+import { StudentFormData } from '../../constants/formConstants';
+import { useOrchestraStore } from '../../store/orchestraStore';
 
-interface OrchestraAssignmentSectionProps {
-  formData: StudentFormData;
-  addOrchestraAssignment: (orchestraId: string) => void;
-  removeOrchestraAssignment: (orchestraId: string) => void;
-  errors: Record<string, string>;
-}
-
-export function OrchestraAssignmentSection({
-  formData,
-  addOrchestraAssignment,
-  removeOrchestraAssignment,
-  errors,
-}: OrchestraAssignmentSectionProps) {
-  const {
-    orchestras,
-    isLoadingOrchestras,
-    selectedOrchestraId,
-    assignedOrchestras,
-    handleOrchestraChange,
-    handleRemoveOrchestraAssignment,
-  } = useOrchestraAssignmentSection({
-    formData,
-    addOrchestraAssignment,
-    removeOrchestraAssignment,
-    errors,
+export function OrchestraAssignmentSection() {
+  // Get Formik context for form operations
+  const { values, setFieldValue, isSubmitting } = useFormikContext<StudentFormData>();
+  
+  // Get orchestras from store
+  const { orchestras, loadOrchestras, isLoading: isLoadingOrchestras } = useOrchestraStore();
+  
+  // Local state for orchestra selection
+  const [selectedOrchestraId, setSelectedOrchestraId] = useState('');
+  
+  // Load orchestras if needed
+  useEffect(() => {
+    loadOrchestras();
+  }, [loadOrchestras]);
+  
+  // Get assigned orchestras details by ID
+  const assignedOrchestras = values.orchestraAssignments.map((assignment) => {
+    const orchestra = orchestras.find((o) => o._id === assignment.orchestraId);
+    return {
+      id: assignment.orchestraId,
+      name: orchestra?.name || 'תזמורת לא ידועה',
+      type: orchestra?.type || '',
+    };
   });
+  
+  // Handle orchestra selection change
+  const handleOrchestraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const orchestraId = e.target.value;
+    setSelectedOrchestraId(orchestraId);
+    
+    // If a valid orchestra is selected, add it to the assignments
+    if (orchestraId) {
+      // Check if this orchestra is already assigned
+      const isAlreadyAssigned = values.orchestraAssignments.some(
+        (a) => a.orchestraId === orchestraId
+      );
+      
+      // Add the orchestra assignment if not already assigned
+      if (!isAlreadyAssigned) {
+        const updatedAssignments = [
+          ...values.orchestraAssignments,
+          { orchestraId },
+        ];
+        
+        // Update Formik values
+        setFieldValue('orchestraAssignments', updatedAssignments);
+        
+        // Update enrollments.orchestraIds to stay in sync
+        setFieldValue('enrollments.orchestraIds', [
+          ...values.enrollments.orchestraIds,
+          orchestraId,
+        ]);
+        
+        // Reset selection
+        setSelectedOrchestraId('');
+      }
+    }
+  };
+  
+  // Remove orchestra assignment
+  const handleRemoveOrchestraAssignment = (orchestraId: string) => {
+    // Remove from orchestraAssignments
+    const updatedAssignments = values.orchestraAssignments.filter(
+      (a) => a.orchestraId !== orchestraId
+    );
+    setFieldValue('orchestraAssignments', updatedAssignments);
+    
+    // Remove from enrollments.orchestraIds to stay in sync
+    const updatedOrchestras = values.enrollments.orchestraIds.filter(
+      (id) => id !== orchestraId
+    );
+    setFieldValue('enrollments.orchestraIds', updatedOrchestras);
+  };
 
   return (
     <div className='form-section orchestra-assignment-section'>
@@ -55,6 +105,7 @@ export function OrchestraAssignmentSection({
                       handleRemoveOrchestraAssignment(orchestra.id)
                     }
                     aria-label='הסר תזמורת'
+                    disabled={isSubmitting}
                   >
                     <Trash2 size={12} />
                   </button>
@@ -78,7 +129,7 @@ export function OrchestraAssignmentSection({
               name='orchestra'
               value={selectedOrchestraId}
               onChange={handleOrchestraChange}
-              disabled={isLoadingOrchestras}
+              disabled={isLoadingOrchestras || isSubmitting}
             >
               <option value=''>בחר תזמורת</option>
               {orchestras.map((orchestra) => (

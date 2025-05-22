@@ -1,39 +1,12 @@
 // src/cmps/StudentForm/InstrumentSection.tsx
 import React, { useState, useEffect } from 'react';
 import { Music, Star, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
+import { useFormikContext, FieldArray } from 'formik';
 import { InstrumentProgress } from '../../services/studentService';
+import { StudentFormData, VALID_INSTRUMENTS, EXTENDED_TEST_STATUSES } from '../../constants/formConstants';
+import { FormField } from '../FormComponents/FormField';
 
-interface InstrumentSectionProps {
-  instruments: InstrumentProgress[];
-  addInstrument: (instrumentName: string) => void;
-  removeInstrument: (instrumentName: string) => void;
-  setPrimaryInstrument: (instrumentName: string) => void;
-  updateInstrumentProgress: (
-    instrumentName: string,
-    field: string,
-    value: any
-  ) => void;
-  updateInstrumentTest: (
-    instrumentName: string,
-    testType: string,
-    field: string,
-    value: any
-  ) => void;
-  onInstrumentsChange?: (instruments: InstrumentProgress[]) => void;
-  isSubmitting?: boolean;
-  isFormOpen?: boolean;
-  errors: any;
-}
-
-export function InstrumentSection({
-  instruments,
-  addInstrument,
-  removeInstrument,
-  setPrimaryInstrument,
-  updateInstrumentProgress,
-  updateInstrumentTest,
-  errors = {},
-}: InstrumentSectionProps) {
+export function InstrumentSection() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState<Partial<InstrumentProgress>>({
     instrumentName: '',
@@ -50,36 +23,13 @@ export function InstrumentSection({
   const [lastAddedInstrument, setLastAddedInstrument] = useState('');
   const [formError, setFormError] = useState('');
 
-  const instrumentOptions = [
-    'כינור',
-    'צ׳לו',
-    'ויולה',
-    'קונטרבס',
-    'חליל',
-    'קלרינט',
-    'אבוב',
-    'בסון',
-    'סקסופון',
-    'חצוצרה',
-    'טרומבון',
-    'קרן יער',
-    'טובה',
-    'פסנתר',
-    'גיטרה',
-    'מדרימבה',
-    'תופים',
-    'הקשה',
-  ];
+  // Get Formik context
+  const { values, setFieldValue, errors, touched } = useFormikContext<StudentFormData>();
+  const instruments = values.academicInfo.instrumentProgress;
 
   const stageOptions = [1, 2, 3, 4, 5, 6, 7, 8];
 
-  const testStatusOptions = [
-    'לא נבחן',
-    'עבר/ה',
-    'עבר/ה בהצטיינות',
-    'עבר/ה בהצטיינות יתרה',
-    'לא עבר/ה',
-  ];
+  const testStatusOptions = EXTENDED_TEST_STATUSES;
 
   // Clear success message after timeout
   useEffect(() => {
@@ -183,65 +133,20 @@ export function InstrumentSection({
     // Store the instrument name for the success message
     setLastAddedInstrument(newInstrument.instrumentName);
 
-    // IMPORTANT: Use the provided addInstrument function from props
-    addInstrument(newInstrument.instrumentName);
-
-    // Update stage if not default
-    if (newInstrument.currentStage !== 1) {
-      updateInstrumentProgress(
-        newInstrument.instrumentName,
-        'currentStage',
-        newInstrument.currentStage
-      );
-    }
-
-    // Update primary status if true
+    // Add the new instrument to the Formik form values
+    const updatedInstruments = [...instruments, newInstrument];
+    
+    // If this is marked as primary, update other instruments to not be primary
     if (newInstrument.isPrimary) {
-      setPrimaryInstrument(newInstrument.instrumentName);
+      updatedInstruments.forEach((instrument, index) => {
+        if (instrument.instrumentName !== newInstrument.instrumentName) {
+          updatedInstruments[index].isPrimary = false;
+        }
+      });
     }
-
-    // Update test statuses if not default
-    if (
-      newInstrument.tests?.stageTest?.status !== 'לא נבחן' ||
-      newInstrument.tests.stageTest.notes
-    ) {
-      updateInstrumentTest(
-        newInstrument.instrumentName,
-        'stageTest',
-        'status',
-        newInstrument.tests?.stageTest?.status
-      );
-
-      if (newInstrument.tests?.stageTest?.notes) {
-        updateInstrumentTest(
-          newInstrument.instrumentName,
-          'stageTest',
-          'notes',
-          newInstrument.tests.stageTest.notes
-        );
-      }
-    }
-
-    if (
-      newInstrument.tests?.technicalTest?.status !== 'לא נבחן' ||
-      newInstrument.tests.technicalTest.notes
-    ) {
-      updateInstrumentTest(
-        newInstrument.instrumentName,
-        'technicalTest',
-        'status',
-        newInstrument.tests?.technicalTest?.status
-      );
-
-      if (newInstrument.tests?.technicalTest?.notes) {
-        updateInstrumentTest(
-          newInstrument.instrumentName,
-          'technicalTest',
-          'notes',
-          newInstrument.tests.technicalTest.notes
-        );
-      }
-    }
+    
+    // Update Formik values
+    setFieldValue('academicInfo.instrumentProgress', updatedInstruments);
 
     // Show success message
     setShowSuccessMessage(true);
@@ -261,17 +166,25 @@ export function InstrumentSection({
     setShowForm(false);
   };
 
-  // Fixed function: now it actually passes the instrument name to the removeInstrument prop
   const handleRemoveInstrument = (instrumentName: string) => {
-    // Call the removeInstrument function from props with the instrument name
-    removeInstrument(instrumentName);
+    // Filter out the instrument to remove
+    const updatedInstruments = instruments.filter(
+      (instrument) => instrument.instrumentName !== instrumentName
+    );
+    
+    // Update Formik values
+    setFieldValue('academicInfo.instrumentProgress', updatedInstruments);
   };
 
-  const handleSetPrimary = (index: number) => {
-    if (index >= 0 && index < instruments.length) {
-      const instrument = instruments[index];
-      setPrimaryInstrument(instrument.instrumentName);
-    }
+  const handleSetPrimary = (instrumentName: string) => {
+    // Create a new array with updated isPrimary values
+    const updatedInstruments = instruments.map((instrument) => ({
+      ...instrument,
+      isPrimary: instrument.instrumentName === instrumentName,
+    }));
+    
+    // Update Formik values
+    setFieldValue('academicInfo.instrumentProgress', updatedInstruments);
   };
 
   // Function to get badge class based on test status
@@ -366,7 +279,7 @@ export function InstrumentSection({
                     <button
                       type='button'
                       className='set-primary-btn'
-                      onClick={() => handleSetPrimary(index)}
+                      onClick={() => handleSetPrimary(instrument.instrumentName)}
                       title='הגדר כראשי'
                     >
                       <Star size={14} />
@@ -414,26 +327,23 @@ export function InstrumentSection({
 
           <div className='form-grid'>
             <div className='form-group'>
-              <label htmlFor='instrumentName'>כלי נגינה *</label>
+              <label htmlFor='instrumentName' className='required-field'>כלי נגינה</label>
               <select
                 id='instrumentName'
                 name='instrumentName'
                 value={formData.instrumentName}
                 onChange={handleInputChange}
                 className={
-                  errors.instrumentName || formError ? 'is-invalid' : ''
+                  formError ? 'is-invalid' : ''
                 }
               >
                 <option value=''>בחר כלי נגינה</option>
-                {instrumentOptions.map((option) => (
+                {VALID_INSTRUMENTS.map((option) => (
                   <option key={option} value={option}>
                     {option}
                   </option>
                 ))}
               </select>
-              {errors.instrumentName && (
-                <div className='form-error'>{errors.instrumentName}</div>
-              )}
             </div>
 
             <div className='form-group'>
