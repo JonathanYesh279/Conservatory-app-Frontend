@@ -1,7 +1,7 @@
 // src/validations/rehearsalValidation.ts
 import * as Yup from 'yup';
 import { Rehearsal } from '../services/rehearsalService';
-import { VALID_LOCATIONS, DAY_OF_WEEK_OPTIONS, getDayName } from './constants';
+import { VALID_LOCATIONS } from './constants';
 
 // Validation schema for single rehearsal form
 export const RehearsalValidationSchema = Yup.object().shape({

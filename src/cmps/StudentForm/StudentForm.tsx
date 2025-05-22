@@ -1,5 +1,5 @@
 // src/cmps/StudentForm/StudentForm.tsx
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Student } from '../../services/studentService';
@@ -200,7 +200,7 @@ export function StudentForm({
           onSubmit={handleSubmit}
           enableReinitialize
         >
-          {({ values, setFieldValue, isSubmitting: formikSubmitting, errors, touched }) => (
+          {({ isSubmitting: formikSubmitting }) => (
             <Form>
               {/* Personal Information Section */}
               <PersonalInfoSection />

@@ -1,8 +1,8 @@
 // src/cmps/TeacherForm.tsx
 import { useState, useEffect, useCallback } from 'react';
 import { X, Eye, EyeOff, Search, Plus } from 'lucide-react';
-import { Formik, Form, useFormikContext, FormikHelpers } from 'formik';
-import { Teacher, teacherService } from '../services/teacherService';
+import { Formik, Form, FormikHelpers } from 'formik';
+import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
 import { useStudentSelectionForTeacher } from '../hooks/useStudentSelectionForTeacher';
 import { useTeacherStore } from '../store/teacherStore';

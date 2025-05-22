@@ -1,10 +1,9 @@
 // src/cmps/StudentForm/InstrumentSection.tsx
 import React, { useState, useEffect } from 'react';
 import { Music, Star, Plus, Trash2, Check, AlertCircle } from 'lucide-react';
-import { useFormikContext, FieldArray } from 'formik';
+import { useFormikContext } from 'formik';
 import { InstrumentProgress } from '../../services/studentService';
 import { StudentFormData, VALID_INSTRUMENTS, EXTENDED_TEST_STATUSES } from '../../constants/formConstants';
-import { FormField } from '../FormComponents/FormField';
 
 export function InstrumentSection() {
   const [showForm, setShowForm] = useState(false);
@@ -24,7 +23,7 @@ export function InstrumentSection() {
   const [formError, setFormError] = useState('');
 
   // Get Formik context
-  const { values, setFieldValue, errors, touched } = useFormikContext<StudentFormData>();
+  const { values, setFieldValue } = useFormikContext<StudentFormData>();
   const instruments = values.academicInfo.instrumentProgress;
 
   const stageOptions = [1, 2, 3, 4, 5, 6, 7, 8];

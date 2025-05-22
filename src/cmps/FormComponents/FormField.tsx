@@ -1,17 +1,25 @@
 // src/cmps/FormComponents/FormField.tsx
-import React from 'react';
-import { useField, FieldAttributes } from 'formik';
+import React, { ReactNode } from 'react';
+import { useField } from 'formik';
 
 // Create a more specific type for the component props
-interface FormFieldProps extends FieldAttributes<any> {
+export interface FormFieldProps {
   label: string;
+  name: string;
   required?: boolean;
   className?: string;
   errorMessage?: string;
   placeholder?: string;
-  labelIcon?: React.ReactNode;
+  labelIcon?: ReactNode;
   style?: React.CSSProperties;
   disabled?: boolean;
+  as?: 'select' | 'textarea' | undefined;
+  type?: string;
+  id?: string;
+  children?: React.ReactNode;
+  rows?: number;
+  min?: string | number;
+  max?: string | number;
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -79,7 +87,11 @@ export const FormField: React.FC<FormFieldProps> = ({
 };
 
 // Checkbox variant
-export const FormCheckbox: React.FC<Omit<FormFieldProps, 'as'>> = ({
+export interface FormCheckboxProps extends Omit<FormFieldProps, 'as'> {
+  id?: string;
+}
+
+export const FormCheckbox: React.FC<FormCheckboxProps> = ({
   label,
   name,
   required = false,
@@ -113,9 +125,11 @@ export const FormCheckbox: React.FC<Omit<FormFieldProps, 'as'>> = ({
 };
 
 // Radio button variant
-export const FormRadio: React.FC<
-  FormFieldProps & { value: string | number }
-> = ({
+export interface FormRadioProps extends FormFieldProps {
+  value: string | number;
+}
+
+export const FormRadio: React.FC<FormRadioProps> = ({
   label,
   name,
   value,

@@ -1,10 +1,10 @@
 // src/cmps/OrchestraForm.tsx
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, User, Search, X as XIcon, AlertCircle } from 'lucide-react';
+import { X, User, Search, X as XIcon } from 'lucide-react';
 import { Formik, Form, FormikHelpers } from 'formik';
-import { Orchestra, orchestraService } from '../services/orchestraService';
-import { Student, studentService } from '../services/studentService';
-import { Teacher, teacherService } from '../services/teacherService';
+import { Orchestra } from '../services/orchestraService';
+import { Student } from '../services/studentService';
+import { Teacher } from '../services/teacherService';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useTeacherStore } from '../store/teacherStore';
 import { useStudentStore } from '../store/studentStore';
@@ -84,11 +84,11 @@ export function OrchestraForm({
 
   // Initialize selected members
   useEffect(() => {
-    if (students.length > 0 && orchestra?.memberIds?.length > 0) {
+    if (students.length > 0 && orchestra?.memberIds && orchestra.memberIds.length > 0) {
       setIsLoadingStudents(true);
       // Find matching students
       const members = students.filter((student) =>
-        orchestra.memberIds.includes(student._id)
+        orchestra?.memberIds?.includes(student._id)
       );
       setSelectedMembers(members);
       setIsLoadingStudents(false);

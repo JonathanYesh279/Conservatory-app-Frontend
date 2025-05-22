@@ -1,7 +1,7 @@
 // src/cmps/RehearsalForm.tsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, Music } from 'lucide-react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { Rehearsal } from '../services/rehearsalService';
 import { useRehearsalStore } from '../store/rehearsalStore';
@@ -251,7 +251,7 @@ export function RehearsalForm({
             onSubmit={handleSingleSubmit}
             enableReinitialize
           >
-            {({ errors, touched }) => (
+            {() => (
               <Form>
                 {/* Orchestra Selection */}
                 <div className='form-section'>
@@ -364,7 +364,7 @@ export function RehearsalForm({
             onSubmit={handleBulkSubmit}
             enableReinitialize
           >
-            {({ errors, touched, values, setFieldValue }) => (
+            {({ values, setFieldValue }) => (
               <Form>
                 {/* Orchestra Selection */}
                 <div className='form-section'>

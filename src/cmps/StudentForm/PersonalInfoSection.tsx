@@ -1,12 +1,11 @@
 // src/cmps/StudentForm/PersonalInfoSection.tsx
-import React from 'react';
 import { useFormikContext } from 'formik';
 import { FormField } from '../FormComponents/FormField';
 import { VALID_CLASSES } from '../../constants/formConstants';
 import { StudentFormData } from '../../constants/formConstants';
 
 export function PersonalInfoSection() {
-  const { values } = useFormikContext<StudentFormData>();
+  useFormikContext<StudentFormData>();
   
   return (
     <div className='form-section personal-info-section'>

@@ -8,7 +8,6 @@ import {
   LESSON_DURATIONS,
 } from '../../constants/formConstants';
 import { useTeacherStore } from '../../store/teacherStore';
-import { Teacher } from '../../services/teacherService';
 import { ConfirmDialog } from '../ConfirmDialog';
 
 export interface TeacherAssignmentSectionProps {
