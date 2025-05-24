@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { TheoryList } from '../cmps/TheoryList';
 import { TheoryForm } from '../cmps/TheoryForm';
 import { Searchbar } from '../cmps/Searchbar';
-import { BookOpen, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
@@ -148,8 +148,11 @@ export function TheoryIndex() {
 
   // Handle search and filtering
   const handleFilter = (query: string) => {
-    setFilterBy({ ...filterBy, name: query });
-    loadTheoryLessons({ ...filterBy, name: query });
+    // Using custom property for search query (not in TheoryFilter interface)
+    const updatedFilter = { ...filterBy, query };
+    setFilterBy(updatedFilter);
+    // Pass as separate parameter since it's not part of TheoryFilter interface
+    loadTheoryLessons(updatedFilter);
   };
 
   // Check if we're on a details page
@@ -230,9 +233,7 @@ export function TheoryIndex() {
               handleDelete(confirmDelete.theoryLessonId);
             }
           }}
-          onCancel={() =>
-            setConfirmDelete({ isOpen: false, theoryLessonId: null })
-          }
+          onClose={() => setConfirmDelete({ isOpen: false, theoryLessonId: null })}
           type='danger'
         />
       </main>

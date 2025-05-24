@@ -72,7 +72,7 @@ export const THEORY_LOCATIONS = [
   'חדר 26',
 ];
 
-export const DAYS_OF_WEEK = {
+export const DAYS_OF_WEEK: Record<number, string> = {
   0: 'ראשון', // Sunday
   1: 'שני', // Monday
   2: 'שלישי', // Tuesday

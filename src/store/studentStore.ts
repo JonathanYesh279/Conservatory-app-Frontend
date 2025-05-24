@@ -139,8 +139,6 @@ export const useStudentStore = create<StudentState>((set, get) => ({
             : get().selectedStudent,
         isLoading: false,
       });
-      
-      return { success: true, studentId, teacherIds };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to remove student';

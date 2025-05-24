@@ -1,5 +1,5 @@
 // src/cmps/TheoryList.tsx
-import { TheoryLesson, DAYS_OF_WEEK } from '../services/theoryService';
+import { TheoryLesson } from '../services/theoryService';
 import { Teacher } from '../services/teacherService';
 import { TheoryPreview } from './TheoryPreview';
 import { BookOpen } from 'lucide-react';

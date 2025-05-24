@@ -1,7 +1,7 @@
 // src/validations/theoryValidation.ts
 import * as Yup from 'yup';
 import { TheoryLesson, THEORY_CATEGORIES, THEORY_LOCATIONS } from '../services/theoryService';
-import { DAY_OF_WEEK_OPTIONS } from './constants';
+// DAY_OF_WEEK_OPTIONS is used in TheoryForm.tsx but not here
 
 // Validation schema for single theory lesson form
 export const TheoryLessonValidationSchema = Yup.object().shape({

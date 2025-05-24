@@ -51,7 +51,7 @@ export function TheoryBulkForm({
 }: TheoryBulkFormProps) {
   const { currentSchoolYear } = useSchoolYearStore();
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [excludeDates, setExcludeDates] = useState<string[]>([]);
+  const [excludeDates] = useState<string[]>([]);
 
   // If not open, don't render
   if (!isOpen) return null;
@@ -272,7 +272,7 @@ export function TheoryBulkForm({
                           ) as HTMLInputElement;
                           if (
                             input.value &&
-                            !values.excludeDates.includes(input.value)
+                            !values.excludeDates?.includes(input.value)
                           ) {
                             push(input.value);
                             input.value = '';
@@ -284,8 +284,8 @@ export function TheoryBulkForm({
                     </div>
                     
                     <div className='exclude-dates-list'>
-                      {values.excludeDates.length > 0 ? (
-                        values.excludeDates.map((date, index) => (
+                      {(values.excludeDates && values.excludeDates.length > 0) ? (
+                        values.excludeDates?.map((date, index) => (
                           <div key={index} className='exclude-date-item'>
                             <span>{new Date(date).toLocaleDateString('he-IL')}</span>
                             <button

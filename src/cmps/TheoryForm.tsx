@@ -1,12 +1,12 @@
 // src/cmps/TheoryForm.tsx
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, BookOpen, User } from 'lucide-react';
-import { Formik, Form, Field, ErrorMessage, FieldArray } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { TheoryLesson, THEORY_CATEGORIES, THEORY_LOCATIONS, BulkTheoryLessonData } from '../services/theoryService';
 import { Teacher } from '../services/teacherService';
 import { useSchoolYearStore } from '../store/schoolYearStore';
-import { useTheoryStore } from '../store/theoryStore';
+// useTheoryStore not needed here
 import { 
   TheoryLessonValidationSchema, 
   TheoryBulkValidationSchema,
@@ -166,16 +166,7 @@ export function TheoryForm({
     setFieldValue('excludeDates', updatedExcludeDates);
   };
 
-  // Handler for date changes to update dayOfWeek
-  const handleDateChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    setFieldValue: (field: string, value: any) => void
-  ) => {
-    const date = new Date(e.target.value);
-    const dayOfWeek = date.getDay();
-    setFieldValue('date', e.target.value);
-    setFieldValue('dayOfWeek', dayOfWeek);
-  };
+  // Handler for date changes is handled internally by FormField
 
   return (
     <div className='theory-form-overlay'>
@@ -225,7 +216,7 @@ export function TheoryForm({
             onSubmit={handleSingleSubmit}
             enableReinitialize
           >
-            {({ setFieldValue }) => (
+            {() => (
               <Form className='theory-form'>
                 {/* Theory Information */}
                 <div className='form-section'>
@@ -270,9 +261,7 @@ export function TheoryForm({
                       type='date'
                       required
                       labelIcon={<Calendar size={16} />}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleDateChange(e, setFieldValue)
-                      }
+                      // onChange is handled internally by FormField component
                     />
                     
                     <div className='form-group'>
@@ -617,7 +606,7 @@ export function TheoryForm({
                     type='button' 
                     className='primary' 
                     disabled={isLoading}
-                    onClick={(e) => {
+                    onClick={() => {
                       console.log('Submit button clicked for bulk form');
                       // Direct submission as a fallback method
                       if (!currentSchoolYear?._id) {

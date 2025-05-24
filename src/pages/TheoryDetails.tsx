@@ -1,5 +1,5 @@
 // src/pages/TheoryDetails.tsx
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ArrowLeft, Edit, Trash2, Users, Calendar } from 'lucide-react';
 import { TheoryForm } from '../cmps/TheoryForm';
@@ -7,7 +7,7 @@ import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useTheoryStore } from '../store/theoryStore';
 import { useTeacherStore } from '../store/teacherStore';
 import { useStudentStore } from '../store/studentStore';
-import { DAYS_OF_WEEK } from '../services/theoryService';
+// DAYS_OF_WEEK not needed here
 import { useToast } from '../cmps/Toast';
 import { useAuth } from '../hooks/useAuth';
 import { Header } from '../cmps/Header';
@@ -17,8 +17,10 @@ export function TheoryDetails() {
   const location = useLocation();
   const { theoryLessonId } = useParams<{ theoryLessonId: string }>();
   const { addToast } = useToast();
-  const { user } = useAuth();
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Auth is needed but user variable not used
+  useAuth();
+  // Dropdown ref not needed
+  
 
   const {
     selectedTheoryLesson,
@@ -227,30 +229,30 @@ export function TheoryDetails() {
     });
   };
 
-  // Calculate duration
-  const calculateDuration = (startTime: string, endTime: string) => {
-    const [startHours, startMinutes] = startTime.split(':').map(Number);
-    const [endHours, endMinutes] = endTime.split(':').map(Number);
+  // Calculate duration function - kept for future use
+  // const calculateDuration = (startTime: string, endTime: string) => {
+  //   const [startHours, startMinutes] = startTime.split(':').map(Number);
+  //   const [endHours, endMinutes] = endTime.split(':').map(Number);
 
-    const start = startHours * 60 + startMinutes;
-    const end = endHours * 60 + endMinutes;
-    const durationMinutes = end - start;
+  //   const start = startHours * 60 + startMinutes;
+  //   const end = endHours * 60 + endMinutes;
+  //   const durationMinutes = end - start;
 
-    const hours = Math.floor(durationMinutes / 60);
-    const minutes = durationMinutes % 60;
+  //   const hours = Math.floor(durationMinutes / 60);
+  //   const minutes = durationMinutes % 60;
 
-    if (hours === 0) {
-      return `${minutes} דקות`;
-    } else if (hours === 1 && minutes === 0) {
-      return 'שעה אחת';
-    } else if (hours === 1) {
-      return `שעה ו-${minutes} דקות`;
-    } else if (minutes === 0) {
-      return `${hours} שעות`;
-    } else {
-      return `${hours} שעות ו-${minutes} דקות`;
-    }
-  };
+  //   if (hours === 0) {
+  //     return `${minutes} דקות`;
+  //   } else if (hours === 1 && minutes === 0) {
+  //     return 'שעה אחת';
+  //   } else if (hours === 1) {
+  //     return `שעה ו-${minutes} דקות`;
+  //   } else if (minutes === 0) {
+  //     return `${hours} שעות`;
+  //   } else {
+  //     return `${hours} שעות ו-${minutes} דקות`;
+  //   }
+  // };
 
   if (isLoading) {
     return <div className='loading-state'>טוען שיעור תאוריה...</div>;
@@ -434,6 +436,11 @@ export function TheoryDetails() {
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         onSubmit={handleUpdate}
+        onBulkSubmit={async (data) => {
+          // Not needed in edit mode but required by interface
+          console.log("Bulk submit not applicable in details view", data);
+          return { insertedCount: 0, theoryLessonIds: [] };
+        }}
         theoryLesson={selectedTheoryLesson}
         theoryTeachers={theoryTeachers}
         isLoading={isLoading}
@@ -454,7 +461,7 @@ export function TheoryDetails() {
         confirmText='מחק'
         cancelText='ביטול'
         onConfirm={handleDelete}
-        onCancel={() => setConfirmDelete(false)}
+        onClose={() => setConfirmDelete(false)}
         type='danger'
       />
     </div>

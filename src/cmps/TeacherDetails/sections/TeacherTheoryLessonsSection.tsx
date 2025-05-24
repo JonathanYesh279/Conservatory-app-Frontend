@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp, BookOpen, RefreshCw } from 'lucide-react';
 import { Teacher } from '../../../services/teacherService';
 import { TheoryLesson } from '../../../services/theoryService';
 import { useEffect, useState, useRef } from 'react';
-import { studentService } from '../../../services/studentService';
+// Student service not needed here
 
 interface TeacherTheoryLessonsSectionProps {
   teacher: Teacher;
