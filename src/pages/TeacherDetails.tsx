@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { teacherService, Teacher } from '../services/teacherService'
 import { Orchestra, orchestraService } from '../services/orchestraService'
 import { studentService } from '../services/studentService'
+import { theoryService, TheoryLesson, DAYS_OF_WEEK } from '../services/theoryService'
 import {
   User,
   Calendar,
@@ -56,11 +57,16 @@ export function TeacherDetails() {
   const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
   const [refreshTrigger, setRefreshTrigger] = useState(0); // New refresh trigger
 
+  // Theory lessons state
+  const [theoryLessons, setTheoryLessons] = useState<TheoryLesson[]>([]);
+  const [theoryLessonsLoading, setTheoryLessonsLoading] = useState(false);
+
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     students: true,
     orchestras: true,
     schedule: false,
+    theoryLessons: true,
     personalInfo: true,
     professionalInfo: true,
   });
@@ -96,6 +102,9 @@ export function TeacherDetails() {
         // Add null check here
         const schedule = teacherData.teaching?.schedule || [];
         console.log('Teacher schedule data:', schedule);
+        
+        // Load theory lessons for this teacher
+        await loadTheoryLessons(id);
 
         // Initialize with placeholder student names for immediate display
         if (Array.isArray(schedule) && schedule.length > 0) {
@@ -358,6 +367,27 @@ export function TeacherDetails() {
   // Navigate to orchestra details
   const navigateToOrchestra = (orchestraId: string) => {
     navigate(`/orchestras/${orchestraId}`);
+  };
+
+  // Navigate to theory lesson details
+  const navigateToTheoryLesson = (theoryLessonId: string) => {
+    navigate(`/theory/${theoryLessonId}`);
+  };
+
+  // Load theory lessons for teacher
+  const loadTheoryLessons = async (teacherId: string) => {
+    if (!teacherId) return;
+    
+    setTheoryLessonsLoading(true);
+    try {
+      const lessons = await theoryService.getTheoryLessonsByTeacher(teacherId);
+      console.log('Loaded theory lessons for teacher:', lessons);
+      setTheoryLessons(lessons);
+    } catch (error) {
+      console.error('Failed to load theory lessons for teacher:', error);
+    } finally {
+      setTheoryLessonsLoading(false);
+    }
   };
 
   // Format a date string
@@ -653,6 +683,79 @@ export function TeacherDetails() {
                       )}
                     </div>
                   )}
+
+                {/* Theory Lessons Section */}
+                <div className='section'>
+                  <div
+                    className={`section-title clickable ${
+                      openSections.theoryLessons ? 'active' : ''
+                    }`}
+                    onClick={() => toggleSection('theoryLessons')}
+                  >
+                    <BookOpen size={16} />
+                    <span>
+                      שיעורי העשרה {theoryLessons.length > 0 ? `(${theoryLessons.length})` : ''}
+                    </span>
+                    {openSections.theoryLessons ? (
+                      <ChevronUp size={18} className='toggle-icon' />
+                    ) : (
+                      <ChevronDown size={18} className='toggle-icon' />
+                    )}
+                  </div>
+
+                  {openSections.theoryLessons && (
+                    <div className='section-content'>
+                      {theoryLessonsLoading ? (
+                        <div className='loading-section'>
+                          <RefreshCw size={16} className='loading-icon' />
+                          <span>טוען שיעורי העשרה...</span>
+                        </div>
+                      ) : theoryLessons.length > 0 ? (
+                        <div className='theory-lessons-grid'>
+                          {theoryLessons.map((lesson) => (
+                            <div
+                              key={lesson._id}
+                              className='theory-lesson-card clickable'
+                              onClick={() => navigateToTheoryLesson(lesson._id)}
+                            >
+                              <div className="theory-lesson-header">
+                                <BookOpen size={20} />
+                                <span className="theory-lesson-category">{lesson.category}</span>
+                              </div>
+                              
+                              <div className="theory-lesson-details">
+                                {lesson.dayOfWeek !== undefined && lesson.startTime && lesson.endTime && (
+                                  <div className="theory-lesson-schedule">
+                                    <Clock size={14} />
+                                    <span>
+                                      {DAYS_OF_WEEK[lesson.dayOfWeek]} {lesson.startTime}-{lesson.endTime}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                {lesson.location && (
+                                  <div className="theory-lesson-location">
+                                    <MapPin size={14} />
+                                    <span>{lesson.location}</span>
+                                  </div>
+                                )}
+                                
+                                <div className="theory-lesson-students">
+                                  <Users size={14} />
+                                  <span>תלמידים: {lesson.studentIds?.length || 0}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className='no-theory-lessons-message'>
+                          המורה אינו מלמד שיעורי העשרה
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Teaching Schedule Section - Always show if this teacher is a teacher */}
                 {teacher.roles.includes('מורה') && (

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, Calendar, Music, Users, GraduationCap } from 'lucide-react'
+import { BookOpen, Calendar, Music, Users, GraduationCap } from 'lucide-react'
 import { useNavbar } from '../context/NavbarContext'
 
 export function BottomNavbar() {
@@ -20,10 +20,9 @@ export function BottomNavbar() {
       icon: Users,
     },
     {
-      path: '/dashboard',
-      label: 'בית',
-      icon: Home,
-      isHome: true,
+      path: '/theory',
+      label: 'תאוריה',
+      icon: BookOpen,
     },
     {
       path: '/orchestras',
@@ -45,23 +44,21 @@ export function BottomNavbar() {
         {navItems.map((item) => {
           const isActive =
             path === item.path ||
-            (item.path === '/dashboard' && path === '/') ||
-            (item.path !== '/dashboard' && path.startsWith(item.path))
+            (item.path === '/theory' && path === '/') ||
+            (path.startsWith(item.path))
 
           return (
             <Link
               key={item.path}
               to={item.path}
-              className={`nav-item ${isActive ? 'active' : ''} ${
-                item.isHome ? 'home' : ''
-              }`}
+              className={`nav-item ${isActive ? 'active' : ''}`}
               aria-label={item.label}
             >
               <item.icon
                 className='nav-icon'
-                strokeWidth={item.isHome ? 2.5 : 2}
+                strokeWidth={2}
               />
-              {!item.isHome && <span className='nav-label'>{item.label}</span>}
+              <span className='nav-label'>{item.label}</span>
             </Link>
           )
         })}

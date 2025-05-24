@@ -19,12 +19,18 @@
 @import './components/teacher-preveiw.scss';
 @import './components/teacher-schedule.scss';
 @import './components/teacher-form.scss';
+@import './components/teacher-details-theory.scss';
 @import './components/orchestra-list.scss';
 @import './components/orchestra-preview.scss';
 @import './components/orchestra-form.scss';
 @import './components/rehearsal-list.scss';
 @import './components/rehearsal-preview.scss';
 @import './components/rehearsal-form.scss';
+@import './components/theory-list.scss';
+@import './components/theory-preview.scss';
+@import './components/theory-form.scss';
+@import './components/theory-lessons-section.scss';
+@import './components/teacher-theory-lessons-section.scss';
 @import 'components/teacher-assignment.scss';
 @import './components/status-dropdown.scss';
 @import './components/instrument-section.scss';
@@ -32,7 +38,7 @@
 @import './components/personalInfo-section.scss';
 @import './components/teacherAssignment-section.scss';
 @import './components/formik-components.scss';
-
+@import './components/toast.scss';
 
 // Pages
 @import './pages/login-page.scss';
@@ -46,3 +52,5 @@
 @import './pages/orchestra-details.scss';
 @import './pages/rehearsal-index.scss';
 @import './pages/rehearsal-details.scss';
+@import './pages/theory-index.scss';
+@import './pages/theory-details.scss';

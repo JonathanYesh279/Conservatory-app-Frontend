@@ -5,6 +5,7 @@ import {
   StudentFilter,
   studentService,
 } from '../services/studentService';
+import { teacherService } from '../services/teacherService';
 
 interface StudentState {
   students: Student[];
@@ -108,6 +109,26 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   removeStudent: async (studentId) => {
     set({ isLoading: true, error: null });
     try {
+      // Get the student details to find associated teachers
+      const student = get().students.find(s => s._id === studentId) || get().selectedStudent;
+      const teacherIds = student?.teacherIds || [];
+      
+      // First, remove student from all associated teachers
+      if (teacherIds.length > 0) {
+        const teacherPromises = teacherIds.map(teacherId => 
+          teacherService.removeStudentFromTeacher(teacherId, studentId)
+            .catch(err => {
+              console.error(`Failed to remove student ${studentId} from teacher ${teacherId}:`, err);
+              // Continue with other teachers even if one fails
+              return null;
+            })
+        );
+        
+        // Wait for all teacher updates to complete
+        await Promise.allSettled(teacherPromises);
+      }
+      
+      // Then remove the student
       await studentService.removeStudent(studentId);
 
       set({
@@ -118,6 +139,8 @@ export const useStudentStore = create<StudentState>((set, get) => ({
             : get().selectedStudent,
         isLoading: false,
       });
+      
+      return { success: true, studentId, teacherIds };
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to remove student';

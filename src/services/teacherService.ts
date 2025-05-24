@@ -414,4 +414,23 @@ export const teacherService = {
       );
     }
   },
+
+  async removeStudentFromTeacher(
+    teacherId: string,
+    studentId: string
+  ): Promise<Teacher> {
+    try {
+      return await httpService.delete(
+        `teacher/${teacherId}/student/${studentId}`
+      );
+    } catch (error) {
+      console.error(
+        `Failed to remove student ${studentId} from teacher ${teacherId}:`,
+        error
+      );
+      throw new Error(
+        'Failed to remove student from teacher. Please try again later.'
+      );
+    }
+  },
 };

@@ -1,0 +1,66 @@
+/* Teacher Details Theory Lessons Section styles */
+.theory-lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.theory-lesson-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+
+  &.clickable {
+    cursor: pointer;
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-color: var(--primary-color-light);
+    }
+  }
+}
+
+.theory-lesson-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  svg {
+    color: var(--primary-color);
+    min-width: 20px;
+  }
+}
+
+.theory-lesson-category {
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.theory-lesson-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.theory-lesson-schedule,
+.theory-lesson-location,
+.theory-lesson-students {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.no-theory-lessons-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 16px;
+}

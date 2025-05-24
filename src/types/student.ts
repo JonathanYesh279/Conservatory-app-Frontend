@@ -33,6 +33,7 @@ export interface Student {
   enrollments: {
     orchestraIds: string[];
     ensembleIds: string[];
+    theoryLessonIds?: string[];
     schoolYears: Array<{
       schoolYearId: string;
       isActive: boolean;

@@ -1,0 +1,364 @@
+// src/styles/pages/theory-details.scss
+.theory-details {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  
+  .theory-details-page {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg-card);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+    
+    .theory-card-container {
+      height: 100%;
+      
+      .card-content {
+        .theory-header {
+          background: var(--header-bg);
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--divider-color);
+          position: relative;
+          
+          .back-button {
+            position: absolute;
+            right: 1.5rem;
+            top: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            
+            &:hover {
+              background-color: rgba(var(--bg-tertiary-rgb), 0.8);
+              color: var(--text-primary);
+            }
+          }
+          
+          .header-title {
+            text-align: center;
+            padding-top: 2.3rem;
+            
+            h2 {
+              font-size: 1.5rem;
+              font-weight: 600;
+              color: var(--text-primary);
+              margin-bottom: 0.75rem;
+            }
+            
+            .date-display {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              gap: 0.5rem;
+              color: var(--text-primary);
+              font-weight: 500;
+              
+              svg {
+                color: var(--primary-color);
+              }
+            }
+          }
+          
+          .header-actions {
+            position: absolute;
+            left: 1.5rem;
+            top: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            
+            .action-btn {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              padding: 0.35rem 0.75rem;
+              border-radius: 0.375rem;
+              font-size: 0.9rem;
+              cursor: pointer;
+              transition: all 0.2s ease;
+              
+              &.edit {
+                background-color: var(--primary-color);
+                color: white;
+                border: none;
+                
+                &:hover {
+                  background-color: var(--primary-dark);
+                }
+              }
+              
+              &.delete {
+                background-color: var(--danger);
+                color: white;
+                border: none;
+                
+                &:hover {
+                  background-color: var(--danger-dark);
+                }
+              }
+            }
+          }
+        }
+        
+        .theory-info-card {
+          padding: 1.25rem;
+          border-bottom: 1px solid var(--divider-color);
+          
+          h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text-primary);
+            text-align: center;
+          }
+          
+          .theory-details-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: center;
+            
+            .detail-item {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              
+              .detail-label {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+              }
+              
+              .detail-value {
+                font-weight: 500;
+                color: var(--text-primary);
+              }
+            }
+          }
+          
+          .theory-notes, .theory-syllabus {
+            margin-top: 1rem;
+            text-align: center;
+            
+            .notes-label, .syllabus-label {
+              font-size: 0.85rem;
+              color: var(--text-secondary);
+              display: block;
+              margin-bottom: 0.25rem;
+            }
+            
+            .notes-content, .syllabus-content {
+              color: var(--text-primary);
+              white-space: pre-wrap;
+            }
+          }
+        }
+        
+        .attendance-section {
+          .attendance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--divider-color);
+            
+            h3 {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-size: 1.1rem;
+              font-weight: 600;
+              color: var(--text-primary);
+              
+              svg {
+                color: var(--primary-color);
+              }
+            }
+          }
+          
+          .students-list-container {
+            max-height: 400px;
+            overflow-y: auto;
+            
+            .loading-students, .empty-students {
+              text-align: center;
+              padding: 2rem 0;
+              color: var(--text-secondary);
+            }
+            
+            .students-list {
+              list-style: none;
+              padding: 0;
+              margin: 0;
+              
+              .student-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid var(--border-color);
+                transition: background-color 0.3s ease;
+                
+                &:last-child {
+                  border-bottom: none;
+                }
+                
+                &.present {
+                  background-color: rgba(var(--primary-color-rgb), 0.1);
+                }
+                
+                .student-info {
+                  display: flex;
+                  flex-direction: column;
+                  text-align: right;
+                  
+                  .student-name {
+                    font-weight: 500;
+                    color: var(--text-primary);
+                  }
+                  
+                  .student-instrument {
+                    font-size: 0.85rem;
+                    color: var(--text-secondary);
+                  }
+                }
+                
+                /* Custom Toggle Switch */
+                .toggle-switch {
+                  position: relative;
+                  display: inline-block;
+                  width: 52px;
+                  height: 26px;
+                  
+                  input {
+                    opacity: 0;
+                    width: 0;
+                    height: 0;
+                    
+                    &:checked + .toggle-slider {
+                      background-color: var(--primary-color);
+                    }
+                    
+                    &:checked + .toggle-slider:before {
+                      transform: translateX(26px);
+                    }
+                    
+                    &:focus + .toggle-slider {
+                      box-shadow: 0 0 1px var(--primary-color);
+                    }
+                  }
+                  
+                  .toggle-slider {
+                    position: absolute;
+                    cursor: pointer;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background-color: #464646;
+                    transition: .4s;
+                    border-radius: 34px;
+                    
+                    &:before {
+                      position: absolute;
+                      content: "";
+                      height: 18px;
+                      width: 18px;
+                      left: 4px;
+                      bottom: 4px;
+                      background-color: white;
+                      transition: .4s;
+                      border-radius: 50%;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        .attendance-footer {
+          padding: 1.25rem;
+          background-color: var(--footer-bg);
+          border-top: 1px solid var(--divider-color);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.5rem;
+          
+          .save-success {
+            color: var(--success-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+          }
+          
+          .save-attendance-btn {
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            min-width: 180px;
+            font-size: 1rem;
+            
+            &:hover {
+              background-color: var(--primary-dark);
+            }
+            
+            &:disabled {
+              background-color: #464646;
+              opacity: 0.6;
+              cursor: not-allowed;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Media queries for responsive design
+@media (max-width: 576px) {
+  .theory-details-page {
+    .theory-card-container {
+      .card-content {
+        .theory-header {
+          padding: 1.25rem 1rem;
+          
+          .back-button {
+            right: 1rem;
+            top: 1rem;
+          }
+          
+          .header-title {
+            padding-top: 1.5rem;
+            
+            h2 {
+              font-size: 1.25rem;
+            }
+          }
+          
+          .header-actions {
+            left: 1rem;
+            top: 1rem;
+          }
+        }
+      }
+    }
+  }
+}

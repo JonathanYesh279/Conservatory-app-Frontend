@@ -14,6 +14,8 @@ import { useTeacherStore } from './store/teacherStore'; // Import teacher store
 import { ThemeProvider } from './hooks/useTheme';
 import { EventRegistrationForm } from './cmps/EventRegistrationForm';
 import { useEffect } from 'react';
+import { ToastProvider } from './cmps/Toast';
+import ToastTest from './cmps/Toast/ToastTest';
 
 import { Dashboard } from './pages/Dashboard.tsx';
 import { StudentIndex } from './pages/StudentIndex.tsx';
@@ -24,6 +26,8 @@ import { OrchestraIndex } from './pages/OrchestraIndex.tsx';
 import { OrchestraDetails } from './pages/OrchestraDetails.tsx';
 import { RehearsalIndex } from './pages/RehearsalIndex.tsx';
 import { RehearsalDetails } from './pages/RehearsalDetails.tsx';
+import { TheoryIndex } from './pages/TheoryIndex.tsx';
+import { TheoryDetails } from './pages/TheoryDetails.tsx';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -71,14 +75,19 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Public routes */}
-            <Route path='/login' element={<LoginPage />} />
-            <Route
-              path='/event-registration'
-              element={<EventRegistrationForm />}
-            />
+        <ToastProvider position="bottom-left">
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes */}
+              <Route path='/login' element={<LoginPage />} />
+              <Route
+                path='/event-registration'
+                element={<EventRegistrationForm />}
+              />
+              <Route
+                path='/toast-test'
+                element={<ToastTest />}
+              />
 
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
@@ -108,12 +117,18 @@ function App() {
                 <Route path='new' element={<RehearsalDetails />} />
               </Route>
 
+              {/* Theory routes - Not nested for direct navigation */}
+              <Route path='/theory' element={<TheoryIndex />} />
+              <Route path='/theory/:theoryLessonId' element={<TheoryDetails />} />
+              <Route path='/theory/new' element={<TheoryDetails />} />
+
               {/* Default route inside protected area */}
-              <Route path='/' element={<Navigate to='/dashboard' replace />} />
-              <Route path='*' element={<Navigate to='/dashboard' replace />} />
+              <Route path='/' element={<Navigate to='/theory' replace />} />
+              <Route path='*' element={<Navigate to='/theory' replace />} />
             </Route>
           </Routes>
         </BrowserRouter>
+        </ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

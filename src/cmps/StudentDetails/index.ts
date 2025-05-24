@@ -7,4 +7,5 @@ export * from './sections/TestsSection';
 export * from './sections/AttendanceSection';
 export * from './sections/PersonalInfoSection';
 export * from './sections/ParentInfoSection';
+export * from './sections/TheoryLessonsSection';
 export * from './StatusDropdown';

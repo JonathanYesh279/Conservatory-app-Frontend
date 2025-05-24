@@ -10,6 +10,7 @@ import { TeachersSection } from '../cmps/StudentDetails/sections/TeachersSection
 import { OrchestrasSection } from '../cmps/StudentDetails/sections/OrchestrasSection';
 import { TestsSection } from '../cmps/StudentDetails/sections/TestsSection';
 import { AttendanceSection } from '../cmps/StudentDetails/sections/AttendanceSection';
+import { TheoryLessonsSection } from '../cmps/StudentDetails/sections/TheoryLessonsSection';
 
 export function StudentDetails() {
   const {
@@ -27,11 +28,14 @@ export function StudentDetails() {
     formatDate,
     navigateToTeacher,
     navigateToOrchestra,
+    navigateToTheoryLesson,
     teachersData,
     teachersLoading,
     teachersError,
     orchestras,
     orchestrasLoading,
+    theoryLessons,
+    theoryLessonsLoading,
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,
@@ -165,6 +169,15 @@ export function StudentDetails() {
                   isOpen={openSections.attendance}
                   onToggle={() => toggleSection('attendance')}
                   formatDate={formatDate}
+                />
+
+                <TheoryLessonsSection
+                  student={student}
+                  theoryLessons={theoryLessons}
+                  theoryLessonsLoading={theoryLessonsLoading}
+                  isOpen={openSections.theoryLessons}
+                  onToggle={() => toggleSection('theoryLessons')}
+                  onTheoryLessonClick={navigateToTheoryLesson}
                 />
               </div>
 

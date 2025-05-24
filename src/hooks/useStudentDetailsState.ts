@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { studentService, Student } from '../services/studentService';
 import { teacherService } from '../services/teacherService';
 import { orchestraService } from '../services/orchestraService';
+import { theoryService, TheoryLesson } from '../services/theoryService';
 import { TestStatus } from '../services/studentService';
 
 export function useStudentDetailsState() {
@@ -29,6 +30,10 @@ export function useStudentDetailsState() {
   const [orchestras, setOrchestras] = useState<any[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
 
+  // Theory lessons data
+  const [theoryLessons, setTheoryLessons] = useState<TheoryLesson[]>([]);
+  const [theoryLessonsLoading, setTheoryLessonsLoading] = useState(false);
+
   // Collapsible sections
   const [openSections, setOpenSections] = useState({
     instruments: false,
@@ -38,6 +43,7 @@ export function useStudentDetailsState() {
     attendance: false,
     personalInfo: true,
     parentInfo: true,
+    theoryLessons: false,
   });
 
   const navigate = useNavigate();
@@ -75,6 +81,11 @@ export function useStudentDetailsState() {
 
           if (orchestraIds.length > 0) {
             loadOrchestraData(orchestraIds);
+          }
+
+          // Load theory lessons immediately if the student has any
+          if (studentData.enrollments?.theoryLessonIds && studentData.enrollments.theoryLessonIds.length > 0) {
+            loadTheoryLessonData(studentData.enrollments.theoryLessonIds);
           }
         } else {
           setError('לא נמצא תלמיד');
@@ -162,6 +173,22 @@ export function useStudentDetailsState() {
     }
   };
 
+  // Load theory lesson data
+  const loadTheoryLessonData = async (theoryLessonIds: string[]) => {
+    if (!theoryLessonIds || theoryLessonIds.length === 0) return;
+
+    setTheoryLessonsLoading(true);
+
+    try {
+      const theoryLessonData = await theoryService.getTheoryLessonsByIds(theoryLessonIds);
+      setTheoryLessons(theoryLessonData);
+    } catch (err) {
+      console.error('Error loading theory lessons:', err);
+    } finally {
+      setTheoryLessonsLoading(false);
+    }
+  };
+
   // Load orchestra data
   const loadOrchestraData = async (orchestraIds: string[]) => {
     if (!orchestraIds || orchestraIds.length === 0) return;
@@ -206,6 +233,11 @@ export function useStudentDetailsState() {
   // Navigate to orchestra details
   const navigateToOrchestra = (orchestraId: string) => {
     navigate(`/orchestras/${orchestraId}`);
+  };
+
+  // Navigate to theory lesson details
+  const navigateToTheoryLesson = (theoryLessonId: string) => {
+    navigate(`/theory/${theoryLessonId}`);
   };
 
   // Get initials for avatar display
@@ -404,11 +436,14 @@ export function useStudentDetailsState() {
     formatDate,
     navigateToTeacher,
     navigateToOrchestra,
+    navigateToTheoryLesson,
     teachersData,
     teachersLoading,
     teachersError,
     orchestras,
     orchestrasLoading,
+    theoryLessons,
+    theoryLessonsLoading,
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,

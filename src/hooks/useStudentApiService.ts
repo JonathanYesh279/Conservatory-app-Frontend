@@ -2,7 +2,8 @@
 import { useState } from 'react';
 import { StudentFormData, TeacherAssignment } from '../constants/formConstants';
 import { Teacher } from '../services/teacherService';
-import { studentService } from '../services/studentService'
+import { studentService, Student } from '../services/studentService';
+import { useToast } from '../cmps/Toast';
 
 interface UseStudentApiServiceProps {
   onClose?: () => void;
@@ -28,6 +29,8 @@ export const useStudentApiService = ({
 }: UseStudentApiServiceProps = {}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { addToast } = useToast();
+  const [lastSavedStudent, setLastSavedStudent] = useState<Student | null>(null);
 
   const saveStudentData = async (
     studentData: Partial<any>,
@@ -96,6 +99,9 @@ export const useStudentApiService = ({
         }
       }
 
+      // Store the saved student for potential undo operations
+      setLastSavedStudent(savedStudent);
+
       // Notify parent component
       if (onStudentCreated) {
         onStudentCreated(savedStudent);
@@ -105,6 +111,17 @@ export const useStudentApiService = ({
       if (onClose) {
         onClose();
       }
+
+      // Show success toast with undo option
+      const toastMessage = studentData._id 
+        ? `התלמיד ${savedStudent.personalInfo?.fullName} עודכן בהצלחה` 
+        : `התלמיד ${savedStudent.personalInfo?.fullName} נוסף בהצלחה`;
+      
+      addToast({
+        type: 'success',
+        message: toastMessage,
+        onUndo: studentData._id ? undefined : () => handleUndoStudentCreation(savedStudent._id),
+      });
 
       setIsSubmitting(false);
       return savedStudent;
@@ -183,9 +200,37 @@ export const useStudentApiService = ({
     console.log(`Completed teacher schedule updates for student ${studentId}`);
   };
 
+  // Handle undoing student creation (removal)
+  const handleUndoStudentCreation = async (studentId: string) => {
+    if (!studentId) return;
+    
+    try {
+      // Remove the student
+      await studentService.removeStudent(studentId);
+      
+      // Show a toast notification about the successful undo
+      addToast({
+        type: 'info',
+        message: 'הוספת התלמיד בוטלה בהצלחה',
+      });
+      
+      // Reset the lastSavedStudent state
+      setLastSavedStudent(null);
+    } catch (err) {
+      console.error('Error undoing student creation:', err);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: 'אירעה שגיאה בעת ביטול הוספת התלמיד',
+      });
+    }
+  };
+
   return {
     isSubmitting,
     error,
     saveStudentData,
+    lastSavedStudent,
   };
 };

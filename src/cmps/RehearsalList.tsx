@@ -103,7 +103,6 @@ export function RehearsalList({
           <div className='date-header'>
             <Calendar size={20} />
             <h2>{formatDateHeader(date, isToday)}</h2>
-            <span className='date-count'>{rehearsals.length} חזרות</span>
           </div>
 
           <div className='rehearsal-grid'>

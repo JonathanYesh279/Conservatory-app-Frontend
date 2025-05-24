@@ -13,17 +13,21 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
+import { TheoryLessonsSection } from './sections/TheoryLessonsSection';
 
 export function StudentDetailsMain() {
   const {
     student,
     teachersData,
     orchestras,
+    theoryLessons,
+    theoryLessonsLoading,
     openSections,
     toggleSection,
     getStageColor,
     navigateToTeacher,
     navigateToOrchestra,
+    navigateToTheoryLesson,
     formatDate,
   } = useStudentDetailsState();
 
@@ -317,6 +321,16 @@ export function StudentDetailsMain() {
           </div>
         )}
       </div>
+
+      {/* Theory Lessons Section */}
+      <TheoryLessonsSection 
+        student={student}
+        theoryLessons={theoryLessons}
+        theoryLessonsLoading={theoryLessonsLoading}
+        isOpen={openSections.theoryLessons}
+        onToggle={() => toggleSection('theoryLessons')}
+        onTheoryLessonClick={navigateToTheoryLesson}
+      />
     </div>
   );
 }
