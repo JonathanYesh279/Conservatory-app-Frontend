@@ -155,7 +155,6 @@ export function TheoryLessonAssignmentSection() {
               value={selectedTheoryLessonId}
               onChange={handleTheoryLessonChange}
               disabled={isLoadingTheoryLessons || isSubmitting}
-              className="full-width-select"
             >
               <option value=''>בחר שיעור העשרה</option>
               {Object.entries(theoryLessonsByCategory).map(([category, lessons]) => (
@@ -165,7 +164,7 @@ export function TheoryLessonAssignmentSection() {
                       {formatDayTime(lesson.dayOfWeek, lesson.startTime, lesson.endTime)} - {lesson.location}
                     </option>
                   ))}
-                </optgroup>
+                  </optgroup>
               ))}
             </select>
             {isLoadingTheoryLessons && (

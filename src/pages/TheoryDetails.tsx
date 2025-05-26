@@ -7,6 +7,7 @@ import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useTheoryStore } from '../store/theoryStore';
 import { useTeacherStore } from '../store/teacherStore';
 import { useStudentStore } from '../store/studentStore';
+import { TheoryLesson } from '../services/theoryService';
 // DAYS_OF_WEEK not needed here
 import { useToast } from '../cmps/Toast';
 import { useAuth } from '../hooks/useAuth';
@@ -106,9 +107,9 @@ export function TheoryDetails() {
   };
 
   // Handle theory lesson update
-  const handleUpdate = async (theoryLessonData: any) => {
+  const handleUpdate = async (theoryLessonData: Partial<TheoryLesson>): Promise<Partial<TheoryLesson>> => {
     try {
-      await saveTheoryLesson(theoryLessonData);
+      const updatedTheoryLesson = await saveTheoryLesson(theoryLessonData);
       
       // Show success toast
       addToast({
@@ -117,6 +118,7 @@ export function TheoryDetails() {
       });
       
       setIsFormOpen(false);
+      return updatedTheoryLesson;
     } catch (err) {
       console.error('Error updating theory lesson:', err);
       

@@ -205,13 +205,13 @@ export function TheoryForm({
         const student = students.find((s) => s._id === studentId);
         if (
           student &&
-          !student.enrollments.theoryLessonIds.includes(theoryLessonId)
+          (!student.enrollments.theoryLessonIds || !student.enrollments.theoryLessonIds.includes(theoryLessonId))
         ) {
           await saveStudent({
             _id: student._id,
             enrollments: {
               ...student.enrollments,
-              theoryLessonIds: [...student.enrollments.theoryLessonIds, theoryLessonId],
+              theoryLessonIds: [...(student.enrollments.theoryLessonIds || []), theoryLessonId],
             },
           });
         }
@@ -220,7 +220,7 @@ export function TheoryForm({
       // Process removals
       for (const studentId of studentsToRemove) {
         const student = students.find((s) => s._id === studentId);
-        if (student) {
+        if (student && student.enrollments.theoryLessonIds) {
           await saveStudent({
             _id: student._id,
             enrollments: {
@@ -386,7 +386,7 @@ export function TheoryForm({
             onSubmit={handleSingleSubmit}
             enableReinitialize
           >
-            {({ values, setFieldValue, isSubmitting }) => (
+            {({ setFieldValue, isSubmitting }) => (
               <Form className='theory-form'>
                 {/* Theory Information */}
                 <div className='form-section'>

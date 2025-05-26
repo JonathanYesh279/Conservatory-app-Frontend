@@ -50,7 +50,7 @@ export function TheoryIndex() {
   }, [loadTheoryLessons, loadTeachers]);
 
   // Handle theory lesson creation/update
-  const handleSubmit = async (theoryLessonData: Partial<TheoryLesson>) => {
+  const handleSubmit = async (theoryLessonData: Partial<TheoryLesson>): Promise<Partial<TheoryLesson>> => {
     try {
       const savedTheoryLesson = await saveTheoryLesson(theoryLessonData);
       
@@ -69,6 +69,8 @@ export function TheoryIndex() {
       if (location.pathname !== `/theory/${savedTheoryLesson._id}`) {
         navigate(`/theory/${savedTheoryLesson._id}`);
       }
+      
+      return savedTheoryLesson;
     } catch (err) {
       console.error('Error saving theory lesson:', err);
       
