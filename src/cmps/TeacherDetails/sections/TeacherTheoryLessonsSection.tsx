@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, BookOpen, RefreshCw } from 'lucide-react';
 import { Teacher } from '../../../services/teacherService';
 import { TheoryLesson } from '../../../services/theoryService';
 import { useEffect, useState, useRef } from 'react';
+import '../../../styles/components/teacher-details-sections.scss';
 // Student service not needed here
 
 interface TeacherTheoryLessonsSectionProps {
@@ -96,9 +97,9 @@ export function TeacherTheoryLessonsSection({
   };
 
   return (
-    <div className='td-section'>
+    <div className='section'>
       <div
-        className={`td-section-title clickable ${isOpen ? 'active' : ''}`}
+        className={`section-title clickable ${isOpen ? 'active' : ''}`}
         onClick={onToggle}
       >
         <BookOpen size={16} />

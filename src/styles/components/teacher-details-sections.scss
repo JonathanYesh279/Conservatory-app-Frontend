@@ -1,0 +1,362 @@
+/* src/styles/components/teacher-details-sections.scss */
+
+/* Section styling for teacher details - aligns with student details */
+.td-section {
+  margin-bottom: 1.25rem;
+  border-radius: 0.5rem;
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+/* Section title styling */
+.td-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+  
+  svg {
+    color: var(--primary-color);
+  }
+  
+  /* Clickable section title */
+  &.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    
+    &:hover {
+      color: var(--primary-color);
+    }
+  }
+  
+  /* Toggle icon styling */
+  .td-toggle-icon {
+    margin-right: auto;
+    margin-left: 0;
+    color: var(--text-secondary);
+    transition: transform 0.3s ease;
+  }
+  
+  /* Active section styling */
+  &.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    
+    .td-toggle-icon {
+      color: var(--primary-color);
+    }
+  }
+}
+
+/* Section content with animation */
+.td-section-content {
+  transition: all 0.3s ease;
+  padding: 0.75rem;
+  animation: fadeIn 0.3s ease;
+  background-color: var(--bg-tertiary);
+}
+
+/* Information grid layout */
+.td-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  
+  .td-info-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    
+    svg {
+      color: var(--primary-color);
+      margin-top: 0.2rem;
+      flex-shrink: 0;
+    }
+    
+    div {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .td-info-label {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      margin-bottom: 0.2rem;
+    }
+    
+    .td-info-value {
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+/* Students grid for teacher details */
+.td-students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  overflow: auto;
+  max-height: 180px;
+  
+  .td-student-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--bg-card);
+    padding: 0.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    
+    &.clickable {
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(var(--bg-tertiary-rgb), 0.8);
+        transform: translateY(-2px);
+      }
+    }
+    
+    .td-student-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .td-student-info {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      
+      .td-student-name {
+        font-weight: 500;
+        color: var(--text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
+      }
+      
+      .td-student-instrument {
+        color: var(--text-secondary);
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+/* Orchestra grid */
+.td-orchestras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+  
+  .td-orchestra-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+    transition: all 0.2s ease;
+    
+    &.clickable {
+      cursor: pointer;
+      
+      &:hover {
+        background-color: rgba(var(--primary-color-rgb), 0.15);
+        transform: translateY(-2px);
+      }
+    }
+    
+    svg {
+      color: var(--primary-color);
+    }
+    
+    span {
+      text-align: center;
+      font-weight: 500;
+    }
+  }
+}
+
+/* Theory lessons grid styling */
+.td-theory-lessons-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+  
+  .td-theory-lesson-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.2s ease;
+    
+    &.clickable {
+      cursor: pointer;
+      
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-color: var(--primary-color-light);
+      }
+    }
+    
+    &.td-theory-lesson-placeholder {
+      opacity: 0.6;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+  
+  .td-theory-lesson-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    svg {
+      color: var(--primary-color);
+      min-width: 20px;
+    }
+    
+    .td-theory-lesson-category {
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+  }
+  
+  .td-theory-lesson-details {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    
+    .td-theory-lesson-schedule,
+    .td-theory-lesson-location,
+    .td-theory-lesson-students {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+}
+
+/* Loading indicator */
+.td-loading-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  color: var(--text-secondary);
+  
+  .spin {
+    animation: td-spin 1.5s linear infinite;
+  }
+}
+
+/* Empty states */
+.td-empty-state {
+  text-align: center;
+  padding: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes td-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .td-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .td-students-grid,
+  .td-orchestras-grid,
+  .td-theory-lessons-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .td-section-title {
+    font-size: 1rem;
+    padding: 0.6rem 0.75rem;
+  }
+  
+  .td-section-content {
+    padding: 0.6rem;
+  }
+  
+  .td-students-grid,
+  .td-orchestras-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.4rem;
+  }
+  
+  .td-theory-lessons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] {
+  .td-section {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .td-section-content {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .td-student-card {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.3);
+  }
+  
+  .td-theory-lesson-card {
+    background-color: var(--bg-secondary);
+  }
+}

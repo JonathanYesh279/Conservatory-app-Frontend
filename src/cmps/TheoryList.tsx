@@ -101,7 +101,7 @@ export function TheoryList({
           className={`theory-date-group ${isToday ? 'today-group' : ''}`}
         >
           <div className='date-header'>
-            <BookOpen size={20} />
+            <BookOpen size={18} />
             <h2>{formatDateHeader(date, isToday)}</h2>
           </div>
 

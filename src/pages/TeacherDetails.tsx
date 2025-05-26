@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { teacherService, Teacher } from '../services/teacherService'
 import { Orchestra, orchestraService } from '../services/orchestraService'
 import { studentService } from '../services/studentService'
-import { theoryService, TheoryLesson, DAYS_OF_WEEK } from '../services/theoryService'
+import { theoryService, TheoryLesson } from '../services/theoryService'
+import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
 import {
   User,
   Calendar,
@@ -63,12 +64,12 @@ export function TeacherDetails() {
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
-    students: true,
-    orchestras: true,
+    students: false,
+    orchestras: false,
     schedule: false,
-    theoryLessons: true,
-    personalInfo: true,
-    professionalInfo: true,
+    theoryLessons: false,
+    personalInfo: false,
+    professionalInfo: false,
   });
 
   const navigate = useNavigate();
@@ -341,14 +342,9 @@ export function TeacherDetails() {
       ...prev,
       [section]: !prev[section],
     }));
-
-    // If opening students or schedule section, refresh data
-    if (
-      !openSections[section] &&
-      (section === 'students' || section === 'schedule')
-    ) {
-      refreshData();
-    }
+    
+    // We no longer refresh data when toggling sections
+    // This avoids unnecessary API calls and loading states
   };
 
   const toggleFlip = () => {
@@ -684,78 +680,17 @@ export function TeacherDetails() {
                     </div>
                   )}
 
-                {/* Theory Lessons Section */}
-                <div className='section'>
-                  <div
-                    className={`section-title clickable ${
-                      openSections.theoryLessons ? 'active' : ''
-                    }`}
-                    onClick={() => toggleSection('theoryLessons')}
-                  >
-                    <BookOpen size={16} />
-                    <span>
-                      שיעורי העשרה {theoryLessons.length > 0 ? `(${theoryLessons.length})` : ''}
-                    </span>
-                    {openSections.theoryLessons ? (
-                      <ChevronUp size={18} className='toggle-icon' />
-                    ) : (
-                      <ChevronDown size={18} className='toggle-icon' />
-                    )}
-                  </div>
-
-                  {openSections.theoryLessons && (
-                    <div className='section-content'>
-                      {theoryLessonsLoading ? (
-                        <div className='loading-section'>
-                          <RefreshCw size={16} className='loading-icon' />
-                          <span>טוען שיעורי העשרה...</span>
-                        </div>
-                      ) : theoryLessons.length > 0 ? (
-                        <div className='theory-lessons-grid'>
-                          {theoryLessons.map((lesson) => (
-                            <div
-                              key={lesson._id}
-                              className='theory-lesson-card clickable'
-                              onClick={() => navigateToTheoryLesson(lesson._id)}
-                            >
-                              <div className="theory-lesson-header">
-                                <BookOpen size={20} />
-                                <span className="theory-lesson-category">{lesson.category}</span>
-                              </div>
-                              
-                              <div className="theory-lesson-details">
-                                {lesson.dayOfWeek !== undefined && lesson.startTime && lesson.endTime && (
-                                  <div className="theory-lesson-schedule">
-                                    <Clock size={14} />
-                                    <span>
-                                      {DAYS_OF_WEEK[lesson.dayOfWeek]} {lesson.startTime}-{lesson.endTime}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                {lesson.location && (
-                                  <div className="theory-lesson-location">
-                                    <MapPin size={14} />
-                                    <span>{lesson.location}</span>
-                                  </div>
-                                )}
-                                
-                                <div className="theory-lesson-students">
-                                  <Users size={14} />
-                                  <span>תלמידים: {lesson.studentIds?.length || 0}</span>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className='no-theory-lessons-message'>
-                          המורה אינו מלמד שיעורי העשרה
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
+                {/* Theory Lessons Section - Only show if there are theory lessons */}
+                {theoryLessons.length > 0 && (
+                  <TeacherTheoryLessonsSection
+                    teacher={teacher}
+                    theoryLessons={theoryLessons}
+                    theoryLessonsLoading={theoryLessonsLoading}
+                    isOpen={openSections.theoryLessons}
+                    onToggle={() => toggleSection('theoryLessons')}
+                    onTheoryLessonClick={navigateToTheoryLesson}
+                  />
+                )}
 
                 {/* Teaching Schedule Section - Always show if this teacher is a teacher */}
                 {teacher.roles.includes('מורה') && (

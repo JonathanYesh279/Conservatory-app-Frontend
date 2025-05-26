@@ -1,6 +1,6 @@
 // src/cmps/TeacherForm.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { X, Eye, EyeOff, Search, Plus } from 'lucide-react';
+import { X, Eye, EyeOff, Search, User } from 'lucide-react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
@@ -247,7 +247,7 @@ export function TeacherForm({
   if (!isOpen) return null;
 
   return (
-    <div className="teacher-form">
+    <div className="teacher-form responsive-form">
       <div className="overlay" onClick={onClose}></div>
       <div className="form-modal">
         <button
@@ -423,8 +423,8 @@ export function TeacherForm({
                     />
                   </div>
 
-                  {/* Phone */}
-                  <div className="form-row full-width">
+                  {/* Phone and Email - keep as two columns on mobile */}
+                  <div className="form-row narrow-fields">
                     <FormField
                       label="טלפון"
                       name="personalInfo.phone"
@@ -433,10 +433,7 @@ export function TeacherForm({
                       required
                       disabled={isSubmitting}
                     />
-                  </div>
-
-                  {/* Email */}
-                  <div className="form-row full-width">
+                    
                     <FormField
                       label='דוא"ל'
                       name="personalInfo.email"
@@ -508,9 +505,9 @@ export function TeacherForm({
                     </div>
                   </div>
 
-                  {/* Conditional Fields based on Role */}
-                  {isTeacher && (
-                    <div className="form-row full-width">
+                  {/* Conditional Fields based on Role - side by side when possible */}
+                  <div className="form-row narrow-fields">
+                    {isTeacher && (
                       <FormField
                         label="כלי נגינה (למורה)"
                         name="professionalInfo.instrument"
@@ -525,11 +522,9 @@ export function TeacherForm({
                           </option>
                         ))}
                       </FormField>
-                    </div>
-                  )}
+                    )}
 
-                  {isConductor && (
-                    <div className="form-row full-width">
+                    {isConductor && (
                       <div className="form-group">
                         <label htmlFor="orchestras">תזמורות (למנצח)</label>
                         <select
@@ -575,8 +570,8 @@ export function TeacherForm({
                           </div>
                         )}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
 
                 {/* Students Section - Only for teachers */}
@@ -586,7 +581,7 @@ export function TeacherForm({
 
                     {/* Selected Students List */}
                     {selectedStudents.length > 0 && (
-                      <div className="selected-students">
+                      <div className="selected-members-list">
                         <h4>תלמידים שהוקצו למורה</h4>
                         {selectedStudents.map((student) => {
                           // Get schedule item for this student
@@ -688,7 +683,7 @@ export function TeacherForm({
                     {/* Student Search or Add Buttons */}
                     <div className="student-actions">
                       {showStudentSearch ? (
-                        <div className="student-search-container">
+                        <div className="search-container">
                           <div className="search-header">
                             <h4>חיפוש תלמידים</h4>
                             <button
@@ -700,10 +695,11 @@ export function TeacherForm({
                               <X size={16} />
                             </button>
                           </div>
-                          <div className="search-box">
-                            <Search size={16} />
+                          <div className="search-input-wrapper">
+                            <Search className="search-icon" size={16} />
                             <input
                               type="text"
+                              className="search-input"
                               placeholder="חפש תלמיד לפי שם, כלי או כיתה..."
                               value={searchQuery}
                               onChange={(e) => handleStudentSearch(e.target.value)}
@@ -711,38 +707,34 @@ export function TeacherForm({
                             />
                           </div>
 
-                          <div className="search-results">
-                            {loadingStudents ? (
-                              <div className="loading-message">טוען תלמידים...</div>
-                            ) : filteredStudents.length === 0 ? (
-                              <div className="no-results">לא נמצאו תלמידים</div>
-                            ) : (
-                              <div className="student-list">
-                                {filteredStudents.map((student) => (
-                                  <div
-                                    key={student._id}
-                                    className="student-search-item"
-                                    onClick={() =>
-                                      !isSubmitting && handleAddStudent(student)
-                                    }
-                                    style={{
-                                      cursor: isSubmitting
-                                        ? 'not-allowed'
-                                        : 'pointer',
-                                    }}
-                                  >
-                                    <div className="student-name">
-                                      {student.personalInfo.fullName}
-                                    </div>
-                                    <div className="student-details">
-                                      <span>{student.academicInfo.instrument}</span>
-                                      <span>כיתה {student.academicInfo.class}</span>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
+                          {loadingStudents ? (
+                            <div className="loading-message">טוען תלמידים...</div>
+                          ) : filteredStudents.length === 0 ? (
+                            <div className="no-results">לא נמצאו תלמידים</div>
+                          ) : (
+                            <div className="search-results-dropdown">
+                              {filteredStudents.map((student) => (
+                                <div
+                                  key={student._id}
+                                  className="search-result-item"
+                                  onClick={() =>
+                                    !isSubmitting && handleAddStudent(student)
+                                  }
+                                  style={{
+                                    cursor: isSubmitting
+                                      ? 'not-allowed'
+                                      : 'pointer',
+                                  }}
+                                >
+                                  <User className="student-icon" size={16} />
+                                  <span>{student.personalInfo.fullName}</span>
+                                  <span className="student-instrument">
+                                    {student.academicInfo.instrument}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="student-action-buttons">
@@ -752,7 +744,6 @@ export function TeacherForm({
                             onClick={() => setShowStudentSearch(true)}
                             disabled={isSubmitting}
                           >
-                            <Search size={16} />
                             <span>חיפוש תלמידים קיימים</span>
                           </button>
 
@@ -762,7 +753,6 @@ export function TeacherForm({
                             onClick={handleAddNewStudentClick}
                             disabled={isSubmitting}
                           >
-                            <Plus size={16} />
                             <span>הוספת תלמיד חדש</span>
                           </button>
                         </div>

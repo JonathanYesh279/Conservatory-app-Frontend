@@ -1,0 +1,704 @@
+// src/styles/components/responsive-form.scss
+// Shared responsive form styles that won't affect student/theory/rehearsal forms
+
+.responsive-form {
+  .form-modal {
+    position: relative;
+    background-color: var(--bg-card, #1e2a3b);
+    border-radius: 1rem;
+    max-height: 95vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg, 0 8px 30px rgba(0, 0, 0, 0.4));
+    margin: 0 auto;
+    padding: 1.75rem;
+    width: 95%;
+    max-width: 750px;
+
+    // Better scrollbar styling
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    
+    &:hover {
+      scrollbar-color: var(--border-color, rgba(100, 100, 100, 0.3)) transparent;
+    }
+    
+    /* Webkit scrollbar styling */
+    &::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background-color: transparent;
+    }
+    
+    &:hover::-webkit-scrollbar-thumb {
+      background-color: rgba(var(--border-color-rgb, 100, 100, 100), 0.3);
+      border-radius: 10px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 0.5rem;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+      padding-bottom: 0.75rem;
+      color: var(--text-primary, white);
+      text-align: center;
+      font-size: 1.4rem;
+    }
+
+    .error-message {
+      background-color: rgba(var(--danger-rgb, 231, 76, 60), 0.1);
+      color: var(--danger, #e74c3c);
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid rgba(var(--danger-rgb, 231, 76, 60), 0.2);
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 1.75rem;
+      left: 1.75rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary, #2c3a52);
+      color: var(--text-secondary, #a0aec0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+      
+      &:hover {
+        background-color: var(--bg-secondary, #263144);
+        color: var(--text-primary, white);
+      }
+    }
+  }
+
+  // Form sections with better spacing
+  .form-section {
+    background-color: var(--bg-card, #1e2a3b);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.2));
+    border: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+    
+    h3 {
+      font-size: 1.125rem;
+      color: var(--text-primary, white);
+      margin-top: 0;
+      margin-bottom: 1rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+    }
+    
+    h4 {
+      font-size: 1rem;
+      color: var(--text-secondary, #a0aec0);
+      margin-top: 1rem;
+      margin-bottom: 0.6rem;
+    }
+  }
+
+  // Form rows styling (similar to rehearsal form)
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    .form-group {
+      flex: 1;
+      margin-bottom: 0.5rem;
+      
+      label {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary, #a0aec0);
+        font-size: 0.9rem;
+        
+        .icon {
+          color: var(--primary-color, #4169e1);
+          opacity: 0.8;
+        }
+      }
+      
+      input, textarea, select {
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #2c3a52;
+        background-color: #263144;
+        color: white;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        appearance: none;
+        
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color, #4169e1);
+          box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb, 65, 105, 225), 0.2);
+        }
+        
+        &.is-invalid {
+          border-color: var(--danger, #e74c3c);
+          background-color: rgba(var(--danger-rgb, 231, 76, 60), 0.05);
+        }
+      }
+      
+      // Specific styles for time inputs to fix display issues
+      input[type="time"], 
+      input[type="date"] {
+        padding: 0.5rem 0.75rem;
+        color: white;
+        background-color: #263144;
+        border: 1px solid #2c3a52;
+        border-radius: 0.5rem;
+        
+        // Reset browser specific styling
+        &::-webkit-calendar-picker-indicator {
+          filter: invert(1);
+          opacity: 0.7;
+          cursor: pointer;
+        }
+        
+        &::-webkit-datetime-edit {
+          color: white;
+        }
+        
+        &::-webkit-datetime-edit-fields-wrapper {
+          color: white;
+        }
+      }
+      
+      select {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23a0aec0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: left 0.75rem center;
+        background-size: 1rem;
+        padding-left: 2.5rem;
+      }
+      
+      textarea {
+        resize: vertical;
+        min-height: 100px;
+      }
+      
+      .form-error {
+        color: var(--danger, #e74c3c);
+        font-size: 0.85rem;
+        margin-top: 0.35rem;
+      }
+    }
+  }
+
+  // Grid layout for forms - resets and overrides form-row when used
+  .form-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    
+    &.one-column {
+      grid-template-columns: 1fr;
+    }
+    
+    &.two-columns {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    &.three-columns {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    // Special column layouts
+    &.type-name-layout {
+      grid-template-columns: minmax(100px, 30%) 1fr;
+    }
+    
+    &.schedule-layout {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  // Fixed-width columns for the grid
+  .column {
+    &.full {
+      grid-column: 1 / -1;
+    }
+    
+    &.half {
+      grid-column: span 1;
+    }
+  }
+
+  // Better styling for student schedule items
+  .student-schedule-item {
+    background-color: var(--bg-secondary, #263144);
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+    
+    &:hover {
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .student-info {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+      background-color: var(--bg-card, #1e2a3b);
+      
+      .student-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary, white);
+        margin-right: auto;
+      }
+      
+      .student-details {
+        display: flex;
+        gap: 0.75rem;
+        margin-left: 1rem;
+        flex-wrap: wrap;
+        
+        span {
+          font-size: 0.8rem;
+          color: var(--text-secondary, #a0aec0);
+          background-color: var(--bg-tertiary, #2c3a52);
+          padding: 0.25rem 0.5rem;
+          border-radius: 0.25rem;
+          white-space: nowrap;
+        }
+      }
+      
+      .remove-student-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary, #a0aec0);
+        cursor: pointer;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+        
+        &:hover {
+          background-color: rgba(var(--danger-rgb, 231, 76, 60), 0.1);
+          color: var(--danger, #e74c3c);
+        }
+      }
+    }
+    
+    .schedule-fields {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background-color: var(--bg-secondary, #263144);
+    }
+  }
+
+  // Search sections with student results
+  .search-container {
+    width: 100%;
+    position: relative;
+    
+    .search-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      
+      .search-icon {
+        position: absolute;
+        right: 0.75rem;
+        color: var(--text-secondary, #a0aec0);
+      }
+      
+      .search-input {
+        width: 100%;
+        padding: 0.6rem 2rem 0.6rem 0.75rem;
+        border: 1px solid #2c3a52;
+        border-radius: 0.5rem;
+        background-color: #263144;
+        color: white;
+        
+        &:focus {
+          outline: none;
+          border-color: var(--primary-color, #4169e1);
+          box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb, 65, 105, 225), 0.2);
+        }
+      }
+    }
+    
+    .search-results-dropdown {
+      position: absolute;
+      z-index: 5;
+      width: 100%;
+      max-height: 250px;
+      overflow-y: auto;
+      background-color: var(--bg-secondary, #263144);
+      border: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      
+      .search-result-item {
+        display: flex;
+        align-items: center;
+        padding: 0.6rem 0.75rem;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        border-bottom: 1px solid var(--border-color-light, rgba(100, 100, 100, 0.1));
+        
+        &:last-child {
+          border-bottom: none;
+        }
+        
+        &:hover {
+          background-color: var(--bg-tertiary, #2c3a52);
+        }
+        
+        .student-icon {
+          margin-left: 0.5rem;
+          color: var(--text-secondary, #a0aec0);
+        }
+        
+        .student-instrument {
+          margin-right: auto;
+          font-size: 0.75rem;
+          color: var(--text-secondary, #a0aec0);
+          padding-right: 0.5rem;
+        }
+      }
+    }
+    
+    .loading-message, 
+    .no-results {
+      padding: 0.75rem;
+      color: var(--text-secondary, #a0aec0);
+      font-style: italic;
+      text-align: center;
+    }
+  }
+
+  // Form actions (buttons)
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
+    
+    button {
+      padding: 0.6rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      
+      &.primary {
+        background-color: var(--primary-color, #4169e1);
+        color: white;
+        border: none;
+        
+        &:hover:not(:disabled) {
+          background-color: #3158d3;
+        }
+        
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      }
+      
+      &.secondary {
+        background-color: transparent;
+        color: var(--text-secondary, #a0aec0);
+        border: 1px solid #2c3a52;
+        
+        &:hover {
+          background-color: var(--bg-secondary, #263144);
+          color: white;
+        }
+      }
+    }
+  }
+
+  // Selected members/students list
+  .selected-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin: 1rem 0;
+    
+    .member-badge {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      background-color: var(--bg-tertiary, #2c3a52);
+      border-radius: 0.4rem;
+      
+      .remove-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--text-secondary, #a0aec0);
+        padding: 0.3rem;
+        border-radius: 50%;
+        cursor: pointer;
+        
+        &:hover {
+          background-color: rgba(var(--danger-rgb, 231, 76, 60), 0.1);
+          color: var(--danger, #e74c3c);
+        }
+      }
+    }
+    
+    .no-members-message {
+      color: var(--text-secondary, #a0aec0);
+      font-size: 0.875rem;
+      padding: 0.75rem;
+      font-style: italic;
+      text-align: center;
+      background-color: var(--bg-tertiary, #2c3a52);
+      border-radius: 0.4rem;
+    }
+  }
+
+  // Student action buttons
+  .student-actions {
+    margin: 1rem 0;
+    
+    .student-action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      
+      .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.4rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        
+        svg {
+          flex-shrink: 0;
+        }
+      }
+    }
+    
+    .search-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      
+      h4 {
+        margin: 0;
+      }
+      
+      .btn {
+        padding: 0.3rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: none;
+        border: none;
+        color: var(--text-secondary, #a0aec0);
+        cursor: pointer;
+        
+        &:hover {
+          background-color: var(--bg-tertiary, #2c3a52);
+        }
+      }
+    }
+  }
+}
+
+// Media queries for responsive design
+@media (max-width: 767px) {
+  .responsive-form {
+    .form-modal {
+      width: 95%;
+      max-height: 95vh;
+      padding: 1.25rem;
+      padding-top: 4.5rem;
+      
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+      }
+      
+      .close-btn {
+        top: 4.25rem;
+        left: 1.25rem;
+        width: 28px;
+        height: 28px;
+      }
+    }
+    
+    .form-section {
+      margin-bottom: 1.25rem;
+      padding: 0.75rem;
+      
+      h3 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+      }
+      
+      h4 {
+        font-size: 0.9rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+    }
+    
+    .form-row {
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      
+      // For mobile, preserve two columns where appropriate
+      &.narrow-fields {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+    }
+    
+    .form-grid {
+      gap: 0.75rem;
+      
+      &.three-columns {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      &.type-name-layout {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      &.schedule-layout {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    
+    .student-schedule-item {
+      .student-info {
+        position: relative;
+        padding-right: 2.5rem;
+        
+        .student-details {
+          margin-left: 0;
+          margin-top: 0.5rem;
+          flex-wrap: wrap;
+          width: 100%;
+        }
+        
+        .remove-student-btn {
+          position: absolute;
+          top: 0.75rem;
+          right: 0.75rem;
+          margin: 0;
+        }
+      }
+      
+      .schedule-fields {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        padding: 0.75rem;
+      }
+    }
+    
+    .student-actions {
+      .student-action-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        
+        .btn {
+          justify-content: center;
+          padding: 0.5rem;
+          
+          svg {
+            margin-right: 0.25rem;
+          }
+        }
+      }
+    }
+    
+    .form-actions {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      
+      button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-form {
+    .form-modal {
+      width: 90%;
+      max-width: 700px;
+      padding: 1.5rem;
+      
+      h2 {
+        font-size: 1.3rem;
+      }
+    }
+    
+    .form-grid {
+      &.three-columns {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .student-schedule-item {
+      .schedule-fields {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-form {
+    .form-modal {
+      width: 80%;
+      max-width: 900px;
+      padding: 2rem;
+    }
+    
+    .form-grid {
+      gap: 1.25rem;
+    }
+  }
+}

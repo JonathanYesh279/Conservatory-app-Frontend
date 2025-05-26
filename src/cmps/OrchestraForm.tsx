@@ -329,7 +329,7 @@ export function OrchestraForm({
   if (!isOpen) return null;
 
   return (
-    <div className='orchestra-form'>
+    <div className='orchestra-form responsive-form'>
       <div className='overlay' onClick={onClose}></div>
       <div className='form-modal'>
         <button
@@ -377,8 +377,9 @@ export function OrchestraForm({
                 <div className='form-section'>
                   <h3>{isOrchestra ? 'פרטי תזמורת' : 'פרטי הרכב'}</h3>
 
-                  {/* Type Selection - First field */}
-                  <div className='form-row full-width'>
+                  {/* Type and Name - side by side with responsive columns */}
+                  <div className="form-row narrow-fields">
+                    {/* Type Selection */}
                     <FormField
                       label="סוג"
                       name="type"
@@ -393,10 +394,8 @@ export function OrchestraForm({
                         </option>
                       ))}
                     </FormField>
-                  </div>
 
-                  {/* Name field */}
-                  <div className='form-row full-width'>
+                    {/* Name field */}
                     <FormField
                       label={isOrchestra ? 'שם התזמורת' : 'שם ההרכב'}
                       name="name"
@@ -409,8 +408,9 @@ export function OrchestraForm({
                     />
                   </div>
 
-                  {/* Location */}
-                  <div className='form-row full-width'>
+                  {/* Location and Conductor - side by side */}
+                  <div className="form-row narrow-fields">
+                    {/* Location */}
                     <FormField
                       label="מקום"
                       name="location"
@@ -425,10 +425,8 @@ export function OrchestraForm({
                         </option>
                       ))}
                     </FormField>
-                  </div>
 
-                  {/* Conductor/Instructor - changes based on type */}
-                  <div className='form-row full-width'>
+                    {/* Conductor/Instructor - changes based on type */}
                     <div className='form-group'>
                       <label 
                         htmlFor='conductorId'
@@ -467,8 +465,8 @@ export function OrchestraForm({
                     </div>
                   </div>
 
-                  {/* Members - changes based on type */}
-                  <div className='form-row full-width'>
+                  {/* Members Section */}
+                  <div className="form-row full-width">
                     <div className='form-group'>
                       <label>
                         {isOrchestra
