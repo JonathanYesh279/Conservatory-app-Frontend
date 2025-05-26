@@ -209,11 +209,11 @@
               outline: none;
               border-color: #4169e1;
               box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+              background-color: #263144;
             }
             
             &.is-invalid {
               border-color: #e74c3c;
-              background-color: rgba(231, 76, 60, 0.05);
             }
           }
           
@@ -265,6 +265,14 @@
             color: var(--text-secondary, #a0aec0);
             font-size: 0.8rem;
             margin-top: 0.35rem;
+          }
+
+          .search-result-item {
+            display: flex;
+            gap: 0.5rem;
+            padding:0.5rem;
+            border-bottom: 1px solid #4D55CC;
+            margin-bottom: 0.3rem;
           }
         }
       }
@@ -462,6 +470,19 @@
     
     .theory-form .form-row {
       gap: 0.75rem;
+
+      .member-badge {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+        border: 1px solid #4D55CC;
+        border-radius: 0.3rem;
+        margin: 0.5rem 0;
+
+        span {
+          padding-right: 0.2rem;
+        }
+      }
     }
     
     .theory-form .form-actions {

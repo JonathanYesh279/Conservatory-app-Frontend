@@ -7,6 +7,7 @@ import { PersonalInfoSection } from './PersonalInfoSection';
 import { InstrumentSection } from './InstrumentSection';
 import { TeacherAssignmentSection } from './TeacherAssignmentSection';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
+import { TheoryLessonAssignmentSection } from './TheoryLessonAssignmentSection';
 import { studentValidationSchema } from '../../validations/studentValidation';
 import { useStudentApiService } from '../../hooks/useStudentApiService';
 import { useSchoolYearStore } from '../../store/schoolYearStore';
@@ -68,12 +69,17 @@ export function StudentForm({
           orchestraIds: student.enrollments?.orchestraIds || [],
           ensembleIds: student.enrollments?.ensembleIds || [],
           schoolYears: student.enrollments?.schoolYears || [],
+          theoryLessonIds: student.enrollments?.theoryLessonIds || [],
         },
         teacherIds: student.teacherIds || [],
         teacherAssignments: [], // Will be populated from teacher data if available
         orchestraAssignments:
           student.enrollments?.orchestraIds?.map((id) => ({
             orchestraId: id,
+          })) || [],
+        theoryLessonAssignments:
+          student.enrollments?.theoryLessonIds?.map((id) => ({
+            theoryLessonId: id,
           })) || [],
         isActive: student.isActive !== false,
       };
@@ -98,10 +104,12 @@ export function StudentForm({
           orchestraIds: [],
           ensembleIds: [],
           schoolYears: [],
+          theoryLessonIds: [],
         },
         teacherIds: [],
         teacherAssignments: [],
         orchestraAssignments: [],
+        theoryLessonAssignments: [],
         isActive: true,
       };
 
@@ -215,6 +223,9 @@ export function StudentForm({
 
               {/* Orchestra Assignment Section */}
               <OrchestraAssignmentSection />
+              
+              {/* Theory Lesson Assignment Section */}
+              <TheoryLessonAssignmentSection />
 
               {/* Form Actions */}
               <div className='form-actions'>

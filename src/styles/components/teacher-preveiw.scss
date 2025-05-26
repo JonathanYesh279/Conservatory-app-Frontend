@@ -41,6 +41,8 @@
         gap: 1rem;
         border-radius: 0.75rem;
         margin-bottom: 0;
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-color-rgb), 0.2);
       }
       .avatar-section {
         .avatar {

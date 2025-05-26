@@ -66,7 +66,10 @@ export const teacherValidationSchema = Yup.object().shape({
     fullName: Yup.string().required('שם מלא הוא שדה חובה'),
     phone: Yup.string()
       .required('טלפון הוא שדה חובה')
-      .matches(/^05\d{8}$/, 'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'),
+      .matches(
+        /^05\d{8}$/,
+        'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)'
+      ),
     email: Yup.string()
       .required('דוא"ל הוא שדה חובה')
       .email('כתובת דוא"ל לא תקינה'),
@@ -82,7 +85,7 @@ export const teacherValidationSchema = Yup.object().shape({
   // Professional info - conditional on role
   professionalInfo: Yup.object().shape({
     instrument: validateBasedOnRoles(
-      ['מורה'], 
+      ['מורה', 'מורה תאוריה'],
       Yup.string()
         .required('כלי נגינה הוא שדה חובה למורה')
         .oneOf(VALID_INSTRUMENTS, 'כלי נגינה לא תקין')
@@ -98,10 +101,7 @@ export const teacherValidationSchema = Yup.object().shape({
 
   // Conducting information - conditional on role
   conducting: Yup.object().shape({
-    orchestraIds: validateBasedOnRoles(
-      ['מנצח'],
-      Yup.array().of(Yup.string())
-    ),
+    orchestraIds: validateBasedOnRoles(['מנצח'], Yup.array().of(Yup.string())),
   }),
 
   // Additional info
@@ -116,14 +116,15 @@ export const teacherValidationSchema = Yup.object().shape({
   // Credentials - only validated for new teachers
   credentials: Yup.object().when('_id', {
     is: (id: string) => !id, // Only apply when _id is not present (new teacher)
-    then: () => Yup.object().shape({
-      email: Yup.string()
-        .required('דוא"ל הוא שדה חובה')
-        .email('כתובת דוא"ל לא תקינה'),
-      password: Yup.string()
-        .required('סיסמה היא שדה חובה')
-        .min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
-    }),
+    then: () =>
+      Yup.object().shape({
+        email: Yup.string()
+          .required('דוא"ל הוא שדה חובה')
+          .email('כתובת דוא"ל לא תקינה'),
+        password: Yup.string()
+          .required('סיסמה היא שדה חובה')
+          .min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
+      }),
     otherwise: () => Yup.object(), // No validation for existing teachers
   }),
 

@@ -272,7 +272,7 @@ export function TeacherForm({
           {({ isSubmitting, values, setFieldValue, errors, touched }) => {
             // Check if teacher is conductor or teacher based on roles
             const isConductor = values.roles.includes('מנצח');
-            const isTeacher = values.roles.includes('מורה');
+            const isTeacher = values.roles.includes('מורה') || values.roles.includes('מורה תאוריה');
 
             // Handle student selection integration
             const {

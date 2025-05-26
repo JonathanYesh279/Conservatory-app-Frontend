@@ -4,3 +4,4 @@ export * from './PersonalInfoSection';
 export * from './InstrumentSection';
 export * from './TeacherAssignmentSection';
 export * from './OrchestraAssignmentSection';
+export * from './TheoryLessonAssignmentSection';

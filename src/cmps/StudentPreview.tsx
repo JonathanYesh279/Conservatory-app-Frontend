@@ -1,6 +1,6 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import { Edit, Trash2, Calendar, Award, Eye } from 'lucide-react';
+import { Edit, Trash2, Calendar, Award, Eye, Music } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
 import { studentService } from '../services/studentService'; // Use studentService directly
@@ -203,6 +203,7 @@ export function StudentPreview({
                 {displayStudent.personalInfo.fullName}
               </h3>
               <div className='student-subject'>
+                <Music size={12} />
                 <span>{getInstrumentsDisplay()}</span>
               </div>
             </div>

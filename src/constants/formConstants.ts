@@ -70,6 +70,11 @@ export interface OrchestraAssignment {
   orchestraId: string;
 }
 
+// Theory lesson assignment interface
+export interface TheoryLessonAssignment {
+  theoryLessonId: string;
+}
+
 // Define comprehensive type for student form data
 export interface StudentFormData {
   _id?: string;
@@ -90,6 +95,7 @@ export interface StudentFormData {
   enrollments: {
     orchestraIds: string[];
     ensembleIds: string[];
+    theoryLessonIds: string[];
     schoolYears: Array<{
       schoolYearId: string;
       isActive: boolean;
@@ -98,5 +104,6 @@ export interface StudentFormData {
   teacherIds: string[];
   teacherAssignments: TeacherAssignment[];
   orchestraAssignments: OrchestraAssignment[];
+  theoryLessonAssignments: TheoryLessonAssignment[];
   isActive: boolean;
 }
