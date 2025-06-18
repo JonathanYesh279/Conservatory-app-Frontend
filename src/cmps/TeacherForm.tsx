@@ -1,6 +1,6 @@
 // src/cmps/TeacherForm.tsx
 import { useState, useEffect, useCallback } from 'react';
-import { X, Eye, EyeOff, Search, User } from 'lucide-react';
+import { X, Eye, EyeOff, Search, User, Calendar } from 'lucide-react';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
@@ -9,6 +9,7 @@ import { useTeacherStore } from '../store/teacherStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 import { Orchestra, orchestraService } from '../services/orchestraService';
 import { FormField } from './FormComponents/FormField';
+import { ScheduleManagementModal } from './Schedule';
 import {
   teacherValidationSchema,
   initialTeacherFormValues,
@@ -58,6 +59,7 @@ export function TeacherForm({
   const [loadingOrchestras, setLoadingOrchestras] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [showScheduleManager, setShowScheduleManager] = useState(false);
   
   // Store access
   const { saveTeacher, isLoading } = useTeacherStore();
@@ -261,6 +263,18 @@ export function TeacherForm({
         <h2>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
         
         {apiError && <div className="error-message">{apiError}</div>}
+        
+        {/* Schedule Management Modal */}
+        {showScheduleManager && teacher?._id && (
+          <ScheduleManagementModal
+            teacherId={teacher._id}
+            onClose={() => setShowScheduleManager(false)}
+            onScheduleChange={() => {
+              // This will be called when the schedule is updated
+              console.log('Schedule updated');
+            }}
+          />
+        )}
 
         <Formik
           initialValues={getInitialFormValues()}
@@ -583,100 +597,47 @@ export function TeacherForm({
                     {selectedStudents.length > 0 && (
                       <div className="selected-members-list">
                         <h4>תלמידים שהוקצו למורה</h4>
-                        {selectedStudents.map((student) => {
-                          // Get schedule item for this student
-                          const scheduleItem = getScheduleItemForStudent(student._id);
-
-                          return (
-                            <div key={student._id} className="student-schedule-item">
-                              <div className="student-info">
-                                <div className="student-name">
-                                  {student.personalInfo.fullName}
-                                </div>
-                                <div className="student-details">
-                                  <span>{student.academicInfo.instrument}</span>
-                                  <span>כיתה {student.academicInfo.class}</span>
-                                  <span>שלב {student.academicInfo.currentStage}</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  className="remove-student-btn"
-                                  onClick={() => handleRemoveStudent(student._id)}
-                                  aria-label="הסר תלמיד"
-                                  disabled={isSubmitting}
-                                >
-                                  <X size={16} />
-                                </button>
+                        {selectedStudents.map((student) => (
+                          <div key={student._id} className="student-schedule-item">
+                            <div className="student-info">
+                              <div className="student-name">
+                                {student.personalInfo.fullName}
                               </div>
-
-                              {/* Schedule fields for this student */}
-                              <div className="schedule-fields">
-                                <div className="form-group">
-                                  <label htmlFor={`day-${student._id}`}>יום</label>
-                                  <select
-                                    id={`day-${student._id}`}
-                                    value={scheduleItem.day}
-                                    onChange={(e) =>
-                                      handleScheduleChange(
-                                        student._id,
-                                        'day',
-                                        e.target.value
-                                      )
-                                    }
-                                    disabled={isSubmitting}
-                                  >
-                                    {DAYS_OF_WEEK.map((day) => (
-                                      <option key={day} value={day}>
-                                        {day}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-
-                                <div className="form-group">
-                                  <label htmlFor={`time-${student._id}`}>שעה</label>
-                                  <input
-                                    type="time"
-                                    id={`time-${student._id}`}
-                                    value={scheduleItem.time}
-                                    onChange={(e) =>
-                                      handleScheduleChange(
-                                        student._id,
-                                        'time',
-                                        e.target.value
-                                      )
-                                    }
-                                    disabled={isSubmitting}
-                                  />
-                                </div>
-
-                                <div className="form-group">
-                                  <label htmlFor={`duration-${student._id}`}>
-                                    משך (דקות)
-                                  </label>
-                                  <select
-                                    id={`duration-${student._id}`}
-                                    value={scheduleItem.duration}
-                                    onChange={(e) =>
-                                      handleScheduleChange(
-                                        student._id,
-                                        'duration',
-                                        Number(e.target.value)
-                                      )
-                                    }
-                                    disabled={isSubmitting}
-                                  >
-                                    {LESSON_DURATIONS.map((duration) => (
-                                      <option key={duration} value={duration}>
-                                        {duration}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
+                              <div className="student-details">
+                                <span>{student.academicInfo.instrument}</span>
+                                <span>כיתה {student.academicInfo.class}</span>
+                                <span>שלב {student.academicInfo.currentStage}</span>
                               </div>
+                              <button
+                                type="button"
+                                className="remove-student-btn"
+                                onClick={() => handleRemoveStudent(student._id)}
+                                aria-label="הסר תלמיד"
+                                disabled={isSubmitting}
+                              >
+                                <X size={16} />
+                              </button>
                             </div>
-                          );
-                        })}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Schedule Management Button */}
+                    {teacher?._id && selectedStudents.length > 0 && (
+                      <div className="schedule-management">
+                        <button
+                          type="button"
+                          className="btn primary schedule-btn"
+                          onClick={() => setShowScheduleManager(true)}
+                          disabled={isSubmitting}
+                        >
+                          <Calendar size={16} />
+                          <span>ניהול מערכת שעות</span>
+                        </button>
+                        <div className="schedule-help">
+                          ניתן לנהל את מערכת השעות המלאה של המורה בלחיצה על הכפתור
+                        </div>
                       </div>
                     )}
 

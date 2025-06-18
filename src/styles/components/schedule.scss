@@ -1,0 +1,443 @@
+// Schedule Components Styles
+
+// Colors - using variables from _colors.scss
+$available-slot-bg: #E8F5E8;
+$assigned-slot-bg: #E3F2FD;
+$conflict-slot-bg: #FFEBEE;
+$selected-slot-border: var(--primary-color);
+$day-header-bg: #F5F5F5;
+
+// Base styles for schedule components
+.weekly-schedule-view {
+  width: 100%;
+  margin-bottom: 1.5rem;
+  
+  .loading-indicator, 
+  .error-message, 
+  .empty-schedule {
+    padding: 2rem;
+    text-align: center;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    
+    button {
+      margin-top: 1rem;
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: var(--primary-dark);
+      }
+    }
+  }
+  
+  // Desktop view (all days)
+  &.desktop-view {
+    .week-container {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      
+      .day-column {
+        min-width: 0;
+        
+        .day-header {
+          padding: 8px;
+          background-color: $day-header-bg;
+          border-radius: 4px 4px 0 0;
+          text-align: center;
+          
+          h3 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: bold;
+          }
+        }
+        
+        .day-slots {
+          min-height: 100px;
+          padding: 8px;
+          border: 1px solid #e0e0e0;
+          border-radius: 0 0 4px 4px;
+          
+          .empty-day {
+            padding: 1rem;
+            text-align: center;
+            color: #757575;
+            font-style: italic;
+          }
+        }
+      }
+    }
+  }
+  
+  // Mobile view (single day)
+  &.mobile-view {
+    .day-navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background-color: $day-header-bg;
+      border-radius: 4px;
+      
+      .nav-button {
+        padding: 0.25rem 0.5rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        
+        &:hover {
+          background-color: var(--primary-dark);
+        }
+      }
+      
+      .current-day {
+        margin: 0;
+        font-size: 18px;
+        font-weight: bold;
+      }
+    }
+    
+    .day-container {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      
+      .day-slots {
+        min-height: 150px;
+        padding: 8px;
+      }
+    }
+  }
+  
+  // Add slot button styling
+  .add-slot-container {
+    margin-top: 1rem;
+    text-align: center;
+    
+    .add-slot-button {
+      padding: 0.5rem 1rem;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: var(--primary-dark);
+      }
+    }
+  }
+}
+
+// Schedule Slot Card
+.schedule-slot-card {
+  position: relative;
+  margin-bottom: 8px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  // Status styling
+  &.available {
+    background-color: $available-slot-bg;
+  }
+  
+  &.assigned {
+    background-color: $assigned-slot-bg;
+  }
+  
+  &.conflict {
+    background-color: $conflict-slot-bg;
+  }
+  
+  &.selected {
+    border: 2px solid $selected-slot-border;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  // Hover effect
+  &:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+  
+  // Content styling
+  .slot-time {
+    font-weight: bold;
+    margin-bottom: 4px;
+  }
+  
+  .slot-student {
+    margin-bottom: 4px;
+    
+    .student-name {
+      font-weight: 500;
+    }
+  }
+  
+  .slot-location {
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: #757575;
+  }
+  
+  .slot-recurring, .slot-conflict {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    
+    .recurring-badge, .conflict-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    .recurring-badge {
+      background-color: #E0F7FA;
+      color: #00838F;
+    }
+    
+    .conflict-badge {
+      background-color: #FF5252;
+      color: white;
+    }
+  }
+  
+  // Actions
+  .slot-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+    
+    button {
+      padding: 4px 8px;
+      border: none;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      
+      &.edit-button {
+        background-color: #F5F5F5;
+        color: #424242;
+        
+        &:hover {
+          background-color: #E0E0E0;
+        }
+      }
+      
+      &.assign-student-button {
+        background-color: var(--primary-color);
+        color: white;
+        
+        &:hover {
+          background-color: var(--primary-dark);
+        }
+      }
+      
+      &.remove-student-button {
+        background-color: #FFEBEE;
+        color: #D32F2F;
+        
+        &:hover {
+          background-color: #FFCDD2;
+        }
+      }
+    }
+  }
+}
+
+// Schedule Conflict Indicator
+.schedule-conflict-indicator {
+  display: inline-block;
+  
+  // Basic indicator
+  .conflict-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    background-color: #FF5252;
+    color: white;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 14px;
+  }
+  
+  // Detailed indicator
+  &.detailed {
+    position: relative;
+    
+    .conflict-button {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      background-color: #FFEBEE;
+      border: 1px solid #FFCDD2;
+      border-radius: 4px;
+      cursor: pointer;
+      
+      &:hover {
+        background-color: #FFCDD2;
+      }
+      
+      .conflict-icon {
+        margin-right: 4px;
+      }
+      
+      .conflict-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #D32F2F;
+      }
+    }
+    
+    // Tooltip
+    .conflict-tooltip {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 10;
+      width: 300px;
+      background-color: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      
+      .tooltip-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 12px;
+        background-color: #FFEBEE;
+        border-bottom: 1px solid #FFCDD2;
+        
+        h4 {
+          margin: 0;
+          color: #D32F2F;
+          font-size: 14px;
+        }
+        
+        .close-tooltip {
+          background: none;
+          border: none;
+          font-size: 18px;
+          color: #D32F2F;
+          cursor: pointer;
+        }
+      }
+      
+      .conflicts-list {
+        max-height: 300px;
+        overflow-y: auto;
+        padding: 12px;
+        
+        .conflict-item {
+          margin-bottom: 16px;
+          
+          &:last-child {
+            margin-bottom: 0;
+          }
+          
+          .conflict-description {
+            margin-top: 0;
+            margin-bottom: 8px;
+          }
+          
+          h5 {
+            margin: 8px 0;
+            font-size: 13px;
+          }
+          
+          .suggestions-list {
+            margin: 0;
+            padding-left: 20px;
+            
+            li {
+              margin-bottom: 4px;
+              font-size: 12px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 1023px) {
+  .weekly-schedule-view {
+    &.desktop-view {
+      .week-container {
+        gap: 4px;
+        
+        .day-column {
+          .day-header {
+            h3 {
+              font-size: 14px;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  .schedule-slot-card {
+    padding: 8px;
+    
+    .slot-time {
+      font-size: 13px;
+    }
+    
+    .slot-student {
+      .student-name {
+        font-size: 12px;
+      }
+    }
+    
+    .slot-location {
+      font-size: 11px;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .weekly-schedule-view {
+    &.desktop-view {
+      display: none;
+    }
+    
+    &.mobile-view {
+      display: block;
+    }
+  }
+}
+
+// For larger screens, ensure the grid columns are more balanced
+@media (min-width: 1024px) {
+  .weekly-schedule-view {
+    &.desktop-view {
+      .week-container {
+        .day-column {
+          .day-slots {
+            min-height: 150px;
+          }
+        }
+      }
+    }
+  }
+}

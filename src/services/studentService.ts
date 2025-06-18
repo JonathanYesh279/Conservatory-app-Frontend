@@ -1,6 +1,5 @@
 // src/services/studentService.ts
 import { httpService } from './httpService';
-import { Teacher } from './teacherService';
 
 // Define interfaces for attendance data
 export interface AttendanceRecord {
@@ -124,15 +123,6 @@ export interface TeacherAssignment {
   isActive?: boolean;
 }
 
-// Interface for teacher schedule update with correct field names
-export interface TeacherScheduleUpdate {
-  studentId: string;
-  day: string;
-  time: string;
-  duration: number;
-  isActive?: boolean; // Make this optional with proper type
-}
-
 export const studentService = {
   async getStudents(filterBy: StudentFilter = {}): Promise<Student[]> {
     return httpService.get('student', filterBy);
@@ -209,62 +199,6 @@ export const studentService = {
 
   async removeStudent(studentId: string): Promise<void> {
     return httpService.delete(`student/${studentId}`);
-  },
-
-  // Update teacher schedule with correct field names
-  async updateTeacherSchedule(
-    teacherId: string,
-    scheduleData: TeacherScheduleUpdate
-  ): Promise<Teacher> {
-    const processedData = { ...scheduleData };
-
-    // Ensure schedule data has expected format
-    if (typeof processedData.isActive === 'undefined') {
-      processedData.isActive = true; // Set default value if missing
-    }
-
-    console.log('Updating teacher schedule with data:', processedData);
-
-    try {
-      const response = await httpService.post<Teacher>(
-        `teacher/${teacherId}/schedule`,
-        processedData
-      );
-
-      // If response is incomplete but not an error, consider it successful
-      if (!response || !response._id) {
-        console.log(
-          `Schedule updated but received partial response for teacher ${teacherId}`
-        );
-        // Return a valid-enough response to prevent errors
-        return {
-          _id: teacherId,
-          personalInfo: { fullName: 'Teacher Updated' },
-          isActive: true,
-          roles: ['teacher'],
-          teaching: {
-            studentIds: [processedData.studentId],
-            schedule: [
-              {
-                studentId: processedData.studentId,
-                day: processedData.day,
-                time: processedData.time,
-                duration: processedData.duration,
-                isActive: true,
-              },
-            ],
-          },
-        } as Teacher;
-      }
-
-      return response;
-    } catch (error) {
-      console.error(
-        `Failed to update schedule for teacher ${teacherId}:`,
-        error
-      );
-      throw error; // Let the caller handle this error
-    }
   },
 
   // Get attendance stats for a student in an orchestra

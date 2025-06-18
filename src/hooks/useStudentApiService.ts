@@ -1,7 +1,6 @@
 // src/hooks/useStudentApiService.ts
 import { useState } from 'react';
-import { StudentFormData, TeacherAssignment } from '../constants/formConstants';
-import { Teacher } from '../services/teacherService';
+import { StudentFormData } from '../constants/formConstants';
 import { studentService, Student } from '../services/studentService';
 import { useToast } from '../cmps/Toast';
 
@@ -14,12 +13,6 @@ interface UseStudentApiServiceProps {
     fullName: string;
     instrument?: string;
   } | null;
-}
-
-// Define a response type that might include success/message
-interface ScheduleUpdateResponse extends Teacher {
-  success?: boolean;
-  message?: string;
 }
 
 export const useStudentApiService = ({
@@ -83,22 +76,6 @@ export const useStudentApiService = ({
         savedStudent
       );
 
-      // Update teacher schedules - but don't let failures here fail the entire operation
-      if (formData.teacherAssignments.length > 0) {
-        try {
-          await updateTeacherSchedules(
-            formData.teacherAssignments,
-            savedStudent._id
-          );
-        } catch (scheduleErr) {
-          console.error(
-            'Error updating teacher schedules, but student was saved:',
-            scheduleErr
-          );
-          // Don't throw error here, we still want to consider the student creation successful
-        }
-      }
-
       // Store the saved student for potential undo operations
       setLastSavedStudent(savedStudent);
 
@@ -139,65 +116,6 @@ export const useStudentApiService = ({
 
       throw errorObj;
     }
-  };
-
-  // Helper function to update teacher schedules
-  const updateTeacherSchedules = async (
-    teacherAssignments: TeacherAssignment[],
-    studentId: string
-  ) => {
-    console.log(
-      `Updating teacher schedules for student ${studentId} with ${teacherAssignments.length} assignments`
-    );
-
-    // Process each assignment sequentially to avoid race conditions
-    for (const assignment of teacherAssignments) {
-      if (!assignment.teacherId || assignment.teacherId === 'new-teacher') {
-        console.log('Skipping assignment with invalid teacherId:', assignment);
-        continue;
-      }
-
-      try {
-        const scheduleData = {
-          studentId,
-          day: assignment.day,
-          time: assignment.time,
-          duration: assignment.duration,
-          isActive: true,
-        };
-
-        console.log(
-          `Updating schedule for teacher ${assignment.teacherId}:`,
-          scheduleData
-        );
-
-        // Cast the result to our extended interface that might have success/message
-        const result = (await studentService.updateTeacherSchedule(
-          assignment.teacherId,
-          scheduleData
-        )) as ScheduleUpdateResponse;
-
-        // Use optional chaining and type guards to safely check properties
-        if (result && 'success' in result && result.success === false) {
-          console.warn(
-            `Schedule update had issues for teacher ${assignment.teacherId}:`,
-            result.message || 'Unknown error'
-          );
-        } else {
-          console.log(
-            `Successfully updated schedule for teacher ${assignment.teacherId}`
-          );
-        }
-      } catch (scheduleErr) {
-        console.error(
-          `Error updating schedule for teacher ${assignment.teacherId}:`,
-          scheduleErr
-        );
-        // Continue with other updates even if one fails
-      }
-    }
-
-    console.log(`Completed teacher schedule updates for student ${studentId}`);
   };
 
   // Handle undoing student creation (removal)

@@ -6,6 +6,7 @@ import { Student } from '../../services/studentService';
 import { PersonalInfoSection } from './PersonalInfoSection';
 import { InstrumentSection } from './InstrumentSection';
 import { TeacherAssignmentSection } from './TeacherAssignmentSection';
+import { ScheduleBasedTeacherAssignment } from './ScheduleBasedTeacherAssignment';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
 import { TheoryLessonAssignmentSection } from './TheoryLessonAssignmentSection';
 import { studentValidationSchema } from '../../validations/studentValidation';
@@ -217,9 +218,14 @@ export function StudentForm({
               <InstrumentSection />
 
               {/* Teacher Assignment Section */}
-              <TeacherAssignmentSection 
+              {/* Use the new schedule-based assignment component */}
+              <ScheduleBasedTeacherAssignment
                 newTeacherInfo={newTeacherInfo}
               />
+              {/* Comment out the old section for now */}
+              {/* <TeacherAssignmentSection 
+                newTeacherInfo={newTeacherInfo}
+              /> */}
 
               {/* Orchestra Assignment Section */}
               <OrchestraAssignmentSection />

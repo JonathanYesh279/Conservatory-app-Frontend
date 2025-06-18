@@ -18,7 +18,6 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
-  Clock
 } from 'lucide-react'
 
 // Extend for student data reference
@@ -26,22 +25,6 @@ interface StudentReference {
   _id: string
   fullName: string
   instrument: string
-}
-
-interface StudentInfo {
-  name: string
-  instrument: string
-}
-
-// Define schedule item interface
-interface ScheduleItem {
-  studentId: string
-  day: string
-  time: string
-  duration: number
-  isActive: boolean
-  studentName?: string
-  instrument?: string
 }
 
 export function TeacherDetails() {
@@ -53,10 +36,7 @@ export function TeacherDetails() {
   const [students, setStudents] = useState<StudentReference[]>([]);
   const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
   const [orchestrasLoading, setOrchestrasLoading] = useState(false);
-
-  // Schedule state
-  const [scheduleItems, setScheduleItems] = useState<ScheduleItem[]>([]);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // New refresh trigger
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Theory lessons state
   const [theoryLessons, setTheoryLessons] = useState<TheoryLesson[]>([]);
@@ -66,7 +46,6 @@ export function TeacherDetails() {
   const [openSections, setOpenSections] = useState({
     students: false,
     orchestras: false,
-    schedule: false,
     theoryLessons: false,
     personalInfo: false,
     professionalInfo: false,
@@ -98,46 +77,22 @@ export function TeacherDetails() {
       // Save teacher data
       setTeacher(teacherData);
 
-      // Process schedule data separately
+      // Load related data if teacher data exists
       if (teacherData) {
-        // Add null check here
-        const schedule = teacherData.teaching?.schedule || [];
-        console.log('Teacher schedule data:', schedule);
-        
         // Load theory lessons for this teacher
         await loadTheoryLessons(id);
 
-        // Initialize with placeholder student names for immediate display
-        if (Array.isArray(schedule) && schedule.length > 0) {
-          const initialItems = schedule
-            .filter((item) => item.isActive !== false)
-            .map((item) => ({
-              ...item,
-              studentName: `תלמיד ${item.studentId.slice(-6)}`, // Temporary
-              instrument: '',
-            }));
-
-          setScheduleItems(initialItems);
-        } else {
-          setScheduleItems([]);
-        }
-
-        // Load students and update schedule items with real names
+        // Load students if there are student IDs
         if (
           teacherData.teaching?.studentIds &&
           teacherData.teaching.studentIds.length > 0
         ) {
-          // Load students but don't await here - we'll process the schedule separately after
-          loadStudents(
-            teacherData.teaching.studentIds,
-            teacherData.teaching.schedule
-          );
+          await loadStudents(teacherData.teaching.studentIds);
         } else {
-          // Clear students if there are none
           setStudents([]);
         }
 
-        // Load orchestras
+        // Load orchestras if there are orchestra IDs
         if (
           teacherData.conducting?.orchestraIds &&
           teacherData.conducting.orchestraIds.length > 0
@@ -145,7 +100,6 @@ export function TeacherDetails() {
           setOrchestrasLoading(true);
           await loadOrchestras(teacherData.conducting.orchestraIds);
         } else {
-          // Clear orchestras if there are none
           setOrchestras([]);
         }
       }
@@ -157,10 +111,7 @@ export function TeacherDetails() {
     }
   };
 
-  const loadStudents = async (
-    studentIds: string[],
-    scheduleData: any[] = []
-  ) => {
+  const loadStudents = async (studentIds: string[]) => {
     try {
       if (
         !studentIds ||
@@ -174,7 +125,6 @@ export function TeacherDetails() {
 
       console.log('Loading students for IDs:', studentIds);
 
-      // Here's the fix - using a safer approach for loading student data
       let studentData: any[] = [];
 
       try {
@@ -224,98 +174,6 @@ export function TeacherDetails() {
             '',
         }))
       );
-
-      // Create a comprehensive lookup map with multiple ID formats
-      const studentMap: Record<string, StudentInfo> = {};
-
-      // Create student map with both the original ID and string versions
-      studentData.forEach((student) => {
-        if (student && student._id) {
-          // Add every possible format of the ID as a key
-          const formats = [
-            student._id, // Original format
-            student._id.toString(), // String version
-            student._id.toString().replace(/"/g, ''), // Clean string without quotes
-          ];
-
-          // The value to store for each key format
-          const studentInfo = {
-            name: student.personalInfo?.fullName || 'תלמיד ללא שם',
-            instrument:
-              student.academicInfo?.instrument ||
-              (student.academicInfo?.instrumentProgress &&
-              student.academicInfo.instrumentProgress.length > 0
-                ? student.academicInfo.instrumentProgress[0].instrumentName
-                : ''),
-          };
-
-          // Store using each format as a key
-          formats.forEach((format) => {
-            studentMap[format.toString()] = studentInfo;
-          });
-        }
-      });
-
-      console.log('Enhanced student map:', studentMap);
-
-      // Only process schedule if we have data
-      if (Array.isArray(scheduleData) && scheduleData.length > 0) {
-        console.log('Processing schedule items with student data');
-
-        const newScheduleItems = scheduleData
-          .filter((item) => item.isActive !== false)
-          .map((item) => {
-            // Try to find the student using various ID formats
-            const studentId = item.studentId;
-            const idFormats = [
-              studentId,
-              studentId.toString(),
-              studentId.toString().replace(/"/g, ''),
-            ];
-
-            // Try all formats
-            let studentInfo: StudentInfo | null = null;
-            for (const format of idFormats) {
-              if (studentMap[format.toString()]) {
-                studentInfo = studentMap[format.toString()];
-                console.log(
-                  `Found student match for ID ${studentId} using format ${format}`
-                );
-                break;
-              }
-            }
-
-            // If still not found, try partial matching
-            if (!studentInfo) {
-              const studentIdStr = studentId.toString().replace(/"/g, '');
-              const matchingKey = Object.keys(studentMap).find(
-                (key) =>
-                  key.includes(studentIdStr) || studentIdStr.includes(key)
-              );
-
-              if (matchingKey) {
-                studentInfo = studentMap[matchingKey];
-                console.log(
-                  `Found partial match for ID ${studentId} via key ${matchingKey}`
-                );
-              }
-            }
-
-            return {
-              ...item,
-              studentName: studentInfo
-                ? studentInfo.name
-                : `תלמיד ${studentId.toString().slice(-6)}`,
-              instrument: studentInfo ? studentInfo.instrument : '',
-            };
-          });
-
-        console.log(
-          'New schedule items after mapping to student names:',
-          newScheduleItems
-        );
-        setScheduleItems(newScheduleItems);
-      }
     } catch (err) {
       console.error('Failed to load students:', err);
     }
@@ -342,9 +200,6 @@ export function TeacherDetails() {
       ...prev,
       [section]: !prev[section],
     }));
-    
-    // We no longer refresh data when toggling sections
-    // This avoids unnecessary API calls and loading states
   };
 
   const toggleFlip = () => {
@@ -394,31 +249,6 @@ export function TeacherDetails() {
     return date.toLocaleDateString('he-IL');
   };
 
-  // Helper function to format time display
-  const formatTimeDisplay = (time: string) => {
-    // Check if time is already in correct format
-    if (time && time.includes(':')) {
-      return time;
-    }
-
-    // Return default if invalid
-    return time || '08:00';
-  };
-
-  // Get day color for visual differentiation
-  const getDayColor = (day: string) => {
-    const dayColors: Record<string, string> = {
-      ראשון: '#4D55CC',
-      שני: '#28A745',
-      שלישי: '#FFC107',
-      רביעי: '#6f42c1',
-      חמישי: '#fd7e14',
-      שישי: '#20c997',
-      שבת: '#e83e8c',
-    };
-    return dayColors[day] || '#6c757d';
-  };
-
   if (isLoading) {
     return (
       <div className='loading-state'>
@@ -438,13 +268,6 @@ export function TeacherDetails() {
       </div>
     );
   }
-
-  // Check if we have schedule to display
-  const hasSchedule =
-    teacherId &&
-    teacher.teaching?.schedule &&
-    Array.isArray(teacher.teaching.schedule) &&
-    teacher.teaching.schedule.length > 0;
 
   // Get initials for avatar
   const getInitials = (name: string) => {
@@ -470,33 +293,6 @@ export function TeacherDetails() {
   // Get primary role for visualization
   const primaryRole =
     teacher.roles && teacher.roles.length > 0 ? teacher.roles[0] : 'מורה';
-
-  // Organize scheduleItems by day
-  const scheduleByDay = scheduleItems.reduce((acc, item) => {
-    if (!acc[item.day]) {
-      acc[item.day] = [];
-    }
-    acc[item.day].push(item);
-    return acc;
-  }, {} as Record<string, ScheduleItem[]>);
-
-  // Sort days in correct order
-  const dayOrder = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-
-  // Sort schedule items by time within each day
-  Object.keys(scheduleByDay).forEach((day) => {
-    scheduleByDay[day].sort((a, b) => {
-      if (!a.time || !b.time) return 0;
-      return a.time.localeCompare(b.time);
-    });
-  });
-
-  console.log('Rendering with schedule data:', {
-    hasSchedule,
-    numScheduleItems: scheduleItems.length,
-    scheduleByDay,
-    teacherSchedule: teacher.teaching?.schedule,
-  });
 
   return (
     <div className='teacher-details-content'>
@@ -691,182 +487,16 @@ export function TeacherDetails() {
                     onTheoryLessonClick={navigateToTheoryLesson}
                   />
                 )}
-
-                {/* Teaching Schedule Section - Always show if this teacher is a teacher */}
-                {teacher.roles.includes('מורה') && (
-                  <div className='section'>
-                    <div
-                      className={`section-title clickable ${
-                        openSections.schedule ? 'active' : ''
-                      }`}
-                      onClick={() => toggleSection('schedule')}
-                    >
-                      <Calendar size={16} />
-                      <span>מערכת שעות ({scheduleItems.length})</span>
-                      {openSections.schedule ? (
-                        <ChevronUp size={18} className='toggle-icon' />
-                      ) : (
-                        <ChevronDown size={18} className='toggle-icon' />
-                      )}
-                    </div>
-
-                    {openSections.schedule && (
-                      <div className='section-content'>
-                        {scheduleItems.length > 0 ? (
-                          <div className='weekly-schedule'>
-                            {/* Display schedule grouped by day */}
-                            {dayOrder
-                              .filter((day) => scheduleByDay[day])
-                              .map((day) => (
-                                <div key={day} className='schedule-day-group'>
-                                  <div
-                                    className='day-header'
-                                    style={{
-                                      backgroundColor: getDayColor(day),
-                                      color: 'white',
-                                      padding: '6px 10px',
-                                      borderRadius: '4px',
-                                      marginBottom: '8px',
-                                      marginTop: '10px',
-                                      fontWeight: 'bold',
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '6px',
-                                    }}
-                                  >
-                                    <Calendar size={14} />
-                                    <span>יום {day}</span>
-                                  </div>
-                                  <div className='day-schedule-items'>
-                                    {scheduleByDay[day].map((item, index) => (
-                                      <div
-                                        key={`${item.studentId}-${index}`}
-                                        className='schedule-item-card'
-                                        style={{
-                                          border:
-                                            '1px solid var(--border-color)',
-                                          borderRadius: '8px',
-                                          padding: '10px',
-                                          marginBottom: '8px',
-                                          backgroundColor:
-                                            'var(--bg-secondary, #f8f9fa)',
-                                          boxShadow:
-                                            '0 1px 3px rgba(0,0,0,0.05)',
-                                        }}
-                                      >
-                                        <div
-                                          className='schedule-item-header'
-                                          style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                          }}
-                                        >
-                                          <div
-                                            className='student-name'
-                                            style={{ fontWeight: 'bold' }}
-                                          >
-                                            {item.studentName}
-                                          </div>
-                                          <div
-                                            className='time-display'
-                                            style={{
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              gap: '4px',
-                                            }}
-                                          >
-                                            <Clock size={14} />
-                                            <span>
-                                              {formatTimeDisplay(item.time)}
-                                            </span>
-                                            <span>({item.duration} דקות)</span>
-                                          </div>
-                                        </div>
-                                        {item.instrument && (
-                                          <div
-                                            className='instrument-display'
-                                            style={{
-                                              fontSize: '0.85rem',
-                                              marginTop: '4px',
-                                              color:
-                                                'var(--text-secondary, #6c757d)',
-                                            }}
-                                          >
-                                            <Music
-                                              size={12}
-                                              style={{ marginLeft: '4px' }}
-                                            />
-                                            <span>{item.instrument}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
-
-                            {/* Show message if no schedule days found */}
-                            {Object.keys(scheduleByDay).length === 0 && (
-                              <div
-                                className='no-schedule-message'
-                                style={{ textAlign: 'center', padding: '20px' }}
-                              >
-                                <p>אין כרגע שיעורים במערכת</p>
-                                <button
-                                  className='refresh-btn'
-                                  onClick={refreshData}
-                                  style={{
-                                    padding: '8px 16px',
-                                    marginTop: '10px',
-                                    backgroundColor: 'var(--primary)',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                    margin: '0 auto',
-                                  }}
-                                >
-                                  <RefreshCw size={14} />
-                                  רענן נתונים
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        ) : (
-                          <div
-                            className='no-schedule-message'
-                            style={{ textAlign: 'center', padding: '20px' }}
-                          >
-                            <p>אין כרגע שיעורים במערכת</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
-                {flipped ? (
-                  <>
-                    <span>הצג מידע מקצועי</span>
-                    <ArrowLeft size={14} />
-                  </>
-                ) : (
-                  <>
-                    <span>הצג פרטים אישיים</span>
-                    <ArrowLeft size={14} />
-                  </>
-                )}
+                <span>הצג פרטים אישיים</span>
+                <ArrowLeft size={14} />
               </button>
             </div>
 
-            {/* Personal Info (Back) - remaining code kept the same */}
+            {/* Personal Info (Back) */}
             <div className='card-side card-back'>
-              {/* ... remaining code ... */}
               <div className='card-header'>
                 <div className='teacher-identity'>
                   <div
@@ -993,6 +623,7 @@ export function TeacherDetails() {
                     </div>
                   )}
                 </div>
+
                 {/* Professional Info - Collapsible */}
                 <div className='section'>
                   <div
@@ -1041,17 +672,8 @@ export function TeacherDetails() {
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>
-                {flipped ? (
-                  <>
-                    <span>הצג מידע מקצועי</span>
-                    <ArrowLeft size={14} />
-                  </>
-                ) : (
-                  <>
-                    <span>הצג פרטים אישיים</span>
-                    <ArrowLeft size={14} />
-                  </>
-                )}
+                <span>הצג מידע מקצועי</span>
+                <ArrowLeft size={14} />
               </button>
             </div>
           </div>

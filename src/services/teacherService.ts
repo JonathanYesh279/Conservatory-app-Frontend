@@ -55,13 +55,6 @@ export interface TeacherFilter {
   showInactive?: boolean;
 }
 
-export interface TeacherScheduleUpdate {
-  studentId: string;
-  day: string;
-  time: string;
-  duration: number;
-  isActive?: boolean;
-}
 
 // Function to prepare data for teacher updates (excludes credentials)
 function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
@@ -341,42 +334,6 @@ export const teacherService = {
     } catch (error) {
       console.error(`Failed to remove teacher ${teacherId}:`, error);
       throw new Error('Failed to remove teacher. Please try again later.');
-    }
-  },
-
-  async updateTeacherSchedule(
-    teacherId: string,
-    scheduleData: TeacherScheduleUpdate
-  ): Promise<Teacher> {
-    const processedData = { ...scheduleData };
-
-    // Ensure schedule data has expected format
-    if (typeof processedData.isActive === 'undefined') {
-      processedData.isActive = true; // Set default value if missing
-    }
-
-    console.log('Updating teacher schedule with data:', processedData);
-
-    try {
-      const response = await httpService.post(
-        `teacher/${teacherId}/schedule`,
-        processedData
-      );
-
-      if (!response || !response._id) {
-        console.warn(`Teacher schedule updated but received invalid response`);
-        return createPlaceholderTeacher(teacherId);
-      }
-
-      return response;
-    } catch (error) {
-      console.error(
-        `Failed to update schedule for teacher ${teacherId}:`,
-        error
-      );
-      throw new Error(
-        'Failed to update teacher schedule. Please try again later.'
-      );
     }
   },
 

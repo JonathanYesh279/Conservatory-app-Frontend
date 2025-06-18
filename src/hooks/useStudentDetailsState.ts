@@ -15,10 +15,10 @@ export function useStudentDetailsState() {
   const [flipped, setFlipped] = useState(false);
   const [isUpdatingTest, setIsUpdatingTest] = useState(false);
 
-  // Teachers data
+  // Teachers data - simplified without assignments
   const [teachersData, setTeachersData] = useState<{
     teachers: any[];
-    assignments: any[];
+    assignments: any[]; // Keep for backward compatibility but empty
   }>({
     teachers: [],
     assignments: [],
@@ -39,11 +39,12 @@ export function useStudentDetailsState() {
     instruments: false,
     teachers: false,
     orchestras: false,
-    tests: false, 
+    tests: false,
     attendance: false,
     personalInfo: true,
     parentInfo: true,
     theoryLessons: false,
+    schedule: true,
   });
 
   const navigate = useNavigate();
@@ -84,7 +85,10 @@ export function useStudentDetailsState() {
           }
 
           // Load theory lessons immediately if the student has any
-          if (studentData.enrollments?.theoryLessonIds && studentData.enrollments.theoryLessonIds.length > 0) {
+          if (
+            studentData.enrollments?.theoryLessonIds &&
+            studentData.enrollments.theoryLessonIds.length > 0
+          ) {
             loadTheoryLessonData(studentData.enrollments.theoryLessonIds);
           }
         } else {
@@ -124,39 +128,12 @@ export function useStudentDetailsState() {
     setTeachersError(null);
 
     try {
-      // Load teachers and their assignments for this student
+      // Load teachers
       const teachers = await teacherService.getTeachersByIds(teacherIds);
-
-      // Create assignments array from the data we have
-      const assignments = teacherIds.map((teacherId) => {
-        const teacher = teachers.find((t) => t && t._id === teacherId);
-
-        // Find this student's schedule from the teacher's data if available
-        let scheduleItem = null;
-        if (teacher && teacher.teaching && teacher.teaching.schedule) {
-          scheduleItem = teacher.teaching.schedule.find(
-            (item: any) => item.studentId === studentId
-          );
-        }
-
-        // Create an assignment object, either with or without schedule details
-        return scheduleItem
-          ? {
-              teacherId,
-              day: scheduleItem.day,
-              time: scheduleItem.time,
-              duration: scheduleItem.duration,
-              isActive: scheduleItem.isActive !== false,
-            }
-          : {
-              teacherId,
-              // No schedule details available for this teacher-student pair
-            };
-      });
 
       setTeachersData({
         teachers,
-        assignments,
+        assignments: [],
       });
     } catch (err) {
       console.error('Error loading teachers:', err);
@@ -180,7 +157,9 @@ export function useStudentDetailsState() {
     setTheoryLessonsLoading(true);
 
     try {
-      const theoryLessonData = await theoryService.getTheoryLessonsByIds(theoryLessonIds);
+      const theoryLessonData = await theoryService.getTheoryLessonsByIds(
+        theoryLessonIds
+      );
       setTheoryLessons(theoryLessonData);
     } catch (err) {
       console.error('Error loading theory lessons:', err);

@@ -1,19 +1,12 @@
 // src/cmps/StudentDetails/sections/TeachersSection.tsx
-import {
-  ChevronDown,
-  ChevronUp,
-  User,
-  RefreshCw,
-  Music,
-} from 'lucide-react';
+import { ChevronDown, ChevronUp, User, RefreshCw, Music } from 'lucide-react';
 import { Teacher } from '../../../services/teacherService';
-import { TeacherAssignment } from '../../../services/studentService';
 import { useState, useEffect, useRef } from 'react';
 
 interface TeachersSectionProps {
   teachersData: {
     teachers: Teacher[];
-    assignments: TeacherAssignment[];
+    assignments: any[]; // Keep for backward compatibility but won't use schedule data
   };
   teachersLoading: boolean;
   teachersError: string | null;
@@ -41,9 +34,9 @@ export function TeachersSection({
   // Create a temporary placeholder for each teacher ID if not loaded yet
   const [placeholderTeachers, setPlaceholderTeachers] = useState<any[]>([]);
 
-  // Check if we have assignments or at least teacher IDs
-  const hasAssignments =
-    (teachersData?.assignments && teachersData.assignments.length > 0) ||
+  // Check if we have teachers or at least teacher IDs
+  const hasTeachers =
+    (teachersData?.teachers && teachersData.teachers.length > 0) ||
     (studentTeacherIds && studentTeacherIds.length > 0);
 
   // Create placeholder data when student loads but teachers haven't loaded yet
@@ -108,8 +101,8 @@ export function TeachersSection({
           מורים{' '}
           {shouldUseDirectTeacherIds
             ? `(${studentTeacherIds.length})`
-            : teachersData.assignments
-            ? `(${teachersData.assignments.length})`
+            : teachersData.teachers
+            ? `(${teachersData.teachers.length})`
             : ''}
         </span>
         {isOpen ? (
@@ -133,7 +126,7 @@ export function TeachersSection({
                 נסה שוב
               </button>
             </div>
-          ) : !hasAssignments ? (
+          ) : !hasTeachers ? (
             <div className='sd-empty-state'>
               <p>לא נמצאו מורים לתלמיד זה</p>
             </div>
@@ -174,77 +167,40 @@ export function TeachersSection({
                       </button>
                     </div>
                   </div>
-                  <div className='sd-teacher-schedule'>
-                    <div className='sd-schedule-item'>
-                      <span className='sd-day'>יום א׳</span>
-                      <span className='sd-time'>--:--</span>
-                      <span className='sd-duration'>לא ידוע</span>
-                    </div>
-                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            // Standard display with full teacher data
+            // Standard display with full teacher data - simplified without schedule
             <div className='sd-teachers-grid'>
-              {teachersData.assignments.map((assignment, index) => {
-                // Try to find the teacher details
-                const matchingTeacher = teachersData.teachers.find(
-                  (t) => t && t._id === assignment.teacherId
-                );
-
-                // Fallback values if teacher not found
-                const teacherName =
-                  matchingTeacher && matchingTeacher.personalInfo
-                    ? matchingTeacher.personalInfo.fullName
-                    : `מורה ${assignment.teacherId.slice(-4)}`;
-
-                const teacherInstrument =
-                  matchingTeacher &&
-                  matchingTeacher.professionalInfo &&
-                  matchingTeacher.professionalInfo.instrument;
-
-                return (
-                  <div
-                    key={`teacher-assignment-${index}`}
-                    className='sd-teacher-card'
-                    onClick={() =>
-                      matchingTeacher && matchingTeacher._id
-                        ? onTeacherClick(matchingTeacher._id)
-                        : onTeacherClick(assignment.teacherId)
-                    }
-                  >
-                    <div className='sd-teacher-header'>
-                      <div className='sd-teacher-name'>
-                        <span>{teacherName}</span>
-                        <div className='sd-teacher-instrument'>
-                          <span>
-                           {teacherInstrument ? ` - ${teacherInstrument}` : ' - כלי נגינה לא ידוע'}
-                          </span>
-                        </div>
-                      </div>
+              {teachersData.teachers.map((teacher, index) => (
+                <div
+                  key={`teacher-${index}-${teacher._id}`}
+                  className='sd-teacher-card'
+                  onClick={() => onTeacherClick(teacher._id)}
+                >
+                  <div className='sd-teacher-header'>
+                    <div
+                      className='sd-teacher-avatar'
+                      style={{ backgroundColor: '#4D55CC' }}
+                    >
+                      {getTeacherInitials(teacher.personalInfo?.fullName || '')}
                     </div>
-                    <div className='sd-teacher-schedule'>
-                      <div className='sd-schedule-item'>
-                        <span className='sd-day'>
-                          {assignment.day || 'יום ?'}
-                        </span>
-                        <span className='sd-time'>
-                          {assignment.time || '--:--'}
-                        </span>
-                        <span className='sd-duration'>
-                          {`(${assignment.duration})` || '--'} דקות
+                    <div className='sd-teacher-name'>
+                      <span>
+                        {teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                      </span>
+                      <div className='sd-teacher-instrument'>
+                        <Music size={12} />
+                        <span>
+                          {teacher.professionalInfo?.instrument ||
+                            'כלי נגינה לא ידוע'}
                         </span>
                       </div>
-                      {assignment.location && (
-                        <div className='sd-teacher-footer'>
-                          <span>מיקום: {assignment.location}</span>
-                        </div>
-                      )}
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </div>

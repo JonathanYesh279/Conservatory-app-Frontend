@@ -8,4 +8,5 @@ export * from './sections/AttendanceSection';
 export * from './sections/PersonalInfoSection';
 export * from './sections/ParentInfoSection';
 export * from './sections/TheoryLessonsSection';
+export * from './sections/ScheduleSection';
 export * from './StatusDropdown';

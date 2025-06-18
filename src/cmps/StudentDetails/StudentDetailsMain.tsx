@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
 import { TheoryLessonsSection } from './sections/TheoryLessonsSection';
+import { ScheduleSection } from './sections/ScheduleSection';
 
 export function StudentDetailsMain() {
   const {
@@ -330,6 +331,13 @@ export function StudentDetailsMain() {
         isOpen={openSections.theoryLessons}
         onToggle={() => toggleSection('theoryLessons')}
         onTheoryLessonClick={navigateToTheoryLesson}
+      />
+      
+      {/* Schedule Section */}
+      <ScheduleSection
+        studentId={student._id}
+        isOpen={openSections.schedule}
+        onToggle={() => toggleSection('schedule')}
       />
     </div>
   );
