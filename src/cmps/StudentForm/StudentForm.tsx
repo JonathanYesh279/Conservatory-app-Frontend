@@ -247,24 +247,6 @@ export function StudentForm({
               {/* Theory Lesson Assignment Section */}
               <TheoryLessonAssignmentSection />
 
-              {/* Debug validation errors if form is invalid */}
-              {!isValid && Object.keys(errors).length > 0 && (
-                <div className='validation-debug' style={{ 
-                  background: 'rgba(255, 0, 0, 0.1)', 
-                  padding: '1rem', 
-                  borderRadius: '0.5rem', 
-                  marginBottom: '1rem',
-                  border: '1px solid rgba(255, 0, 0, 0.3)'
-                }}>
-                  <h4 style={{ color: 'red', marginBottom: '0.5rem' }}>🚨 שגיאות תקפות שמונעות שליחה:</h4>
-                  <pre style={{ fontSize: '0.8rem', direction: 'ltr', backgroundColor: 'rgba(0,0,0,0.1)', padding: '0.5rem', borderRadius: '4px' }}>
-                    {JSON.stringify(errors, null, 2)}
-                  </pre>
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'red' }}>
-                    עליך לתקן את השגיאות הללו כדי לשלוח את הטופס
-                  </div>
-                </div>
-              )}
 
               {/* Form Actions */}
               <div className='form-actions'>
