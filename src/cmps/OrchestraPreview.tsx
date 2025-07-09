@@ -1,6 +1,6 @@
 // src/cmps/OrchestraPreview.tsx
 import { Orchestra } from '../services/orchestraService';
-import { Edit, Trash2, Music, Users, Calendar, Eye } from 'lucide-react';
+import { Edit, Trash2, Music, Users, Calendar } from 'lucide-react';
 
 interface OrchestraPreviewProps {
   orchestra: Orchestra;
@@ -88,17 +88,6 @@ export function OrchestraPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
-          <button
-            className='action-btn view'
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(orchestra._id);
-            }}
-            aria-label='הצג פרטי תזמורת'
-          >
-            <Eye size={16} />
-          </button>
-
           {onEdit && (
             <button
               className='action-btn edit'
@@ -108,7 +97,7 @@ export function OrchestraPreview({
               }}
               aria-label='ערוך תזמורת'
             >
-              <Edit size={16} />
+              <Edit size={20} />
             </button>
           )}
 
@@ -121,7 +110,7 @@ export function OrchestraPreview({
               }}
               aria-label='מחק תזמורת'
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

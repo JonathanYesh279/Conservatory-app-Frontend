@@ -8,6 +8,8 @@
   direction: rtl;
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
+  min-height: fit-content;
+  height: auto;
 
   h3 {
     color: var(--text-primary);

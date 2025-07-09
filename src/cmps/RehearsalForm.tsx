@@ -184,8 +184,9 @@ export function RehearsalForm({
   ) => {
     if (!excludedDate) return;
 
-    if (!values.excludeDates.includes(excludedDate)) {
-      const updatedExcludeDates = [...values.excludeDates, excludedDate];
+    const currentExcludeDates = values.excludeDates || [];
+    if (!currentExcludeDates.includes(excludedDate)) {
+      const updatedExcludeDates = [...currentExcludeDates, excludedDate];
       setFieldValue('excludeDates', updatedExcludeDates);
       setExcludedDate('');
     }
@@ -197,7 +198,8 @@ export function RehearsalForm({
     values: BulkRehearsalFormValues,
     setFieldValue: (field: string, value: any) => void
   ) => {
-    const updatedExcludeDates = values.excludeDates.filter(
+    const currentExcludeDates = values.excludeDates || [];
+    const updatedExcludeDates = currentExcludeDates.filter(
       (date) => date !== dateToRemove
     );
     setFieldValue('excludeDates', updatedExcludeDates);
@@ -453,7 +455,7 @@ export function RehearsalForm({
                         </button>
                       </div>
 
-                      {values.excludeDates.length > 0 && (
+                      {values.excludeDates && values.excludeDates.length > 0 && (
                         <div className='excluded-dates-list'>
                           <div className='list-title'>תאריכים שיידלגו:</div>
                           <ul>

@@ -1,0 +1,486 @@
+// TeacherTimeBlockManager Styles
+.teacher-time-block-manager {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+
+  &.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    color: var(--text-secondary);
+
+    .loading-spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--bg-tertiary);
+      border-top: 3px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  // Manager Header
+  .manager-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+
+      h3 {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin: 0;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      .action-btn {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+
+        &:hover {
+          border-color: var(--primary-color);
+          color: var(--primary-color);
+        }
+
+        &.spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      .btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+
+        &.primary {
+          background: var(--primary-color);
+          color: white;
+
+          &:hover {
+            background: var(--primary-hover);
+          }
+
+          &:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+
+  // Statistics Summary
+  .stats-summary {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+  }
+
+  // Error Banner
+  .error-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(var(--danger-rgb), 0.1);
+    border: 1px solid var(--danger);
+    border-radius: 6px;
+    color: var(--danger);
+    margin-bottom: 1rem;
+  }
+
+  // Empty State
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 3rem;
+    text-align: center;
+
+    h4 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      max-width: 400px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+
+      &:hover {
+        background: var(--primary-hover);
+      }
+    }
+  }
+
+  // Time Blocks Container
+  .time-blocks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+
+    .day-section {
+      .day-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--border-color);
+
+        h4 {
+          margin: 0;
+          font-size: 1.125rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .block-count {
+          font-size: 0.875rem;
+          font-weight: 400;
+          color: var(--text-secondary);
+        }
+      }
+
+      .day-blocks {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    }
+  }
+
+  // Time Block Cards
+  .time-block-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: var(--primary-color);
+      box-shadow: 0 2px 8px rgba(var(--primary-rgb), 0.1);
+    }
+
+    &.inactive {
+      opacity: 0.6;
+      background: var(--bg-tertiary);
+    }
+
+    .time-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+
+      .block-main-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex: 1;
+
+        .block-time {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-primary);
+
+          .duration {
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+          }
+        }
+
+        .utilization-badge {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: var(--bg-card);
+          border-radius: 12px;
+          padding: 0.25rem 0.5rem;
+          position: relative;
+          min-width: 60px;
+
+          .utilization-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            border-radius: 12px;
+            opacity: 0.2;
+
+            &.high {
+              background: var(--success);
+            }
+
+            &.medium {
+              background: var(--warning);
+            }
+
+            &.low {
+              background: var(--danger);
+            }
+          }
+
+          .utilization-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 1;
+          }
+        }
+      }
+
+      .block-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        .action-btn {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          padding: 0.5rem;
+          cursor: pointer;
+          color: var(--text-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+
+          &:hover {
+            color: var(--text-primary);
+          }
+
+          &.view-btn:hover {
+            border-color: var(--info);
+            color: var(--info);
+          }
+
+          &.edit-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+          }
+
+          &.delete-btn:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+          }
+        }
+      }
+    }
+
+    .block-location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .availability-info {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    // Expanded Details
+    .block-details {
+      border-top: 1px solid var(--border-color);
+      padding-top: 0.75rem;
+      margin-top: 0.75rem;
+
+      .assigned-lessons {
+        h5 {
+          margin: 0 0 0.5rem 0;
+          font-size: 0.875rem;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        .lesson-assignment {
+          background: var(--bg-card);
+          border: 1px solid var(--border-color);
+          border-radius: 6px;
+          padding: 0.75rem;
+          margin-bottom: 0.5rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .assignment-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+
+            .student-info,
+            .assignment-time {
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              font-size: 0.75rem;
+              color: var(--text-secondary);
+            }
+
+            .duration {
+              font-size: 0.6rem;
+              color: var(--text-muted);
+            }
+          }
+
+          .assignment-notes {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            font-style: italic;
+          }
+        }
+      }
+
+      .no-assignments {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        padding: 0.5rem;
+        background: var(--bg-card);
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+      }
+
+      .block-notes {
+        margin-top: 0.75rem;
+        padding: 0.5rem;
+        background: var(--bg-card);
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        font-size: 0.75rem;
+
+        strong {
+          color: var(--text-primary);
+          margin-right: 0.5rem;
+        }
+
+        span {
+          color: var(--text-secondary);
+        }
+      }
+    }
+  }
+}
+
+// Mobile Responsive
+@media (max-width: 768px) {
+  .teacher-time-block-manager {
+    padding: 1rem;
+
+    .manager-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 1rem;
+
+      .header-actions {
+        justify-content: space-between;
+      }
+
+      .stats-summary {
+        justify-content: center;
+        gap: 1rem;
+      }
+    }
+
+    .time-block-card {
+      padding: 0.75rem;
+
+      .time-block-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+
+        .block-main-info {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 0.5rem;
+        }
+
+        .block-actions {
+          justify-content: center;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

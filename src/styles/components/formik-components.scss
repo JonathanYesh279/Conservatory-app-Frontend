@@ -85,6 +85,22 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* Fix autocomplete styling to match dark theme */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--bg-tertiary) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  caret-color: var(--text-primary) !important;
+}
+
+/* Firefox autocomplete styling */
+input:-moz-autofill {
+  background-color: var(--bg-tertiary) !important;
+  color: var(--text-primary) !important;
+}
+
 /* Form layout helpers */
 .form-row {
   display: flex;
@@ -290,4 +306,34 @@ button.remove-btn:hover {
 
 .set-primary-btn:hover {
   background-color: rgba(255, 193, 7, 0.1);
+}
+
+/* Enhanced Field Header for Error Alignment */
+.field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+  min-height: 20px;
+  
+  label {
+    margin-bottom: 0;
+    flex: 1;
+  }
+}
+
+.form-error-inline {
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(var(--danger-rgb), 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

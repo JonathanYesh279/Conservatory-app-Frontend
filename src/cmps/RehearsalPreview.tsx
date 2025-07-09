@@ -1,6 +1,6 @@
 // src/cmps/RehearsalPreview.tsx
 import { Rehearsal } from '../services/rehearsalService';
-import { Edit, Trash2, Clock, MapPin, Eye } from 'lucide-react';
+import { Edit, Trash2, Clock, MapPin } from 'lucide-react';
 
 interface RehearsalPreviewProps {
   rehearsal: Rehearsal;
@@ -84,17 +84,6 @@ export function RehearsalPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
-          <button
-            className='action-btn view'
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(rehearsal._id);
-            }}
-            aria-label='הצג פרטי חזרה'
-          >
-            <Eye size={16} />
-          </button>
-
           {onEdit && (
             <button
               className='action-btn edit'
@@ -104,7 +93,7 @@ export function RehearsalPreview({
               }}
               aria-label='ערוך חזרה'
             >
-              <Edit size={16} />
+              <Edit size={20} />
             </button>
           )}
 
@@ -117,7 +106,7 @@ export function RehearsalPreview({
               }}
               aria-label='מחק חזרה'
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

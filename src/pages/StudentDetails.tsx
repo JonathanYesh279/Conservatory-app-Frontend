@@ -11,6 +11,7 @@ import { OrchestrasSection } from '../cmps/StudentDetails/sections/OrchestrasSec
 import { TestsSection } from '../cmps/StudentDetails/sections/TestsSection';
 import { AttendanceSection } from '../cmps/StudentDetails/sections/AttendanceSection';
 import { TheoryLessonsSection } from '../cmps/StudentDetails/sections/TheoryLessonsSection';
+import { LessonScheduleSection } from '../cmps/StudentDetails/sections/LessonScheduleSection';
 
 export function StudentDetails() {
   const {
@@ -63,6 +64,8 @@ export function StudentDetails() {
 
   // Get teacher IDs directly from student object
   const teacherIds = student.teacherIds || [];
+  
+  // Debug output removed for production
 
   return (
     <div className='student-details-content'>
@@ -140,6 +143,17 @@ export function StudentDetails() {
                   onTeacherClick={navigateToTeacher}
                   onRetryLoadTeachers={retryLoadTeachers}
                   studentTeacherIds={teacherIds} // Pass teacher IDs directly
+                  teacherAssignments={student.teacherAssignments || []} // Add teacher assignments
+                />
+
+                <LessonScheduleSection
+                  student={student}
+                  isOpen={openSections.schedule}
+                  onToggle={() => toggleSection('schedule')}
+                  onEditSchedule={() => {
+                    // Navigate to student edit form
+                    window.location.href = `/students/${student._id}/edit`;
+                  }}
                 />
 
                 <OrchestrasSection

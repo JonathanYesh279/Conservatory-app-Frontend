@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { X, Plus } from 'lucide-react';
-import { ScheduleSlot } from '../../services/scheduleService';
+import { ScheduleSlot, NUMERIC_TO_HEBREW_DAYS } from '../../types/schedule';
 import { WeeklyScheduleView } from './index';
-import CreateTimeSlotForm from './CreateTimeSlotForm';
+import TimeBlockCreator from '../TimeBlock/TimeBlockCreator';
 import StudentAssignmentModal from './StudentAssignmentModal';
 import { useScheduleManagement } from '../../hooks/useScheduleManagement';
 
@@ -30,9 +30,8 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
   });
   
   // Local state
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [showTimeBlockCreator, setShowTimeBlockCreator] = useState(false);
   const [showAssignModal, setShowAssignModal] = useState(false);
-  const [editingSlot, setEditingSlot] = useState<ScheduleSlot | null>(null);
   const [selectedDayForNewSlot, setSelectedDayForNewSlot] = useState<number | null>(null);
   
   // Handle slot selection
@@ -40,10 +39,9 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
     selectSlot(slot);
   };
   
-  // Handle slot editing
+  // Handle slot editing (placeholder - not used with time blocks)
   const handleSlotEdit = (slot: ScheduleSlot) => {
-    setEditingSlot(slot);
-    setShowCreateForm(true);
+    console.log('Slot editing not available with time block system:', slot);
   };
   
   // Handle student assignment
@@ -58,16 +56,15 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
     setShowAssignModal(true);
   };
   
-  // Handle adding a new slot
+  // Handle adding a new time block
   const handleAddSlot = (dayOfWeek: number) => {
     setSelectedDayForNewSlot(dayOfWeek);
-    setEditingSlot(null);
-    setShowCreateForm(true);
+    setShowTimeBlockCreator(true);
   };
-  
-  // Handle form submission
-  const handleFormSubmit = (slot: ScheduleSlot) => {
-    setShowCreateForm(false);
+
+  // Handle time block creation
+  const handleTimeBlockCreated = () => {
+    setShowTimeBlockCreator(false);
     
     // Call the callback if provided
     if (onScheduleChange) {
@@ -76,7 +73,7 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
   };
   
   // Handle student assignment completion
-  const handleStudentAssigned = (slot: ScheduleSlot) => {
+  const handleStudentAssigned = () => {
     setShowAssignModal(false);
     
     // Call the callback if provided
@@ -85,21 +82,29 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
     }
   };
   
-  // Render create/edit form
-  const renderCreateForm = () => {
-    if (!showCreateForm) return null;
+
+  // Render time block creator (new system)
+  const renderTimeBlockCreator = () => {
+    if (!showTimeBlockCreator) return null;
+    
+    const initialDay = selectedDayForNewSlot !== null && selectedDayForNewSlot !== 6 
+      ? NUMERIC_TO_HEBREW_DAYS[selectedDayForNewSlot] 
+      : undefined; // Skip Saturday (6) as it's not supported by time blocks
     
     return (
-      <div className="modal-overlay">
-        <div className="modal-content">
-          <CreateTimeSlotForm
-            teacherId={teacherId}
-            initialSlot={editingSlot || undefined}
-            onSubmit={handleFormSubmit}
-            onCancel={() => setShowCreateForm(false)}
-          />
-        </div>
-      </div>
+      <TimeBlockCreator
+        teacherId={teacherId}
+        initialData={{
+          day: initialDay,
+          startTime: '14:00',
+          endTime: '18:00',
+          isRecurring: false,
+          recurringDays: []
+        }}
+        onBlockCreated={handleTimeBlockCreated}
+        onCancel={() => setShowTimeBlockCreator(false)}
+        isOpen={showTimeBlockCreator}
+      />
     );
   };
   
@@ -138,7 +143,7 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
             onClick={() => handleAddSlot(new Date().getDay())}
           >
             <Plus size={16} />
-            <span>הוספת שעת לימוד חדשה</span>
+            <span>הוספת בלוק זמן חדש</span>
           </button>
         </div>
         
@@ -155,7 +160,7 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
       </div>
       
       {/* Render modals */}
-      {renderCreateForm()}
+      {renderTimeBlockCreator()}
       {renderAssignModal()}
     </div>
   );

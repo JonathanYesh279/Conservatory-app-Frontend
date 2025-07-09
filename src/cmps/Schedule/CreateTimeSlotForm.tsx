@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
-import { 
-  CreateScheduleSlotData, 
-  ScheduleSlot, 
-  UpdateScheduleSlotData 
-} from '../../services/scheduleService';
+import {
+  ScheduleSlot,
+  CreateScheduleSlotRequest as CreateScheduleSlotData,
+  UpdateScheduleSlotRequest as UpdateScheduleSlotData,
+} from '../../types/schedule';
 import { timeSlotSchema } from '../../utils/scheduleValidation';
 import { useScheduleManagement } from '../../hooks/useScheduleManagement';
-import { 
-  formatDayOfWeek, 
-  generateTimeSlotOptions, 
+import {
+  formatDayOfWeek,
+  generateTimeSlotOptions,
   calculateEndTime,
-  getDurationOptions
+  getDurationOptions,
 } from '../../utils/scheduleUtils';
-import ScheduleConflictIndicator from './ScheduleConflictIndicator';
 
 interface CreateTimeSlotFormProps {
   teacherId: string;
@@ -26,28 +25,28 @@ const CreateTimeSlotForm: React.FC<CreateTimeSlotFormProps> = ({
   teacherId,
   initialSlot,
   onSubmit,
-  onCancel
+  onCancel,
 }) => {
   // Get schedule management functionality
-  const { 
-    createTimeSlot, 
-    updateTimeSlot, 
-    checkForConflicts, 
-    isCreating, 
-    isUpdating, 
-    error, 
-    clearErrors 
+  const {
+    createTimeSlot,
+    updateTimeSlot,
+    checkForConflicts,
+    isCreating,
+    isUpdating,
+    error,
+    clearErrors,
   } = useScheduleManagement({ teacherId });
-  
+
   // Local state
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [isEditMode, setIsEditMode] = useState(Boolean(initialSlot));
   const [selectedDuration, setSelectedDuration] = useState(30); // Default 30 minutes
-  
+
   // Generate time options
   const timeOptions = generateTimeSlotOptions(8, 20, 15); // 8 AM to 8 PM, 15-minute intervals
   const durationOptions = getDurationOptions();
-  
+
   // Initialize form values
   const initialValues: CreateScheduleSlotData | UpdateScheduleSlotData = {
     dayOfWeek: initialSlot?.dayOfWeek ?? new Date().getDay(),
@@ -55,45 +54,53 @@ const CreateTimeSlotForm: React.FC<CreateTimeSlotFormProps> = ({
     endTime: initialSlot?.endTime ?? '09:30',
     location: initialSlot?.location ?? '',
     notes: initialSlot?.notes ?? '',
-    isRecurring: initialSlot?.isRecurring ?? true
+    isRecurring: initialSlot?.isRecurring ?? true,
   };
-  
+
   // Handle end time calculation when start time or duration changes
-  const updateEndTime = (startTime: string, durationMinutes: number): string => {
+  const updateEndTime = (
+    startTime: string,
+    durationMinutes: number
+  ): string => {
     return calculateEndTime(startTime, durationMinutes);
   };
-  
+
   // Handle form submission
-  const handleSubmit = async (values: CreateScheduleSlotData | UpdateScheduleSlotData) => {
+  const handleSubmit = async (
+    values: CreateScheduleSlotData | UpdateScheduleSlotData
+  ) => {
     // Clear any previous errors
     clearErrors();
     setConflictError(null);
-    
+
     // Check for conflicts
     const conflict = checkForConflicts({
       id: initialSlot?.id,
       dayOfWeek: values.dayOfWeek,
       startTime: values.startTime,
       endTime: values.endTime,
-      isRecurring: values.isRecurring || false
+      isRecurring: values.isRecurring || false,
     });
-    
+
     if (conflict) {
       setConflictError(conflict);
       return;
     }
-    
+
     try {
       let result: ScheduleSlot | null;
-      
+
       if (isEditMode && initialSlot) {
         // Update existing slot
-        result = await updateTimeSlot(initialSlot.id, values as UpdateScheduleSlotData);
+        result = await updateTimeSlot(
+          initialSlot.id,
+          values as UpdateScheduleSlotData
+        );
       } else {
         // Create new slot
         result = await createTimeSlot(values as CreateScheduleSlotData);
       }
-      
+
       if (result && onSubmit) {
         onSubmit(result);
       }
@@ -101,17 +108,15 @@ const CreateTimeSlotForm: React.FC<CreateTimeSlotFormProps> = ({
       console.error('Error saving time slot:', err);
     }
   };
-  
+
   return (
-    <div className="create-time-slot-form">
-      <h2>{isEditMode ? 'Edit Time Slot' : 'Create New Time Slot'}</h2>
-      
+    <div className='create-time-slot-form'>
+      <h2>{isEditMode ? 'עריכת שעת לימוד' : 'הוספת שעת לימוד חדשה'}</h2>
+
       {(error || conflictError) && (
-        <div className="form-error">
-          {error || conflictError}
-        </div>
+        <div className='form-error'>{error || conflictError}</div>
       )}
-      
+
       <Formik
         initialValues={initialValues}
         validationSchema={timeSlotSchema}
@@ -120,14 +125,14 @@ const CreateTimeSlotForm: React.FC<CreateTimeSlotFormProps> = ({
       >
         {({ values, setFieldValue, isValid, dirty }) => (
           <Form>
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="dayOfWeek">Day of Week</label>
+            <div className='form-row'>
+              <div className='form-group'>
+                <label htmlFor='dayOfWeek'>יום בשבוע</label>
                 <Field
-                  as="select"
-                  id="dayOfWeek"
-                  name="dayOfWeek"
-                  className="form-control"
+                  as='select'
+                  id='dayOfWeek'
+                  name='dayOfWeek'
+                  className='form-control'
                 >
                   {Array.from({ length: 7 }, (_, i) => (
                     <option key={i} value={i}>
@@ -135,134 +140,150 @@ const CreateTimeSlotForm: React.FC<CreateTimeSlotFormProps> = ({
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="dayOfWeek" component="div" className="form-error" />
+                <ErrorMessage
+                  name='dayOfWeek'
+                  component='div'
+                  className='form-error'
+                />
               </div>
             </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="startTime">Start Time</label>
+
+            <div className='form-row'>
+              <div className='form-group'>
+                <label htmlFor='startTime'>שעת התחלה</label>
                 <Field
-                  as="select"
-                  id="startTime"
-                  name="startTime"
-                  className="form-control"
+                  as='select'
+                  id='startTime'
+                  name='startTime'
+                  className='form-control'
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     const startTime = e.target.value;
                     setFieldValue('startTime', startTime);
-                    setFieldValue('endTime', updateEndTime(startTime, selectedDuration));
+                    setFieldValue(
+                      'endTime',
+                      updateEndTime(startTime, selectedDuration)
+                    );
                   }}
                 >
-                  {timeOptions.map(time => (
+                  {timeOptions.map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="startTime" component="div" className="form-error" />
+                <ErrorMessage
+                  name='startTime'
+                  component='div'
+                  className='form-error'
+                />
               </div>
-              
-              <div className="form-group">
-                <label htmlFor="duration">Duration</label>
+
+              <div className='form-group'>
+                <label htmlFor='duration'>משך השיעור</label>
                 <select
-                  id="duration"
-                  className="form-control"
+                  id='duration'
+                  className='form-control'
                   value={selectedDuration}
                   onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                     const duration = parseInt(e.target.value, 10);
                     setSelectedDuration(duration);
-                    setFieldValue('endTime', updateEndTime(values.startTime, duration));
+                    setFieldValue(
+                      'endTime',
+                      values.startTime ? updateEndTime(values.startTime, duration) : ''
+                    );
                   }}
                 >
-                  {durationOptions.map(duration => (
+                  {durationOptions.map((duration) => (
                     <option key={duration} value={duration}>
-                      {duration} minutes
+                      {duration} דקות
                     </option>
                   ))}
                 </select>
               </div>
-              
-              <div className="form-group">
-                <label htmlFor="endTime">End Time</label>
+
+              <div className='form-group'>
+                <label htmlFor='endTime'>שעת סיום</label>
                 <Field
-                  as="select"
-                  id="endTime"
-                  name="endTime"
-                  className="form-control"
+                  as='select'
+                  id='endTime'
+                  name='endTime'
+                  className='form-control'
                 >
-                  {timeOptions.map(time => (
+                  {timeOptions.map((time) => (
                     <option key={time} value={time}>
                       {time}
                     </option>
                   ))}
                 </Field>
-                <ErrorMessage name="endTime" component="div" className="form-error" />
-              </div>
-            </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="location">Location (Optional)</label>
-                <Field
-                  type="text"
-                  id="location"
-                  name="location"
-                  className="form-control"
-                  placeholder="Room number, building, etc."
+                <ErrorMessage
+                  name='endTime'
+                  component='div'
+                  className='form-error'
                 />
               </div>
             </div>
-            
-            <div className="form-row">
-              <div className="form-group">
-                <label htmlFor="notes">Notes (Optional)</label>
+
+            <div className='form-row'>
+              <div className='form-group'>
+                <label htmlFor='location'>מיקום (אופציונלי)</label>
                 <Field
-                  as="textarea"
-                  id="notes"
-                  name="notes"
-                  className="form-control"
+                  type='text'
+                  id='location'
+                  name='location'
+                  className='form-control'
+                  placeholder="מספר חדר, בניין וכו'"
+                />
+              </div>
+            </div>
+
+            <div className='form-row'>
+              <div className='form-group'>
+                <label htmlFor='notes'>הערות (אופציונלי)</label>
+                <Field
+                  as='textarea'
+                  id='notes'
+                  name='notes'
+                  className='form-control'
                   rows={3}
-                  placeholder="Additional information about this time slot..."
+                  placeholder='מידע נוסף על שעת הלימוד הזו...'
                 />
               </div>
             </div>
-            
-            <div className="form-row">
-              <div className="form-group checkbox-group">
-                <label className="checkbox-label">
+
+            <div className='form-row'>
+              <div className='form-group checkbox-group'>
+                <label className='checkbox-label'>
                   <Field
-                    type="checkbox"
-                    id="isRecurring"
-                    name="isRecurring"
-                    className="form-checkbox"
+                    type='checkbox'
+                    id='isRecurring'
+                    name='isRecurring'
+                    className='form-checkbox'
                   />
-                  Recurring weekly slot
+                  שעה קבועה שבועית
                 </label>
-                <div className="checkbox-help">
-                  Check this if this slot repeats every week
-                </div>
+                <div className='checkbox-help'>סמן אם השעה חוזרת מדי שבוע</div>
               </div>
             </div>
-            
-            <div className="form-actions">
+
+            <div className='form-actions'>
               <button
-                type="button"
-                className="cancel-button"
-                onClick={onCancel}
-              >
-                Cancel
-              </button>
-              
-              <button
-                type="submit"
-                className="submit-button"
+                type='submit'
+                className='btn primary'
                 disabled={!isValid || !dirty || isCreating || isUpdating}
               >
                 {isCreating || isUpdating
-                  ? 'Saving...'
+                  ? 'שומר...'
                   : isEditMode
-                    ? 'Update Slot'
-                    : 'Create Slot'}
+                  ? 'עדכון שעה'
+                  : 'יצירת שעה'}
+              </button>
+
+              <button
+                type='button'
+                className='btn secondary'
+                onClick={onCancel}
+              >
+                ביטול
               </button>
             </div>
           </Form>

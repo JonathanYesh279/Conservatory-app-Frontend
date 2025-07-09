@@ -1,8 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(node:*)",
+      "Bash(npm run build:*)",
+      "Bash(grep:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run lint)",
+      "Bash(find:*)",
+      "Bash(pkill:*)",
+      "Bash(rg:*)",
+      "Bash(npx sass:*)",
+      "Bash(npm run:*)",
+      "Bash(timeout 30s npm run dev:*)",
+      "Bash(true)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

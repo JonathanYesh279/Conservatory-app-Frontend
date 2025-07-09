@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Calendar, Trash2, AlertCircle } from 'lucide-react';
+import { User, Calendar, Trash2, AlertCircle, Clock, MapPin } from 'lucide-react';
 import { useFormikContext } from 'formik';
 import { StudentFormData } from '../../constants/formConstants';
 import { useTeacherStore } from '../../store/teacherStore';
@@ -33,10 +33,10 @@ export function ScheduleBasedTeacherAssignment({
   // Get schedule store
   const {
     getAvailableSlots,
-    isLoadingAvailableSlots,
-    assignStudentToSlot,
-    isAssigningStudent,
   } = useScheduleStore();
+  
+  // Add local state for loading
+  const [isAssigningStudent, setIsAssigningStudent] = useState(false);
 
   // State for UI
   const [showTeacherSelect, setShowTeacherSelect] = useState(values.teacherIds.length === 0);
@@ -45,6 +45,8 @@ export function ScheduleBasedTeacherAssignment({
   const [selectedSlotIds, setSelectedSlotIds] = useState<string[]>([]);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [assignmentToRemove, setAssignmentToRemove] = useState('');
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [slotsError, setSlotsError] = useState<string | null>(null);
 
   // Check for validation errors
   const hasErrors = touched.teacherAssignments && errors.teacherAssignments;
@@ -76,57 +78,34 @@ export function ScheduleBasedTeacherAssignment({
   const handleTeacherChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const teacherId = e.target.value;
     setSelectedTeacherId(teacherId);
+    setSelectedSlotIds([]);
+    setSlotsError(null);
     
-    if (teacherId) {
+    if (teacherId && teacherId !== 'new-teacher') {
+      setIsLoadingSlots(true);
       try {
-        // Load available slots for this teacher
         console.log('Loading available slots for teacher ID:', teacherId);
         const slots = await getAvailableSlots(teacherId);
         console.log('Available slots received:', slots);
         
-        if (slots.length === 0) {
-          // If no slots are available, create a default slot
-          console.log('No slots available, creating a default schedule option');
-          
-          // Add a default slot for each day of the week
-          const defaultSlots = [];
-          for (let day = 0; day < 7; day++) {
-            defaultSlots.push({
-              id: `default-${day}`,
-              teacherId: teacherId,
-              dayOfWeek: day,
-              startTime: '16:00',
-              endTime: '16:45',
-              isRecurring: true,
-              location: '',
-              notes: 'Default slot'
-            });
-          }
-          
-          setAvailableSlots(defaultSlots);
-        } else {
-          setAvailableSlots(slots);
-        }
+        // Simply set whatever the backend returns - NO fake slot creation
+        setAvailableSlots(slots);
+        setIsLoadingSlots(false);
       } catch (err) {
         console.error('Failed to load available slots:', err);
-        // Create default slots on error as well
-        const defaultSlots = [];
-        for (let day = 0; day < 7; day++) {
-          defaultSlots.push({
-            id: `default-${day}`,
-            teacherId: teacherId,
-            dayOfWeek: day,
-            startTime: '16:00',
-            endTime: '16:45',
-            isRecurring: true,
-            location: '',
-            notes: 'Default slot (error fallback)'
-          });
-        }
-        setAvailableSlots(defaultSlots);
+        setSlotsError(err instanceof Error ? err.message : 'שגיאה בטעינת השעות הזמינות');
+        setAvailableSlots([]);
+        setIsLoadingSlots(false);
       }
+    } else if (teacherId === 'new-teacher') {
+      // For new teachers, clear slots and show appropriate message
+      setAvailableSlots([]);
+      setIsLoadingSlots(false);
+      setSlotsError('בחר מורה קיים כדי לראות שעות זמינות');
     } else {
       setAvailableSlots([]);
+      setIsLoadingSlots(false);
+      setSlotsError(null);
     }
   };
 
@@ -144,8 +123,18 @@ export function ScheduleBasedTeacherAssignment({
 
   // Assign selected slots to student
   const handleAssignSlots = async () => {
-    if (selectedSlotIds.length === 0 || !selectedTeacherId) return;
+    console.log('handleAssignSlots called with:', {
+      selectedSlotIds,
+      selectedTeacherId,
+      availableSlots: availableSlots.length
+    });
     
+    if (selectedSlotIds.length === 0 || !selectedTeacherId) {
+      console.log('handleAssignSlots early return: no slots or teacher selected');
+      return;
+    }
+    
+    setIsAssigningStudent(true);
     try {
       // Add the teacher to teacherIds if not already there
       if (!values.teacherIds.includes(selectedTeacherId)) {
@@ -168,11 +157,15 @@ export function ScheduleBasedTeacherAssignment({
         ) / 60000) // Convert to minutes
       }));
       
+      console.log('Creating assignments:', newAssignments);
+      
       // Add to existing assignments
       setFieldValue('teacherAssignments', [
         ...values.teacherAssignments,
         ...newAssignments
       ]);
+      
+      console.log('Updated form teacherAssignments:', [...values.teacherAssignments, ...newAssignments]);
       
       // Reset selection state
       setSelectedTeacherId('');
@@ -182,6 +175,8 @@ export function ScheduleBasedTeacherAssignment({
       
     } catch (err) {
       console.error('Failed to assign slots:', err);
+    } finally {
+      setIsAssigningStudent(false);
     }
   };
 
@@ -366,46 +361,112 @@ export function ScheduleBasedTeacherAssignment({
         <div className="available-slots-section">
           <h4>שעות זמינות עבור {getTeacherName(selectedTeacherId)}</h4>
           
-          {isLoadingAvailableSlots ? (
-            <div className="loading-indicator">טוען שעות זמינות...</div>
-          ) : availableSlots.length === 0 ? (
-            <div className="no-slots-message">
-              אין שעות זמינות למורה זה. יש לפנות למורה להגדרת שעות פנויות.
-            </div>
-          ) : (
-            <div className="slots-container">
-              {availableSlots.map(slot => (
-                <div 
-                  key={slot.id}
-                  className={`slot-item ${selectedSlotIds.includes(slot.id) ? 'selected' : ''}`}
-                  onClick={() => handleSlotSelect(slot.id)}
-                >
-                  <div className="slot-day">{formatDayOfWeek(slot.dayOfWeek, 'medium')}</div>
-                  <div className="slot-time">
-                    {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
-                  </div>
-                  {slot.location && (
-                    <div className="slot-location">{slot.location}</div>
-                  )}
-                  {selectedSlotIds.includes(slot.id) && (
-                    <div className="slot-selected-indicator">✓</div>
-                  )}
-                </div>
-              ))}
+          {/* Loading state */}
+          {isLoadingSlots && (
+            <div className="loading-indicator">
+              <div className="loading-spinner"></div>
+              <span>טוען שעות זמינות...</span>
             </div>
           )}
 
-          {availableSlots.length > 0 && (
-            <div className="slot-actions">
-              <button
-                type="button"
-                className="assign-slots-btn"
-                onClick={handleAssignSlots}
-                disabled={selectedSlotIds.length === 0 || isSubmitting}
-              >
-                שייך {selectedSlotIds.length} שיעורים נבחרים
-              </button>
+          {/* Error state */}
+          {slotsError && !isLoadingSlots && (
+            <div className="error-state">
+              <AlertCircle size={24} color="#dc3545" />
+              <div className="error-content">
+                <h5>שגיאה בטעינת השעות</h5>
+                <p>{slotsError}</p>
+                <button
+                  type="button"
+                  className="retry-btn"
+                  onClick={() => handleTeacherChange({ target: { value: selectedTeacherId } } as any)}
+                >
+                  נסה שוב
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Empty state - no slots available */}
+          {!isLoadingSlots && !slotsError && availableSlots.length === 0 && (
+            <div className="empty-state">
+              <Calendar size={48} color="#ffc107" />
+              <div className="empty-content">
+                <h5>אין שעות זמינות</h5>
+                <p>המורה עדיין לא יצר משבצות זמן במערכת השעות.</p>
+                <div className="empty-instructions">
+                  <p><strong>מה צריך לעשות:</strong></p>
+                  <ul>
+                    <li>יש לפנות למורה להקמת מערכת שעות</li>
+                    <li>המורה צריך להכנס למערכת וליצור משבצות זמן</li>
+                    <li>לאחר יצירת המשבצות ניתן יהיה לשייך תלמידים</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success state - slots available */}
+          {!isLoadingSlots && !slotsError && availableSlots.length > 0 && (
+            <>
+              <div className="slots-stats">
+                <span>נמצאו {availableSlots.length} שעות זמינות</span>
+                {selectedSlotIds.length > 0 && (
+                  <span>נבחרו {selectedSlotIds.length}</span>
+                )}
+              </div>
+              
+              <div className="slots-container">
+                {availableSlots.map(slot => (
+                  <div 
+                    key={slot.id}
+                    className={`slot-item ${selectedSlotIds.includes(slot.id) ? 'selected' : ''} ${slot.studentId ? 'occupied' : ''}`}
+                    onClick={() => !slot.studentId && handleSlotSelect(slot.id)}
+                    style={{ cursor: slot.studentId ? 'not-allowed' : 'pointer' }}
+                  >
+                    <div className="slot-day">{formatDayOfWeek(slot.dayOfWeek, 'medium')}</div>
+                    <div className="slot-time">
+                      <Clock size={14} />
+                      {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                    </div>
+                    {slot.location && (
+                      <div className="slot-location">
+                        <MapPin size={14} />
+                        {slot.location}
+                      </div>
+                    )}
+                    {slot.studentId ? (
+                      <div className="slot-occupied">תפוס</div>
+                    ) : selectedSlotIds.includes(slot.id) ? (
+                      <div className="slot-selected-indicator">✓ נבחר</div>
+                    ) : (
+                      <div className="slot-available">זמין</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="slot-actions">
+                <button
+                  type="button"
+                  className="assign-slots-btn"
+                  onClick={handleAssignSlots}
+                  disabled={selectedSlotIds.length === 0 || isSubmitting || isAssigningStudent}
+                >
+                  {isAssigningStudent ? 'משייך...' : `שייך ${selectedSlotIds.length} שיעורים נבחרים`}
+                </button>
+                {selectedSlotIds.length > 0 && (
+                  <button
+                    type="button"
+                    className="cancel-selection-btn"
+                    onClick={() => setSelectedSlotIds([])}
+                    disabled={isAssigningStudent}
+                  >
+                    בטל בחירה
+                  </button>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}

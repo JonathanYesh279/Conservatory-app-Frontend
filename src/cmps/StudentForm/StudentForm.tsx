@@ -5,18 +5,19 @@ import { Formik, Form, FormikHelpers } from 'formik';
 import { Student } from '../../services/studentService';
 import { PersonalInfoSection } from './PersonalInfoSection';
 import { InstrumentSection } from './InstrumentSection';
-import { TeacherAssignmentSection } from './TeacherAssignmentSection';
-import { ScheduleBasedTeacherAssignment } from './ScheduleBasedTeacherAssignment';
+// import { TeacherAssignmentSection } from './TeacherAssignmentSection';
+import { StudentLessonScheduler } from './StudentLessonScheduler';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
 import { TheoryLessonAssignmentSection } from './TheoryLessonAssignmentSection';
 import { studentValidationSchema } from '../../validations/studentValidation';
 import { useStudentApiService } from '../../hooks/useStudentApiService';
 import { useSchoolYearStore } from '../../store/schoolYearStore';
+import { LessonDuration } from '../../types/schedule';
 
 // Import from constants file
 import {
   VALID_CLASSES,
-  DAYS_OF_WEEK,
+  // DAYS_OF_WEEK,
   StudentFormData,
 } from '../../constants/formConstants';
 
@@ -73,7 +74,11 @@ export function StudentForm({
           theoryLessonIds: student.enrollments?.theoryLessonIds || [],
         },
         teacherIds: student.teacherIds || [],
-        teacherAssignments: [], // Will be populated from teacher data if available
+        teacherAssignments: (student.teacherAssignments || []).map(assignment => ({
+          ...assignment,
+          day: assignment.day as any, // Type assertion for Hebrew day names
+          duration: assignment.duration as LessonDuration,
+        })), // Load existing teacher assignments
         orchestraAssignments:
           student.enrollments?.orchestraIds?.map((id) => ({
             orchestraId: id,
@@ -90,7 +95,7 @@ export function StudentForm({
         personalInfo: {
           fullName: '',
           phone: '',
-          age: 0,
+          age: undefined,
           address: '',
           parentName: '',
           parentPhone: '',
@@ -121,17 +126,8 @@ export function StudentForm({
         ];
       }
 
-      // Handle new teacher case
-      if (newTeacherInfo) {
-        newStudent.teacherAssignments = [
-          {
-            teacherId: newTeacherInfo._id || 'new-teacher',
-            day: DAYS_OF_WEEK[0],
-            time: '08:00',
-            duration: 45,
-          },
-        ];
-      }
+      // Note: newTeacherInfo is available in the teacher assignment component
+      // but we don't auto-assign - let the user manually choose
 
       return newStudent;
     }
@@ -142,6 +138,10 @@ export function StudentForm({
     values: StudentFormData,
     formikHelpers: FormikHelpers<StudentFormData>
   ) => {
+    console.log('🚀 StudentForm.handleSubmit called!', values);
+    console.log('🚀 Form is submitting, isSubmitting:', isSubmitting);
+    console.log('🚀 Formik setSubmitting available:', typeof formikHelpers.setSubmitting);
+    
     try {
       setFormError(null);
       
@@ -150,17 +150,23 @@ export function StudentForm({
         _id: values._id,
         personalInfo: {
           ...values.personalInfo,
+          age: typeof values.personalInfo.age === 'string' ? 
+            parseInt(values.personalInfo.age) || undefined : 
+            values.personalInfo.age,
           parentName: values.personalInfo.parentName || 'לא צוין',
           parentPhone: values.personalInfo.parentPhone || '0500000000',
           parentEmail: values.personalInfo.parentEmail || 'parent@example.com',
           studentEmail: values.personalInfo.studentEmail || 'student@example.com',
         },
         academicInfo: {
-          instrumentProgress: values.academicInfo.instrumentProgress,
+          instrumentProgress: values.academicInfo.instrumentProgress || [],
           class: values.academicInfo.class,
         },
         isActive: values.isActive,
       };
+
+      console.log('📝 Student data prepared for submission:', studentData);
+      console.log('📋 Teacher assignments count:', values.teacherAssignments?.length || 0);
 
       // Save student data
       await saveStudentData(studentData, values);
@@ -208,8 +214,21 @@ export function StudentForm({
           validationSchema={studentValidationSchema}
           onSubmit={handleSubmit}
           enableReinitialize
+          validateOnMount={true}
+          validateOnChange={true}
         >
-          {({ isSubmitting: formikSubmitting }) => (
+          {({ isSubmitting: formikSubmitting, errors, touched, isValid, values }) => {
+            console.log('🔍 Formik state:', { 
+              isSubmitting: formikSubmitting, 
+              isValid, 
+              errors: Object.keys(errors).length > 0 ? errors : 'No errors',
+              touched: Object.keys(touched).length > 0 ? touched : 'No touched fields',
+              hasInstruments: values.academicInfo?.instrumentProgress?.length > 0,
+              hasStudentEmail: !!values.personalInfo?.studentEmail,
+              instrumentCount: values.academicInfo?.instrumentProgress?.length || 0
+            });
+            
+            return (
             <Form>
               {/* Personal Information Section */}
               <PersonalInfoSection />
@@ -217,15 +236,10 @@ export function StudentForm({
               {/* Instrument Section */}
               <InstrumentSection />
 
-              {/* Teacher Assignment Section */}
-              {/* Use the new schedule-based assignment component */}
-              <ScheduleBasedTeacherAssignment
+              {/* Student Lesson Scheduler - New Enhanced Component */}
+              <StudentLessonScheduler
                 newTeacherInfo={newTeacherInfo}
               />
-              {/* Comment out the old section for now */}
-              {/* <TeacherAssignmentSection 
-                newTeacherInfo={newTeacherInfo}
-              /> */}
 
               {/* Orchestra Assignment Section */}
               <OrchestraAssignmentSection />
@@ -233,12 +247,44 @@ export function StudentForm({
               {/* Theory Lesson Assignment Section */}
               <TheoryLessonAssignmentSection />
 
+              {/* Debug validation errors if form is invalid */}
+              {!isValid && Object.keys(errors).length > 0 && (
+                <div className='validation-debug' style={{ 
+                  background: 'rgba(255, 0, 0, 0.1)', 
+                  padding: '1rem', 
+                  borderRadius: '0.5rem', 
+                  marginBottom: '1rem',
+                  border: '1px solid rgba(255, 0, 0, 0.3)'
+                }}>
+                  <h4 style={{ color: 'red', marginBottom: '0.5rem' }}>🚨 שגיאות תקפות שמונעות שליחה:</h4>
+                  <pre style={{ fontSize: '0.8rem', direction: 'ltr', backgroundColor: 'rgba(0,0,0,0.1)', padding: '0.5rem', borderRadius: '4px' }}>
+                    {JSON.stringify(errors, null, 2)}
+                  </pre>
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'red' }}>
+                    עליך לתקן את השגיאות הללו כדי לשלוח את הטופס
+                  </div>
+                </div>
+              )}
+
               {/* Form Actions */}
               <div className='form-actions'>
                 <button
                   type='submit'
                   className='btn primary'
                   disabled={isSubmitting || formikSubmitting}
+                  onClick={(e) => {
+                    console.log('🎯 Submit button clicked!', {
+                      type: e.currentTarget.type,
+                      disabled: e.currentTarget.disabled,
+                      isSubmitting,
+                      formikSubmitting,
+                      isValid,
+                      errors: Object.keys(errors)
+                    });
+                    if (!isValid) {
+                      console.log('❌ Form is not valid, errors:', errors);
+                    }
+                  }}
                 >
                   {isSubmitting || formikSubmitting
                     ? 'שומר...'
@@ -257,7 +303,8 @@ export function StudentForm({
                 </button>
               </div>
             </Form>
-          )}
+            );
+          }}
         </Formik>
       </div>
     </div>

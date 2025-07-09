@@ -43,6 +43,26 @@ axiosInstance.interceptors.request.use(
     } else {
       console.warn('No auth token found for request to:', config.url);
     }
+
+    // Debug: Check if schoolYearId is being added here
+    if (config.url?.includes('available-slots')) {
+      console.log('Request interceptor - available-slots request config:', {
+        url: config.url,
+        params: config.params,
+        data: config.data,
+        headers: config.headers
+      });
+      
+      if (config.params && 'schoolYearId' in config.params) {
+        console.error('CONTAMINATION DETECTED in request interceptor - params contains schoolYearId:', config.params);
+        console.trace();
+        
+        // Try to remove it here as a last resort
+        delete config.params.schoolYearId;
+        console.log('Removed schoolYearId from params. New params:', config.params);
+      }
+    }
+
     return config;
   },
   (error) => {
@@ -228,6 +248,8 @@ async function ajax<T = any>(
         errorMessage = 'You do not have permission to perform this action';
       } else if (err.response.status === 401) {
         errorMessage = 'Your session has expired. Please login again';
+      } else if (err.response.status === 409) {
+        errorMessage = err.response.data?.message || err.response.data?.error || 'A conflict occurred - this resource already exists or conflicts with existing data';
       } else if (err.response.status >= 500) {
         errorMessage = 'A server error occurred. Please try again later';
       }

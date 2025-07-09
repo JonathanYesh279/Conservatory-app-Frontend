@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ScheduleSlot } from '../../services/scheduleService';
+import { ScheduleSlot } from '../../types/schedule';
 import { useStudentSelectionForTeacher } from '../../hooks/useStudentSelectionForTeacher';
 import { useStudentAssignment } from '../../hooks/useStudentAssignment';
 import { useScheduleStore } from '../../store/scheduleStore';
 import { formatTimeSlot } from '../../utils/scheduleUtils';
-import ScheduleConflictIndicator from './ScheduleConflictIndicator';
+// import ScheduleConflictIndicator from './ScheduleConflictIndicator';
 
 interface StudentAssignmentModalProps {
   slot: ScheduleSlot;
@@ -25,13 +25,20 @@ const StudentAssignmentModal: React.FC<StudentAssignmentModalProps> = ({
   const {
     students,
     selectedStudents,
-    searchStudents,
+    loadingStudents,
+    showStudentSearch,
     searchQuery,
-    setSearchQuery,
-    selectStudent,
-    deselectStudent,
-    isLoading: isLoadingStudents
-  } = useStudentSelectionForTeacher({ teacherId, maxSelected: 1 });
+    setShowStudentSearch,
+    handleStudentSearch,
+    getFilteredStudents,
+    handleAddStudent,
+    handleRemoveStudent,
+  } = useStudentSelectionForTeacher({
+    initialStudentIds: [],
+    onStudentIdsChange: () => {},
+    onAddScheduleItem: () => {},
+    onRemoveScheduleItem: () => {},
+  });
   
   // Get student assignment functionality
   const {
@@ -54,24 +61,20 @@ const StudentAssignmentModal: React.FC<StudentAssignmentModalProps> = ({
   
   // Load student details if already assigned
   useEffect(() => {
-    if (isSlotAssigned && assignedStudent) {
+    if (isSlotAssigned && assignedStudent && assignedStudent._id) {
       // Load student schedule for conflict checking
-      loadStudentSchedule(assignedStudent.id);
+      loadStudentSchedule(assignedStudent._id);
       
       // Pre-select the assigned student
-      selectStudent({
-        id: assignedStudent.id,
-        firstName: assignedStudent.firstName,
-        lastName: assignedStudent.lastName,
-        fullName: `${assignedStudent.firstName} ${assignedStudent.lastName}`
-      });
+      // Pre-select the assigned student (using handleAddStudent)
+      // handleAddStudent(assignedStudent);
     }
-  }, [isSlotAssigned, assignedStudent, loadStudentSchedule, selectStudent]);
+  }, [isSlotAssigned, assignedStudent, loadStudentSchedule, handleAddStudent]);
   
   // Check for conflicts when student selection changes
   useEffect(() => {
     if (selectedStudents.length > 0 && currentStudentSchedule) {
-      const studentId = selectedStudents[0].id;
+      const studentId = selectedStudents[0]._id;
       
       // Extract all slots from the student schedule
       const allSlots: ScheduleSlot[] = [];
@@ -89,40 +92,41 @@ const StudentAssignmentModal: React.FC<StudentAssignmentModalProps> = ({
   
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
+    handleStudentSearch(e.target.value);
   };
   
   // Handle searching for students
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    searchStudents();
+    // Search is handled automatically by the hook via searchQuery
   };
   
   // Handle student selection
   const handleSelectStudent = (studentId: string) => {
     // Find the student in the list
-    const student = students.find(s => s.id === studentId);
+    const student = students.find(s => s._id === studentId);
     if (student) {
       // Clear any previous selections
       if (selectedStudents.length > 0) {
-        deselectStudent(selectedStudents[0].id);
+        handleRemoveStudent(selectedStudents[0]._id);
       }
       
       // Select the new student
-      selectStudent(student);
+      handleAddStudent(student);
       
       // Load student schedule for conflict checking
-      loadStudentSchedule(student.id);
+      loadStudentSchedule(student._id);
     }
   };
   
+
   // Handle assign button click
   const handleAssignClick = async () => {
     if (selectedStudents.length === 0) {
       return;
     }
     
-    const studentId = selectedStudents[0].id;
+    const studentId = selectedStudents[0]._id;
     
     try {
       const success = await assignStudent(studentId);
@@ -132,7 +136,7 @@ const StudentAssignmentModal: React.FC<StudentAssignmentModalProps> = ({
         const updatedSlot: ScheduleSlot = {
           ...slot,
           studentId,
-          studentName: `${selectedStudents[0].firstName} ${selectedStudents[0].lastName}`
+          studentName: selectedStudents[0].personalInfo.fullName
         };
         onAssign(updatedSlot);
         onClose();
@@ -216,24 +220,24 @@ const StudentAssignmentModal: React.FC<StudentAssignmentModalProps> = ({
               </button>
             </form>
             
-            {isLoadingStudents ? (
+            {loadingStudents ? (
               <div className="loading">Loading students...</div>
-            ) : students.length === 0 ? (
+            ) : getFilteredStudents().length === 0 ? (
               <div className="no-results">No students found</div>
             ) : (
               <div className="student-list">
-                {students.map(student => (
+                {getFilteredStudents().map(student => (
                   <div 
-                    key={student.id} 
+                    key={student._id} 
                     className={`student-item ${
-                      selectedStudents.some(s => s.id === student.id) ? 'selected' : ''
+                      selectedStudents.some(s => s._id === student._id) ? 'selected' : ''
                     }`}
-                    onClick={() => handleSelectStudent(student.id)}
+                    onClick={() => handleSelectStudent(student._id)}
                   >
                     <span className="student-name">
-                      {student.firstName} {student.lastName}
+                      {student.personalInfo.fullName}
                     </span>
-                    {selectedStudents.some(s => s.id === student.id) && (
+                    {selectedStudents.some(s => s._id === student._id) && (
                       <span className="selected-indicator">✓</span>
                     )}
                   </div>

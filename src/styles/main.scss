@@ -3,7 +3,7 @@
 @import './base/reset';
 @import './base/typography';
 @import './base/utilities';
-@import './base/forms';
+@import './base/_forms';
 
 // Components
 @import './components/header.scss';
@@ -39,10 +39,18 @@
 @import './components/theory-lessons-assignment-section.scss';
 @import './components/personalInfo-section.scss';
 @import './components/teacherAssignment-section.scss';
+@import './components/flexible-teacher-assignment.scss';
 @import './components/formik-components.scss';
 @import './components/toast.scss';
 @import './components/responsive-form.scss';
 @import './components/schedule.scss';
+@import './components/time-block-creator.scss';
+@import './components/time-block-timeline.scss';
+@import './components/available-slots-finder.scss';
+@import './components/teacher-time-block-view.scss';
+@import './components/teacher-time-block-manager.scss';
+@import './components/student-lesson-scheduler.scss';
+@import './components/lesson-schedule-section.scss';
 
 // Pages
 @import './pages/login-page.scss';

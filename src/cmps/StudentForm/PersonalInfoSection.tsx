@@ -59,12 +59,17 @@ export function PersonalInfoSection() {
         <FormField
           label="גיל"
           name="personalInfo.age"
-          type="number"
-          min="6"
-          max="99"
+          as="select"
           required
           style={{ flex: '0.6' }}
-        />
+        >
+          <option value="">בחר גיל</option>
+          {Array.from({ length: 97 }, (_, i) => i + 3).map((age) => (
+            <option key={age} value={age}>
+              {age}
+            </option>
+          ))}
+        </FormField>
       </div>
 
       {/* Email stand alone full width */}

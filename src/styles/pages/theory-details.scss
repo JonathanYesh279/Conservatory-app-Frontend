@@ -1,364 +1,600 @@
-// src/styles/pages/theory-details.scss
-.theory-details {
+/* src/styles/pages/theory-details.scss */
+
+/* Theory Details Page Layout */
+.theory-details-content {
+  height: 100%;
+  width: 100%;
   display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: hidden;
+  direction: rtl;
+}
+
+.theory-details-page {
+  position: relative;
+  width: 100%;
+  max-width: 700px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 1rem;
+}
+
+/* Back Button */
+.tdy-back-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.tdy-back-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+  transform: translateX(-3px);
+}
+
+/* Card Container */
+.theory-card-container {
+  position: relative;
   width: 100%;
   height: 100%;
+  max-height: 80vh;
+  perspective: 1500px;
+}
+
+/* Card Content */
+.tdy-card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-md);
+}
+
+/* Card Header */
+.tdy-card-header {
+  background: linear-gradient(
+    to left,
+    rgba(var(--primary-color-rgb), 0.1),
+    rgba(var(--primary-color-rgb), 0.05)
+  );
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+}
+
+.tdy-header-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+  flex: 1;
+}
+
+.tdy-header-title {
+  text-align: center;
+  flex: 1;
+}
+
+.tdy-header-title h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  margin-bottom: 0.5rem;
+}
+
+.tdy-date-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0.25rem;
+}
+
+.tdy-date-display svg {
+  color: var(--primary-color);
+}
+
+.tdy-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.tdy-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.tdy-action-btn.edit {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.tdy-action-btn.edit:hover {
+  background-color: var(--primary-dark);
+}
+
+.tdy-action-btn.delete {
+  background-color: var(--danger);
+  color: white;
+}
+
+.tdy-action-btn.delete:hover {
+  background-color: var(--danger-dark);
+}
+
+/* Common styles for detailed view pages */
+.tdy-card-scroll-area {
+  flex: 1;
+  padding: 1rem;
+  padding-bottom: 3.5rem;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+/* Section styling */
+.tdy-section {
+  margin-bottom: 1.25rem;
+  border-radius: 0.5rem;
+  background-color: var(--bg-tertiary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tdy-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Collapsible section title */
+.tdy-section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tdy-section-title svg {
+  color: var(--primary-color);
+}
+
+/* Section content with animation */
+.tdy-section-content {
+  transition: all 0.3s ease;
+  padding: 0.75rem;
+  animation: fadeIn 0.3s ease;
+  background-color: var(--bg-tertiary);
+}
+
+/* Information grid layout */
+.tdy-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.tdy-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.tdy-info-item svg {
+  color: var(--primary-color);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.tdy-info-item div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.tdy-info-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.tdy-info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Theory details specific styles */
+.tdy-theory-details-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.tdy-detail-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tdy-detail-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.tdy-detail-value {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.tdy-theory-notes,
+.tdy-theory-syllabus {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.tdy-notes-label,
+.tdy-syllabus-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.tdy-notes-content,
+.tdy-syllabus-content {
+  color: var(--text-primary);
+  white-space: pre-wrap;
+}
+
+/* Attendance section styles */
+.tdy-attendance-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tdy-attendance-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.tdy-attendance-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.tdy-attendance-header h3 svg {
+  color: var(--primary-color);
+}
+
+.tdy-students-list-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.tdy-loading-students,
+.tdy-empty-students {
+  text-align: center;
+  padding: 2rem 0;
+  color: var(--text-secondary);
+}
+
+.tdy-students-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tdy-student-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.3s ease;
+}
+
+.tdy-student-item:last-child {
+  border-bottom: none;
+}
+
+.tdy-student-item.present {
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.tdy-student-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.tdy-student-name {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.tdy-student-instrument {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Custom Toggle Switch */
+.tdy-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 26px;
+}
+
+.tdy-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.tdy-toggle-switch input:checked + .tdy-toggle-slider {
+  background-color: var(--primary-color);
+}
+
+.tdy-toggle-switch input:checked + .tdy-toggle-slider:before {
+  transform: translateX(26px);
+}
+
+.tdy-toggle-switch input:focus + .tdy-toggle-slider {
+  box-shadow: 0 0 1px var(--primary-color);
+}
+
+.tdy-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--text-muted);
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.tdy-toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.tdy-attendance-footer {
+  padding: 1.25rem;
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tdy-save-success {
+  color: var(--success);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.tdy-save-attendance-btn {
+  padding: 0.75rem 2rem;
+  border-radius: 0.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  min-width: 180px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.tdy-save-attendance-btn:hover {
+  background-color: var(--primary-dark);
+}
+
+.tdy-save-attendance-btn:disabled {
+  background-color: var(--text-muted);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading and error states */
+.tdy-loading-state,
+.tdy-error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+  text-align: center;
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.tdy-loading-state .tdy-loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.tdy-loading-state p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.tdy-error-state p {
+  color: var(--danger);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tdy-error-state .btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tdy-error-state .btn.primary:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Dark mode specific styles */
+[data-theme="dark"] {
+  .tdy-card-content {
+    background-color: var(--bg-secondary);
+  }
   
-  .theory-details-page {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    background-color: var(--bg-card);
-    border-radius: 1rem;
-    overflow: hidden;
-    box-shadow: var(--card-shadow);
-    margin-bottom: 2rem;
-    
-    .theory-card-container {
-      height: 100%;
-      
-      .card-content {
-        .theory-header {
-          background: var(--header-bg);
-          padding: 1.5rem;
-          border-bottom: 1px solid var(--divider-color);
-          position: relative;
-          
-          .back-button {
-            position: absolute;
-            right: 1.5rem;
-            top: 1.5rem;
-            background-color: rgba(0, 0, 0, 0.3);
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            
-            &:hover {
-              background-color: rgba(var(--bg-tertiary-rgb), 0.8);
-              color: var(--text-primary);
-            }
-          }
-          
-          .header-title {
-            text-align: center;
-            padding-top: 2.3rem;
-            
-            h2 {
-              font-size: 1.5rem;
-              font-weight: 600;
-              color: var(--text-primary);
-              margin-bottom: 0.75rem;
-            }
-            
-            .date-display {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 0.5rem;
-              color: var(--text-primary);
-              font-weight: 500;
-              
-              svg {
-                color: var(--primary-color);
-              }
-            }
-          }
-          
-          .header-actions {
-            position: absolute;
-            left: 1.5rem;
-            top: 1.5rem;
-            display: flex;
-            gap: 0.5rem;
-            
-            .action-btn {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              padding: 0.35rem 0.75rem;
-              border-radius: 0.375rem;
-              font-size: 0.9rem;
-              cursor: pointer;
-              transition: all 0.2s ease;
-              
-              &.edit {
-                background-color: var(--primary-color);
-                color: white;
-                border: none;
-                
-                &:hover {
-                  background-color: var(--primary-dark);
-                }
-              }
-              
-              &.delete {
-                background-color: var(--danger);
-                color: white;
-                border: none;
-                
-                &:hover {
-                  background-color: var(--danger-dark);
-                }
-              }
-            }
-          }
-        }
-        
-        .theory-info-card {
-          padding: 1.25rem;
-          border-bottom: 1px solid var(--divider-color);
-          
-          h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-            color: var(--text-primary);
-            text-align: center;
-          }
-          
-          .theory-details-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1.5rem;
-            justify-content: center;
-            
-            .detail-item {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              
-              .detail-label {
-                font-size: 0.85rem;
-                color: var(--text-secondary);
-              }
-              
-              .detail-value {
-                font-weight: 500;
-                color: var(--text-primary);
-              }
-            }
-          }
-          
-          .theory-notes, .theory-syllabus {
-            margin-top: 1rem;
-            text-align: center;
-            
-            .notes-label, .syllabus-label {
-              font-size: 0.85rem;
-              color: var(--text-secondary);
-              display: block;
-              margin-bottom: 0.25rem;
-            }
-            
-            .notes-content, .syllabus-content {
-              color: var(--text-primary);
-              white-space: pre-wrap;
-            }
-          }
-        }
-        
-        .attendance-section {
-          .attendance-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--divider-color);
-            
-            h3 {
-              display: flex;
-              align-items: center;
-              gap: 0.5rem;
-              font-size: 1.1rem;
-              font-weight: 600;
-              color: var(--text-primary);
-              
-              svg {
-                color: var(--primary-color);
-              }
-            }
-          }
-          
-          .students-list-container {
-            max-height: 400px;
-            overflow-y: auto;
-            
-            .loading-students, .empty-students {
-              text-align: center;
-              padding: 2rem 0;
-              color: var(--text-secondary);
-            }
-            
-            .students-list {
-              list-style: none;
-              padding: 0;
-              margin: 0;
-              
-              .student-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.75rem 1rem;
-                border-bottom: 1px solid var(--border-color);
-                transition: background-color 0.3s ease;
-                
-                &:last-child {
-                  border-bottom: none;
-                }
-                
-                &.present {
-                  background-color: rgba(var(--primary-color-rgb), 0.1);
-                }
-                
-                .student-info {
-                  display: flex;
-                  flex-direction: column;
-                  text-align: right;
-                  
-                  .student-name {
-                    font-weight: 500;
-                    color: var(--text-primary);
-                  }
-                  
-                  .student-instrument {
-                    font-size: 0.85rem;
-                    color: var(--text-secondary);
-                  }
-                }
-                
-                /* Custom Toggle Switch */
-                .toggle-switch {
-                  position: relative;
-                  display: inline-block;
-                  width: 52px;
-                  height: 26px;
-                  
-                  input {
-                    opacity: 0;
-                    width: 0;
-                    height: 0;
-                    
-                    &:checked + .toggle-slider {
-                      background-color: var(--primary-color);
-                    }
-                    
-                    &:checked + .toggle-slider:before {
-                      transform: translateX(26px);
-                    }
-                    
-                    &:focus + .toggle-slider {
-                      box-shadow: 0 0 1px var(--primary-color);
-                    }
-                  }
-                  
-                  .toggle-slider {
-                    position: absolute;
-                    cursor: pointer;
-                    top: 0;
-                    left: 0;
-                    right: 0;
-                    bottom: 0;
-                    background-color: #464646;
-                    transition: .4s;
-                    border-radius: 34px;
-                    
-                    &:before {
-                      position: absolute;
-                      content: "";
-                      height: 18px;
-                      width: 18px;
-                      left: 4px;
-                      bottom: 4px;
-                      background-color: white;
-                      transition: .4s;
-                      border-radius: 50%;
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        
-        .attendance-footer {
-          padding: 1.25rem;
-          background-color: var(--footer-bg);
-          border-top: 1px solid var(--divider-color);
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 0.5rem;
-          
-          .save-success {
-            color: var(--success-color);
-            font-size: 0.9rem;
-            font-weight: 500;
-          }
-          
-          .save-attendance-btn {
-            padding: 0.75rem 2rem;
-            border-radius: 0.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 500;
-            border: none;
-            cursor: pointer;
-            min-width: 180px;
-            font-size: 1rem;
-            
-            &:hover {
-              background-color: var(--primary-dark);
-            }
-            
-            &:disabled {
-              background-color: #464646;
-              opacity: 0.6;
-              cursor: not-allowed;
-            }
-          }
-        }
-      }
-    }
+  .tdy-back-button {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  
+  .tdy-back-button:hover {
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  
+  .tdy-card-header {
+    background: linear-gradient(
+      to left,
+      rgba(var(--primary-color-rgb), 0.15),
+      rgba(var(--primary-color-rgb), 0.05)
+    );
+  }
+  
+  .tdy-section {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .tdy-section-content {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .tdy-attendance-footer {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .tdy-toggle-slider {
+    background-color: #464646;
   }
 }
 
-// Media queries for responsive design
+/* Media queries for responsive design */
+@media (max-width: 768px) {
+  .tdy-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 576px) {
   .theory-details-page {
-    .theory-card-container {
-      .card-content {
-        .theory-header {
-          padding: 1.25rem 1rem;
-          
-          .back-button {
-            right: 1rem;
-            top: 1rem;
-          }
-          
-          .header-title {
-            padding-top: 1.5rem;
-            
-            h2 {
-              font-size: 1.25rem;
-            }
-          }
-          
-          .header-actions {
-            left: 1rem;
-            top: 1rem;
-          }
-        }
-      }
-    }
+    padding: 0 0.5rem;
+  }
+  
+  .theory-card-container .tdy-card-header {
+    padding: 0.75rem;
+  }
+  
+  .theory-card-container .tdy-header-title h2 {
+    font-size: 1.1rem;
+  }
+  
+  .theory-card-container .tdy-action-btn {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .theory-card-container .tdy-card-scroll-area {
+    padding: 0.75rem;
+    padding-bottom: 3.5rem;
+  }
+  
+  .theory-card-container .tdy-section-title {
+    font-size: 1rem;
+  }
+  
+  .tdy-theory-details-row {
+    gap: 1rem;
   }
 }

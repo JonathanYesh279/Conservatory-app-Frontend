@@ -1,6 +1,6 @@
 // src/cmps/StudentPreview.tsx
 import { Student } from '../services/studentService';
-import { Edit, Trash2, Calendar, Award, Eye, Music } from 'lucide-react';
+import { Edit, Trash2, Calendar, Award, Music } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
 import { studentService } from '../services/studentService'; // Use studentService directly
@@ -282,17 +282,6 @@ export function StudentPreview({
       <div className='preview-footer'>
         <div className='action-buttons'>
           <button
-            className='action-btn view'
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(displayStudent._id);
-            }}
-            aria-label='הצג פרטי תלמיד'
-          >
-            <Eye size={16} />
-          </button>
-
-          <button
             className='action-btn edit'
             onClick={(e) => {
               e.stopPropagation();
@@ -300,7 +289,7 @@ export function StudentPreview({
             }}
             aria-label='ערוך תלמיד'
           >
-            <Edit size={16} />
+            <Edit size={20} />
           </button>
 
           {onRemove && (
@@ -312,7 +301,7 @@ export function StudentPreview({
               }}
               aria-label='מחק תלמיד'
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

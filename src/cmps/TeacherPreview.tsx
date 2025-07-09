@@ -6,7 +6,6 @@ import {
   Music,
   Users,
   Calendar,
-  Eye,
   Phone,
   Mail,
   GraduationCap,
@@ -18,6 +17,7 @@ interface TeacherPreviewProps {
   onView: (teacherId: string) => void;
   onEdit: (teacherId: string) => void;
   onRemove?: (teacherId: string) => void;
+  studentCount?: number; // Add optional student count prop
 }
 
 export function TeacherPreview({
@@ -25,6 +25,7 @@ export function TeacherPreview({
   onView,
   onEdit,
   onRemove,
+  studentCount,
 }: TeacherPreviewProps) {
   // Get initials for avatar
   const getInitials = (name: string): string => {
@@ -60,12 +61,10 @@ export function TeacherPreview({
     openWhatsApp(phone);
   };
 
-  // Check if teacher has students
-  const hasStudents =
-    teacher.teaching?.studentIds && teacher.teaching.studentIds.length > 0;
-
-  const studentCount =
-    hasStudents && teacher.teaching ? teacher.teaching.studentIds.length : 0;
+  // Use provided studentCount prop, fallback to teacher.teaching.studentIds if not provided
+  const actualStudentCount = studentCount !== undefined 
+    ? studentCount 
+    : (teacher.teaching?.studentIds?.length || 0);
 
   // Get primary role for display
   const primaryRole =
@@ -78,49 +77,51 @@ export function TeacherPreview({
       style={{ cursor: 'pointer' }}
     >
       <div className='preview-header'>
-        <div className='teacher-header-container'>
-          <div className='avatar-section'>
-            <div
-              className='avatar'
-              style={{
-                backgroundColor: getRoleBadgeColor(primaryRole),
-              }}
-            >
-              {getInitials(teacher.personalInfo.fullName)}
-            </div>
+        <div className='header-row'>
+          <div className='badges-container'>
+            {teacher.roles &&
+              teacher.roles.map((role) => (
+                <div
+                  key={role}
+                  className='role-badge'
+                  style={{
+                    backgroundColor: getRoleBadgeColor(role),
+                  }}
+                >
+                  <span>{role}</span>
+                </div>
+              ))}
           </div>
 
-          <div className='teacher-info'>
-            <h3 className='teacher-name'>{teacher.personalInfo.fullName}</h3>
-            <div className='teacher-subject'>
-              {teacher.professionalInfo?.instrument ? (
-                <>
-                  <Music size={14} />
-                  <span>{teacher.professionalInfo.instrument}</span>
-                </>
-              ) : (
-                <>
-                  <GraduationCap size={14} />
-                  <span>{primaryRole}</span>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className='badges-container'>
-          {teacher.roles &&
-            teacher.roles.map((role) => (
+          <div className='teacher-header-container'>
+            <div className='avatar-section'>
               <div
-                key={role}
-                className='role-badge'
+                className='avatar'
                 style={{
-                  backgroundColor: getRoleBadgeColor(role),
+                  backgroundColor: getRoleBadgeColor(primaryRole),
                 }}
               >
-                <span>{role}</span>
+                {getInitials(teacher.personalInfo.fullName)}
               </div>
-            ))}
+            </div>
+
+            <div className='teacher-info'>
+              <h3 className='teacher-name'>{teacher.personalInfo.fullName}</h3>
+              <div className='teacher-subject'>
+                {teacher.professionalInfo?.instrument ? (
+                  <>
+                    <Music size={14} />
+                    <span>{teacher.professionalInfo.instrument}</span>
+                  </>
+                ) : (
+                  <>
+                    <GraduationCap size={14} />
+                    <span>{primaryRole}</span>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -150,7 +151,7 @@ export function TeacherPreview({
 
           <div className='info-item'>
             <Users size={16} />
-            <span>{getStudentCountText(studentCount)}</span>
+            <span>{getStudentCountText(actualStudentCount)}</span>
           </div>
 
           {teacher.conducting?.orchestraIds &&
@@ -170,17 +171,6 @@ export function TeacherPreview({
       <div className='preview-footer'>
         <div className='action-buttons'>
           <button
-            className='action-btn view'
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(teacher._id);
-            }}
-            aria-label='הצג פרטי מורה'
-          >
-            <Eye size={16} />
-          </button>
-
-          <button
             className='action-btn edit'
             onClick={(e) => {
               e.stopPropagation();
@@ -188,7 +178,7 @@ export function TeacherPreview({
             }}
             aria-label='ערוך מורה'
           >
-            <Edit size={16} />
+            <Edit size={20} />
           </button>
 
           {onRemove && (
@@ -200,7 +190,7 @@ export function TeacherPreview({
               }}
               aria-label='מחק מורה'
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

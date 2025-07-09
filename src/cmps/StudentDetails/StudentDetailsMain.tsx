@@ -14,12 +14,15 @@ import {
 } from 'lucide-react';
 import { InstrumentProgress } from '../../services/studentService';
 import { TheoryLessonsSection } from './sections/TheoryLessonsSection';
-import { ScheduleSection } from './sections/ScheduleSection';
+import { LessonScheduleSection } from './sections/LessonScheduleSection';
+import { TeachersSection } from './sections/TeachersSection';
 
 export function StudentDetailsMain() {
   const {
     student,
     teachersData,
+    teachersLoading,
+    teachersError,
     orchestras,
     theoryLessons,
     theoryLessonsLoading,
@@ -30,16 +33,12 @@ export function StudentDetailsMain() {
     navigateToOrchestra,
     navigateToTheoryLesson,
     formatDate,
+    retryLoadTeachers,
   } = useStudentDetailsState();
 
   if (!student) return null;
 
-  // Find primary instrument
-  const primaryInstrument =
-    student.academicInfo.instrumentProgress?.find((i) => i.isPrimary) ||
-    (student.academicInfo.instrumentProgress?.length > 0
-      ? student.academicInfo.instrumentProgress[0]
-      : null);
+  // Debug output removed for production
 
   return (
     <div className='card-scroll-area'>
@@ -229,58 +228,17 @@ export function StudentDetailsMain() {
       </div>
 
       {/* Teachers Section */}
-      <div className='section'>
-        <div
-          className={`section-title clickable ${
-            openSections.teachers ? 'active' : ''
-          }`}
-          onClick={() => toggleSection('teachers')}
-        >
-          <User size={18} />
-          מורים
-          <ChevronDown
-            className={`toggle-icon ${openSections.teachers ? 'open' : ''}`}
-            size={16}
-          />
-        </div>
-
-        {openSections.teachers && (
-          <div className='section-content'>
-            {teachersData.teachers && teachersData.teachers.length > 0 ? (
-              <div className='students-grid'>
-                {teachersData.teachers.map((teacher: any) => (
-                  <div
-                    key={teacher.id}
-                    className='student-card clickable'
-                    onClick={() => navigateToTeacher(teacher.id)}
-                  >
-                    <div
-                      className='student-avatar'
-                      style={{
-                        backgroundColor: primaryInstrument
-                          ? getStageColor(primaryInstrument.currentStage)
-                          : '#4158d0',
-                      }}
-                    >
-                      {teacher.name.substring(0, 2)}
-                    </div>
-                    <div className='student-info'>
-                      <div className='student-name'>{teacher.name}</div>
-                      {teacher.instrument && (
-                        <div className='student-instrument'>
-                          {teacher.instrument}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className='no-teacher-warning'>אין מורים משוייכים</div>
-            )}
-          </div>
-        )}
-      </div>
+      <TeachersSection
+        teachersData={teachersData}
+        teachersLoading={teachersLoading}
+        teachersError={teachersError}
+        isOpen={openSections.teachers}
+        onToggle={() => toggleSection('teachers')}
+        onTeacherClick={navigateToTeacher}
+        onRetryLoadTeachers={retryLoadTeachers}
+        studentTeacherIds={student.teacherIds}
+        teacherAssignments={student.teacherAssignments || []}
+      />
 
       {/* Orchestras Section */}
       <div className='section'>
@@ -333,11 +291,15 @@ export function StudentDetailsMain() {
         onTheoryLessonClick={navigateToTheoryLesson}
       />
       
-      {/* Schedule Section */}
-      <ScheduleSection
-        studentId={student._id}
+      {/* Lesson Schedule Section */}
+      <LessonScheduleSection
+        student={student}
         isOpen={openSections.schedule}
         onToggle={() => toggleSection('schedule')}
+        onEditSchedule={() => {
+          // TODO: Implement edit schedule functionality
+          console.log('Edit schedule clicked');
+        }}
       />
     </div>
   );

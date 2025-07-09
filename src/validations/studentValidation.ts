@@ -55,7 +55,14 @@ export const studentValidationSchema = Yup.object({
       excludeEmptyString: true,
     }),
     age: Yup.number()
-      .required('גיל הוא שדה חובה')
+      .nullable()
+      .transform((value, originalValue) => {
+        // Handle empty string or null/undefined
+        if (originalValue === '' || originalValue === null || originalValue === undefined) {
+          return null;
+        }
+        return value;
+      })
       .min(5, 'גיל מינימלי הוא 5')
       .max(99, 'גיל מקסימלי הוא 99'),
     address: Yup.string().required('כתובת היא שדה חובה'),
@@ -75,7 +82,8 @@ export const studentValidationSchema = Yup.object({
         excludeEmptyString: true,
       }),
     studentEmail: Yup.string()
-      .required('אימייל תלמיד הוא שדה חובה')
+      .nullable()
+      .transform((value) => (!value ? null : value))
       .matches(emailRegExp, {
         message: 'כתובת אימייל תלמיד לא תקינה',
         excludeEmptyString: true,
@@ -84,8 +92,7 @@ export const studentValidationSchema = Yup.object({
 
   academicInfo: Yup.object({
     instrumentProgress: Yup.array()
-      .of(instrumentProgressSchema)
-      .min(1, 'חובה להוסיף לפחות כלי נגינה אחד'), // Added min(1) to require at least one instrument
+      .of(instrumentProgressSchema), // Removed min(1) requirement
     class: Yup.string()
       .required('כיתה היא שדה חובה')
       .oneOf(VALID_CLASSES, 'כיתה לא תקינה'),

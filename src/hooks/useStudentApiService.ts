@@ -46,15 +46,23 @@ export const useStudentApiService = ({
 
       console.log('TeacherIds after processing:', processedTeacherIds);
 
-      // Prepare student data for API
+      // Prepare student data for API (include teacherAssignments - backend now supports this field)
       const apiStudentData = {
         ...studentData,
         teacherIds: processedTeacherIds,
+        teacherAssignments: formData.teacherAssignments || [],
         enrollments: {
           ...formData.enrollments,
           orchestraIds: formData.orchestraAssignments.map((a) => a.orchestraId),
         },
-      };
+      } as any;
+      
+      console.log('API data being sent:', {
+        teacherIds: apiStudentData.teacherIds,
+        teacherAssignments: apiStudentData.teacherAssignments,
+        teacherAssignmentsLength: formData.teacherAssignments.length,
+        note: 'teacherAssignments included in API - backend now supports this field'
+      });
 
       // Create or update student based on whether we have an ID
       let savedStudent;

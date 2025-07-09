@@ -42,10 +42,15 @@ export const FormField: React.FC<FormFieldProps> = ({
 
   return (
     <div className='form-group' style={style}>
-      <label htmlFor={props.id || name} className={required ? 'required-field' : ''}>
-        {labelIcon && <span className='label-icon'>{labelIcon}</span>}
-        {label}
-      </label>
+      <div className='field-header'>
+        <label htmlFor={props.id || name} className={required ? 'required-field' : ''}>
+          {labelIcon && <span className='label-icon'>{labelIcon}</span>}
+          {label}
+        </label>
+        {isError && (
+          <div className='form-error-inline'>{errorMessage || meta.error}</div>
+        )}
+      </div>
 
       {props.as === 'select' ? (
         <select
@@ -77,10 +82,6 @@ export const FormField: React.FC<FormFieldProps> = ({
           name={field.name}
           {...props}
         />
-      )}
-
-      {isError && (
-        <div className='form-error'>{errorMessage || meta.error}</div>
       )}
     </div>
   );

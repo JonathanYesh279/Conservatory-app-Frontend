@@ -1,4 +1,4 @@
-import { ScheduleSlot } from '../services/scheduleService';
+import { ScheduleSlot } from '../types/schedule';
 
 /**
  * Convert time string to minutes from midnight
@@ -56,13 +56,24 @@ export const formatTime = (timeString: string, use12Hour: boolean = true): strin
  * @param format - Format (short, medium, long)
  * @returns Formatted day string
  */
-export const formatDayOfWeek = (dayOfWeek: number, format: 'short' | 'medium' | 'long' = 'medium'): string => {
+export const formatDayOfWeek = (
+  dayOfWeek: number,
+  format: 'short' | 'medium' | 'long' = 'medium'
+): string => {
   const days = {
-    short: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    medium: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-    long: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+    short: ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'],
+    medium: ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'],
+    long: [
+      'יום ראשון',
+      'יום שני',
+      'יום שלישי',
+      'יום רביעי',
+      'יום חמישי',
+      'יום שישי',
+      'יום שבת',
+    ],
   };
-  
+
   return days[format][dayOfWeek];
 };
 

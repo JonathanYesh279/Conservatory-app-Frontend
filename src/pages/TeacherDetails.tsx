@@ -5,6 +5,7 @@ import { Orchestra, orchestraService } from '../services/orchestraService'
 import { studentService } from '../services/studentService'
 import { theoryService, TheoryLesson } from '../services/theoryService'
 import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
+import { TeacherTimeBlockManager } from '../cmps/TeacherForm/TeacherTimeBlockManager'
 import {
   User,
   Calendar,
@@ -18,6 +19,7 @@ import {
   RefreshCw,
   ChevronDown,
   ChevronUp,
+  Clock,
 } from 'lucide-react'
 
 // Extend for student data reference
@@ -25,6 +27,13 @@ interface StudentReference {
   _id: string
   fullName: string
   instrument: string
+  assignments?: Array<{
+    teacherId: string;
+    scheduleSlotId: string;
+    day: string;
+    time: string;
+    duration: number;
+  }>
 }
 
 export function TeacherDetails() {
@@ -49,6 +58,7 @@ export function TeacherDetails() {
     theoryLessons: false,
     personalInfo: false,
     professionalInfo: false,
+    schedule: true, // Schedule section open by default
   });
 
   const navigate = useNavigate();
@@ -60,7 +70,8 @@ export function TeacherDetails() {
 
   // Load teacher data when component mounts or refreshTrigger changes
   useEffect(() => {
-    if (teacherId) {
+    if (teacherId && !isLoading) {
+      console.log('TeacherDetails useEffect triggered for teacherId:', teacherId, 'refreshTrigger:', refreshTrigger);
       loadTeacher(teacherId);
     }
   }, [teacherId, refreshTrigger]);
@@ -82,14 +93,21 @@ export function TeacherDetails() {
         // Load theory lessons for this teacher
         await loadTheoryLessons(id);
 
-        // Load students if there are student IDs
+        // Load students - try both approaches
+        let studentsLoaded = false;
+        
+        // First try loading from teacher's studentIds
         if (
           teacherData.teaching?.studentIds &&
           teacherData.teaching.studentIds.length > 0
         ) {
           await loadStudents(teacherData.teaching.studentIds);
-        } else {
-          setStudents([]);
+          studentsLoaded = true;
+        }
+        
+        // If no students from teacher's list, search for students who have this teacher assigned
+        if (!studentsLoaded) {
+          await loadStudentsByTeacherAssignment(id);
         }
 
         // Load orchestras if there are orchestra IDs
@@ -176,6 +194,46 @@ export function TeacherDetails() {
       );
     } catch (err) {
       console.error('Failed to load students:', err);
+    }
+  };
+
+  // Load students by searching for teacher assignments
+  const loadStudentsByTeacherAssignment = async (teacherId: string) => {
+    try {
+      console.log('Searching for students with teacher assignment for teacher:', teacherId);
+      
+      // Get all students (we could optimize this later with a backend endpoint)
+      const allStudents = await studentService.getStudents();
+      console.log('Total students found:', allStudents.length);
+      
+      // Filter students who have this teacher assigned
+      const studentsWithTeacher = allStudents.filter(student => {
+        // Check if student has this teacher in teacherIds
+        const hasTeacherInIds = student.teacherIds && student.teacherIds.includes(teacherId);
+        
+        // Check if student has assignments with this teacher
+        const hasTeacherAssignments = student.teacherAssignments && 
+          student.teacherAssignments.some((assignment: any) => assignment.teacherId === teacherId);
+          
+        return hasTeacherInIds || hasTeacherAssignments;
+      });
+      
+      console.log('Students with this teacher:', studentsWithTeacher.length);
+      
+      // Set students state with assignment details
+      setStudents(
+        studentsWithTeacher.map((student) => ({
+          _id: student._id,
+          fullName: student.personalInfo?.fullName || 'תלמיד לא ידוע',
+          instrument:
+            student.academicInfo?.instrumentProgress?.[0]?.instrumentName || '',
+          // Add assignment details for display
+          assignments: student.teacherAssignments?.filter((assignment: any) => assignment.teacherId === teacherId) || []
+        }))
+      );
+    } catch (err) {
+      console.error('Failed to load students by teacher assignment:', err);
+      setStudents([]);
     }
   };
 
@@ -279,6 +337,21 @@ export function TeacherDetails() {
       .substring(0, 2);
   };
 
+  // Function to calculate end time from start time and duration
+  const calculateEndTime = (startTime: string, duration: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + duration;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMins = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
+  };
+
+  // Function to format lesson time with duration
+  const formatLessonTime = (startTime: string, duration: number): string => {
+    const endTime = calculateEndTime(startTime, duration);
+    return `${startTime} - ${endTime}`;
+  };
+
   // Get role color
   const getRoleColor = (role: string) => {
     const roleColors: Record<string, string> = {
@@ -367,7 +440,7 @@ export function TeacherDetails() {
                   >
                     <Users size={16} />
                     <span>
-                      תלמידים ({teacher.teaching?.studentIds?.length || 0})
+                      תלמידים ({students.length})
                     </span>
                     {openSections.students ? (
                       <ChevronUp size={18} className='toggle-icon' />
@@ -379,26 +452,51 @@ export function TeacherDetails() {
                   {openSections.students && (
                     <div className='section-content'>
                       {students.length > 0 ? (
-                        <div className='students-grid'>
+                        <div className='students-grid modern-students-grid'>
                           {students.map((student) => (
                             <div
                               key={student._id}
-                              className='student-card clickable'
+                              className='student-card modern-student-card clickable'
                               onClick={() => navigateToStudent(student._id)}
                             >
-                              <div className='student-avatar'>
-                                {getInitials(student.fullName)}
+                              <div className='student-main'>
+                                <div className='student-identity'>
+                                  <div className='student-info'>
+                                    <div className='student-name'>
+                                      {student.fullName}
+                                    </div>
+                                    {student.assignments && student.assignments.length > 0 && (
+                                      <div className='student-lessons-count'>
+                                        <span>{student.assignments.length} שיעורים</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              <div className='student-info'>
-                                <span className='student-name'>
-                                  {student.fullName}
-                                </span>
-                                {student.instrument && (
-                                  <span className='student-instrument'>
-                                    {student.instrument}
-                                  </span>
-                                )}
-                              </div>
+                              
+                              {/* Display lesson assignments */}
+                              {student.assignments && student.assignments.length > 0 && (
+                                <div className='student-lessons'>
+                                  <div className='lessons-header'>
+                                    <Calendar size={12} />
+                                    <span>מערכת שיעורים</span>
+                                  </div>
+                                  <div className='lessons-list'>
+                                    {student.assignments.map((assignment, index) => (
+                                      <div key={index} className='lesson-item'>
+                                        <div className='lesson-day'>{assignment.day}</div>
+                                        <div className='lesson-time'>
+                                          <Clock size={10} />
+                                          <span>{formatLessonTime(assignment.time, assignment.duration)}</span>
+                                        </div>
+                                        <div className='lesson-duration'>
+                                          {assignment.duration}ד'
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -487,6 +585,36 @@ export function TeacherDetails() {
                     onTheoryLessonClick={navigateToTheoryLesson}
                   />
                 )}
+
+                {/* Schedule Section - Teacher Time Block Management */}
+                <div className='section'>
+                  <div
+                    className={`section-title clickable ${
+                      openSections.schedule ? 'active' : ''
+                    }`}
+                    onClick={() => toggleSection('schedule')}
+                  >
+                    <Calendar size={16} />
+                    <span>מערכת שעות</span>
+                    {openSections.schedule ? (
+                      <ChevronUp size={18} className='toggle-icon' />
+                    ) : (
+                      <ChevronDown size={18} className='toggle-icon' />
+                    )}
+                  </div>
+
+                  {openSections.schedule && (
+                    <div className='section-content'>
+                      <TeacherTimeBlockManager
+                        teacherId={teacher._id}
+                        teacherName={teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                        onTimeBlockChange={() => {
+                          // Empty callback to prevent infinite loops
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button className='flip-button' onClick={toggleFlip}>

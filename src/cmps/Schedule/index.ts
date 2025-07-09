@@ -5,3 +5,4 @@ export { default as StudentAssignmentModal } from './StudentAssignmentModal';
 export { default as StudentScheduleView } from './StudentScheduleView';
 export { default as ScheduleConflictIndicator } from './ScheduleConflictIndicator';
 export { default as ScheduleManagementModal } from './ScheduleManagementModal';
+export { default as ScheduleSlotPicker } from './ScheduleSlotPicker';

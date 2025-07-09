@@ -52,16 +52,28 @@ export const EXTENDED_TEST_STATUSES = [
   'עבר/ה בהצטיינות יתרה',
 ];
 
-export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
+import { HebrewDayName, HEBREW_DAYS, LessonDuration } from '../types/schedule';
 
-export const LESSON_DURATIONS = [30, 45, 60];
+export const DAYS_OF_WEEK: HebrewDayName[] = [
+  HEBREW_DAYS.SUNDAY,
+  HEBREW_DAYS.MONDAY,
+  HEBREW_DAYS.TUESDAY,
+  HEBREW_DAYS.WEDNESDAY,
+  HEBREW_DAYS.THURSDAY,
+  HEBREW_DAYS.FRIDAY,
+];
 
-// Teacher assignment interface
+export const LESSON_DURATIONS: LessonDuration[] = [30, 45, 60];
+
+// Teacher assignment interface - updated to use schedule types
 export interface TeacherAssignment {
   teacherId: string;
-  day: string;
+  scheduleSlotId?: string; // Link to actual schedule slot
+  day: HebrewDayName;
   time: string;
-  duration: number;
+  duration: LessonDuration;
+  location?: string;
+  notes?: string;
 }
 
 // Orchestra assignment interface
@@ -80,7 +92,7 @@ export interface StudentFormData {
   personalInfo: {
     fullName: string;
     phone?: string;
-    age?: number;
+    age?: number | string;
     address?: string;
     parentName?: string;
     parentPhone?: string;

@@ -1,4 +1,4 @@
-import React from 'react';
+// React import removed - not needed for JSX in modern React
 import { Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { StudentScheduleView } from '../../Schedule';
 

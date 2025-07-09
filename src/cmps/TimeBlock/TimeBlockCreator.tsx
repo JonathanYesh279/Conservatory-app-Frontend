@@ -1,0 +1,678 @@
+import React, { useState, useEffect } from 'react';
+import { X, Clock, Calendar, MapPin, Copy, Check } from 'lucide-react';
+import { useTimeBlockStore } from '../../store/timeBlockStore';
+import { 
+  HEBREW_DAYS,
+  HebrewDayName,
+  TimeBlockRequest,
+  TimeBlockResponse,
+  timeBlockService
+} from '../../services/timeBlockService';
+
+interface TimeBlockCreatorProps {
+  teacherId: string;
+  onBlockCreated?: (block: TimeBlockResponse | TimeBlockResponse[]) => void;
+  onCancel?: () => void;
+  initialData?: {
+    day?: HebrewDayName;
+    startTime?: string;
+    endTime?: string;
+    location?: string;
+    notes?: string;
+    isRecurring?: boolean;
+    recurringDays?: HebrewDayName[];
+  };
+  isOpen?: boolean;
+}
+
+interface TimeBlockFormData {
+  day: HebrewDayName;
+  startTime: string;
+  endTime: string;
+  location?: string;
+  notes?: string;
+  isRecurring: boolean;
+  recurringDays: HebrewDayName[];
+}
+
+interface TimeBlockWizardStep {
+  id: string;
+  title: string;
+  description: string;
+  component: string;
+  isComplete: boolean;
+  isActive: boolean;
+}
+
+interface TimeBlockWizardState {
+  currentStep: number;
+  steps: TimeBlockWizardStep[];
+  formData: TimeBlockFormData;
+  validationErrors: Record<string, string>;
+  isSubmitting: boolean;
+}
+
+// Define wizard steps following the guide
+const WIZARD_STEPS: TimeBlockWizardStep[] = [
+  {
+    id: 'day-selection',
+    title: 'בחירת יום',
+    description: 'בחר את הימים לבלוק הזמן',
+    component: 'DaySelectionStep',
+    isComplete: false,
+    isActive: true
+  },
+  {
+    id: 'time-range',
+    title: 'טווח זמן',
+    description: 'הגדר את שעות תחילת וסיום הבלוק',
+    component: 'TimeRangeStep',
+    isComplete: false,
+    isActive: false
+  },
+  {
+    id: 'details',
+    title: 'פרטים נוספים',
+    description: 'מיקום, הערות והגדרות חזרה',
+    component: 'DetailsStep',
+    isComplete: false,
+    isActive: false
+  },
+  {
+    id: 'review',
+    title: 'סקירה',
+    description: 'בדוק את פרטי הבלוק לפני יצירה',
+    component: 'ReviewStep',
+    isComplete: false,
+    isActive: false
+  }
+];
+
+const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
+  teacherId,
+  onBlockCreated,
+  onCancel,
+  initialData,
+  isOpen = true
+}) => {
+  const { 
+    createTimeBlock, 
+    isLoading, 
+    error, 
+    clearError,
+    currentTeacherSchedule,
+    loadTeacherSchedule 
+  } = useTimeBlockStore();
+  
+  const [wizardState, setWizardState] = useState<TimeBlockWizardState>({
+    currentStep: 0,
+    steps: WIZARD_STEPS,
+    formData: {
+      day: initialData?.day || HEBREW_DAYS[0],
+      startTime: initialData?.startTime || '14:00',
+      endTime: initialData?.endTime || '18:00',
+      location: initialData?.location || '',
+      notes: initialData?.notes || '',
+      isRecurring: initialData?.isRecurring || false,
+      recurringDays: initialData?.recurringDays || []
+    },
+    validationErrors: {},
+    isSubmitting: false
+  });
+
+  // Load teacher schedule when component opens (with error handling)
+  // Temporarily disabled to avoid API issues
+  // useEffect(() => {
+  //   if (isOpen && teacherId && !currentTeacherSchedule) {
+  //     loadTeacherSchedule(teacherId).catch(error => {
+  //       console.warn('Could not load teacher schedule for conflict detection:', error);
+  //       // Continue without schedule data - this disables conflict detection but allows time block creation
+  //     });
+  //   }
+  // }, [isOpen, teacherId, currentTeacherSchedule, loadTeacherSchedule]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  // Calculate duration for display
+  const calculateDuration = (startTime: string, endTime: string): number => {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    const startMinutes = startHour * 60 + startMinute;
+    const endMinutes = endHour * 60 + endMinute;
+    return endMinutes - startMinutes;
+  };
+
+  // Update form data
+  const updateFormData = (updates: Partial<TimeBlockFormData>) => {
+    setWizardState(prev => ({
+      ...prev,
+      formData: { ...prev.formData, ...updates },
+      validationErrors: {}
+    }));
+  };
+
+  // Validate current step
+  const validateStep = (stepIndex: number): boolean => {
+    const errors: Record<string, string> = {};
+    const { formData } = wizardState;
+
+    switch (stepIndex) {
+      case 0: // Day selection
+        if (!formData.day) {
+          errors.day = 'יש לבחור יום';
+        }
+        break;
+      case 1: // Time range
+        if (!formData.startTime) {
+          errors.startTime = 'יש להזין שעת התחלה';
+        }
+        if (!formData.endTime) {
+          errors.endTime = 'יש להזין שעת סיום';
+        }
+        if (formData.startTime && formData.endTime) {
+          const duration = calculateDuration(formData.startTime, formData.endTime);
+          if (duration <= 0) {
+            errors.timeRange = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה';
+          }
+          if (duration < 30) {
+            errors.timeRange = 'בלוק זמן חייב להיות לפחות 30 דקות';
+          }
+
+          // Check for conflicts with existing time blocks (if schedule data is available)
+          if (currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
+            const newTimeBlock: TimeBlockRequest = {
+              day: formData.day,
+              startTime: formData.startTime,
+              endTime: formData.endTime,
+              location: formData.location,
+              notes: formData.notes
+            };
+
+            const conflictValidation = timeBlockService.validateTimeBlockConflicts(
+              newTimeBlock,
+              currentTeacherSchedule.timeBlocks
+            );
+
+            if (conflictValidation.hasConflict) {
+              const conflictMessage = timeBlockService.getConflictDescription(
+                conflictValidation.conflictType,
+                conflictValidation.conflictingBlocks,
+                newTimeBlock
+              );
+              errors.timeRange = conflictMessage;
+            }
+          }
+        }
+        break;
+      case 3: // Review step - final validation including recurring conflicts
+        if (formData.isRecurring && formData.recurringDays.length > 0 && currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
+          const conflictingDays: string[] = [];
+          
+          for (const day of formData.recurringDays) {
+            const newTimeBlock: TimeBlockRequest = {
+              day,
+              startTime: formData.startTime,
+              endTime: formData.endTime,
+              location: formData.location,
+              notes: formData.notes
+            };
+
+            const conflictValidation = timeBlockService.validateTimeBlockConflicts(
+              newTimeBlock,
+              currentTeacherSchedule.timeBlocks
+            );
+
+            if (conflictValidation.hasConflict) {
+              conflictingDays.push(day);
+            }
+          }
+
+          if (conflictingDays.length > 0) {
+            errors.submit = `קיימות התנגשות בימים הבאים: ${conflictingDays.join(', ')}. אנא בחר ימים אחרים או שנה את שעות הבלוק.`;
+          }
+        }
+        break;
+    }
+
+    setWizardState(prev => ({ ...prev, validationErrors: errors }));
+    return Object.keys(errors).length === 0;
+  };
+
+  // Navigate to next step
+  const nextStep = () => {
+    if (validateStep(wizardState.currentStep)) {
+      const newSteps = [...wizardState.steps];
+      newSteps[wizardState.currentStep].isComplete = true;
+      newSteps[wizardState.currentStep].isActive = false;
+      
+      if (wizardState.currentStep < newSteps.length - 1) {
+        newSteps[wizardState.currentStep + 1].isActive = true;
+        setWizardState(prev => ({
+          ...prev,
+          currentStep: prev.currentStep + 1,
+          steps: newSteps
+        }));
+      }
+    }
+  };
+
+  // Navigate to previous step
+  const prevStep = () => {
+    if (wizardState.currentStep > 0) {
+      const newSteps = [...wizardState.steps];
+      newSteps[wizardState.currentStep].isActive = false;
+      newSteps[wizardState.currentStep - 1].isActive = true;
+      newSteps[wizardState.currentStep - 1].isComplete = false;
+      
+      setWizardState(prev => ({
+        ...prev,
+        currentStep: prev.currentStep - 1,
+        steps: newSteps
+      }));
+    }
+  };
+
+  // Submit time block creation
+  const handleSubmit = async () => {
+    if (!validateStep(wizardState.currentStep)) return;
+
+    setWizardState(prev => ({ ...prev, isSubmitting: true }));
+    clearError();
+
+    try {
+      if (wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0) {
+        // Create multiple time blocks for recurring days
+        const results: TimeBlockResponse[] = [];
+        for (const day of wizardState.formData.recurringDays) {
+          const timeBlockData: TimeBlockRequest = {
+            day,
+            startTime: wizardState.formData.startTime,
+            endTime: wizardState.formData.endTime,
+            location: wizardState.formData.location,
+            notes: wizardState.formData.notes
+          };
+          
+          const result = await createTimeBlock(teacherId, timeBlockData);
+          if (result) {
+            results.push(result);
+          }
+        }
+        
+        if (results.length > 0) {
+          onBlockCreated?.(results);
+        }
+      } else {
+        // Create single time block
+        const timeBlockData: TimeBlockRequest = {
+          day: wizardState.formData.day,
+          startTime: wizardState.formData.startTime,
+          endTime: wizardState.formData.endTime,
+          location: wizardState.formData.location,
+          notes: wizardState.formData.notes
+        };
+        
+        const result = await createTimeBlock(teacherId, timeBlockData);
+        if (result) {
+          onBlockCreated?.(result);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to create time block:', error);
+      setWizardState(prev => ({
+        ...prev,
+        validationErrors: { submit: String((error instanceof Error ? error.message : error) || 'שגיאה ביצירת בלוק הזמן') }
+      }));
+    } finally {
+      setWizardState(prev => ({ ...prev, isSubmitting: false }));
+    }
+  };
+
+  const renderStepContent = () => {
+    const { currentStep, formData, validationErrors } = wizardState;
+
+    switch (currentStep) {
+      case 0: // Day Selection Step
+        return (
+          <div className="day-selection-step">
+            <h3>בחר יום לבלוק הזמן</h3>
+            <div className="day-selector">
+              {HEBREW_DAYS.map(day => (
+                <button
+                  key={day}
+                  type="button"
+                  className={`day-button ${formData.day === day ? 'selected' : ''}`}
+                  onClick={() => updateFormData({ day })}
+                >
+                  <Calendar className="day-icon" size={20} />
+                  <span>{day}</span>
+                </button>
+              ))}
+            </div>
+            {validationErrors.day && (
+              <div className="error-message">{validationErrors.day}</div>
+            )}
+          </div>
+        );
+
+      case 1: // Time Range Step
+        return (
+          <div className="time-range-step">
+            <h3>הגדר טווח זמן לבלוק</h3>
+            
+            {/* Show existing time blocks for the selected day */}
+            {currentTeacherSchedule?.timeBlocks && (
+              (() => {
+                const existingBlocks = currentTeacherSchedule.timeBlocks.filter(
+                  block => block.day === formData.day && block.isActive
+                );
+                
+                if (existingBlocks.length > 0) {
+                  return (
+                    <div className="existing-blocks-info">
+                      <h4>בלוקי זמן קיימים ביום {formData.day}:</h4>
+                      <div className="existing-blocks-list">
+                        {existingBlocks.map(block => (
+                          <div key={block._id} className="existing-block-item">
+                            <Clock size={14} />
+                            <span>{block.startTime} - {block.endTime}</span>
+                            {block.location && <span>({block.location})</span>}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()
+            )}
+            
+            <div className="time-inputs">
+              <div className="time-input-group">
+                <label>
+                  <Clock size={16} />
+                  שעת התחלה
+                </label>
+                <input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) => updateFormData({ startTime: e.target.value })}
+                  className={`time-input ${validationErrors.startTime ? 'error' : ''}`}
+                />
+                {validationErrors.startTime && (
+                  <div className="field-error">{validationErrors.startTime}</div>
+                )}
+              </div>
+              
+              <div className="time-separator">-</div>
+              
+              <div className="time-input-group">
+                <label>
+                  <Clock size={16} />
+                  שעת סיום
+                </label>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => updateFormData({ endTime: e.target.value })}
+                  className={`time-input ${validationErrors.endTime ? 'error' : ''}`}
+                />
+                {validationErrors.endTime && (
+                  <div className="field-error">{validationErrors.endTime}</div>
+                )}
+              </div>
+            </div>
+
+            {formData.startTime && formData.endTime && (
+              <div className="duration-info">
+                <div className="duration-display">
+                  <Clock size={16} />
+                  <span>משך הבלוק: {calculateDuration(formData.startTime, formData.endTime)} דקות</span>
+                </div>
+              </div>
+            )}
+
+            {validationErrors.timeRange && (
+              <div className="error-message">{validationErrors.timeRange}</div>
+            )}
+
+          </div>
+        );
+
+      case 2: // Details Step
+        return (
+          <div className="details-step">
+            <h3>פרטים נוספים</h3>
+            
+            <div className="form-group">
+              <label>
+                <MapPin size={16} />
+                מיקום (אופציונלי)
+              </label>
+              <select
+                value={formData.location || ''}
+                onChange={(e) => updateFormData({ location: e.target.value })}
+                className="select-input"
+              >
+                <option value="">בחר מיקום</option>
+                <option value="חדר 1">חדר 1</option>
+                <option value="חדר 2">חדר 2</option>
+                <option value="חדר 3">חדר 3</option>
+                <option value="חדר 4">חדר 4</option>
+                <option value="חדר 5">חדר 5</option>
+                <option value="אולם קונצרטים">אולם קונצרטים</option>
+                <option value="אולפן הקלטות">אולפן הקלטות</option>
+                <option value="בית ספר">בית ספר</option>
+                <option value="מרכז תרבות">מרכז תרבות</option>
+                <option value="אחר">אחר</option>
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>
+                הערות (אופציונלי)
+              </label>
+              <textarea
+                value={formData.notes || ''}
+                onChange={(e) => updateFormData({ notes: e.target.value })}
+                placeholder="הערות נוספות על בלוק הזמן..."
+                className="textarea-input"
+                rows={3}
+              />
+            </div>
+
+            <div className="recurring-toggle">
+              <label className="recurring-checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={formData.isRecurring}
+                  onChange={(e) => updateFormData({ isRecurring: e.target.checked })}
+                  className="recurring-checkbox"
+                />
+                <div className="recurring-checkbox-custom">
+                  <Copy size={16} />
+                </div>
+                <div className="recurring-text">
+                  <span className="recurring-title">שכפול לימים נוספים</span>
+                  <span className="recurring-description">צור בלוק זמן זהה בימים אחרים בשבוע</span>
+                </div>
+              </label>
+            </div>
+
+            {formData.isRecurring && (
+              <div className="recurring-days">
+                <h4>בחר ימים נוספים:</h4>
+                <div className="recurring-day-selector">
+                  {HEBREW_DAYS.filter(day => day !== formData.day).map(day => (
+                    <label key={day} className="day-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={formData.recurringDays.includes(day)}
+                        onChange={(e) => {
+                          const newDays = e.target.checked
+                            ? [...formData.recurringDays, day]
+                            : formData.recurringDays.filter(d => d !== day);
+                          updateFormData({ recurringDays: newDays });
+                        }}
+                      />
+                      <span className="checkbox-label">{day}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+
+      case 3: // Review Step
+        return (
+          <div className="review-step">
+            <h3>סקירה לפני יצירה</h3>
+            <div className="review-summary">
+              <div className="summary-section">
+                <h4>זמן ומיקום</h4>
+                <div className="summary-item">
+                  <Calendar size={16} />
+                  <span>{formData.day}</span>
+                </div>
+                <div className="summary-item">
+                  <Clock size={16} />
+                  <span>{formData.startTime} - {formData.endTime}</span>
+                  <span>({calculateDuration(formData.startTime, formData.endTime)} דקות)</span>
+                </div>
+                {formData.location && (
+                  <div className="summary-item">
+                    <MapPin size={16} />
+                    <span>{formData.location}</span>
+                  </div>
+                )}
+              </div>
+
+              {formData.isRecurring && formData.recurringDays.length > 0 && (
+                <div className="summary-section">
+                  <h4>ימים חוזרים</h4>
+                  <div className="recurring-days-list">
+                    {formData.recurringDays.map(day => (
+                      <span key={day} className="recurring-day-tag">{day}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {formData.notes && (
+                <div className="summary-section">
+                  <h4>הערות</h4>
+                  <div className="summary-item">
+                    <span>{formData.notes}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {validationErrors.submit && (
+              <div className="error-message">{validationErrors.submit}</div>
+            )}
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="time-block-creator-overlay">
+      <div className="time-block-creator">
+        {/* Header */}
+        <div className="creator-header">
+          <h2>יצירת בלוק זמן חדש</h2>
+          <button 
+            type="button"
+            className="close-btn" 
+            onClick={onCancel}
+            disabled={wizardState.isSubmitting}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="error-banner">
+            <span>{error}</span>
+            <button type="button" onClick={clearError}>×</button>
+          </div>
+        )}
+
+        {/* Progress Steps */}
+        <div className="wizard-progress">
+          {wizardState.steps.map((step, index) => (
+            <div 
+              key={step.id}
+              className={`progress-step ${step.isActive ? 'active' : ''} ${step.isComplete ? 'completed' : ''}`}
+            >
+              <div className="step-indicator">
+                {step.isComplete ? <Check size={16} /> : index + 1}
+              </div>
+              <div className="step-info">
+                <div className="step-title">{step.title}</div>
+                <div className="step-description">{step.description}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Wizard Content */}
+        <div className="wizard-content">
+          <div className="wizard-step">
+            {renderStepContent()}
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="wizard-navigation">
+          <button 
+            type="button"
+            className="nav-btn prev-btn"
+            onClick={prevStep}
+            disabled={wizardState.currentStep === 0 || wizardState.isSubmitting}
+          >
+            הקודם
+          </button>
+          
+          {wizardState.currentStep < wizardState.steps.length - 1 ? (
+            <button 
+              type="button"
+              className="nav-btn next-btn"
+              onClick={nextStep}
+              disabled={wizardState.isSubmitting}
+            >
+              הבא
+            </button>
+          ) : (
+            <button 
+              type="button"
+              className="nav-btn create-btn"
+              onClick={handleSubmit}
+              disabled={wizardState.isSubmitting || isLoading}
+            >
+              {wizardState.isSubmitting || isLoading ? (
+                <>
+                  <div className="loading-spinner"></div>
+                  יוצר...
+                </>
+              ) : (
+                wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0
+                  ? `צור ${wizardState.formData.recurringDays.length} בלוקים`
+                  : 'צור בלוק זמן'
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TimeBlockCreator;

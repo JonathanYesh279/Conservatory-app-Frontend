@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ScheduleSlot, StudentSchedule } from '../../services/scheduleService';
+import { ScheduleSlot, StudentSchedule } from '../../types/schedule';
 import { useScheduleStore } from '../../store/scheduleStore';
 import { useScheduleConflicts } from '../../hooks/useScheduleConflicts';
 import { formatDayOfWeek, formatTime, formatTimeSlot } from '../../utils/scheduleUtils';

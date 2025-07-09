@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ScheduleSlot } from '../../services/scheduleService';
+import { ScheduleSlot } from '../../types/schedule';
 import { useScheduleManagement } from '../../hooks/useScheduleManagement';
 import ScheduleSlotCard from './ScheduleSlotCard';
 import { formatDayOfWeek } from '../../utils/scheduleUtils';

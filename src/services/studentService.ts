@@ -94,6 +94,19 @@ export interface Student {
     }>;
   };
   teacherIds: string[];
+  teacherAssignments?: Array<{
+    teacherId: string;
+    scheduleSlotId: string;
+    day: string;
+    time: string;
+    duration: number;
+    createdAt?: string;
+    updatedAt?: string;
+    startDate?: string;
+    endDate?: string;
+    isActive?: boolean;
+    notes?: string;
+  }>;
   _newTeacherAssociation?: boolean;
   isActive: boolean;
   createdAt: string;

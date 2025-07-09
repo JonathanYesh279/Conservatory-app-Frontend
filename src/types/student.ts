@@ -1,8 +1,13 @@
 // src/types/student.types.ts
+import { LessonDuration } from './schedule';
+
 export interface Student {
   _id: string;
+  id?: string; // Compatibility alias for _id
   personalInfo: {
     fullName: string;
+    firstName?: string; // For compatibility
+    lastName?: string; // For compatibility
     phone?: string;
     age?: number;
     address?: string;
@@ -40,6 +45,20 @@ export interface Student {
     }>;
   };
   teacherIds: string[];
+  teacherAssignments?: Array<{
+    teacherId: string;
+    scheduleSlotId: string;
+    day: string;
+    time: string;
+    duration: LessonDuration;
+    location?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    startDate?: string;
+    endDate?: string;
+    isActive?: boolean;
+    notes?: string;
+  }>;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

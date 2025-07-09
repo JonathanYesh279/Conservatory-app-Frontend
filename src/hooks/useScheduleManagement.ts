@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { 
   ScheduleSlot, 
-  CreateScheduleSlotData, 
-  UpdateScheduleSlotData,
-  AvailableSlotsFilter
-} from '../services/scheduleService';
+  CreateScheduleSlotRequest as CreateScheduleSlotData, 
+  UpdateScheduleSlotRequest as UpdateScheduleSlotData,
+  GetAvailableSlotsRequest as AvailableSlotsFilter,
+  ScheduleConflict
+} from '../types/schedule';
 import { useScheduleStore } from '../store/scheduleStore';
 import { validateSlotConflicts } from '../utils/scheduleValidation';
 import { groupSlotsByDay, sortScheduleSlots } from '../utils/scheduleUtils';
@@ -19,7 +20,7 @@ interface UseScheduleManagementReturn {
   weeklySchedule: { [dayOfWeek: number]: ScheduleSlot[] } | null;
   availableSlots: ScheduleSlot[];
   selectedSlot: ScheduleSlot | null;
-  conflicts: { slotA: string, slotB: string }[];
+  conflicts: ScheduleConflict[];
   
   // Loading states
   isLoading: boolean;

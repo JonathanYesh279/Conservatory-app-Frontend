@@ -1,5 +1,7 @@
 // src/cmps/TeacherList.tsx
+import { useEffect, useState } from 'react';
 import { Teacher } from '../services/teacherService';
+import { studentService } from '../services/studentService';
 import { TeacherPreview } from './TeacherPreview.tsx';
 
 interface TeacherListProps {
@@ -17,6 +19,55 @@ export function TeacherList({
   onView,
   onRemove,
 }: TeacherListProps) {
+  // State to track student counts for each teacher
+  const [teacherStudentCounts, setTeacherStudentCounts] = useState<Record<string, number>>({});
+  const [studentsLoaded, setStudentsLoaded] = useState(false);
+
+  // Load all students and calculate counts for each teacher
+  useEffect(() => {
+    if (teachers.length > 0 && !studentsLoaded) {
+      loadStudentCounts();
+    }
+  }, [teachers, studentsLoaded]);
+
+  const loadStudentCounts = async () => {
+    try {
+      console.log('Loading student counts for teachers...');
+      
+      // Get all students
+      const allStudents = await studentService.getStudents();
+      console.log('Total students loaded for count calculation:', allStudents.length);
+      
+      // Calculate count for each teacher
+      const counts: Record<string, number> = {};
+      
+      teachers.forEach(teacher => {
+        // Count students who have this teacher assigned
+        const studentCount = allStudents.filter(student => {
+          // Check if student has this teacher in teacherIds
+          const hasTeacherInIds = student.teacherIds && student.teacherIds.includes(teacher._id);
+          
+          // Check if student has assignments with this teacher
+          const hasTeacherAssignments = student.teacherAssignments && 
+            student.teacherAssignments.some((assignment: any) => assignment.teacherId === teacher._id);
+            
+          return hasTeacherInIds || hasTeacherAssignments;
+        }).length;
+        
+        counts[teacher._id] = studentCount;
+        
+        if (studentCount > 0) {
+          console.log(`Teacher ${teacher.personalInfo.fullName}: ${studentCount} students`);
+        }
+      });
+      
+      setTeacherStudentCounts(counts);
+      setStudentsLoaded(true);
+    } catch (error) {
+      console.error('Failed to load student counts:', error);
+    }
+  };
+
   // Add defensive check for array
   if (!Array.isArray(teachers)) {
     console.error(
@@ -49,6 +100,7 @@ export function TeacherList({
           onEdit={onEdit}
           onView={onView || onEdit}
           onRemove={onRemove}
+          studentCount={teacherStudentCounts[teacher._id] || 0}
         />
       ))}
     </div>

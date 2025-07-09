@@ -234,6 +234,10 @@ export function OrchestraDetails() {
     navigate(`/rehearsals/${rehearsalId}`);
   }
 
+  const handleMemberClick = (studentId: string) => {
+    navigate(`/students/${studentId}`);
+  }
+
   // Toggle sections
   const toggleInfoSection = () => {
     setShowInfoSection(!showInfoSection)
@@ -351,7 +355,7 @@ export function OrchestraDetails() {
                   onClick={toggleMembersSection}
                 >
                   <Users size={18} />
-                  תלמידים
+                  חברי תזמורת
                   {showMembersSection ? (
                     <ChevronUp className='toggle-icon' size={20} />
                   ) : (
@@ -369,15 +373,23 @@ export function OrchestraDetails() {
                         ) : members.length > 0 ? (
                           <ul className='members-items'>
                             {members.map((member) => (
-                              <li key={member._id} className='member-item'>
+                              <li 
+                                key={member._id} 
+                                className='member-item clickable'
+                                onClick={() => handleMemberClick(member._id)}
+                              >
                                 <div className='member-info'>
-                                  <span className='member-name'>
-                                    {member.personalInfo.fullName}
-                                  </span>
-                                  <span> - </span>
-                                  <span className='member-instrument'>
-                                    {member.academicInfo.instrument}
-                                  </span>
+                                  <div className='member-avatar'>
+                                    {member.personalInfo.fullName.charAt(0)}
+                                  </div>
+                                  <div className='member-details'>
+                                    <div className='member-name'>
+                                      {member.personalInfo.fullName}
+                                    </div>
+                                    <div className='member-instrument'>
+                                      {member.academicInfo.instrument}
+                                    </div>
+                                  </div>
                                 </div>
                               </li>
                             ))}

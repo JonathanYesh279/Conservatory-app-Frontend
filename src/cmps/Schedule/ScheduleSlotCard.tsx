@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScheduleSlot } from '../../services/scheduleService';
+import { ScheduleSlot } from '../../types/schedule';
 import { formatTime } from '../../utils/scheduleUtils';
 import { useScheduleConflicts } from '../../hooks/useScheduleConflicts';
 

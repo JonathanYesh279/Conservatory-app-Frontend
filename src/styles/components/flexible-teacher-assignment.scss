@@ -1,0 +1,401 @@
+// .flexible-teacher-assignment {
+//   background: white;
+//   border-radius: 8px;
+//   padding: 20px;
+//   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+//   margin-bottom: 20px;
+
+//   &.disabled {
+//     opacity: 0.6;
+//     pointer-events: none;
+//   }
+
+//   // Teacher Info Section
+//   .teacher-info {
+//     margin-bottom: 20px;
+//     padding-bottom: 15px;
+
+//     .teacher-header {
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//       font-weight: 600;
+//       margin-bottom: 8px;
+
+//       svg {
+//       }
+//     }
+
+//     .selection-summary {
+//       padding: 8px 12px;
+//       border-radius: 6px;
+//     }
+//   }
+
+//   // Duration Selector
+//   .duration-selector {
+//     margin-bottom: 25px;
+
+//     .duration-label {
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//       font-weight: 600;
+//       margin-bottom: 12px;
+
+//       svg {
+//       }
+//     }
+
+//     .duration-options {
+//       display: flex;
+//       gap: 8px;
+//       flex-wrap: wrap;
+//       margin-bottom: 10px;
+
+//       .duration-btn {
+//         padding: 8px 16px;
+//         border: 2px solid $gray-300;
+//         border-radius: 20px;
+//         background: white;
+//         font-weight: 500;
+//         cursor: pointer;
+//         transition: all 0.2s ease;
+
+//         &:hover {
+          
+//         }
+
+//         &.active {
+//           background: $primary-color;
+          
+//           color: white;
+//         }
+
+//         &:disabled {
+//           opacity: 0.5;
+//           cursor: not-allowed;
+//         }
+//       }
+//     }
+
+//     .duration-stats {
+//       font-size: 14px;
+//       color: $gray-600;
+      
+//       strong {
+//       }
+//     }
+//   }
+
+//   // Optimal Suggestions
+//   .optimal-suggestions {
+//     margin-bottom: 25px;
+//     background: linear-gradient(135deg, #fef3c7 0%, #f59e0b20 100%);
+//     border: 1px solid #f59e0b40;
+//     border-radius: 8px;
+//     padding: 16px;
+
+//     .suggestions-title {
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//       font-weight: 600;
+//       color: #92400e;
+//       margin-bottom: 12px;
+//       font-size: 16px;
+
+//       svg {
+//         color: #f59e0b;
+//       }
+//     }
+
+//     .suggestions-list {
+//       display: flex;
+//       flex-direction: column;
+//       gap: 8px;
+
+//       .suggestion-card {
+//         display: flex;
+//         align-items: center;
+//         gap: 12px;
+//         padding: 12px;
+//         background: white;
+//         border: 1px solid #f59e0b30;
+//         border-radius: 6px;
+//         cursor: pointer;
+//         transition: all 0.2s ease;
+
+//         &:hover {
+//           border-color: #f59e0b;
+//           box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+//         }
+
+//         &.selected {
+//           box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+//         }
+
+//         .suggestion-rank {
+//           background: #f59e0b;
+//           color: white;
+//           width: 24px;
+//           height: 24px;
+//           border-radius: 50%;
+//           display: flex;
+//           align-items: center;
+//           justify-content: center;
+//           font-size: 12px;
+//           font-weight: 600;
+//           flex-shrink: 0;
+//         }
+
+//         .suggestion-details {
+//           flex: 1;
+
+//           .suggestion-time {
+//             display: flex;
+//             align-items: center;
+//             gap: 6px;
+//             font-weight: 500;
+//             margin-bottom: 4px;
+
+//             svg {
+//               color: $gray-500;
+//             }
+//           }
+
+//           .suggestion-score {
+//             font-size: 12px;
+//             color: $gray-600;
+//           }
+//         }
+
+//         .suggestion-action {
+//           .select-btn {
+//             padding: 4px 12px;
+//             background: $primary-color;
+//             color: white;
+//             border: none;
+//             border-radius: 4px;
+//             font-size: 12px;
+//             cursor: pointer;
+//             transition: background 0.2s ease;
+
+//             &:hover {
+//               background: darken($primary-color, 10%);
+//             }
+//           }
+//         }
+//       }
+//     }
+//   }
+
+//   // Available Slots Section
+//   .available-slots {
+//     .slots-title {
+//       font-weight: 600;
+//       margin-bottom: 16px;
+//       display: flex;
+//       align-items: center;
+//       gap: 8px;
+//     }
+//   }
+
+//   // Loading State
+//   .loading-state {
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     padding: 40px 20px;
+//     color: $gray-600;
+
+//     .loading-spinner {
+//       width: 32px;
+//       height: 32px;
+//       border: 3px solid $gray-300;
+//       border-top: 3px solid $primary-color;
+//       border-radius: 50%;
+//       animation: spin 1s linear infinite;
+//       margin-bottom: 12px;
+//     }
+
+//     @keyframes spin {
+//       0% { transform: rotate(0deg); }
+//       100% { transform: rotate(360deg); }
+//     }
+//   }
+
+//   // Empty State
+//   .empty-state {
+//     display: flex;
+//     flex-direction: column;
+//     align-items: center;
+//     justify-content: center;
+//     padding: 40px 20px;
+//     text-align: center;
+
+//     h3 {
+//       margin: 16px 0 8px 0;
+//     }
+
+//     p {
+//       color: $gray-600;
+//       margin: 4px 0;
+//       line-height: 1.5;
+//     }
+//   }
+
+//   // Slots by Day
+//   .slots-by-day {
+//     .day-section {
+//       margin-bottom: 24px;
+
+//       .day-header {
+//         display: flex;
+//         align-items: center;
+//         gap: 8px;
+//         font-weight: 600;
+//         margin-bottom: 12px;
+//         padding-bottom: 8px;
+//         border-bottom: 1px solid $gray-200;
+
+//         .day-count {
+//           color: $gray-500;
+//           font-weight: 400;
+//           font-size: 14px;
+//         }
+//       }
+
+//       .day-slots {
+//         display: grid;
+//         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+//         gap: 12px;
+//       }
+//     }
+//   }
+
+//   // Slot Card
+//   .slot-card {
+//     border: 1px solid $gray-300;
+//     border-radius: 6px;
+//     padding: 12px;
+//     background: white;
+//     cursor: pointer;
+//     transition: all 0.2s ease;
+
+//     &:hover {
+      
+//       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+//     }
+
+//     &.selected {
+//       background: $success-bg;
+//       box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+//     }
+
+//     &.medium-score {
+//       border-left: 4px solid #f59e0b;
+//     }
+
+//     &.low-score {
+//       border-left: 4px solid $gray-400;
+//     }
+
+//     .slot-header {
+//       display: flex;
+//       justify-content: between;
+//       align-items: center;
+//       margin-bottom: 8px;
+
+//       .slot-time {
+//         display: flex;
+//         align-items: center;
+//         gap: 6px;
+//         font-weight: 500;
+
+//         svg {
+//         }
+//       }
+
+//       .slot-score {
+//         font-size: 12px;
+//         color: $gray-600;
+//         background: $gray-100;
+//         padding: 2px 6px;
+//         border-radius: 4px;
+//       }
+//     }
+
+//     .slot-details {
+//       margin: 8px 0;
+//       font-size: 14px;
+
+//       .slot-duration {
+//         color: $gray-600;
+//         margin-bottom: 4px;
+//       }
+
+//       .slot-location {
+//         color: $gray-600;
+//         margin-bottom: 4px;
+//       }
+
+//       .slot-gaps {
+//         .gap-info {
+//           color: $gray-500;
+//           font-size: 12px;
+//         }
+//       }
+//     }
+
+//     .slot-actions {
+//       display: flex;
+//       justify-content: flex-end;
+//       align-items: center;
+
+//       .select-btn {
+//         padding: 4px 12px;
+//         background: $primary-color;
+//         color: white;
+//         border: none;
+//         border-radius: 4px;
+//         font-size: 12px;
+//         cursor: pointer;
+//         transition: background 0.2s ease;
+
+//         &:hover {
+//           background: darken($primary-color, 10%);
+//         }
+//       }
+
+//       .selected-indicator {
+//         display: flex;
+//         align-items: center;
+//         gap: 4px;
+//         font-size: 12px;
+//         font-weight: 500;
+//       }
+//     }
+//   }
+
+//   // Responsive Design
+//   @media (max-width: 768px) {
+//     padding: 16px;
+
+//     .duration-options {
+//       .duration-btn {
+//         padding: 6px 12px;
+//         font-size: 14px;
+//       }
+//     }
+
+//     .slots-by-day .day-section .day-slots {
+//       grid-template-columns: 1fr;
+//     }
+
+//     .suggestions-list .suggestion-card {
+//       padding: 10px;
+//     }
+//   }
+// }

@@ -1,15 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ScheduleSlot, AssignStudentData } from '../services/scheduleService';
+import { ScheduleSlot, AssignStudentRequest as AssignStudentData } from '../types/schedule';
+import { Student } from '../types/student';
 import { useScheduleStore } from '../store/scheduleStore';
 import { validateStudentAssignment } from '../utils/scheduleValidation';
-
-interface Student {
-  id: string;
-  
-  firstName: string;
-  lastName: string;
-  // Add other student properties as needed
-}
 
 interface UseStudentAssignmentProps {
   selectedSlot?: ScheduleSlot | null;
@@ -59,10 +52,24 @@ const useStudentAssignment = ({
       // In a real implementation, you would fetch the student details
       // For now, we'll create a simplified student object
       setAssignedStudent({
-        id: selectedSlot.studentId,
-        firstName: selectedSlot.studentName?.split(' ')[0] || '',
-        lastName: selectedSlot.studentName?.split(' ')[1] || ''
-      });
+        _id: selectedSlot.studentId,
+        personalInfo: {
+          fullName: selectedSlot.studentName || '',
+        },
+        academicInfo: {
+          instrumentProgress: [],
+          class: ''
+        },
+        enrollments: {
+          orchestraIds: [],
+          ensembleIds: [],
+          schoolYears: []
+        },
+        teacherIds: [],
+        isActive: true,
+        createdAt: '',
+        updatedAt: ''
+      } as any);
     } else {
       setAssignedStudent(null);
     }

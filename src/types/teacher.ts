@@ -20,6 +20,21 @@ export interface Teacher {
       duration: number;
       isActive: boolean; // This is the critical field causing the error
     }>;
+    timeBlocks?: Array<{
+      _id: string;
+      day: string;
+      startTime: string;
+      endTime: string;
+      totalDuration: number;
+      location?: string;
+      notes?: string;
+      isActive: boolean;
+      assignedLessons?: any[];
+      recurring?: {
+        isRecurring: boolean;
+        excludeDates?: string[];
+      };
+    }>;
   };
   conducting?: {
     orchestraIds: string[];
@@ -35,6 +50,21 @@ export interface Teacher {
     refreshToken?: string;
     lastLogin?: string;
   };
+  timeBlocks?: Array<{
+    _id: string;
+    day: string;
+    startTime: string;
+    endTime: string;
+    totalDuration: number;
+    location?: string;
+    notes?: string;
+    isActive: boolean;
+    assignedLessons?: any[];
+    recurring?: {
+      isRecurring: boolean;
+      excludeDates?: string[];
+    };
+  }>;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

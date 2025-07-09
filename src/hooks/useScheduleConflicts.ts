@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { ScheduleSlot } from '../services/scheduleService';
+import { ScheduleSlot } from '../types/schedule';
 import { useScheduleStore } from '../store/scheduleStore';
 import { doSlotsOverlap, formatTimeSlot } from '../utils/scheduleUtils';
 
@@ -27,15 +27,20 @@ interface UseScheduleConflictsReturn {
  * Finds detailed information about a specific conflict
  */
 const findConflictDetails = (
-  conflicts: { slotA: string; slotB: string }[],
+  conflicts: import('../types/schedule').ScheduleConflict[],
   allSlots: ScheduleSlot[]
 ): ConflictDetails[] => {
   return conflicts.map(conflict => {
-    const slotA = allSlots.find(slot => slot.id === conflict.slotA);
-    const slotB = allSlots.find(slot => slot.id === conflict.slotB);
+    const slotAId = typeof conflict.slotA === 'string' ? conflict.slotA : conflict.slotA?.id;
+    const slotBId = typeof conflict.slotB === 'string' ? conflict.slotB : conflict.slotB?.id;
+    
+    const slotA = typeof conflict.slotA === 'object' ? conflict.slotA : 
+                  allSlots.find(slot => slot.id === slotAId);
+    const slotB = typeof conflict.slotB === 'object' ? conflict.slotB : 
+                  allSlots.find(slot => slot.id === slotBId);
     
     if (!slotA || !slotB) {
-      throw new Error(`Conflict references missing slots: ${conflict.slotA}, ${conflict.slotB}`);
+      throw new Error(`Conflict references missing slots: ${slotAId}, ${slotBId}`);
     }
     
     // Determine conflict type
@@ -98,7 +103,9 @@ const useScheduleConflicts = (): UseScheduleConflictsReturn => {
   const isSlotConflicting = useCallback(
     (slotId: string): boolean => {
       return conflicts.some(
-        conflict => conflict.slotA === slotId || conflict.slotB === slotId
+        conflict => 
+          (typeof conflict.slotA === 'string' ? conflict.slotA === slotId : conflict.slotA?.id === slotId) ||
+          (typeof conflict.slotB === 'string' ? conflict.slotB === slotId : conflict.slotB?.id === slotId)
       );
     },
     [conflicts]

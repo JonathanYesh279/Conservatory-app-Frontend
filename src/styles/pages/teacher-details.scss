@@ -1,6 +1,6 @@
-// src/styles/pages/teacher-details.scss
+/* src/styles/pages/teacher-details.scss */
 
-// Main content
+/* Teacher Details Page Layout */
 .teacher-details-content {
   height: 100%;
   width: 100%;
@@ -9,9 +9,9 @@
   justify-content: center;
   padding: 0;
   overflow: hidden;
+  direction: rtl;
 }
 
-// Page container
 .teacher-details-page {
   position: relative;
   width: 100%;
@@ -21,524 +21,465 @@
   align-items: center;
   justify-content: center;
   padding: 0 1rem;
-  
-  // Back button
-  .back-button {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(5px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
-    
-    &:hover {
-      background-color: rgba(255, 255, 255, 0.3);
-      color: var(--text-primary);
-      transform: translateX(-3px);
-    }
-  }
-  
-  // Card container
-  .teacher-card-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    max-height: 80vh;
-    perspective: 1500px;
-    
-    // Card content (both front and back)
-    .card-content {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      transform-style: preserve-3d;
-      transition: all 0.5s ease;
-      border-radius: 1rem;
-      box-shadow: var(--shadow-md);
-      
-      // When flipped class is applied
-      &.flipped {
-        .card-front {
-          transform: rotateY(180deg);
-          opacity: 0;
-          pointer-events: none;
-          transition-delay: 0s;
-        }
-        
-        .card-back {
-          transform: rotateY(0deg);
-          opacity: 1;
-          pointer-events: all;
-          transition-delay: 0.15s;
-        }
-      }
-      
-      // Common styles for both sides
-      .card-side {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 1rem;
-        background-color: var(--bg-card);
-        border: 1px solid var(--border-color);
-        overflow: visible; // Changed from hidden to visible
-        display: flex;
-        flex-direction: column;
-        transition: all 0.5s ease;
-        will-change: transform, opacity;
-      }
-      
-      // Front side (Professional Info)
-      .card-front {
-        transform: rotateY(0deg);
-        opacity: 1;
-        z-index: 2;
-        transition-delay: 0.15s;
-      }
-      
-      // Back side (Personal Info)
-      .card-back {
-        transform: rotateY(180deg);
-        opacity: 0;
-        z-index: 1;
-        transition-delay: 0s;
-      }
-    }
-    
-    // Card header
-    .card-header {
-      background: linear-gradient(
-        to left,
-        rgba(var(--primary-color-rgb), 0.1),
-        rgba(var(--primary-color-rgb), 0.05)
-      );
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
-      overflow: visible; // Ensure popups aren't cut off
-      
-      .teacher-identity {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        position: relative; // Important for popup positioning
-        
-        .avatar {
-          width: 44px;
-          height: 44px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          font-size: 1.1rem;
-          font-weight: 600;
-          box-shadow: var(--shadow-sm);
-          flex-shrink: 0;
-        }
-        
-        // Avatar clickable styles - moved outside of media query
-        .avatar-clickable {
-          position: relative;
-          overflow: visible;
-          transition: transform 0.2s;
-          cursor: pointer;
-        }
+}
 
-        .avatar-clickable:hover {
-          transform: scale(1.05);
-        }
-        
-        .header-text {
-          .teacher-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0;
-            color: var(--text-primary);
-          }
-          
-          .instrument {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: var(--text-secondary);
-            padding: 0.25rem;
-            font-size: 0.85rem;
-            
-            svg {
-              color: var(--primary-color);
-            }
-          }
-        }
-      }
-      
-      .header-badges {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        
-        .role-badge {
-          padding: 0.4rem 0.75rem;
-          border-radius: 0.375rem;
-          color: white;
-          font-weight: 500;
-          font-size: 0.85rem;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: var(--shadow-sm);
-        }
-      }
-    }
-    
-    // Scrollable content area
-    .card-scroll-area {
-      flex: 1;
-      padding: 1rem;
-      padding-bottom: 3.5rem; // Space for the button
-      overflow-y: auto;
-      overflow-x: visible; // Allow popups to show
-      
-      // Section styling
-      .section {
-        margin-bottom: 1.25rem;
-        
-        &:last-child {
-          margin-bottom: 0;
-        }
-        
-        // Collapsible section title with click functionality
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 0.75rem;
-          font-size: 1.4rem;
-          font-weight: 600;
-          margin-bottom: 0.75rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px dashed var(--border-color);
-          
-          svg {
-            color: white;
-          }
-          
-          // Clickable section title
-          &.clickable {
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            margin-bottom: 0.5rem;
-            font-size: 1.2rem;
-            
-            &:hover {
-              color: var(--primary-color);
-            }
-            
-            // Toggle icon styling
-            .toggle-icon {
-              margin-left: auto;
-              margin-right: 0;
-              color: var(--text-secondary);
-              transition: transform 0.3s ease;
-            }
-          }
-          
-          // Active section styling
-          &.active, .section-active & {
-            color: var(--primary-color);
-            border-bottom-color: var(--primary-color);
-            
-            .toggle-icon {
-              color: var(--primary-color);
-            }
-          }
-        }
-        
-        // Section content container with animation
-        .section-content {
-          transition: all 0.3s ease;
-          overflow: hidden;
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
-          animation: fadeIn 0.3s ease;
-        }
-      }
-    }
-    
-    // Students grid
-    .students-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 0.75rem;
-      overflow: auto;
-      max-height: 200px;
-      
-      .student-card {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        background-color: rgba(var(--bg-tertiary-rgb), 0.5);
-        padding: 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--border-color);
-        transition: all 0.2s ease;
-        
-        &.clickable {
-          cursor: pointer;
-          
-          &:hover {
-            background-color: rgba(var(--bg-tertiary-rgb), 0.8);
-            transform: translateY(-2px);
-          }
-        }
-        
-        .student-avatar {
-          width: 30px;
-          height: 30px;
-          border-radius: 50%;
-          background-color: var(--primary-color);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 0.8rem;
-          font-weight: 600;
-          flex-shrink: 0;
-        }
-        
-        .student-info {
-          flex: 1;
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          
-          .student-name {
-            font-weight: 500;
-            color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 0.9rem;
-          }
-          
-          .student-instrument {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-          }
-        }
-      }
-    }
-    
-    // Orchestras grid
-    .orchestras-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0.75rem;
-      
-      .orchestra-card {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        background-color: rgba(var(--primary-color-rgb), 0.1);
-        padding: 1rem;
-        border-radius: 0.5rem;
-        border: 1px solid rgba(var(--primary-color-rgb), 0.2);
-        transition: all 0.2s ease;
-        
-        &.clickable {
-          cursor: pointer;
-          
-          &:hover {
-            background-color: rgba(var(--primary-color-rgb), 0.15);
-            transform: translateY(-2px);
-          }
-        }
-        
-        svg {
-          color: var(--primary-color);
-        }
-        
-        span {
-          text-align: center;
-          font-weight: 500;
-        }
-      }
-    }
-    
-    .selected-students.schedule-view {
-          margin: 1rem 0;
-  border-radius: 0.75rem;
+/* Back Button */
+.back-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.back-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-primary);
+  transform: translateX(-3px);
+}
+
+/* Card Container */
+.teacher-card-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-height: 80vh;
+  perspective: 1500px;
+}
+
+/* Card Content (both front and back) */
+.card-content {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: all 0.5s ease;
+  border-radius: 1rem;
+  box-shadow: var(--shadow-md);
+}
+
+/* When flipped class is applied */
+.card-content.flipped .card-front {
+  transform: rotateY(180deg);
+  opacity: 0;
+  pointer-events: none;
+  transition-delay: 0s;
+}
+
+.card-content.flipped .card-back {
+  transform: rotateY(0deg);
+  opacity: 1;
+  pointer-events: all;
+  transition-delay: 0.15s;
+}
+
+/* Common styles for both sides */
+.card-side {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.5s ease;
+  will-change: transform, opacity;
+}
+
+/* Front side (Professional Info) */
+.card-front {
+  transform: rotateY(0deg);
+  opacity: 1;
+  z-index: 2;
+  transition-delay: 0.15s;
+}
+
+/* Back side (Personal Info) */
+.card-back {
+  transform: rotateY(180deg);
+  opacity: 0;
+  z-index: 1;
+  transition-delay: 0s;
+}
+
+/* Card Header */
+.card-header {
+  background: linear-gradient(
+    to left,
+    rgba(var(--primary-color-rgb), 0.1),
+    rgba(var(--primary-color-rgb), 0.05)
+  );
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.teacher-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  flex-shrink: 0;
+}
+
+.avatar-clickable {
+  position: relative;
+  overflow: visible;
+  transition: transform 0.2s;
+  cursor: pointer;
+}
+
+.avatar-clickable:hover {
+  transform: scale(1.05);
+}
+
+.header-text .teacher-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.header-text .instrument {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.header-text .instrument svg {
+  color: var(--primary-color);
+}
+
+/* Header Badges */
+.header-badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.role-badge {
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.375rem;
+  color: white;
+  font-weight: 500;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  background-color: var(--primary-color);
+}
+
+/* Common styles for detailed view pages */
+.card-scroll-area {
+  flex: 1;
+  padding: 1rem;
+  padding-bottom: 3.5rem;
+  overflow-y: auto;
+  overflow-x: visible;
+}
+
+/* Section styling */
+.section {
+  margin-bottom: 1.25rem;
+  border-radius: 0.5rem;
   background-color: var(--bg-tertiary);
-  padding: 0.5rem;
-  overflow: hidden;
-  max-height: none; // Remove any max-height restriction
-  
-  .student-schedule-item {
-    background-color: var(--bg-card);
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
-    overflow: hidden;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    
-    &:last-child {
-      margin-bottom: 0;
-    }
-    
-    .student-info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--border-color);
-      
-      .student-name {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: var(--text-primary);
-      }
-      
-      .student-details {
-        display: flex;
-        gap: 0.75rem;
-        flex-wrap: wrap;
-        
-        span {
-          font-size: 0.8rem;
-          color: var(--text-secondary);
-          background-color: var(--bg-tertiary);
-          padding: 0.25rem 0.5rem;
-          border-radius: 0.25rem;
-        }
-      }
-    }
-    
-    .schedule-fields {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background-color: var(--bg-secondary);
-      
-      .form-group {
-        label {
-          font-size: 0.75rem;
-          color: var(--text-secondary);
-          margin-bottom: 0.25rem;
-          display: block;
-        }
-        
-        .schedule-value {
-          background-color: var(--bg-tertiary);
-          border-radius: 0.35rem;
-          padding: 0.4rem 0.5rem;
-          color: var(--text-primary);
-          font-weight: 500;
-          height: 31px;
-          display: flex;
-          align-items: center;
-          font-size: 0.85rem;
-          border: 1px solid var(--border-color);
-        }
-      }
-    }
-  }
-  
-  .no-schedule-message {
-    padding: 1rem;
-    text-align: center;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-  }
-}
-    
-    // Information grid layout
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      
-      .info-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
-        
-        svg {
-          color: var(--primary-color);
-          margin-top: 0.2rem;
-          flex-shrink: 0;
-        }
-        
-        div {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-        }
-        
-        .info-label {
-          color: var(--text-secondary);
-          font-size: 0.85rem;
-          margin-bottom: 0.2rem;
-        }
-        
-        .info-value {
-          color: var(--text-primary);
-          font-weight: 500;
-          font-size: 1rem;
-        }
-      }
-    }
-    
-    // Bottom button for flipping
-    .flip-button {
-      position: absolute;
-      bottom: 1rem;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: 100px;
-      font-weight: 500;
-      font-size: 1rem;
-      padding: 0.75rem 1.5rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-md);
-      width: calc(100% - 2rem);
-      max-width: 240px;
-      z-index: 5;
-      
-      &:hover {
-        background-color: var(--primary-dark);
-      }
-      
-      &:active {
-        transform: translateX(-50%) translateY(2px);
-      }
-    }
-  }
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-// Loading and error states
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+/* Collapsible section title */
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.section-title svg {
+  color: var(--primary-color);
+}
+
+/* Clickable section title */
+.section-title.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.section-title.clickable:hover {
+  color: var(--primary-color);
+}
+
+/* Toggle icon styling */
+.toggle-icon {
+  margin-right: auto;
+  margin-left: 0;
+  color: var(--text-secondary);
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon.open {
+  transform: rotate(180deg);
+}
+
+/* Active section styling */
+.section-title.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.section-title.active .toggle-icon {
+  color: var(--primary-color);
+}
+
+/* Section content with animation */
+.section-content {
+  transition: all 0.3s ease;
+  padding: 0.75rem;
+  animation: fadeIn 0.3s ease;
+  background-color: var(--bg-tertiary);
+}
+
+/* Student card grid (for teachers) */
+.students-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.5rem;
+  overflow: auto;
+  max-height: 180px;
+}
+
+.student-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-card);
+  padding: 0.5rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.student-card.clickable {
+  cursor: pointer;
+}
+
+.student-card.clickable:hover {
+  background-color: rgba(var(--bg-tertiary-rgb), 0.8);
+  transform: translateY(-2px);
+}
+
+.student-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.student-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+.student-instrument {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Orchestra grid */
+.orchestras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.75rem;
+}
+
+.orchestra-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  transition: all 0.2s ease;
+}
+
+.orchestra-card.clickable {
+  cursor: pointer;
+}
+
+.orchestra-card.clickable:hover {
+  background-color: rgba(var(--primary-color-rgb), 0.15);
+  transform: translateY(-2px);
+}
+
+.orchestra-card svg {
+  color: var(--primary-color);
+}
+
+.orchestra-card span {
+  text-align: center;
+  font-weight: 500;
+}
+
+.orchestra-type {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Information grid layout */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-item svg {
+  color: var(--primary-color);
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.info-item div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-bottom: 0.2rem;
+}
+
+.info-value {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Bottom button for flipping */
+.flip-button {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.75rem 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-md);
+  width: calc(100% - 2rem);
+  max-width: 240px;
+  z-index: 5;
+}
+
+.flip-button:hover {
+  background-color: var(--primary-dark);
+}
+
+.flip-button:active {
+  transform: translateX(-50%) translateY(2px);
+}
+
+/* Warning messages */
+.no-teacher-warning,
+.no-orchestra-warning,
+.no-data {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 0.75rem;
+  background-color: var(--bg-card);
+  border-radius: 0.5rem;
+}
+
+/* Loading and error states */
 .loading-state,
 .error-state {
   display: flex;
@@ -557,42 +498,54 @@
   margin: 0 auto;
 }
 
-.loading-state {
-  .loading-icon {
-    animation: spin 1.5s linear infinite;
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-  }
-  
-  p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-  }
+.loading-state .loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
 }
 
-.error-state {
-  p {
-    color: var(--danger);
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .btn.primary {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    
-    &:hover {
-      background-color: var(--primary-dark);
-    }
-  }
+.loading-state p {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
 }
 
-// Animation for section opening
+.error-state p {
+  color: var(--danger);
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.error-state .btn.primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.error-state .btn.primary:hover {
+  background-color: var(--primary-dark);
+}
+
+/* Loading section */
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.loading-section .loading-icon {
+  animation: spin 1.5s linear infinite;
+  color: var(--primary-color);
+}
+
+/* Animation */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -603,307 +556,18 @@
   to { transform: rotate(360deg); }
 }
 
-// Communication Modal Styles
-.communication-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
-  backdrop-filter: blur(2px);
-  direction: rtl;
-}
-
-.communication-modal {
-  background-color: var(--bg-card);
-  border-radius: 12px;
-  width: 90%;
-  max-width: 450px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s ease;
-  border: 1px solid var(--border-color);
-}
-
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(
-    to left,
-    rgba(var(--primary-color-rgb), 0.1),
-    rgba(var(--primary-color-rgb), 0.05)
-  );
-
-  h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .close-btn {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.05);
-      color: var(--text-primary);
-    }
-  }
-}
-
-// Method Selection Section
-.comm-method-selection {
-  padding: 20px;
-
-  .comm-details {
-    margin-bottom: 20px;
-    background-color: rgba(var(--bg-tertiary-rgb), 0.3);
-    padding: 15px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-
-    .contact-info-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      padding-bottom: 10px;
-      border-bottom: 1px dashed var(--border-color);
-      
-      &:last-child {
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-      }
-
-      svg {
-        color: var(--primary-color);
-        flex-shrink: 0;
-      }
-
-      span {
-        flex: 1;
-        color: var(--text-primary);
-        font-weight: 500;
-        word-break: break-all;
-      }
-
-      .copy-btn {
-        background: none;
-        border: none;
-        color: var(--text-secondary);
-        cursor: pointer;
-        padding: 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 4px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.05);
-          color: var(--text-primary);
-        }
-
-        // For check icon when copied
-        svg {
-          color: var(--success);
-        }
-      }
-    }
-  }
-
-  .method-buttons {
-    display: flex;
-    gap: 10px;
-    flex-direction: column;
-
-    .method-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      color: white;
-
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
-      }
-
-      &.email-btn {
-        background-color: #D44638;
-
-        &:hover {
-          background-color: #c53b2d;
-        }
-      }
-
-      &.whatsapp-btn {
-        background-color: #25D366;
-
-        &:hover {
-          background-color: #20bd5a;
-        }
-      }
-
-      span {
-        font-size: 1rem;
-      }
-    }
-  }
-}
-
-// Email & WhatsApp Forms
-.email-form,
-.whatsapp-form {
-  padding: 20px;
-
-  .back-to-methods {
-    background: none;
-    border: none;
-    color: var(--primary-color);
-    cursor: pointer;
-    padding: 0;
-    margin-bottom: 16px;
-    font-weight: 500;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-
-  .form-group {
-    margin-bottom: 15px;
-
-    label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    input,
-    textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      font-size: 1rem;
-      background-color: var(--bg-input);
-      color: var(--text-primary);
-      resize: vertical;
-      transition: all 0.2s ease;
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
-      }
-
-      &::placeholder {
-        color: var(--text-placeholder);
-      }
-    }
-
-    textarea {
-      min-height: 100px;
-    }
-  }
-
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 20px;
-
-    .cancel-btn {
-      padding: 10px 16px;
-      background-color: transparent;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.05);
-        color: var(--text-primary);
-      }
-    }
-
-    .send-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background-color: var(--primary-color);
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        background-color: var(--primary-dark);
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        background-color: var(--primary-color);
-      }
-    }
-  }
-}
-
-// Animation for slideUp used in communication modal
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-// Dark mode adjustments
+/* Dark mode specific styles */
 [data-theme="dark"] {
-  .teacher-card-container .card-side {
+  .card-content .card-side {
     background-color: var(--bg-secondary);
   }
   
   .back-button {
     background-color: rgba(0, 0, 0, 0.3);
-    
-    &:hover {
-      background-color: rgba(0, 0, 0, 0.4);
-    }
+  }
+  
+  .back-button:hover {
+    background-color: rgba(0, 0, 0, 0.4);
   }
   
   .card-header {
@@ -914,68 +578,24 @@
     );
   }
   
-  .students-grid .student-card {
+  .section {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .section-content {
+    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
+  }
+  
+  .student-card {
     background-color: rgba(var(--bg-tertiary-rgb), 0.3);
   }
   
-  .orchestras-grid .orchestra-card {
-    background-color: rgba(var(--primary-color-rgb), 0.15);
-    border-color: rgba(var(--primary-color-rgb), 0.25);
-  }
-  
-  .selected-students.schedule-view {
-    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
-    
-    .student-schedule-item {
-      background-color: var(--bg-secondary);
-      
-      .schedule-fields {
-        background-color: rgba(0, 0, 0, 0.1);
-        
-        .schedule-value {
-          background-color: rgba(var(--bg-tertiary-rgb), 0.3);
-          border-color: var(--border-dark);
-        }
-      }
-    }
-  }
-  
-  .communication-modal {
-    background-color: var(--bg-secondary);
-  }
-
-  .comm-method-selection .comm-details {
-    background-color: rgba(var(--bg-tertiary-rgb), 0.2);
-  }
-
-  .email-form, .whatsapp-form {
-    .form-group {
-      input, textarea {
-        background-color: rgba(var(--bg-tertiary-rgb), 0.2);
-        border-color: var(--border-dark);
-      }
-    }
-
-    .form-actions {
-      .cancel-btn {
-        border-color: var(--border-dark);
-        &:hover {
-          background-color: rgba(255, 255, 255, 0.05);
-        }
-      }
-    }
-  }
-
-  .contact-info-item .copy-btn:hover {
-    background-color: rgba(255, 255, 255, 0.08);
-  }
-
-  .modal-header .close-btn:hover {
-    background-color: rgba(255, 255, 255, 0.08);
+  .orchestra-card {
+    padding: 0.4rem;
   }
 }
 
-// Media queries
+/* Media queries for responsive design */
 @media (max-width: 768px) {
   .info-grid {
     grid-template-columns: 1fr;
@@ -983,132 +603,281 @@
   
   .students-grid,
   .orchestras-grid {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  }
-  
-  .selected-students.schedule-view {
-    .student-schedule-item {
-      .schedule-fields {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-      }
-    }
-  }
-
-  .communication-modal {
-    width: 95%;
-    max-width: 400px;
-  }
-
-  .modal-header h3 {
-    font-size: 1.1rem;
-  }
-
-  .comm-method-selection .method-buttons .method-btn {
-    padding: 10px 14px;
-  }
-
-  .email-form, .whatsapp-form {
-    .form-actions {
-      .cancel-btn, .send-btn {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-      }
-    }
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
 }
 
 @media (max-width: 480px) {
   .teacher-details-page {
     padding: 0 0.5rem;
-    
-    .teacher-card-container {
-      .card-header {
-        padding: 0.75rem;
-        
-        .teacher-identity {
-          gap: 0.5rem;
-          
-          .avatar {
-            width: 36px;
-            height: 36px;
-            font-size: 0.9rem;
-          }
-          
-          .header-text .teacher-name {
-            font-size: 1.1rem;
-          }
-        }
-        
-        .role-badge {
-          padding: 0.3rem 0.6rem;
-          font-size: 0.8rem;
-        }
-      }
-      
-      .card-scroll-area {
-        padding: 0.75rem;
-        padding-bottom: 3.5rem;
-        
-        .section-title {
-          font-size: 1.1rem;
-          margin-bottom: 0.6rem;
-        }
-      }
-      
-      .flip-button {
-        font-size: 0.9rem;
-        padding: 0.6rem 1.25rem;
-      }
-    }
+  }
+  
+  .teacher-card-container .card-header {
+    padding: 0.75rem;
+  }
+  
+  .teacher-card-container .teacher-identity {
+    gap: 0.5rem;
+  }
+  
+  .teacher-card-container .avatar {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  
+  .teacher-card-container .header-text .teacher-name {
+    font-size: 1.1rem;
+  }
+  
+  .teacher-card-container .role-badge {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .teacher-card-container .card-scroll-area {
+    padding: 0.75rem;
+    padding-bottom: 3.5rem;
+  }
+  
+  .teacher-card-container .section-title {
+    font-size: 1rem;
+  }
+  
+  .teacher-card-container .flip-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.25rem;
   }
   
   .students-grid,
   .orchestras-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.4rem;
   }
   
-  .communication-modal {
-    width: 100%;
-    max-width: none;
-    height: 100%;
-    border-radius: 0;
-    max-height: 100vh;
+  .modern-students-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
-
-  .communication-modal-overlay {
-    padding: 0;
+  
+  /* Fix lesson item mobile overflow */
+  .student-lessons .lesson-item {
+    padding: 0.3rem 0.4rem;
+    gap: 0.3rem;
+    min-height: 32px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    
+    .lesson-day {
+      min-width: 32px;
+      font-size: 0.7rem;
+    }
+    
+    .lesson-time {
+      font-size: 0.7rem;
+      min-width: 0;
+      flex: 1;
+      
+      span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    
+    .lesson-duration {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.25rem;
+      min-width: 30px;
+    }
   }
-
-  .modal-header h3 {
-    font-size: 1.1rem;
+  
+  /* Ensure modern student card doesn't overflow */
+  .modern-student-card {
+    padding: 0.75rem;
+    margin: 0 auto;
+    max-width: 100%;
+    overflow: hidden;
   }
-
-  .method-buttons .method-btn {
-    padding: 10px 14px;
+  
+  .student-main {
+    min-height: 50px;
+    margin-top: 8px;
   }
+  
+  .modern-student-card .student-name {
+    font-size: 0.9rem;
+    line-height: 1.2;
+  }
+  
+  .modern-student-card .student-lessons-count {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
 
-  .email-form, .whatsapp-form {
-   .form-actions {
-     .cancel-btn, .send-btn {
-       padding: 8px 12px;
-       font-size: 0.9rem;
-     }
-   }
- }
+/* Modern Students Grid */
+.modern-students-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  max-height: none; /* Remove height restriction */
+  overflow: visible;
+  
+  /* On larger screens, use responsive columns */
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  }
+  
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  }
+}
 
- .selected-students.schedule-view {
-   .student-schedule-item {
-     .student-info {
-       flex-direction: column;
-       align-items: flex-start;
-       gap: 0.5rem;
-       
-       .student-details {
-         width: 100%;
-       }
-     }
-   }
- }
+/* Modern Student Card Design */
+.modern-student-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.modern-student-card.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-color);
+}
+
+.student-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  min-height: 60px;
+  margin-top: 10px;
+}
+
+.student-identity {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.modern-student-card .student-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.modern-student-card .student-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.modern-student-card .student-lessons-count {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0.25rem;
+  display: inline-block;
+}
+
+/* Student Lessons Section */
+.student-lessons {
+  margin-top: 10px;
+}
+
+.student-lessons .lessons-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.student-lessons .lessons-header svg {
+  color: var(--primary-color);
+}
+
+.student-lessons .lessons-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.student-lessons .lesson-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 0.4rem;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  min-height: 36px;
+  font-size: 0.8rem;
+}
+
+.student-lessons .lesson-item:hover {
+  background: rgba(var(--primary-color-rgb), 0.05);
+  border-color: var(--primary-color);
+}
+
+.student-lessons .lesson-day {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  min-width: 40px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.student-lessons .lesson-time {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  flex: 1;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.student-lessons .lesson-time svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.student-lessons .lesson-time span {
+  white-space: nowrap;
+}
+
+.student-lessons .lesson-duration {
+  color: var(--text-secondary);
+  font-size: 0.65rem;
+  font-weight: 600;
+  background: var(--bg-card);
+  padding: 0.2rem 0.3rem;
+  border-radius: 0.2rem;
+  border: 1px solid var(--border-color);
+  min-width: 35px;
+  text-align: center;
+  flex-shrink: 0;
 }

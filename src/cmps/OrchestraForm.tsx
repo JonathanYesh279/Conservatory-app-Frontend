@@ -518,7 +518,19 @@ export function OrchestraForm({
                         ) : selectedMembers.length > 0 ? (
                           selectedMembers.map((member) => (
                             <div key={member._id} className='member-badge'>
-                              <span>{member.personalInfo.fullName}</span>
+                              <div className='member-info'>
+                                <div className='member-avatar'>
+                                  {member.personalInfo.fullName.charAt(0)}
+                                </div>
+                                <div className='member-details'>
+                                  <div className='member-name'>{member.personalInfo.fullName}</div>
+                                  {member.academicInfo?.instrumentProgress?.[0]?.instrumentName && (
+                                    <div className='member-instrument'>
+                                      {member.academicInfo.instrumentProgress[0].instrumentName}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
                               <button
                                 type='button'
                                 className='remove-btn'

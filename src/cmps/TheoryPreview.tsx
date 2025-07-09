@@ -1,6 +1,6 @@
 // src/cmps/TheoryPreview.tsx
 import { TheoryLesson } from '../services/theoryService';
-import { Edit, Trash2, Clock, MapPin, Eye, Users } from 'lucide-react';
+import { Edit, Trash2, Clock, MapPin, Users } from 'lucide-react';
 
 interface TheoryPreviewProps {
   theoryLesson: TheoryLesson;
@@ -101,17 +101,6 @@ export function TheoryPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
-          <button
-            className='action-btn view'
-            onClick={(e) => {
-              e.stopPropagation();
-              onView(theoryLesson._id);
-            }}
-            aria-label='הצג פרטי שיעור'
-          >
-            <Eye size={16} />
-          </button>
-
           {onEdit && (
             <button
               className='action-btn edit'
@@ -121,7 +110,7 @@ export function TheoryPreview({
               }}
               aria-label='ערוך שיעור'
             >
-              <Edit size={16} />
+              <Edit size={20} />
             </button>
           )}
 
@@ -134,7 +123,7 @@ export function TheoryPreview({
               }}
               aria-label='מחק שיעור'
             >
-              <Trash2 size={16} />
+              <Trash2 size={20} />
             </button>
           )}
         </div>

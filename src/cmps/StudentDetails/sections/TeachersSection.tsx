@@ -1,5 +1,5 @@
 // src/cmps/StudentDetails/sections/TeachersSection.tsx
-import { ChevronDown, ChevronUp, User, RefreshCw, Music } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, RefreshCw, Music, Clock, Calendar } from 'lucide-react';
 import { Teacher } from '../../../services/teacherService';
 import { useState, useEffect, useRef } from 'react';
 
@@ -16,6 +16,14 @@ interface TeachersSectionProps {
   onRetryLoadTeachers: () => void;
   // Add direct access to student teacherIds
   studentTeacherIds?: string[];
+  // Add teacher assignments to show lesson details
+  teacherAssignments?: Array<{
+    teacherId: string;
+    scheduleSlotId: string;
+    day: string;
+    time: string;
+    duration: number;
+  }>;
 }
 
 export function TeachersSection({
@@ -27,7 +35,9 @@ export function TeachersSection({
   onTeacherClick,
   onRetryLoadTeachers,
   studentTeacherIds = [],
+  teacherAssignments = [],
 }: TeachersSectionProps) {
+  // Debug output removed for production
   // Use a ref to track if placeholders have been created
   const placeholdersCreated = useRef(false);
 
@@ -83,6 +93,26 @@ export function TeachersSection({
       .substring(0, 2);
   };
 
+  // Function to get teacher assignments
+  const getTeacherAssignments = (teacherId: string) => {
+    return teacherAssignments.filter(assignment => assignment.teacherId === teacherId);
+  };
+
+  // Function to calculate end time from start time and duration
+  const calculateEndTime = (startTime: string, duration: number): string => {
+    const [hours, minutes] = startTime.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + duration;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMins = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
+  };
+
+  // Function to format lesson time with duration
+  const formatLessonTime = (startTime: string, duration: number): string => {
+    const endTime = calculateEndTime(startTime, duration);
+    return `${startTime} - ${endTime}`;
+  };
+
   // If no teachers data, but we have teacher IDs, use those directly
   const shouldUseDirectTeacherIds =
     studentTeacherIds &&
@@ -133,27 +163,32 @@ export function TeachersSection({
           ) : shouldUseDirectTeacherIds ? (
             // Direct display of teacher IDs when we don't have full data yet
             <div className='sd-teachers-grid'>
-              {placeholderTeachers.map((teacher, index) => (
-                <div
-                  key={`teacher-id-${index}-${teacher._id}`}
-                  className='sd-teacher-card sd-teacher-simple-card'
-                  onClick={() => onTeacherClick(teacher._id)}
-                >
-                  <div className='sd-teacher-header'>
-                    <div
-                      className='sd-teacher-avatar'
-                      style={{ backgroundColor: '#6c757d' }}
-                    >
-                      {getTeacherInitials(teacher.personalInfo?.fullName || '')}
-                    </div>
-                    <div className='sd-teacher-name'>
-                      <span>
-                        {teacher.personalInfo?.fullName ||
-                          `מורה ${teacher._id.slice(-4)}`}
-                      </span>
-                      <div className='sd-teacher-instrument'>
-                        <Music size={12} />
-                        <span>כלי נגינה לא ידוע</span>
+              {placeholderTeachers.map((teacher, index) => {
+                const assignments = getTeacherAssignments(teacher._id);
+                return (
+                  <div
+                    key={`teacher-id-${index}-${teacher._id}`}
+                    className='sd-teacher-card sd-teacher-modern-card clickable'
+                    onClick={() => onTeacherClick(teacher._id)}
+                  >
+                    <div className='sd-teacher-main'>
+                      <div className='sd-teacher-identity'>
+                        <div
+                          className='sd-teacher-avatar'
+                          style={{ backgroundColor: '#6c757d' }}
+                        >
+                          {getTeacherInitials(teacher.personalInfo?.fullName || '')}
+                        </div>
+                        <div className='sd-teacher-info'>
+                          <div className='sd-teacher-name'>
+                            {teacher.personalInfo?.fullName ||
+                              `מורה ${teacher._id.slice(-4)}`}
+                          </div>
+                          <div className='sd-teacher-instrument'>
+                            <Music size={12} />
+                            <span>כלי נגינה לא ידוע</span>
+                          </div>
+                        </div>
                       </div>
                       <button
                         onClick={(e) => {
@@ -161,46 +196,104 @@ export function TeachersSection({
                           onRetryLoadTeachers();
                         }}
                         className='sd-load-details-btn'
+                        title="טען פרטי מורה"
                       >
-                        <RefreshCw size={12} />
-                        טען פרטים
+                        <RefreshCw size={14} />
                       </button>
                     </div>
+                    
+                    {/* Display teacher assignments for placeholder teachers too */}
+                    {assignments.length > 0 && (
+                      <div className='sd-teacher-lessons'>
+                        <div className='sd-lessons-header'>
+                          <Calendar size={12} />
+                          <span>שיעורים ({assignments.length})</span>
+                        </div>
+                        <div className='sd-lessons-list'>
+                          {assignments.map((assignment, assignmentIndex) => (
+                            <div key={`assignment-${assignmentIndex}`} className='sd-lesson-item'>
+                              <div className='sd-lesson-day'>{assignment.day}</div>
+                              <div className='sd-lesson-time'>
+                                <Clock size={10} />
+                                <span>{formatLessonTime(assignment.time, assignment.duration)}</span>
+                              </div>
+                              <div className='sd-lesson-duration'>
+                                {assignment.duration}ד'
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
-            // Standard display with full teacher data - simplified without schedule
+            // Standard display with full teacher data - now shows assignments
             <div className='sd-teachers-grid'>
-              {teachersData.teachers.map((teacher, index) => (
-                <div
-                  key={`teacher-${index}-${teacher._id}`}
-                  className='sd-teacher-card'
-                  onClick={() => onTeacherClick(teacher._id)}
-                >
-                  <div className='sd-teacher-header'>
-                    <div
-                      className='sd-teacher-avatar'
-                      style={{ backgroundColor: '#4D55CC' }}
-                    >
-                      {getTeacherInitials(teacher.personalInfo?.fullName || '')}
-                    </div>
-                    <div className='sd-teacher-name'>
-                      <span>
-                        {teacher.personalInfo?.fullName || 'מורה לא ידוע'}
-                      </span>
-                      <div className='sd-teacher-instrument'>
-                        <Music size={12} />
-                        <span>
-                          {teacher.professionalInfo?.instrument ||
-                            'כלי נגינה לא ידוע'}
-                        </span>
+              {teachersData.teachers.map((teacher, index) => {
+                const assignments = getTeacherAssignments(teacher._id);
+                return (
+                  <div
+                    key={`teacher-${index}-${teacher._id}`}
+                    className='sd-teacher-card sd-teacher-modern-card clickable'
+                    onClick={() => onTeacherClick(teacher._id)}
+                  >
+                    <div className='sd-teacher-main'>
+                      <div className='sd-teacher-identity'>
+                        <div
+                          className='sd-teacher-avatar'
+                          style={{ backgroundColor: '#4D55CC' }}
+                        >
+                          {getTeacherInitials(teacher.personalInfo?.fullName || '')}
+                        </div>
+                        <div className='sd-teacher-info'>
+                          <div className='sd-teacher-name'>
+                            {teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                          </div>
+                          <div className='sd-teacher-instrument'>
+                            <Music size={12} />
+                            <span>
+                              {teacher.professionalInfo?.instrument ||
+                                'כלי נגינה לא ידוע'}
+                            </span>
+                          </div>
+                        </div>
                       </div>
+                      {assignments.length > 0 && (
+                        <div className='sd-teacher-badge'>
+                          <span>{assignments.length} שיעורים</span>
+                        </div>
+                      )}
                     </div>
+                    
+                    {/* Display teacher assignments */}
+                    {assignments.length > 0 && (
+                      <div className='sd-teacher-lessons'>
+                        <div className='sd-lessons-header'>
+                          <Calendar size={12} />
+                          <span>מערכת שיעורים</span>
+                        </div>
+                        <div className='sd-lessons-list'>
+                          {assignments.map((assignment, assignmentIndex) => (
+                            <div key={`assignment-${assignmentIndex}`} className='sd-lesson-item'>
+                              <div className='sd-lesson-day'>{assignment.day}</div>
+                              <div className='sd-lesson-time'>
+                                <Clock size={10} />
+                                <span>{formatLessonTime(assignment.time, assignment.duration)}</span>
+                              </div>
+                              <div className='sd-lesson-duration'>
+                                {assignment.duration}ד'
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
