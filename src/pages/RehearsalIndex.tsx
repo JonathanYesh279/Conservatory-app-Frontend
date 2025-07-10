@@ -16,11 +16,13 @@ import { Rehearsal, RehearsalFilter } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { RehearsalList } from '../cmps/RehearsalList';
 import { RehearsalForm } from '../cmps/RehearsalForm';
+import { useToast } from '../cmps/Toast';
 
 export function RehearsalIndex() {
   const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal } =
     useRehearsalStore();
   const { orchestras, loadOrchestras } = useOrchestraStore();
+  const { addToast } = useToast();
 
   // URL search params
   const [searchParams, setSearchParams] = useSearchParams();
@@ -144,9 +146,22 @@ export function RehearsalIndex() {
     if (rehearsalToDelete) {
       try {
         await removeRehearsal(rehearsalToDelete);
+        
+        // Show success toast
+        addToast({
+          type: 'success',
+          message: 'החזרה נמחקה לצמיתות בהצלחה',
+        });
+        
         setRehearsalToDelete(null);
       } catch (err) {
         console.error('Failed to remove rehearsal:', err);
+        
+        // Show error toast
+        addToast({
+          type: 'danger',
+          message: 'אירעה שגיאה במחיקת החזרה',
+        });
       }
     }
     setIsConfirmDialogOpen(false);
@@ -303,14 +318,16 @@ export function RehearsalIndex() {
           isOpen={isConfirmDialogOpen}
           onClose={() => setIsConfirmDialogOpen(false)}
           onConfirm={confirmRemoveRehearsal}
-          title='מחיקת חזרה'
+          title='⚠️ מחיקה לצמיתות'
           message={
             <>
-              <p>האם אתה בטוח שברצונך למחוק את החזרה?</p>
-              <p className='text-sm text-muted'>פעולה זו היא בלתי הפיכה.</p>
+              <p><strong>זהירות: פעולת מחיקה לצמיתות!</strong></p>
+              <p>החזרה תימחק לצמיתות מהמערכת.</p>
+              <p>כל נתוני הנוכחות והמידע הקשור יימחקו גם כן.</p>
+              <p className='text-sm text-muted'><strong>פעולה זו לא ניתנת לביטול!</strong></p>
             </>
           }
-          confirmText='מחק'
+          confirmText='מחק לצמיתות'
           cancelText='ביטול'
           type='danger'
         />

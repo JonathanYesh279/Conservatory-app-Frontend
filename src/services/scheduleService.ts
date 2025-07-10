@@ -491,7 +491,7 @@ export const timeBlockService = {
       return timeBlock;
     } catch (error) {
       console.error('Failed to create time block:', error);
-      throw new Error('שגיאה ביצירת בלוק זמן חדש');
+      throw new Error('שגיאה ביצירת יום לימוד חדש');
     }
   },
 
@@ -523,7 +523,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to update time block:', error);
-      throw new Error('שגיאה בעדכון בלוק הזמן');
+      throw new Error('שגיאה בעדכון יום הלימוד');
     }
   },
 
@@ -547,7 +547,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to delete time block:', error);
-      throw new Error('שגיאה במחיקת בלוק הזמן');
+      throw new Error('שגיאה במחיקת יום הלימוד');
     }
   },
 
@@ -576,7 +576,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to get teacher time blocks:', error);
-      throw new Error('שגיאה בטעינת בלוקי הזמן של המורה');
+      throw new Error('שגיאה בטעינת ימי הלימוד של המורה');
     }
   },
 
@@ -821,7 +821,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to assign lesson to slot:', error);
-      throw new Error('שגיאה בשיוך השיעור לבלוק הזמן');
+      throw new Error('שגיאה בשיוך השיעור ליום הלימוד');
     }
   },
 
@@ -963,7 +963,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to batch create time blocks:', error);
-      throw new Error('שגיאה ביצירה מרובה של בלוקי זמן');
+      throw new Error('שגיאה ביצירה מרובה של ימי לימוד');
     }
   },
 
@@ -1038,7 +1038,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to validate time block:', error);
-      throw new Error('שגיאה בבדיקת תקינות בלוק הזמן');
+      throw new Error('שגיאה בבדיקת תקינות יום הלימוד');
     }
   },
 };

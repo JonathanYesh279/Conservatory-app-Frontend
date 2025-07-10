@@ -87,6 +87,24 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     }
   }, [currentTeacherSchedule?.timeBlocks, onTimeBlockChange]);
 
+  // Format duration in hours format
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+      return `${mins} דקות`;
+    } else if (hours === 1 && mins === 0) {
+      return 'שעה אחת';
+    } else if (hours === 1) {
+      return `שעה ו-${mins} דקות`;
+    } else if (mins === 0) {
+      return `${hours} שעות`;
+    } else {
+      return `${hours} שעות ו-${mins} דקות`;
+    }
+  };
+
   // Clear errors when component mounts
   useEffect(() => {
     clearError();
@@ -176,7 +194,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         <div className="assignment-time">
           <Clock size={12} />
           <span>{assignment.lessonStartTime} - {assignment.lessonEndTime}</span>
-          <span className="duration">({assignment.duration}דק')</span>
+          <span className="duration">({formatDuration(assignment.duration)})</span>
         </div>
       </div>
       {assignment.notes && (
@@ -203,7 +221,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
           <div className="block-time">
             <Clock size={14} />
             <span>{timeBlock.startTime} - {timeBlock.endTime}</span>
-            <span className="duration">({timeBlock.totalDuration}דק')</span>
+            <span className="duration">({formatDuration(timeBlock.totalDuration)})</span>
           </div>
           <div className="block-actions">
             {!readOnly && (
@@ -215,7 +233,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
                     e.stopPropagation();
                     handleEditTimeBlock(timeBlock);
                   }}
-                  title="ערוך בלוק זמן"
+                  title="ערוך יום לימוד"
                 >
                   <Edit2 size={14} />
                 </button>
@@ -226,7 +244,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
                     e.stopPropagation();
                     handleDeleteTimeBlock(timeBlock);
                   }}
-                  title="מחק בלוק זמן"
+                  title="מחק יום לימוד"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -251,7 +269,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         )}
 
         <div className="availability-info">
-          <span className="available-time">זמין: {timeBlock.availableMinutes} דקות</span>
+          <span className="available-time">זמין: {formatDuration(timeBlock.availableMinutes)}</span>
         </div>
 
         {hasAssignments ? (
@@ -299,7 +317,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
                       setSelectedDay(day);
                       handleCreateTimeBlock();
                     }}
-                    title="הוסף בלוק זמן"
+                    title="הוסף יום לימוד"
                   >
                     <Plus size={14} />
                   </button>
@@ -308,7 +326,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
               
               <div className="day-blocks">
                 {dayBlocks.length === 0 ? (
-                  <div className="no-blocks">אין בלוקי זמן</div>
+                  <div className="no-blocks">אין ימי לימוד</div>
                 ) : (
                   dayBlocks.map(renderTimeBlockCard)
                 )}
@@ -334,7 +352,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
               <BarChart3 size={24} />
             </div>
             <div className="stat-content">
-              <h4>סה"כ בלוקי זמן</h4>
+              <h4>סה"כ ימי לימוד</h4>
               <span className="stat-value">{weeklyStats.totalTimeBlocks}</span>
             </div>
           </div>
@@ -374,8 +392,8 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
               <Target size={24} />
             </div>
             <div className="stat-content">
-              <h4>גודל בלוק ממוצע</h4>
-              <span className="stat-value">{Math.round(weeklyStats.averageBlockSize)} דקות</span>
+              <h4>גודל יום לימוד ממוצע</h4>
+              <span className="stat-value">{formatDuration(Math.round(weeklyStats.averageBlockSize))}</span>
             </div>
           </div>
         </div>
@@ -387,7 +405,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     return (
       <div className="time-block-loading">
         <div className="loading-spinner"></div>
-        <span>טוען בלוקי זמן...</span>
+        <span>טוען ימי לימוד...</span>
       </div>
     );
   }
@@ -397,10 +415,10 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
       {/* Header */}
       <div className="time-block-header">
         <div className="header-info">
-          <h3>בלוקי זמן - {teacherName}</h3>
+          <h3>ימי לימוד - {teacherName}</h3>
           {currentTeacherSchedule?.weeklyStats && (
             <div className="schedule-stats">
-              <span>בלוקים: {currentTeacherSchedule.weeklyStats.totalTimeBlocks}</span>
+              <span>ימי לימוד: {currentTeacherSchedule.weeklyStats.totalTimeBlocks}</span>
               <span>ניצול: {currentTeacherSchedule.weeklyStats.utilizationPercentage}%</span>
             </div>
           )}
@@ -414,7 +432,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
               onClick={() => setViewMode('blocks')}
             >
               <Calendar size={16} />
-              בלוקים
+              ימי לימוד
             </button>
             <button
               type="button"
@@ -442,7 +460,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
                 onClick={handleCreateTimeBlock}
               >
                 <Plus size={16} />
-                הוסף בלוק זמן
+                הוסף יום לימוד
               </button>
             </>
           )}
@@ -495,8 +513,8 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDeleteTimeBlock}
-        title="מחיקת בלוק זמן"
-        message={`האם אתה בטוח שברצונך למחוק את בלוק הזמן ביום ${timeBlockToDelete?.day} בשעה ${timeBlockToDelete?.startTime}?`}
+        title="מחיקת יום לימוד"
+        message={`האם אתה בטוח שברצונך למחוק את יום הלימוד ביום ${timeBlockToDelete?.day} בשעה ${timeBlockToDelete?.startTime}?`}
         confirmText="מחק"
         cancelText="ביטול"
         type="danger"

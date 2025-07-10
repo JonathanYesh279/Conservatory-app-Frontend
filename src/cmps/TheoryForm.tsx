@@ -1,6 +1,7 @@
 // src/cmps/TheoryForm.tsx
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, BookOpen, User, Search, X as XIcon } from 'lucide-react';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { TheoryLesson, THEORY_CATEGORIES, THEORY_LOCATIONS, BulkTheoryLessonData } from '../services/theoryService';
@@ -37,6 +38,14 @@ export function TheoryForm({
   theoryTeachers,
   isLoading = false,
 }: TheoryFormProps) {
+  // Accessibility hook
+  const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
+    isOpen,
+    onClose,
+    modalId: 'theory-form',
+    restoreFocusOnClose: true
+  });
+
   // Store hooks
   const { currentSchoolYear, loadCurrentSchoolYear } = useSchoolYearStore();
   const { students, saveStudent, loadStudents } = useStudentStore();
@@ -136,7 +145,7 @@ export function TheoryForm({
   // Load students if needed
   useEffect(() => {
     if (students.length === 0) {
-      loadStudents({ isActive: true });
+      loadStudents();
     }
   }, [students.length, loadStudents]);
   
@@ -341,12 +350,17 @@ export function TheoryForm({
   return (
     <div className='theory-form-overlay'>
       <div className='overlay' onClick={onClose}></div>
-      <div className='form-modal' onClick={(e) => e.stopPropagation()}>
+      <div className='form-modal' {...modalProps} onClick={(e) => e.stopPropagation()}>
         <button className='close-button' onClick={onClose}>
           <X size={20} />
         </button>
         
-        <h2>
+        {/* Hidden description for screen readers */}
+        <div {...descriptionProps} className="sr-only">
+          {theoryLesson?._id ? 'טופס עריכת שיעור תאוריה קיים במערכת' : 'טופס הוספת שיעור תאוריה חדש למערכת'}
+        </div>
+        
+        <h2 {...titleProps}>
           {theoryLesson?._id 
             ? 'עריכת שיעור תאוריה' 
             : 'הוספת שיעור תאוריה חדש'
@@ -425,18 +439,34 @@ export function TheoryForm({
 
                   {/* Date and Time */}
                   <div className='form-row'>
-                    <FormField
-                      label='תאריך'
-                      name='date'
-                      type='date'
-                      required
-                      labelIcon={<Calendar size={16} />}
-                    />
+                    <div className='form-group'>
+                      <label htmlFor='date'>
+                        <Calendar size={16} />
+                        תאריך *
+                      </label>
+                      <Field
+                        name='date'
+                        type='date'
+                        required
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const selectedDate = e.target.value;
+                          if (selectedDate) {
+                            // Calculate day of week (0 = Sunday, 1 = Monday, etc.)
+                            const date = new Date(selectedDate);
+                            const dayOfWeek = date.getDay();
+                            // Update the dayOfWeek field automatically
+                            setFieldValue('dayOfWeek', dayOfWeek);
+                          }
+                          // Also update the date field
+                          setFieldValue('date', selectedDate);
+                        }}
+                      />
+                    </div>
                     
                     <div className='form-group'>
                       <label htmlFor='dayOfWeek'>
                         <Repeat size={16} className='icon' />
-                        יום בשבוע
+                        יום בשבוע (מחושב אוטומטית)
                       </label>
                       <Field as='select' name='dayOfWeek' id='dayOfWeek' disabled>
                         {DAY_OF_WEEK_OPTIONS.map((option) => (
@@ -558,20 +588,34 @@ export function TheoryForm({
                         {isLoadingStudents ? (
                           <div className='loading-text'>טוען תלמידים...</div>
                         ) : selectedMembers.length > 0 ? (
-                          selectedMembers.map((member) => (
-                            <div key={member._id} className='member-badge'>
-                              <span>{member.personalInfo.fullName}</span>
-                              <button
-                                type='button'
-                                className='remove-btn'
-                                onClick={() => handleRemoveMember(member._id, setFieldValue)}
-                                aria-label={`הסר את ${member.personalInfo.fullName}`}
-                                disabled={isSubmitting}
-                              >
-                                <XIcon size={14} />
-                              </button>
-                            </div>
-                          ))
+                          <ul className='members-items'>
+                            {selectedMembers.map((member) => (
+                              <li key={member._id} className='member-item'>
+                                <div className='member-info'>
+                                  <div className='member-avatar'>
+                                    {member.personalInfo.fullName.charAt(0)}
+                                  </div>
+                                  <div className='member-details'>
+                                    <div className='member-name'>
+                                      {member.personalInfo.fullName}
+                                    </div>
+                                    <div className='member-instrument'>
+                                      {member.academicInfo.instrument}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type='button'
+                                  className='remove-btn'
+                                  onClick={() => handleRemoveMember(member._id, setFieldValue)}
+                                  aria-label={`הסר את ${member.personalInfo.fullName}`}
+                                  disabled={isSubmitting}
+                                >
+                                  <XIcon size={14} />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
                         ) : (
                           <div className='no-members-message'>
                             לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים לשיעור.
@@ -583,7 +627,6 @@ export function TheoryForm({
 
                   {/* Hidden fields */}
                   <Field type='hidden' name='schoolYearId' value={currentSchoolYear?._id || ''} />
-                  <Field type='hidden' name='isActive' />
                   <Field type='hidden' name='studentIds' />
                 </div>
 
@@ -883,20 +926,34 @@ export function TheoryForm({
                         {isLoadingStudents ? (
                           <div className='loading-text'>טוען תלמידים...</div>
                         ) : selectedMembers.length > 0 ? (
-                          selectedMembers.map((member) => (
-                            <div key={member._id} className='member-badge'>
-                              <span>{member.personalInfo.fullName}</span>
-                              <button
-                                type='button'
-                                className='remove-btn'
-                                onClick={() => handleRemoveMember(member._id, setFieldValue)}
-                                aria-label={`הסר את ${member.personalInfo.fullName}`}
-                                disabled={isSubmitting}
-                              >
-                                <XIcon size={14} />
-                              </button>
-                            </div>
-                          ))
+                          <ul className='members-items'>
+                            {selectedMembers.map((member) => (
+                              <li key={member._id} className='member-item'>
+                                <div className='member-info'>
+                                  <div className='member-avatar'>
+                                    {member.personalInfo.fullName.charAt(0)}
+                                  </div>
+                                  <div className='member-details'>
+                                    <div className='member-name'>
+                                      {member.personalInfo.fullName}
+                                    </div>
+                                    <div className='member-instrument'>
+                                      {member.academicInfo.instrument}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type='button'
+                                  className='remove-btn'
+                                  onClick={() => handleRemoveMember(member._id, setFieldValue)}
+                                  aria-label={`הסר את ${member.personalInfo.fullName}`}
+                                  disabled={isSubmitting}
+                                >
+                                  <XIcon size={14} />
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
                         ) : (
                           <div className='no-members-message'>
                             לא נבחרו תלמידים. השתמש בחיפוש כדי להוסיף תלמידים לשיעור.

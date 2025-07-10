@@ -9,6 +9,7 @@ import {
   Calendar,
   ArrowLeft,
 } from 'lucide-react';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
@@ -67,6 +68,14 @@ export function TeacherForm({
 }: TeacherFormProps) {
   // Debug log to see what teacher data is coming into the form
   console.log('TeacherForm received teacher:', teacher || 'none (new teacher)');
+
+  // Accessibility hook
+  const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
+    isOpen,
+    onClose,
+    modalId: 'teacher-form',
+    restoreFocusOnClose: true
+  });
 
   // Modal state management
   const [currentView, setCurrentView] = useState<ModalView>(
@@ -309,7 +318,7 @@ export function TeacherForm({
         return (
           <div className='teacher-form-view'>
             <div className='teacher-modal-header'>
-              <h2>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
+              <h2 {...titleProps}>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
               <button
                 className='btn-icon close-btn'
                 onClick={handleModalClose}
@@ -938,7 +947,13 @@ export function TeacherForm({
   return (
     <div className='teacher-form responsive-form'>
       <div className='overlay' onClick={handleModalClose}></div>
-      <div className='form-modal'>{renderModalContent()}</div>
+      <div className='form-modal' {...modalProps}>
+        {/* Hidden description for screen readers */}
+        <div {...descriptionProps} className="sr-only">
+          {teacher?._id ? 'טופס עריכת פרטי מורה קיים במערכת' : 'טופס הוספת מורה חדש למערכת'}
+        </div>
+        {renderModalContent()}
+      </div>
     </div>
   );
 }

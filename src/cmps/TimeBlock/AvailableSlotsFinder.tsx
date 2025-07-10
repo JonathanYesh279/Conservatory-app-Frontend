@@ -50,7 +50,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
   onSlotSelect,
   onSlotsFound,
   initialDuration = 60,
-  showAdvancedFilters = true,
+  showAdvancedFilters: parentShowAdvancedFilters = true,
   maxResults = 20,
   compact = false,
   selectedSlot: controlledSelectedSlot = null,
@@ -80,12 +80,20 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     error,
   } = useTimeBlockStore();
 
+  // Update search criteria when initialDuration changes
+  useEffect(() => {
+    setSearchCriteria(prev => ({
+      ...prev,
+      duration: initialDuration,
+    }));
+  }, [initialDuration]);
+
   // Perform search when criteria changes
   useEffect(() => {
     if (searchCriteria.duration && teacherId) {
       performSearch();
     }
-  }, [searchCriteria, teacherId]);
+  }, [searchCriteria, teacherId, refreshTrigger]);
 
   // Notify parent of found slots
   useEffect(() => {
@@ -271,59 +279,32 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
 
   const renderSearchControls = () => (
     <div className="search-controls">
-      {/* First Row - Duration Selector */}
-      <div className="controls-row first-row">
-        <div className="control-group">
-          <label className="control-label">
-            <Clock size={14} />
-            משך השיעור
-          </label>
-          <div className="duration-buttons">
-            {[30, 45, 60].map(duration => (
-              <button
-                key={duration}
-                type="button"
-                className={`duration-btn ${
-                  searchCriteria.duration === duration ? 'active' : ''
-                }`}
-                onClick={() => updateSearchCriteria({ duration: duration as LessonDurationMinutes })}
-              >
-                {duration} דקות
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Second Row - Advanced Filters and Reset */}
-      <div className="controls-row second-row">
-        {/* Advanced Filters Toggle */}
-        {showAdvancedFilters && (
-          <div className="control-group">
-            <button
-              type="button"
-              className={`filter-toggle ${
-                showFilters ? 'active' : ''
-              }`}
-              onClick={() => setShowFilters(!showFilters)}
-            >
-              <Filter size={14} />
-              מסננים מתקדמים
-            </button>
-          </div>
-        )}
-
-        {/* Reset Button */}
+      {/* Advanced Filters Toggle - only when not controlled by parent */}
+      {!compact && (
         <div className="control-group">
           <button
             type="button"
-            className="reset-btn"
-            onClick={resetSearch}
-            title="איפוס חיפוש"
+            className={`filter-toggle ${
+              showFilters ? 'active' : ''
+            }`}
+            onClick={() => setShowFilters(!showFilters)}
           >
-            <RotateCcw size={14} />
+            <Filter size={14} />
+            מסננים מתקדמים
           </button>
         </div>
+      )}
+
+      {/* Reset Button */}
+      <div className="control-group">
+        <button
+          type="button"
+          className="reset-btn"
+          onClick={resetSearch}
+          title="איפוס חיפוש"
+        >
+          <RotateCcw size={14} />
+        </button>
       </div>
     </div>
   );
@@ -449,17 +430,21 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
   };
 
   const renderSlotCard = (slot: AvailableSlot) => {
-    // Use startTime if possibleStartTime is undefined
+    // Use possibleStartTime and possibleEndTime from AvailableSlot interface
     const slotStartTime = slot.possibleStartTime;
+    const slotEndTime = slot.possibleEndTime;
     const selectedStartTime = controlledSelectedSlot?.possibleStartTime;
     
     const isSelected = controlledSelectedSlot?.timeBlockId === slot.timeBlockId &&
                       selectedStartTime === slotStartTime;
     
-    // Debug only when selection changes
-    if (isSelected && !controlledSelectedSlot) {
-      console.log('🔍 renderSlotCard - selection state changed for slot:', slot.day, slotStartTime);
-    }
+    // Debug slot data
+    console.log('🕰️ Slot data:', {
+      day: slot.day,
+      possibleStartTime: slot.possibleStartTime,
+      possibleEndTime: slot.possibleEndTime,
+      duration: slot.duration
+    });
     
     return (
       <div
@@ -474,7 +459,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
           <div className="slot-day-time">
             <div className="day-name">{slot.day}</div>
             <div className="time-range">
-              {slot.possibleStartTime} - {slot.possibleEndTime}
+              {slotStartTime || 'N/A'} - {slotEndTime || 'N/A'}
             </div>
           </div>
           <div className="slot-duration-badge">
@@ -604,11 +589,11 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     <div className={`available-slots-finder ${
       compact ? 'compact' : ''
     }`}>
-      {/* Search Controls */}
-      {renderSearchControls()}
+      {/* Search Controls - only show when not in compact mode */}
+      {!compact && renderSearchControls()}
       
-      {/* Advanced Filters */}
-      {showFilters && showAdvancedFilters && renderAdvancedFilters()}
+      {/* Advanced Filters - show when filters are enabled */}
+      {parentShowAdvancedFilters && renderAdvancedFilters()}
       
       {/* Optimal Suggestions */}
       {renderOptimalSuggestions()}

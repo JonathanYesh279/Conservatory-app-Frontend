@@ -17,7 +17,7 @@ export function TheoryLessonAssignmentSection() {
   
   // Load theory lessons if needed
   useEffect(() => {
-    loadTheoryLessons({ isActive: true });
+    loadTheoryLessons();
   }, [loadTheoryLessons]);
   
   // Group theory lessons by category for better organization in the dropdown

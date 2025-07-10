@@ -1,6 +1,7 @@
 // src/cmps/StudentForm/StudentForm.tsx
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { useModalAccessibility } from '../../hooks/useModalAccessibility';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Student } from '../../services/studentService';
 import { PersonalInfoSection } from './PersonalInfoSection';
@@ -45,6 +46,14 @@ export function StudentForm({
   const { saveStudentData, isSubmitting, error } = useStudentApiService({
     onClose,
     onStudentCreated,
+  });
+
+  // Accessibility hook
+  const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
+    isOpen,
+    onClose,
+    modalId: 'student-form',
+    restoreFocusOnClose: true
   });
   
   // Create initial form state based on props
@@ -193,7 +202,7 @@ export function StudentForm({
   return (
     <div className='student-form'>
       <div className='overlay' onClick={handleCancel}></div>
-      <div className='form-modal'>
+      <div className='form-modal' {...modalProps}>
         <button
           className='btn-icon close-btn'
           onClick={handleCancel}
@@ -202,7 +211,12 @@ export function StudentForm({
           <X size={20} />
         </button>
 
-        <h2>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
+        <h2 {...titleProps}>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
+        
+        {/* Hidden description for screen readers */}
+        <div {...descriptionProps} className="sr-only">
+          {student?._id ? 'טופס עריכת פרטי תלמיד קיים במערכת' : 'טופס הוספת תלמיד חדש למערכת'}
+        </div>
 
         {error && (
           <div className='error-message'>{error.message || String(error)}</div>

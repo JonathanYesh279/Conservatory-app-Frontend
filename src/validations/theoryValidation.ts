@@ -23,7 +23,6 @@ export const TheoryLessonValidationSchema = Yup.object().shape({
   notes: Yup.string(),
   syllabus: Yup.string(),
   homework: Yup.string(),
-  isActive: Yup.boolean().default(true),
   schoolYearId: Yup.string().required('שנת לימודים חובה'),
   dayOfWeek: Yup.number().min(0).max(6),
 });
@@ -82,7 +81,6 @@ export const getInitialTheoryLessonValues = (
       notes: theoryLesson.notes || '',
       syllabus: theoryLesson.syllabus || '',
       homework: theoryLesson.homework || '',
-      isActive: theoryLesson.isActive !== false,
       schoolYearId: theoryLesson.schoolYearId || currentSchoolYearId,
       dayOfWeek: theoryLesson.dayOfWeek || today.getDay(),
       studentIds: theoryLesson.studentIds || [],
@@ -100,7 +98,6 @@ export const getInitialTheoryLessonValues = (
     notes: '',
     syllabus: '',
     homework: '',
-    isActive: true,
     schoolYearId: currentSchoolYearId,
     dayOfWeek: today.getDay(),
     studentIds: [],
@@ -144,7 +141,6 @@ export interface TheoryFormValues {
   notes: string;
   syllabus: string;
   homework: string;
-  isActive: boolean;
   schoolYearId: string;
   dayOfWeek: number;
   studentIds: string[];

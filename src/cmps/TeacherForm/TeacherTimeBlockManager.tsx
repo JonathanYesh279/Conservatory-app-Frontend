@@ -77,6 +77,24 @@ export function TeacherTimeBlockManager({
     }
   }, [currentTeacherSchedule?.timeBlocks, onTimeBlockChange]);
 
+  // Format duration in hours format
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+      return `${mins} דקות`;
+    } else if (hours === 1 && mins === 0) {
+      return 'שעה אחת';
+    } else if (hours === 1) {
+      return `שעה ו-${mins} דקות`;
+    } else if (mins === 0) {
+      return `${hours} שעות`;
+    } else {
+      return `${hours} שעות ו-${mins} דקות`;
+    }
+  };
+
   // Clear errors when component mounts
   useEffect(() => {
     clearError();
@@ -177,7 +195,7 @@ export function TeacherTimeBlockManager({
         <div className="assignment-time">
           <Clock size={12} />
           <span>{assignment.lessonStartTime} - {assignment.lessonEndTime}</span>
-          <span className="duration">({assignment.duration}דק')</span>
+          <span className="duration">({formatDuration(assignment.duration)})</span>
         </div>
       </div>
       {assignment.notes && (
@@ -204,7 +222,7 @@ export function TeacherTimeBlockManager({
             <div className="block-time">
               <Clock size={14} />
               <span>{timeBlock.startTime} - {timeBlock.endTime}</span>
-              <span className="duration">({timeBlock.totalDuration}דק')</span>
+              <span className="duration">({formatDuration(timeBlock.totalDuration)})</span>
             </div>
             
             <div className="utilization-badge">
@@ -231,7 +249,7 @@ export function TeacherTimeBlockManager({
               type="button"
               className="action-btn edit-btn"
               onClick={() => handleEditTimeBlock(timeBlock)}
-              title="ערוך בלוק זמן"
+              title="ערוך יום לימוד"
             >
               <Edit2 size={14} />
             </button>
@@ -239,7 +257,7 @@ export function TeacherTimeBlockManager({
               type="button"
               className="action-btn delete-btn"
               onClick={() => handleDeleteTimeBlock(timeBlock)}
-              title="מחק בלוק זמן"
+              title="מחק יום לימוד"
             >
               <Trash2 size={14} />
             </button>
@@ -255,7 +273,7 @@ export function TeacherTimeBlockManager({
 
         <div className="availability-info">
           <span className="available-time">
-            זמין: {timeBlock.availableMinutes} דקות
+            זמין: {formatDuration(timeBlock.availableMinutes)}
             {hasAssignments && ` | ${timeBlock.assignedLessons.length} שיעורים`}
           </span>
         </div>
@@ -296,11 +314,11 @@ export function TeacherTimeBlockManager({
       <div className="stats-summary">
         <div className="stat-item">
           <BarChart3 size={16} />
-          <span>{weeklyStats.totalTimeBlocks} בלוקים</span>
+          <span>{weeklyStats.totalTimeBlocks} ימי לימוד</span>
         </div>
         <div className="stat-item">
           <Clock size={16} />
-          <span>{weeklyStats.totalAvailableMinutes} דקות זמינות</span>
+          <span>{formatDuration(weeklyStats.totalAvailableMinutes)} זמינות</span>
         </div>
         <div className="stat-item">
           <User size={16} />
@@ -317,7 +335,7 @@ export function TeacherTimeBlockManager({
     return (
       <div className="time-block-manager loading">
         <div className="loading-spinner"></div>
-        <span>טוען בלוקי זמן...</span>
+        <span>טוען ימי לימוד...</span>
       </div>
     );
   }
@@ -328,7 +346,7 @@ export function TeacherTimeBlockManager({
         <div className="header-info">
           <h3>
             <Calendar size={18} />
-            בלוקי זמן - {teacherName}
+            ימי לימוד - {teacherName}
           </h3>
           {renderStats()}
         </div>
@@ -350,7 +368,7 @@ export function TeacherTimeBlockManager({
             disabled={isLoading}
           >
             <Plus size={16} />
-            הוסף בלוק זמן
+            הוסף יום לימוד
           </button>
         </div>
       </div>
@@ -367,15 +385,15 @@ export function TeacherTimeBlockManager({
       {totalBlocks === 0 ? (
         <div className="empty-state">
           <Calendar size={48} color="var(--text-muted)" />
-          <h4>אין בלוקי זמן</h4>
-          <p>לא הוגדרו עדיין בלוקי זמן עבור המורה הזה</p>
+          <h4>אין ימי לימוד</h4>
+          <p>לא הוגדרו עדיין ימי לימוד עבור המורה הזה</p>
           <button
             type="button"
             className="btn primary"
             onClick={handleCreateTimeBlock}
           >
             <Plus size={16} />
-            צור בלוק זמן ראשון
+            צור יום לימוד ראשון
           </button>
         </div>
       ) : (
@@ -389,7 +407,7 @@ export function TeacherTimeBlockManager({
               <div key={day} className="day-section">
                 <div className="day-header">
                   <h4>{day}</h4>
-                  <span className="block-count">({dayBlocks.length} בלוקים)</span>
+                  <span className="block-count">({dayBlocks.length} ימי לימוד)</span>
                 </div>
                 
                 <div className="day-blocks">
@@ -423,8 +441,8 @@ export function TeacherTimeBlockManager({
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDeleteTimeBlock}
-        title="מחיקת בלוק זמן"
-        message={`האם אתה בטוח שברצונך למחוק את בלוק הזמן ביום ${timeBlockToDelete?.day} בשעה ${timeBlockToDelete?.startTime}?`}
+        title="מחיקת יום לימוד"
+        message={`האם אתה בטוח שברצונך למחוק את יום הלימוד ביום ${timeBlockToDelete?.day} בשעה ${timeBlockToDelete?.startTime}?`}
         confirmText="מחק"
         cancelText="ביטול"
         type="danger"

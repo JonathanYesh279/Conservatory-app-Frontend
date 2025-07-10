@@ -249,7 +249,7 @@
     .time-block-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       margin-bottom: 0.75rem;
 
       .block-time {

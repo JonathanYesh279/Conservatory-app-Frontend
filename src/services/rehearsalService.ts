@@ -16,7 +16,6 @@ export interface Rehearsal {
     absent: string[]; // Array of student IDs
   };
   schoolYearId: string;
-  isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -40,7 +39,6 @@ export interface RehearsalFilter {
   fromDate?: string;
   toDate?: string;
   location?: string;
-  isActive?: boolean;
 }
 
 export const rehearsalService = {
@@ -98,8 +96,8 @@ export const rehearsalService = {
     return httpService.put(`rehearsal/${rehearsalId}`, rehearsalWithoutId);
   },
 
-  // Soft delete a rehearsal (mark as inactive)
-  async removeRehearsal(rehearsalId: string): Promise<Rehearsal> {
+  // Hard delete a rehearsal (permanently removes from database)
+  async removeRehearsal(rehearsalId: string): Promise<void> {
     if (!rehearsalId) {
       throw new Error('Invalid rehearsal ID');
     }

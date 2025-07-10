@@ -12,10 +12,28 @@
   }
 }
 
+// Base glass-form definition
+.glass-form {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1rem;
+  padding: 2rem;
+  padding-bottom: 3rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  color: white;
+  
+  @media (max-width: 640px) {
+    padding: 1.5rem;
+    padding-bottom: 3rem;
+  }
+}
+
 // Override some form styles specifically for event registration
 .event-registration-page {
   .glass-form {
     max-width: 460px;
+    padding-bottom: 3rem;
   }
   
   // First name / last name row

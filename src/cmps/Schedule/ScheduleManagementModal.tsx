@@ -143,7 +143,7 @@ const ScheduleManagementModal: React.FC<ScheduleManagementModalProps> = ({
             onClick={() => handleAddSlot(new Date().getDay())}
           >
             <Plus size={16} />
-            <span>הוספת בלוק זמן חדש</span>
+            <span>הוספת יום לימוד חדש</span>
           </button>
         </div>
         

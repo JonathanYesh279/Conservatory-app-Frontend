@@ -743,7 +743,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     } catch (error) {
       console.error('Failed to create time block:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'שגיאה ביצירת בלוק זמן חדש', 
+        error: error instanceof Error ? error.message : 'שגיאה ביצירת יום לימוד חדש', 
         errorDetails: error,
         isCreatingTimeBlock: false 
       });
@@ -782,7 +782,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     } catch (error) {
       console.error('Failed to update time block:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'שגיאה בעדכון בלוק הזמן', 
+        error: error instanceof Error ? error.message : 'שגיאה בעדכון יום הלימוד', 
         errorDetails: error,
         isCreatingTimeBlock: false 
       });
@@ -816,7 +816,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     } catch (error) {
       console.error('Failed to delete time block:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'שגיאה במחיקת בלוק הזמן', 
+        error: error instanceof Error ? error.message : 'שגיאה במחיקת יום הלימוד', 
         errorDetails: error,
         isCreatingTimeBlock: false 
       });
@@ -848,7 +848,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     } catch (error) {
       console.error('Failed to load teacher time blocks:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'שגיאה בטעינת בלוקי הזמן של המורה', 
+        error: error instanceof Error ? error.message : 'שגיאה בטעינת ימי הלימוד של המורה', 
         errorDetails: error,
         isLoadingTeacherSchedule: false 
       });
@@ -944,7 +944,7 @@ export const useScheduleStore = create<ScheduleState>((set, get) => ({
     } catch (error) {
       console.error('Failed to assign lesson to time block:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'שגיאה בשיוך השיעור לבלוק הזמן', 
+        error: error instanceof Error ? error.message : 'שגיאה בשיוך השיעור ליום הלימוד', 
         errorDetails: error,
         isAssigningLesson: false 
       });

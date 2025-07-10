@@ -84,7 +84,7 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
       set({ isLoading: false });
       return newTimeBlock;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'שגיאה ביצירת בלוק זמן';
+      const errorMessage = error instanceof Error ? error.message : 'שגיאה ביצירת יום לימוד';
       set({ error: errorMessage, isLoading: false });
       return null;
     }
@@ -114,10 +114,10 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
         
         return result.updatedTimeBlock;
       } else {
-        throw new Error(result.message || 'שגיאה בעדכון בלוק הזמן');
+        throw new Error(result.message || 'שגיאה בעדכון יום הלימוד');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'שגיאה בעדכון בלוק זמן';
+      const errorMessage = error instanceof Error ? error.message : 'שגיאה בעדכון יום לימוד';
       set({ error: errorMessage, isLoading: false });
       return null;
     }
@@ -148,10 +148,10 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
         
         return true;
       } else {
-        throw new Error(result.message || 'שגיאה במחיקת בלוק הזמן');
+        throw new Error(result.message || 'שגיאה במחיקת יום הלימוד');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'שגיאה במחיקת בלוק זמן';
+      const errorMessage = error instanceof Error ? error.message : 'שגיאה במחיקת יום לימוד';
       set({ error: errorMessage, isLoading: false });
       return false;
     }
@@ -188,7 +188,7 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
         isLoading: false
       }));
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'שגיאה בטעינת בלוקי זמן';
+      const errorMessage = error instanceof Error ? error.message : 'שגיאה בטעינת ימי לימוד';
       set({ error: errorMessage, isLoading: false });
     }
   },

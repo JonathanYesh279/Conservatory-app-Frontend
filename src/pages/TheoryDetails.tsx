@@ -1,7 +1,7 @@
 // src/pages/TheoryDetails.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { ArrowLeft, Edit, Trash2, Users, Calendar } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Users, Calendar, BookOpen } from 'lucide-react';
 import { TheoryForm } from '../cmps/TheoryForm';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useTheoryStore } from '../store/theoryStore';
@@ -142,7 +142,7 @@ export function TheoryDetails() {
       // Show success toast
       addToast({
         type: 'success',
-        message: 'שיעור התאוריה נמחק בהצלחה',
+        message: 'שיעור התאוריה נמחק לצמיתות בהצלחה',
       });
       
       navigate('/theory');
@@ -287,28 +287,28 @@ export function TheoryDetails() {
         <div className='theory-details'>
           <div className='theory-details-page'>
             <div className='theory-card-container'>
-              <div className='card-content'>
+              <div className='tdy-card-content'>
             {/* Theory Header */}
-            <div className='theory-header'>
+            <div className='tdy-card-header'>
               <button
-                className='back-button'
+                className='tdy-back-button'
                 onClick={handleBack}
                 aria-label='חזור'
               >
                 <ArrowLeft className='lucide lucide-arrow-left' />
               </button>
 
-              <div className='header-title'>
+              <div className='tdy-header-title'>
                 <h2>שיעור תאוריה</h2>
-                <div className='date-display'>
+                <div className='tdy-date-display'>
                   <Calendar size={18} />
                   <span>{formatDate(selectedTheoryLesson.date)}</span>
                 </div>
               </div>
 
-              <div className='header-actions'>
+              <div className='tdy-header-actions'>
                 <button
-                  className='action-btn edit'
+                  className='tdy-action-btn edit'
                   onClick={() => setIsFormOpen(true)}
                   aria-label='ערוך'
                 >
@@ -316,7 +316,7 @@ export function TheoryDetails() {
                   עריכה
                 </button>
                 <button
-                  className='action-btn delete'
+                  className='tdy-action-btn delete'
                   onClick={() => setConfirmDelete(true)}
                   aria-label='מחק'
                 >
@@ -326,101 +326,108 @@ export function TheoryDetails() {
               </div>
             </div>
 
+            <div className='tdy-card-scroll-area'>
             {/* Theory Info */}
-            <div className='theory-info-card'>
-              <h3>{selectedTheoryLesson.category || 'שיעור תאוריה'}</h3>
-              <div className='theory-details-row'>
-                <div className='detail-item'>
-                  <span className='detail-label'>מורה:</span>
-                  <span className='detail-value'>{getTeacherName()}</span>
-                </div>
-                <div className='detail-item'>
-                  <span className='detail-label'>מיקום:</span>
-                  <span className='detail-value'>{selectedTheoryLesson.location}</span>
-                </div>
-                <div className='detail-item'>
-                  <span className='detail-label'>זמן:</span>
-                  <span className='detail-value'>
-                    {selectedTheoryLesson.startTime} - {selectedTheoryLesson.endTime}
-                  </span>
-                </div>
+            <div className='tdy-section'>
+              <div className='tdy-section-title'>
+                <BookOpen size={18} />
+                <span>{selectedTheoryLesson.category || 'שיעור תאוריה'}</span>
               </div>
-
-              {selectedTheoryLesson.notes && (
-                <div className='theory-notes'>
-                  <span className='notes-label'>הערות:</span>
-                  <p className='notes-content'>{selectedTheoryLesson.notes}</p>
+              <div className='tdy-section-content'>
+                <div className='tdy-theory-details-row'>
+                  <div className='tdy-detail-item'>
+                    <span className='tdy-detail-label'>מורה:</span>
+                    <span className='tdy-detail-value'>{getTeacherName()}</span>
+                  </div>
+                  <div className='tdy-detail-item'>
+                    <span className='tdy-detail-label'>מיקום:</span>
+                    <span className='tdy-detail-value'>{selectedTheoryLesson.location}</span>
+                  </div>
+                  <div className='tdy-detail-item'>
+                    <span className='tdy-detail-label'>זמן:</span>
+                    <span className='tdy-detail-value'>
+                      {selectedTheoryLesson.startTime} - {selectedTheoryLesson.endTime}
+                    </span>
+                  </div>
                 </div>
-              )}
 
-              {selectedTheoryLesson.syllabus && (
-                <div className='theory-syllabus'>
-                  <span className='syllabus-label'>סילבוס:</span>
-                  <p className='syllabus-content'>{selectedTheoryLesson.syllabus}</p>
-                </div>
-              )}
-            </div>
+                {selectedTheoryLesson.notes && (
+                  <div className='tdy-theory-notes'>
+                    <span className='tdy-notes-label'>הערות:</span>
+                    <p className='tdy-notes-content'>{selectedTheoryLesson.notes}</p>
+                  </div>
+                )}
 
-            {/* Attendance Section */}
-            <div className='attendance-section'>
-              <div className='attendance-header'>
-                <h3>
-                  <Users size={18} />
-                  נוכחות תלמידים
-                </h3>
-              </div>
-              
-              {/* Students List */}
-              <div className='students-list-container'>
-                {isLoadingStudents ? (
-                  <div className='loading-students'>טוען רשימת תלמידים...</div>
-                ) : students.length > 0 ? (
-                  <ul className='students-list'>
-                    {students.map((student) => {
-                      const isPresent = attendance.present.includes(student._id);
-                      
-                      return (
-                        <li
-                          key={student._id}
-                          className={`student-item ${isPresent ? 'present' : ''}`}
-                        >
-                          <div className='student-info'>
-                            <div className='student-name'>
-                              {student.personalInfo.fullName}
-                            </div>
-                            <div className='student-instrument'>
-                              {student.academicInfo.instrumentProgress?.[0]?.instrumentName || student.academicInfo.instrument || 'לא מוגדר'}
-                            </div>
-                          </div>
-                          
-                          <label className='toggle-switch'>
-                            <input
-                              type='checkbox'
-                              checked={isPresent}
-                              onChange={() => handleAttendanceChange(student._id, !isPresent)}
-                            />
-                            <span className='toggle-slider'></span>
-                          </label>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                ) : (
-                  <div className='empty-students'>
-                    אין תלמידים רשומים לשיעור זה
+                {selectedTheoryLesson.syllabus && (
+                  <div className='tdy-theory-syllabus'>
+                    <span className='tdy-syllabus-label'>סילבוס:</span>
+                    <p className='tdy-syllabus-content'>{selectedTheoryLesson.syllabus}</p>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Attendance Section */}
+            <div className='tdy-section'>
+              <div className='tdy-section-title'>
+                <Users size={18} />
+                <span>נוכחות תלמידים</span>
+              </div>
+              <div className='tdy-section-content'>
+              
+                {/* Students List */}
+                <div className='tdy-students-list-container'>
+                  {isLoadingStudents ? (
+                    <div className='tdy-loading-students'>טוען רשימת תלמידים...</div>
+                  ) : students.length > 0 ? (
+                    <ul className='tdy-students-list'>
+                      {students.map((student) => {
+                        const isPresent = attendance.present.includes(student._id);
+                        
+                        return (
+                          <li
+                            key={student._id}
+                            className={`tdy-student-item ${isPresent ? 'present' : ''}`}
+                          >
+                            <div className='tdy-student-info'>
+                              <div className='tdy-student-name'>
+                                {student.personalInfo.fullName}
+                              </div>
+                              <div className='tdy-student-instrument'>
+                                {student.academicInfo.instrumentProgress?.[0]?.instrumentName || student.academicInfo.instrument || 'לא מוגדר'}
+                              </div>
+                            </div>
+                            
+                            <label className='tdy-toggle-switch'>
+                              <input
+                                type='checkbox'
+                                checked={isPresent}
+                                onChange={() => handleAttendanceChange(student._id, !isPresent)}
+                              />
+                              <span className='tdy-toggle-slider'></span>
+                            </label>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  ) : (
+                    <div className='tdy-empty-students'>
+                      אין תלמידים רשומים לשיעור זה
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            </div>
+
             {/* Save Button */}
-            <div className='attendance-footer'>
+            <div className='tdy-attendance-footer'>
               {saveSuccess && (
-                <span className='save-success'>הנוכחות עודכנה בהצלחה!</span>
+                <span className='tdy-save-success'>הנוכחות עודכנה בהצלחה!</span>
               )}
 
               <button
-                className='save-attendance-btn'
+                className='tdy-save-attendance-btn'
                 onClick={handleAttendanceUpdate}
                 disabled={!hasChanges || isSaving}
               >
@@ -455,9 +462,9 @@ export function TheoryDetails() {
         message={
           <>
             <p>
-              האם אתה בטוח שברצונך למחוק את שיעור התאוריה "{selectedTheoryLesson.category}"?
+              האם אתה בטוח שברצונך למחוק לצמיתות את שיעור התאוריה "{selectedTheoryLesson.category}"?
             </p>
-            <p className='text-sm text-muted'>פעולה זו היא בלתי הפיכה.</p>
+            <p className='text-sm text-muted'>פעולה זו תמחק לצמיתות את השיעור ואת כל הנתונים הקשורים אליו. פעולה זו היא בלתי הפיכה.</p>
           </>
         }
         confirmText='מחק'

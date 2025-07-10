@@ -551,10 +551,12 @@
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  padding-bottom: 3rem;
 
   @media (max-width: 767px) {
     width: 95vw;
     max-height: 95vh;
+    padding-bottom: 3rem;
   }
 
   .schedule-slot-form {

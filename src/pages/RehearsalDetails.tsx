@@ -10,11 +10,13 @@ import { RehearsalForm } from '../cmps/RehearsalForm';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { Student } from '../services/studentService';
 import { Orchestra } from '../services/orchestraService';
+import { useToast } from '../cmps/Toast';
 
 export function RehearsalDetails() {
   const { rehearsalId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addToast } = useToast();
 
   const {
     selectedRehearsal,
@@ -164,11 +166,23 @@ export function RehearsalDetails() {
       });
       setSaveSuccess(true);
       setHasChanges(false);
+      
+      // Show success toast
+      addToast({
+        type: 'success',
+        message: 'נוכחות עודכנה בהצלחה',
+      });
 
       // Reload the rehearsal to get updated data
       await loadRehearsalById(rehearsalId);
     } catch (err) {
       console.error('Failed to update attendance:', err);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: 'אירעה שגיאה בעידכון הנוכחות',
+      });
     } finally {
       setIsSaving(false);
     }
@@ -193,9 +207,22 @@ export function RehearsalDetails() {
     if (selectedRehearsal?._id) {
       try {
         await removeRehearsal(selectedRehearsal._id);
+        
+        // Show success toast
+        addToast({
+          type: 'success',
+          message: 'החזרה נמחקה לצמיתות בהצלחה',
+        });
+        
         navigate('/rehearsals');
       } catch (err) {
         console.error('Failed to delete rehearsal:', err);
+        
+        // Show error toast
+        addToast({
+          type: 'danger',
+          message: 'אירעה שגיאה במחיקת החזרה',
+        });
       }
     }
     setIsConfirmDialogOpen(false);

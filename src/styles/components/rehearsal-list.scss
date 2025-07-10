@@ -30,9 +30,40 @@
     }
     
     .rehearsal-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      display: flex;
       gap: 1rem;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 0.5rem;
+      
+      // Enable horizontal scrolling
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+        border-radius: 3px;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+        border-radius: 3px;
+        
+        &:hover {
+          background: var(--text-secondary);
+        }
+      }
+      
+      // For Firefox
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) var(--bg-secondary);
+      
+      // Each rehearsal item should maintain its width
+      > * {
+        flex: 0 0 320px;
+        min-width: 320px;
+      }
     }
   }
   
@@ -92,11 +123,15 @@
 }
 
 // Media queries for responsive design
-@media (max-width: 576px) {
+@media (max-width: 767px) {
   .rehearsal-list-container {
     .rehearsal-date-group {
       .rehearsal-grid {
-        grid-template-columns: 1fr;
+        // Keep horizontal scroll on mobile too
+        > * {
+          flex: 0 0 280px;
+          min-width: 280px;
+        }
       }
       
       .date-header {
@@ -108,16 +143,6 @@
     
     .empty-state, .loading-state {
       padding: 2rem 1rem;
-    }
-  }
-}
-
-@media (min-width: 577px) and (max-width: 992px) {
-  .rehearsal-list-container {
-    .rehearsal-date-group {
-      .rehearsal-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
     }
   }
 }

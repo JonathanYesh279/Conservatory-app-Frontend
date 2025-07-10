@@ -322,7 +322,7 @@
 }
 
 // Media queries for responsive design
-@media (max-width: 576px) {
+@media (max-width: 767px) {
   .rehearsal-details {
     padding: 0.5rem;
     
@@ -357,6 +357,105 @@
       
       .save-attendance-btn {
         width: 100%;
+      }
+    }
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1024px) {
+  .rehearsal-details {
+    .rehearsal-details-page {
+      max-width: 600px;
+    }
+  }
+}
+
+@media (min-width: 1025px) {
+  .rehearsal-details {
+    .rehearsal-details-page {
+      max-width: 700px;
+    }
+    
+    .rehearsal-header {
+      padding: 2rem 2rem 1.5rem;
+      
+      .header-title h2 {
+        font-size: 1.5rem;
+      }
+      
+      .date-display {
+        font-size: 1rem;
+      }
+    }
+    
+    .orchestra-info-card {
+      padding: 0 2rem 1.5rem;
+      
+      h3 {
+        font-size: 1.3rem;
+      }
+      
+      .rehearsal-details-row {
+        gap: 3rem;
+        margin-bottom: 2rem;
+        
+        .detail-item {
+          .detail-label {
+            font-size: 0.9rem;
+          }
+          
+          .detail-value {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+    
+    .attendance-section {
+      padding: 0 2rem 2rem;
+      
+      .students-list {
+        .student-item {
+          padding: 1rem 1.25rem;
+          
+          .student-info {
+            .student-name {
+              font-size: 1rem;
+            }
+            
+            .student-instrument {
+              font-size: 0.85rem;
+            }
+          }
+          
+          .toggle-switch {
+            width: 50px;
+            height: 28px;
+            
+            .toggle-slider {
+              &:before {
+                height: 22px;
+                width: 22px;
+                left: 3px;
+                bottom: 3px;
+              }
+            }
+            
+            input:checked + .toggle-slider:before {
+              transform: translateX(22px);
+            }
+          }
+        }
+      }
+    }
+    
+    .attendance-footer {
+      padding: 1.5rem 2rem;
+      
+      .save-attendance-btn {
+        padding: 1.25rem 3rem;
+        font-size: 1.1rem;
+        min-width: 180px;
       }
     }
   }

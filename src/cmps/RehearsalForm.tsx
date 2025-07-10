@@ -1,6 +1,7 @@
 // src/cmps/RehearsalForm.tsx
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, Music } from 'lucide-react';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { Rehearsal } from '../services/rehearsalService';
@@ -22,6 +23,7 @@ import {
   getDayName,
   VALID_LOCATIONS
 } from '../validations/constants';
+import { useToast } from './Toast';
 
 interface RehearsalFormProps {
   isOpen: boolean;
@@ -38,10 +40,19 @@ export function RehearsalForm({
   orchestraId,
   onSave,
 }: RehearsalFormProps) {
+  // Accessibility hook
+  const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
+    isOpen,
+    onClose,
+    modalId: 'rehearsal-form',
+    restoreFocusOnClose: true
+  });
+
   // Store hooks
   const rehearsalStore = useRehearsalStore();
   const orchestraStore = useOrchestraStore();
   const schoolYearStore = useSchoolYearStore();
+  const { addToast } = useToast();
 
   // Destructure values from stores
   const { saveRehearsal, bulkCreateRehearsals, isLoading, error, clearError } =
@@ -127,6 +138,12 @@ export function RehearsalForm({
 
       console.log('Saving single rehearsal:', rehearsalData);
       await saveRehearsal(rehearsalData);
+      
+      // Show success toast
+      addToast({
+        type: 'success',
+        message: rehearsal?._id ? 'החזרה עודכנה בהצלחה' : 'החזרה נוספה בהצלחה',
+      });
 
       // Call onSave callback if provided
       if (onSave) {
@@ -137,7 +154,14 @@ export function RehearsalForm({
       onClose();
     } catch (err) {
       console.error('Error saving rehearsal:', err);
-      setFormError(err instanceof Error ? err.message : 'שגיאה בשמירת החזרה');
+      const errorMessage = err instanceof Error ? err.message : 'שגיאה בשמירת החזרה';
+      setFormError(errorMessage);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: errorMessage,
+      });
     }
   };
 
@@ -161,7 +185,13 @@ export function RehearsalForm({
       };
 
       console.log('Creating bulk rehearsals:', bulkData);
-      await bulkCreateRehearsals(bulkData);
+      const result = await bulkCreateRehearsals(bulkData);
+      
+      // Show success toast
+      addToast({
+        type: 'success',
+        message: `נוצרו ${result.insertedCount} חזרות בהצלחה`,
+      });
 
       // Call onSave callback if provided
       if (onSave) {
@@ -172,7 +202,14 @@ export function RehearsalForm({
       onClose();
     } catch (err) {
       console.error('Error creating bulk rehearsals:', err);
-      setFormError(err instanceof Error ? err.message : 'שגיאה ביצירת חזרות מרובות');
+      const errorMessage = err instanceof Error ? err.message : 'שגיאה ביצירת חזרות מרובות';
+      setFormError(errorMessage);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: errorMessage,
+      });
     }
   };
 
@@ -211,12 +248,17 @@ export function RehearsalForm({
   return (
     <div className='rehearsal-form'>
       <div className='overlay' onClick={onClose}></div>
-      <div className='form-modal'>
+      <div className='form-modal' {...modalProps}>
         <button className='close-btn' onClick={onClose} aria-label='סגור'>
           <X size={20} />
         </button>
 
-        <h2>{rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}</h2>
+        {/* Hidden description for screen readers */}
+        <div {...descriptionProps} className="sr-only">
+          {rehearsal?._id ? 'טופס עריכת חזרה קיימת במערכת' : 'טופס הוספת חזרה חדשה למערכת'}
+        </div>
+
+        <h2 {...titleProps}>{rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}</h2>
 
         {error && <div className='error-message'>{error}</div>}
         {formError && <div className='error-message'>{formError}</div>}

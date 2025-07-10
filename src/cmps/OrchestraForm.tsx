@@ -1,6 +1,7 @@
 // src/cmps/OrchestraForm.tsx
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, User, Search, X as XIcon } from 'lucide-react';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Orchestra } from '../services/orchestraService';
 import { Student } from '../services/studentService';
@@ -34,6 +35,14 @@ export function OrchestraForm({
   orchestra,
   onSave,
 }: OrchestraFormProps) {
+  // Accessibility hook
+  const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
+    isOpen,
+    onClose,
+    modalId: 'orchestra-form',
+    restoreFocusOnClose: true
+  });
+
   // State
   const [conductors, setConductors] = useState<Teacher[]>([]);
   const [isLoadingConductors, setIsLoadingConductors] = useState(false);
@@ -331,7 +340,7 @@ export function OrchestraForm({
   return (
     <div className='orchestra-form responsive-form'>
       <div className='overlay' onClick={onClose}></div>
-      <div className='form-modal'>
+      <div className='form-modal' {...modalProps}>
         <button
           className='btn-icon close-btn'
           onClick={onClose}
@@ -339,6 +348,11 @@ export function OrchestraForm({
         >
           <X size={20} />
         </button>
+
+        {/* Hidden description for screen readers */}
+        <div {...descriptionProps} className="sr-only">
+          {orchestra?._id ? 'טופס עריכת פרטי הרכב קיים במערכת' : 'טופס הוספת הרכב חדש למערכת'}
+        </div>
 
         <Formik
           initialValues={getInitialFormValues()}
@@ -361,7 +375,7 @@ export function OrchestraForm({
 
             return (
               <Form>
-                <h2>
+                <h2 {...titleProps}>
                   {orchestra?._id
                     ? isOrchestra
                       ? 'עריכת תזמורת'

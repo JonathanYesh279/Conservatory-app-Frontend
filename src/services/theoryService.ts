@@ -19,7 +19,6 @@ export interface TheoryLesson {
   syllabus?: string;
   homework?: string;
   schoolYearId: string;
-  isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -45,6 +44,8 @@ export const THEORY_LOCATIONS = [
   'חדר חזרות 1',
   'חדר חזרות 2',
   'חדר מחשבים',
+  'חדר תאוריה א',
+  'חדר תאוריה ב',
   'חדר 1',
   'חדר 2',
   'חדר חזרות',
@@ -108,8 +109,6 @@ export interface TheoryFilter {
   dayOfWeek?: number;
   location?: string;
   schoolYearId?: string;
-  isActive?: boolean;
-  showInactive?: boolean;
 }
 
 export const theoryService = {
@@ -199,8 +198,8 @@ export const theoryService = {
     return httpService.put(`theory/${theoryLessonId}`, theoryLessonWithoutId);
   },
 
-  // Soft delete a theory lesson (mark as inactive)
-  async removeTheoryLesson(theoryLessonId: string): Promise<TheoryLesson> {
+  // Hard delete a theory lesson (permanently removes from database)
+  async removeTheoryLesson(theoryLessonId: string): Promise<void> {
     if (!theoryLessonId) {
       throw new Error('Invalid theory lesson ID');
     }

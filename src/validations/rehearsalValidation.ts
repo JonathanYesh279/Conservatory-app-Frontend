@@ -71,7 +71,6 @@ export const getInitialRehearsalValues = (
       endTime: rehearsal.endTime || '18:00',
       location: rehearsal.location || VALID_LOCATIONS[0],
       notes: rehearsal.notes || '',
-      isActive: rehearsal.isActive !== false,
       schoolYearId: rehearsal.schoolYearId || currentSchoolYearId,
       type: rehearsal.type || 'תזמורת',
       dayOfWeek: rehearsal.dayOfWeek || today.getDay(),
@@ -86,7 +85,6 @@ export const getInitialRehearsalValues = (
     endTime: '18:00',
     location: VALID_LOCATIONS[0],
     notes: '',
-    isActive: true,
     schoolYearId: currentSchoolYearId,
     type: 'תזמורת',
     dayOfWeek: today.getDay(),
@@ -126,7 +124,6 @@ export interface RehearsalFormValues {
   endTime: string;
   location: string;
   notes: string;
-  isActive: boolean;
   schoolYearId: string;
   type: string;
   dayOfWeek: number;

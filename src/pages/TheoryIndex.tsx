@@ -128,7 +128,7 @@ export function TheoryIndex() {
       // Show success toast
       addToast({
         type: 'success',
-        message: 'שיעור התאוריה נמחק בהצלחה',
+        message: 'שיעור התאוריה נמחק לצמיתות בהצלחה',
       });
       
       // Navigate back to the index if we were on the deleted theory lesson
@@ -227,7 +227,7 @@ export function TheoryIndex() {
         <ConfirmDialog
           isOpen={confirmDelete.isOpen}
           title='מחיקת שיעור תאוריה'
-          message='האם אתה בטוח שברצונך למחוק את שיעור התאוריה הזה? פעולה זו אינה ניתנת לביטול.'
+          message='האם אתה בטוח שברצונך למחוק לצמיתות את שיעור התאוריה הזה? פעולה זו תמחק לצמיתות את השיעור ואת כל הנתונים הקשורים אליו ואינה ניתנת לביטול.'
           confirmText='מחק'
           cancelText='ביטול'
           onConfirm={() => {

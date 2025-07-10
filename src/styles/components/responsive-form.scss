@@ -11,6 +11,7 @@
     box-shadow: var(--shadow-lg, 0 8px 30px rgba(0, 0, 0, 0.4));
     margin: 0 auto;
     padding: 1.75rem;
+    padding-bottom: 3rem;
     width: 95%;
     max-width: 750px;
 
@@ -59,7 +60,6 @@
     
     .close-btn {
       position: absolute;
-      top: 1.75rem;
       left: 1.75rem;
       width: 32px;
       height: 32px;
@@ -546,6 +546,7 @@
       max-height: 95vh;
       padding: 1.25rem;
       padding-top: 4.5rem;
+      padding-bottom: 3rem;
       
       h2 {
         font-size: 1.2rem;

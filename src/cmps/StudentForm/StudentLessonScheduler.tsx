@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   User, Calendar, Clock, MapPin, CheckCircle, AlertCircle, 
-  Trash2, Plus, Search, Filter, Star 
+  Trash2, Plus, Search, Filter, Star, RotateCcw 
 } from 'lucide-react';
 import { useFormikContext } from 'formik';
 import { StudentFormData } from '../../constants/formConstants';
@@ -55,6 +55,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
   const [showSlotFinder, setShowSlotFinder] = useState(false);
   const [selectedDuration, setSelectedDuration] = useState<LessonDurationMinutes>(60);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Load teachers on mount
   useEffect(() => {
@@ -468,11 +469,40 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
                   key={duration}
                   type="button"
                   className={`duration-btn ${selectedDuration === duration ? 'active' : ''}`}
-                  onClick={() => setSelectedDuration(duration)}
+                  onClick={() => {
+                    setSelectedDuration(duration);
+                    setRefreshTrigger(prev => prev + 1);
+                  }}
                 >
                   {duration} דקות
                 </button>
               ))}
+            </div>
+            
+            {/* Filter and Reset Controls */}
+            <div className="duration-controls">
+              <button
+                type="button"
+                className={`filter-toggle ${showAdvancedFilters ? 'active' : ''}`}
+                onClick={() => setShowAdvancedFilters(prev => !prev)}
+                title="מסננים מתקדמים"
+              >
+                <Filter size={14} />
+                מסננים מתקדמים
+              </button>
+              
+              <button
+                type="button"
+                className="reset-btn"
+                onClick={() => {
+                  setSelectedDuration(60);
+                  setShowAdvancedFilters(false);
+                  setRefreshTrigger(prev => prev + 1);
+                }}
+                title="איפוס חיפוש"
+              >
+                <RotateCcw size={14} />
+              </button>
             </div>
           </div>
         </div>
@@ -491,9 +521,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
             onSlotSelect={handleSlotSelect}
             initialDuration={selectedDuration}
             compact={true}
-            maxResults={10}
+            maxResults={20}
             selectedSlot={selectedSlot}
             refreshTrigger={refreshTrigger}
+            showAdvancedFilters={showAdvancedFilters}
+            key={`${selectedTeacherId}-${selectedDuration}-${refreshTrigger}`}
           />
           
           {selectedSlot && (

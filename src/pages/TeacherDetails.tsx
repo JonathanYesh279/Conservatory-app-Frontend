@@ -452,53 +452,30 @@ export function TeacherDetails() {
                   {openSections.students && (
                     <div className='section-content'>
                       {students.length > 0 ? (
-                        <div className='students-grid modern-students-grid'>
-                          {students.map((student) => (
-                            <div
-                              key={student._id}
-                              className='student-card modern-student-card clickable'
-                              onClick={() => navigateToStudent(student._id)}
-                            >
-                              <div className='student-main'>
-                                <div className='student-identity'>
-                                  <div className='student-info'>
-                                    <div className='student-name'>
+                        <div className='members-list'>
+                          <ul className='members-items'>
+                            {students.map((student) => (
+                              <li 
+                                key={student._id} 
+                                className='member-item clickable'
+                                onClick={() => navigateToStudent(student._id)}
+                              >
+                                <div className='member-info'>
+                                  <div className='member-avatar'>
+                                    {student.fullName.charAt(0)}
+                                  </div>
+                                  <div className='member-details'>
+                                    <div className='member-name'>
                                       {student.fullName}
                                     </div>
-                                    {student.assignments && student.assignments.length > 0 && (
-                                      <div className='student-lessons-count'>
-                                        <span>{student.assignments.length} שיעורים</span>
-                                      </div>
-                                    )}
+                                    <div className='member-instrument'>
+                                      {student.instrument}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                              
-                              {/* Display lesson assignments */}
-                              {student.assignments && student.assignments.length > 0 && (
-                                <div className='student-lessons'>
-                                  <div className='lessons-header'>
-                                    <Calendar size={12} />
-                                    <span>מערכת שיעורים</span>
-                                  </div>
-                                  <div className='lessons-list'>
-                                    {student.assignments.map((assignment, index) => (
-                                      <div key={index} className='lesson-item'>
-                                        <div className='lesson-day'>{assignment.day}</div>
-                                        <div className='lesson-time'>
-                                          <Clock size={10} />
-                                          <span>{formatLessonTime(assignment.time, assignment.duration)}</span>
-                                        </div>
-                                        <div className='lesson-duration'>
-                                          {assignment.duration}ד'
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       ) : teacher.teaching?.studentIds?.length ? (
                         <div className='loading-section'>

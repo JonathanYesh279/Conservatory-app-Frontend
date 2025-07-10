@@ -121,12 +121,12 @@ export const timeBlockService = {
       // Enhanced error handling for specific conflict scenarios
       if (error instanceof Error) {
         if (error.message.includes('conflict') || error.message.includes('409')) {
-          throw new Error(`בלוק הזמן מתנגש עם לוח זמנים קיים ביום ${timeBlockData.day} בזמן ${timeBlockData.startTime}-${timeBlockData.endTime}. אנא בדוק את הלוח הקיים ובחר זמן אחר.`);
+          throw new Error(`יום הלימוד מתנגש עם לוח זמנים קיים ביום ${timeBlockData.day} בזמן ${timeBlockData.startTime}-${timeBlockData.endTime}. אנא בדוק את הלוח הקיים ובחר זמן אחר.`);
         }
         throw error;
       }
       
-      throw new Error('שגיאה ביצירת בלוק זמן חדש');
+      throw new Error('שגיאה ביצירת יום לימוד חדש');
     }
   },
 
@@ -320,7 +320,7 @@ export const timeBlockService = {
       return teacherSchedule;
     } catch (error) {
       console.error('Failed to get teacher schedule with blocks:', error);
-      throw new Error('שגיאה בטעינת מערכת השעות עם בלוקי זמן');
+      throw new Error('שגיאה בטעינת מערכת השעות עם ימי לימוד');
     }
   },
 
@@ -356,7 +356,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to update time block:', error);
-      throw new Error('שגיאה בעדכון בלוק הזמן');
+      throw new Error('שגיאה בעדכון יום הלימוד');
     }
   },
 
@@ -378,7 +378,7 @@ export const timeBlockService = {
       return response;
     } catch (error) {
       console.error('Failed to delete time block:', error);
-      throw new Error('שגיאה במחיקת בלוק הזמן');
+      throw new Error('שגיאה במחיקת יום הלימוד');
     }
   },
 
@@ -632,19 +632,19 @@ export const timeBlockService = {
     
     switch (conflictType) {
       case 'exact_duplicate':
-        return `קיים כבר בלוק זמן זהה ביום ${newTimeBlock.day} בשעות ${newTimeBlock.startTime}-${newTimeBlock.endTime}`;
+        return `קיים כבר יום לימוד זהה ביום ${newTimeBlock.day} בשעות ${newTimeBlock.startTime}-${newTimeBlock.endTime}`;
       
       case 'contained_within':
-        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} נמצא בתוך בלוק קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
+        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} נמצא בתוך יום לימוד קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
       
       case 'contains_existing':
-        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} מכיל בלוק קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
+        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} מכיל יום לימוד קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
       
       case 'partial_overlap':
-        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} חופף עם בלוק קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
+        return `הזמן המבוקש ${newTimeBlock.startTime}-${newTimeBlock.endTime} חופף עם יום לימוד קיים: ${conflictBlock.startTime}-${conflictBlock.endTime}`;
       
       default:
-        return `קיימת התנגשות עם בלוק קיים ביום ${newTimeBlock.day}`;
+        return `קיימת התנגשות עם יום לימוד קיים ביום ${newTimeBlock.day}`;
     }
   }
 };

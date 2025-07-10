@@ -170,10 +170,11 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
         throw new Error('Invalid theory lesson ID');
       }
 
-      // Make the API call
+      // Make the API call for hard deletion
       await theoryService.removeTheoryLesson(theoryLessonId);
 
-      // Update state only if API call succeeds
+      // Remove from state immediately after successful deletion
+      // This is a permanent deletion, so we filter out the lesson completely
       set({
         theoryLessons: get().theoryLessons.filter((t) => t._id !== theoryLessonId),
         selectedTheoryLesson:
@@ -184,9 +185,9 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
       });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Failed to remove theory lesson';
+        err instanceof Error ? err.message : 'Failed to permanently delete theory lesson';
       set({ error: errorMessage, isLoading: false });
-      console.error('Error removing theory lesson:', err);
+      console.error('Error deleting theory lesson:', err);
       throw err;
     }
   },

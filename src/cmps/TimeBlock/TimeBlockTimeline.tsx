@@ -93,6 +93,24 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
     loadTeacherTimeBlocks(teacherId);
   }, [teacherId, loadTeacherTimeBlocks]);
 
+  // Format duration in hours format
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+      return `${mins} דקות`;
+    } else if (hours === 1 && mins === 0) {
+      return 'שעה אחת';
+    } else if (hours === 1) {
+      return `שעה ו-${mins} דקות`;
+    } else if (mins === 0) {
+      return `${hours} שעות`;
+    } else {
+      return `${hours} שעות ו-${mins} דקות`;
+    }
+  };
+
   // Update config when zoom level changes
   useEffect(() => {
     setConfig(prev => ({
@@ -342,7 +360,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
                         e.stopPropagation();
                         onTimeBlockEdit?.(timeBlock);
                       }}
-                      title="ערוך בלוק זמן"
+                      title="ערוך יום לימוד"
                     >
                       <Edit3 size={12} />
                     </button>
@@ -352,7 +370,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
                         e.stopPropagation();
                         onTimeBlockDelete?.(timeBlock);
                       }}
-                      title="מחק בלוק זמן"
+                      title="מחק יום לימוד"
                     >
                       <Trash2 size={12} />
                     </button>
@@ -445,7 +463,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
                         {assignment.lessonStartTime} - {assignment.lessonEndTime}
                       </div>
                       <div className="assignment-duration">
-                        {assignment.duration} דקות
+                        {formatDuration(assignment.duration)}
                       </div>
                     </div>
                   </foreignObject>
@@ -473,7 +491,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
       >
         <div className="day-name">{day}</div>
         <div className="day-blocks-count">
-          {(timelineData.blocksByDay[day] || []).length} בלוקים
+          {(timelineData.blocksByDay[day] || []).length} ימי לימוד
         </div>
         {isEditable && (
           <button
@@ -482,7 +500,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
               // Default to 2-hour block starting at 9 AM
               onCreateTimeBlock?.(day, '09:00', '11:00');
             }}
-            title="הוסף בלוק זמן"
+            title="הוסף יום לימוד"
           >
             <Plus size={14} />
           </button>
@@ -547,7 +565,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
         </div>
         
         <div className="timeline-info">
-          <span>{timeBlocks.length} בלוקי זמן</span>
+          <span>{timeBlocks.length} ימי לימוד</span>
           <span>•</span>
           <span>
             {timeBlocks.reduce((total, block) => total + block.assignedLessons.length, 0)} שיעורים
@@ -652,7 +670,7 @@ const TimeBlockTimeline: React.FC<TimeBlockTimelineProps> = ({
           </div>
         ) : (
           <div className="default-status">
-            {isEditable ? 'לחץ וגרור ליצירת בלוק זמן חדש' : 'בחר בלוק זמן לצפייה בפרטים'}
+            {isEditable ? 'לחץ וגרור ליצירת יום לימוד חדש' : 'בחר יום לימוד לצפייה בפרטים'}
           </div>
         )}
       </div>

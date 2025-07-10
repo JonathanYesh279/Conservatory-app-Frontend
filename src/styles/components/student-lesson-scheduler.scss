@@ -390,6 +390,7 @@
       .duration-buttons {
         display: flex;
         gap: 0.5rem;
+        margin-bottom: 1rem;
 
         .duration-btn {
           flex: 1;
@@ -412,6 +413,69 @@
             border-color: var(--primary-color);
             background: var(--primary-color);
             color: white;
+          }
+        }
+      }
+
+      .duration-controls {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: center;
+
+        .filter-toggle {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.75rem 1rem;
+          border: 1px solid var(--border-color);
+          border-radius: 0.5rem;
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            background: var(--bg-tertiary);
+          }
+
+          &.active {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: white;
+          }
+
+          svg {
+            flex-shrink: 0;
+          }
+        }
+
+        .reset-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 2.5rem;
+          height: 2.5rem;
+          border: 1px solid var(--border-color);
+          border-radius: 0.5rem;
+          background: var(--bg-card);
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: all 0.2s ease;
+
+          &:hover {
+            border-color: var(--warning);
+            color: var(--warning);
+            background: rgba(var(--warning-rgb), 0.05);
+            transform: rotate(180deg);
+          }
+
+          svg {
+            flex-shrink: 0;
           }
         }
       }
@@ -651,8 +715,24 @@
     .slots-finder-panel {
       padding: 1.5rem;
 
-      .duration-selection .duration-buttons {
-        gap: 0.75rem;
+      .duration-selection {
+        .duration-buttons {
+          gap: 0.75rem;
+        }
+
+        .duration-controls {
+          gap: 1rem;
+
+          .filter-toggle {
+            padding: 0.875rem 1.25rem;
+            font-size: 0.9rem;
+          }
+
+          .reset-btn {
+            width: 3rem;
+            height: 3rem;
+          }
+        }
       }
 
       .selected-slot-preview .preview-details {

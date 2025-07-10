@@ -57,7 +57,7 @@ const WIZARD_STEPS: TimeBlockWizardStep[] = [
   {
     id: 'day-selection',
     title: 'בחירת יום',
-    description: 'בחר את הימים לבלוק הזמן',
+    description: 'בחר את הימים ליום הלימוד',
     component: 'DaySelectionStep',
     isComplete: false,
     isActive: true
@@ -65,7 +65,7 @@ const WIZARD_STEPS: TimeBlockWizardStep[] = [
   {
     id: 'time-range',
     title: 'טווח זמן',
-    description: 'הגדר את שעות תחילת וסיום הבלוק',
+    description: 'הגדר את שעות תחילת וסיום יום הלימוד',
     component: 'TimeRangeStep',
     isComplete: false,
     isActive: false
@@ -81,7 +81,7 @@ const WIZARD_STEPS: TimeBlockWizardStep[] = [
   {
     id: 'review',
     title: 'סקירה',
-    description: 'בדוק את פרטי הבלוק לפני יצירה',
+    description: 'בדוק את פרטי יום הלימוד לפני יצירה',
     component: 'ReviewStep',
     isComplete: false,
     isActive: false
@@ -144,6 +144,24 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
     return endMinutes - startMinutes;
   };
 
+  // Format duration in hours format
+  const formatDuration = (minutes: number): string => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    
+    if (hours === 0) {
+      return `${mins} דקות`;
+    } else if (hours === 1 && mins === 0) {
+      return 'שעה אחת';
+    } else if (hours === 1) {
+      return `שעה ו-${mins} דקות`;
+    } else if (mins === 0) {
+      return `${hours} שעות`;
+    } else {
+      return `${hours} שעות ו-${mins} דקות`;
+    }
+  };
+
   // Update form data
   const updateFormData = (updates: Partial<TimeBlockFormData>) => {
     setWizardState(prev => ({
@@ -177,7 +195,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
             errors.timeRange = 'שעת הסיום חייבת להיות אחרי שעת ההתחלה';
           }
           if (duration < 30) {
-            errors.timeRange = 'בלוק זמן חייב להיות לפחות 30 דקות';
+            errors.timeRange = 'יום לימוד חייב להיות לפחות 30 דקות';
           }
 
           // Check for conflicts with existing time blocks (if schedule data is available)
@@ -230,7 +248,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
           }
 
           if (conflictingDays.length > 0) {
-            errors.submit = `קיימות התנגשות בימים הבאים: ${conflictingDays.join(', ')}. אנא בחר ימים אחרים או שנה את שעות הבלוק.`;
+            errors.submit = `קיימות התנגשות בימים הבאים: ${conflictingDays.join(', ')}. אנא בחר ימים אחרים או שנה את שעות יום הלימוד.`;
           }
         }
         break;
@@ -322,7 +340,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
       console.error('Failed to create time block:', error);
       setWizardState(prev => ({
         ...prev,
-        validationErrors: { submit: String((error instanceof Error ? error.message : error) || 'שגיאה ביצירת בלוק הזמן') }
+        validationErrors: { submit: String((error instanceof Error ? error.message : error) || 'שגיאה ביצירת יום הלימוד') }
       }));
     } finally {
       setWizardState(prev => ({ ...prev, isSubmitting: false }));
@@ -336,7 +354,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
       case 0: // Day Selection Step
         return (
           <div className="day-selection-step">
-            <h3>בחר יום לבלוק הזמן</h3>
+            <h3>בחר יום ליום הלימוד</h3>
             <div className="day-selector">
               {HEBREW_DAYS.map(day => (
                 <button
@@ -359,7 +377,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
       case 1: // Time Range Step
         return (
           <div className="time-range-step">
-            <h3>הגדר טווח זמן לבלוק</h3>
+            <h3>הגדר טווח זמן ליום הלימוד</h3>
             
             {/* Show existing time blocks for the selected day */}
             {currentTeacherSchedule?.timeBlocks && (
@@ -371,7 +389,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
                 if (existingBlocks.length > 0) {
                   return (
                     <div className="existing-blocks-info">
-                      <h4>בלוקי זמן קיימים ביום {formData.day}:</h4>
+                      <h4>ימי לימוד קיימים ביום {formData.day}:</h4>
                       <div className="existing-blocks-list">
                         {existingBlocks.map(block => (
                           <div key={block._id} className="existing-block-item">
@@ -427,8 +445,8 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
             {formData.startTime && formData.endTime && (
               <div className="duration-info">
                 <div className="duration-display">
-                  <Clock size={16} />
-                  <span>משך הבלוק: {calculateDuration(formData.startTime, formData.endTime)} דקות</span>
+                  <Clock size={14} />
+                  <span>{formatDuration(calculateDuration(formData.startTime, formData.endTime))}</span>
                 </div>
               </div>
             )}
@@ -476,7 +494,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
               <textarea
                 value={formData.notes || ''}
                 onChange={(e) => updateFormData({ notes: e.target.value })}
-                placeholder="הערות נוספות על בלוק הזמן..."
+                placeholder="הערות נוספות על יום הלימוד..."
                 className="textarea-input"
                 rows={3}
               />
@@ -495,7 +513,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
                 </div>
                 <div className="recurring-text">
                   <span className="recurring-title">שכפול לימים נוספים</span>
-                  <span className="recurring-description">צור בלוק זמן זהה בימים אחרים בשבוע</span>
+                  <span className="recurring-description">צור יום לימוד זהה בימים אחרים בשבוע</span>
                 </div>
               </label>
             </div>
@@ -539,7 +557,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
                 <div className="summary-item">
                   <Clock size={16} />
                   <span>{formData.startTime} - {formData.endTime}</span>
-                  <span>({calculateDuration(formData.startTime, formData.endTime)} דקות)</span>
+                  <span>({formatDuration(calculateDuration(formData.startTime, formData.endTime))})</span>
                 </div>
                 {formData.location && (
                   <div className="summary-item">
@@ -586,7 +604,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
       <div className="time-block-creator">
         {/* Header */}
         <div className="creator-header">
-          <h2>יצירת בלוק זמן חדש</h2>
+          <h2>יצירת יום לימוד חדש</h2>
           <button 
             type="button"
             className="close-btn" 
@@ -664,8 +682,8 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
                 </>
               ) : (
                 wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0
-                  ? `צור ${wizardState.formData.recurringDays.length} בלוקים`
-                  : 'צור בלוק זמן'
+                  ? `צור ${wizardState.formData.recurringDays.length} ימי לימוד`
+                  : 'צור יום לימוד'
               )}
             </button>
           )}

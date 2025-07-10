@@ -326,6 +326,8 @@
 
   // Slots Container
   .slots-container {
+    max-width: 100%;
+    overflow: hidden;
     .loading-state {
       display: flex;
       flex-direction: column;
@@ -388,11 +390,15 @@
     // Compact List View
     .slots-list.compact {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, 1fr);
       gap: 0.75rem;
+      max-width: 100%;
+      overflow: hidden;
 
       .slot-card {
         padding: 0.75rem;
+        max-width: 100%;
+        box-sizing: border-box;
       }
     }
 
@@ -475,20 +481,27 @@
 
         .slot-day-time {
           display: flex;
-          align-items: center;
-          justify-content: space-between;
+          flex-direction: column;
+          gap: 0.5rem;
+          margin-bottom: 0.5rem;
           
           .day-name {
             font-weight: 600;
             color: var(--primary-color);
             font-size: 0.9rem;
+            text-align: center;
           }
 
           .time-range {
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text-primary);
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             font-family: 'Courier New', monospace;
+            text-align: center;
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border-color);
           }
         }
 
@@ -568,7 +581,8 @@
             .duration-buttons {
               width: 100%;
               display: flex;
-              justify-content: space-between;
+              
+              
             }
           }
         }
@@ -635,7 +649,7 @@
       }
 
       .slots-list.compact {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.5rem;
       }
 
@@ -645,16 +659,15 @@
 
         .slot-main-info {
           .slot-day-time {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.25rem;
+            gap: 0.4rem;
 
             .day-name {
               font-size: 0.85rem;
             }
 
             .time-range {
-              font-size: 0.75rem;
+              font-size: 0.8rem;
+              padding: 0.2rem 0.4rem;
             }
           }
         }
@@ -668,7 +681,7 @@
   .available-slots-finder {
     .slots-container {
       .slots-list.compact {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
       }
 
@@ -696,12 +709,16 @@
   .available-slots-finder {
     .slots-container {
       .slots-list.compact {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1rem;
+        max-width: 100%;
+        overflow: hidden;
       }
 
       .slot-card {
         min-height: 140px;
+        max-width: 100%;
+        box-sizing: border-box;
 
         .slot-main-info {
           .slot-day-time {
@@ -710,7 +727,8 @@
             }
 
             .time-range {
-              font-size: 0.85rem;
+              font-size: 0.9rem;
+              padding: 0.3rem 0.6rem;
             }
           }
         }
