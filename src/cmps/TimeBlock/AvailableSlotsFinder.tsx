@@ -35,6 +35,12 @@ interface AvailableSlotsFinderProps {
   compact?: boolean;
   selectedSlot?: AvailableSlot | null; // Add controlled selectedSlot prop
   refreshTrigger?: number; // Add refresh trigger prop
+  currentStudentAssignments?: Array<{ // Add current student's assignments for immediate conflict detection
+    teacherId: string;
+    day: string;
+    time: string;
+    duration: number;
+  }>;
 }
 
 type SortOption = 'optimal' | 'earliest' | 'latest' | 'day' | 'duration';
@@ -55,6 +61,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
   compact = false,
   selectedSlot: controlledSelectedSlot = null,
   refreshTrigger = 0,
+  currentStudentAssignments = [],
 }) => {
   const [searchCriteria, setSearchCriteria] = useState<SlotSearchCriteria>({
     ...DEFAULT_SEARCH_CRITERIA,
@@ -88,16 +95,32 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     }));
   }, [initialDuration]);
 
-  // Perform search when criteria changes
+  // Perform search when criteria changes - debounced to prevent excessive calls
   useEffect(() => {
     if (searchCriteria.duration && teacherId) {
-      performSearch();
+      // Only log if debugging is enabled
+      if (process.env.NODE_ENV === 'development') {
+        // Search triggered by criteria or teacher change
+      }
+      
+      // Debounce the search to prevent excessive API calls
+      const searchTimeout = setTimeout(() => {
+        performSearch();
+      }, 300);
+      
+      return () => clearTimeout(searchTimeout);
     }
-  }, [searchCriteria, teacherId, refreshTrigger]);
+  }, [searchCriteria, teacherId]);
 
-  // Notify parent of found slots
+  // Notify parent of found slots - only when actually needed
   useEffect(() => {
-    onSlotsFound?.(availableSlots);
+    if (availableSlots && onSlotsFound) {
+      // Reduce logging frequency
+      if (process.env.NODE_ENV === 'development' && availableSlots.length > 0) {
+        // Available slots updated
+      }
+      onSlotsFound(availableSlots);
+    }
   }, [availableSlots, onSlotsFound]);
 
   // Update recommended slots when store changes
@@ -105,19 +128,55 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     setRecommendedSlots(storeRecommendedSlots);
   }, [storeRecommendedSlots]);
 
-  // Load existing assignments for conflict detection
+  // Load existing assignments for conflict detection - separate from search trigger
   useEffect(() => {
-    if (teacherId) {
-      loadExistingAssignments();
+    if (teacherId && refreshTrigger > 0) {
+      // Assignment refresh triggered
+      // Debounce assignment loading to prevent excessive calls
+      const assignmentTimeout = setTimeout(() => {
+        loadExistingAssignments();
+      }, 100);
+      
+      return () => clearTimeout(assignmentTimeout);
     }
   }, [teacherId, refreshTrigger]);
 
+  // Initial assignment load when teacher changes
+  useEffect(() => {
+    if (teacherId) {
+      // Loading initial assignments
+      loadExistingAssignments();
+    }
+  }, [teacherId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const loadExistingAssignments = async () => {
     try {
-      console.log('Loading existing assignments for teacher:', teacherId);
+      // Reduced logging
+      if (process.env.NODE_ENV === 'development') {
+        // Loading teacher assignments
+      }
       
-      // Get all students
-      const allStudents = await studentService.getStudents();
+      // CRITICAL FIX: Get fresh data from server with explicit filter to ensure all students
+      const allStudents = await studentService.getStudents({}); // Pass empty filter to get all students
+      
+      // Debug: Check if the API call is working
+      if (allStudents.length === 0) {
+        console.warn('⚠️ No students returned from API - trying alternative approach');
+        
+        // FALLBACK: Try to get students from the student store
+        try {
+          // Fallback to student store data
+          // Import and use student store as fallback
+          const { useStudentStore } = await import('../../store/studentStore');
+          const studentStore = useStudentStore.getState();
+          if (studentStore.students.length > 0) {
+            // Using student store data
+            return studentStore.students;
+          }
+        } catch (error) {
+          console.error('❌ Student store fallback failed:', error);
+        }
+      }
       
       // Filter students who have assignments with this teacher
       const assignmentsForTeacher: Array<{
@@ -128,10 +187,17 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
         studentName: string;
       }> = [];
 
-      allStudents.forEach((student: Student) => {
-        if (student.teacherAssignments) {
+      (allStudents || []).forEach((student: Student) => {
+        if (student.teacherAssignments && Array.isArray(student.teacherAssignments)) {
           student.teacherAssignments.forEach(assignment => {
-            if (assignment.teacherId === teacherId && assignment.isActive !== false) {
+            // CRITICAL FIX: Check for active assignments more thoroughly
+            if (assignment.teacherId === teacherId && 
+                assignment.isActive !== false && 
+                assignment.day && 
+                assignment.time && 
+                assignment.duration) {
+              // Found active assignment
+              
               assignmentsForTeacher.push({
                 day: assignment.day,
                 time: assignment.time,
@@ -144,10 +210,15 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
         }
       });
 
-      console.log('Found existing assignments:', assignmentsForTeacher);
+      // Assignments loaded successfully
+      
       setExistingAssignments(assignmentsForTeacher);
+      
+      // Assignments set, conflict detection will update
     } catch (error) {
-      console.error('Failed to load existing assignments:', error);
+      console.error('❌ ASSIGNMENT LOAD FAILED:', error);
+      // Set empty array on error to prevent infinite loading
+      setExistingAssignments([]);
     }
   };
 
@@ -167,7 +238,13 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
       return false;
     }
 
-    const slotStartTime = slot.possibleStartTime || '';
+    const slotStartTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || '';
+    
+    if (!slotStartTime) {
+      // No start time found for slot
+      return false;
+    }
+    
     const slotStart = timeToMinutes(slotStartTime);
     const slotEnd = slotStart + slot.duration;
     
@@ -175,28 +252,40 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     const assignmentEnd = assignmentStart + assignment.duration;
 
     // Check for overlap: slots conflict if they overlap at all
-    return (slotStart < assignmentEnd && slotEnd > assignmentStart);
+    const hasOverlap = (slotStart < assignmentEnd && slotEnd > assignmentStart);
+    
+    if (hasOverlap) {
+      // Time overlap detected
+    }
+    
+    return hasOverlap;
   };
 
   const performSearch = async () => {
+    if (!teacherId || !searchCriteria.duration) {
+      // Search skipped: missing required parameters
+      return;
+    }
+
     try {
       setIsSearching(true);
-      console.log('AvailableSlotsFinder - performSearch called with criteria:', searchCriteria);
-      console.log('AvailableSlotsFinder - criteria keys:', Object.keys(searchCriteria));
+      // Starting slot search
       if ('schoolYearId' in searchCriteria) {
         console.error('CONTAMINATION DETECTED in AvailableSlotsFinder - criteria contains schoolYearId:', searchCriteria);
         console.trace();
       }
       await findAvailableSlots(teacherId, searchCriteria);
+      // Note: availableSlots will be updated asynchronously by the store
+      // Slot search completed
     } catch (error) {
-      console.error('Failed to search for available slots:', error);
+      console.error('❌ SEARCH FAILED:', error);
     } finally {
       setIsSearching(false);
     }
   };
 
   const updateSearchCriteria = (updates: Partial<SlotSearchCriteria>) => {
-    console.log('updateSearchCriteria called with:', updates);
+    // Search criteria updated
     if ('schoolYearId' in updates) {
       console.error('CONTAMINATION DETECTED: schoolYearId in updates', updates);
       console.trace(); // This will show the call stack
@@ -214,34 +303,75 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
   };
 
   const handleSlotClick = (slot: AvailableSlot) => {
-    console.log('🎯 handleSlotClick called for slot:', slot.day, slot.possibleStartTime);
-    console.log('🎯 Previous selectedSlot:', controlledSelectedSlot);
-    console.log('🎯 Will call onSlotSelect with:', slot);
+    const slotTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime;
+    // Slot clicked
     onSlotSelect?.(slot);
-    console.log('✅ onSlotSelect called - parent will update selectedSlot');
+    // Slot selection handled
   };
 
-  // Sort and filter slots based on current criteria
+  // Sort and filter slots based on current criteria - optimized to prevent excessive re-renders
   const processedSlots = useMemo(() => {
+    // Minimal logging to reduce performance impact
+    const shouldLog = process.env.NODE_ENV === 'development' && 
+                     (availableSlots?.length > 0 || existingAssignments.length > 0);
+    
+    if (shouldLog) {
+      // Processing slots with conflict detection
+    }
+    
     // Ensure availableSlots is an array before processing
     if (!availableSlots || !Array.isArray(availableSlots)) {
+      console.warn('Available slots is not an array:', typeof availableSlots);
       return [];
     }
     
     let slots = [...availableSlots];
+    // Reduced logging frequency
+    if (shouldLog && availableSlots?.length > 0) {
+      // Processing available slots
+    }
     
-    // CRITICAL FIX: Filter out slots that conflict with existing assignments
-    slots = slots.filter(slot => {
-      const hasConflict = existingAssignments.some(assignment => 
-        hasTimeConflict(slot, assignment)
-      );
-      
-      if (hasConflict) {
-        console.log(`🚫 Filtering out conflicting slot: ${slot.day} ${slot.possibleStartTime} - conflicts with existing assignment`);
+    // CRITICAL FIX: Filter out slots that conflict with existing assignments OR current student assignments
+    const allConflictSources = [
+      ...existingAssignments.map(a => ({ ...a, source: 'database' })),
+      ...currentStudentAssignments
+        .filter(a => a.teacherId === teacherId)
+        .map(a => ({ 
+          day: a.day, 
+          time: a.time, 
+          duration: a.duration, 
+          studentName: 'Current Student', 
+          source: 'current-form' 
+        }))
+    ];
+    
+    if (allConflictSources.length > 0) {
+      // Only log detailed conflict info when needed
+      if (shouldLog) {
+        // Checking for conflicts
       }
       
-      return !hasConflict;
-    });
+      slots = slots.filter(slot => {
+        const slotTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime;
+        
+        const hasConflict = allConflictSources.some(assignment => {
+          const conflict = hasTimeConflict(slot, assignment);
+          
+          // Only log conflicts when debugging specific issues
+          if (conflict && shouldLog && process.env.NODE_ENV === 'development') {
+            // Conflict detected
+          }
+          
+          return conflict;
+        });
+        
+        return !hasConflict;
+      });
+      
+      if (shouldLog) {
+        // Conflict filtering completed
+      }
+    }
     
     // Apply additional client-side filtering if needed
     if (searchCriteria.preferredDays?.length) {
@@ -251,8 +381,8 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     if (searchCriteria.preferredTimeRange) {
       const { startTime, endTime } = searchCriteria.preferredTimeRange;
       slots = slots.filter(slot => {
-        const slotStartTime = slot.possibleStartTime || '';
-        const slotEndTime = slot.possibleEndTime || '';
+        const slotStartTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || '';
+        const slotEndTime = slot.possibleEndTime || (slot as any).endTime || (slot as any).lessonEndTime || '';
         return slotStartTime >= startTime && slotEndTime <= endTime;
       });
     }
@@ -261,7 +391,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     slots.sort((a, b) => b.optimalScore - a.optimalScore);
     
     return slots;
-  }, [availableSlots, searchCriteria, existingAssignments]);
+  }, [availableSlots, searchCriteria, existingAssignments, currentStudentAssignments, teacherId]);
 
   // Group slots by day for better organization
   const slotsByDay = useMemo(() => {
@@ -393,26 +523,29 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
             המלצות מתקדמות
           </h4>
           <div className="suggestion-slots">
-            {recommendedSlots.slice(0, 3).map((slot, index) => (
-              <div
-                key={`recommended-${slot.timeBlockId}-${slot.possibleStartTime || 'unknown'}-${index}`}
-                className={`suggestion-slot optimal ${
-                  controlledSelectedSlot?.timeBlockId === slot.timeBlockId &&
-                  controlledSelectedSlot?.possibleStartTime === slot.possibleStartTime
-                    ? 'selected'
-                    : ''
-                }`}
+            {recommendedSlots.slice(0, 3).map((slot, index) => {
+              const slotTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || 'unknown';
+              const uniqueKey = `recommended-${slot.timeBlockId || 'noId'}-${slot.day}-${slotTime}-${slot.duration}-${index}`;
+              return (
+                <div
+                  key={uniqueKey}
+                  className={`suggestion-slot optimal ${
+                    controlledSelectedSlot?.timeBlockId === slot.timeBlockId &&
+                    (controlledSelectedSlot?.possibleStartTime || (controlledSelectedSlot as any)?.startTime) === slotTime
+                      ? 'selected'
+                      : ''
+                  }`}
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
-                  console.log('🎯 Optimal suggestion clicked:', slot.day, slot.possibleStartTime);
+                  // Optimal suggestion selected
                   handleSlotClick(slot);
                 }}
               >
                 <div className="slot-rank">#{index + 1}</div>
                 <div className="slot-info">
                   <div className="slot-day-time">
-                    {slot.day} • {slot.possibleStartTime}
+                    {slot.day} • {slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || 'N/A'}
                   </div>
                   <div className="slot-score">
                     ציון: {slot.optimalScore}/100
@@ -422,7 +555,8 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
                   <ArrowRight size={14} />
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -430,21 +564,32 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
   };
 
   const renderSlotCard = (slot: AvailableSlot) => {
-    // Use possibleStartTime and possibleEndTime from AvailableSlot interface
-    const slotStartTime = slot.possibleStartTime;
-    const slotEndTime = slot.possibleEndTime;
-    const selectedStartTime = controlledSelectedSlot?.possibleStartTime;
+    // REMOVED: Excessive debug logging that was causing performance issues
+    // Only log when specifically debugging slot selection
+    // console.log('🕰️ Complete slot object:', slot);
+    // console.log('🕰️ Available properties:', Object.keys(slot));
+    
+    // Check for different possible property names
+    const slotStartTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime;
+    let slotEndTime = slot.possibleEndTime || (slot as any).endTime || (slot as any).lessonEndTime;
+    
+    // If we don't have end time but we have start time and duration, calculate it
+    if (!slotEndTime && slotStartTime && slot.duration) {
+      const startParts = slotStartTime.split(':');
+      const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
+      const endMinutes = startMinutes + slot.duration;
+      const endHours = Math.floor(endMinutes / 60);
+      const endMins = endMinutes % 60;
+      slotEndTime = `${endHours.toString().padStart(2, '0')}:${endMins.toString().padStart(2, '0')}`;
+    }
+    const selectedStartTime = controlledSelectedSlot?.possibleStartTime || (controlledSelectedSlot as any)?.startTime;
     
     const isSelected = controlledSelectedSlot?.timeBlockId === slot.timeBlockId &&
                       selectedStartTime === slotStartTime;
     
-    // Debug slot data
-    console.log('🕰️ Slot data:', {
-      day: slot.day,
-      possibleStartTime: slot.possibleStartTime,
-      possibleEndTime: slot.possibleEndTime,
-      duration: slot.duration
-    });
+    // REMOVED: Excessive debug logging that was causing performance issues
+    // Only enable when specifically debugging slot properties
+    // console.log('🕰️ Slot time properties:', { ... });
     
     return (
       <div
@@ -481,7 +626,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log('🎯 Slot select button clicked for:', slot.day, slot.possibleStartTime);
+              // Slot selected
               handleSlotClick(slot);
             }}
           >
@@ -534,11 +679,15 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
       // Compact view - show as simple list
       return (
         <div className="slots-list compact">
-          {processedSlots.map((slot, index) => (
-            <div key={`slot-${slot.timeBlockId}-${slot.possibleStartTime || 'unknown'}-${index}`}>
-              {renderSlotCard(slot)}
-            </div>
-          ))}
+          {processedSlots.map((slot, index) => {
+            const slotTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || 'unknown';
+            const uniqueKey = `compact-slot-${slot.timeBlockId || 'noId'}-${slot.day}-${slotTime}-${slot.duration}-${index}`;
+            return (
+              <div key={uniqueKey}>
+                {renderSlotCard(slot)}
+              </div>
+            );
+          })}
         </div>
       );
     }
@@ -554,11 +703,15 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
               <span className="day-count">({daySlots.length} זמינות)</span>
             </h4>
             <div className="day-slots">
-              {daySlots.map((slot, index) => (
-                <div key={`day-slot-${slot.timeBlockId}-${slot.possibleStartTime || 'unknown'}-${index}`}>
-                  {renderSlotCard(slot)}
-                </div>
-              ))}
+              {daySlots.map((slot, index) => {
+                const slotTime = slot.possibleStartTime || (slot as any).startTime || (slot as any).lessonStartTime || 'unknown';
+                const uniqueKey = `grouped-slot-${slot.timeBlockId || 'noId'}-${slot.day}-${slotTime}-${slot.duration}-${index}`;
+                return (
+                  <div key={uniqueKey}>
+                    {renderSlotCard(slot)}
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

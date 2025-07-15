@@ -78,19 +78,19 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
   };
 
-  // Initialize lesson assignments from form data
+  // Initialize lesson assignments from form data with improved persistence
   useEffect(() => {
-    console.log('🔄 StudentLessonScheduler: values.teacherAssignments changed:', values.teacherAssignments);
-    console.log('🔄 StudentLessonScheduler: values.teacherIds:', values.teacherIds);
-    
     if (values.teacherAssignments && values.teacherAssignments.length > 0) {
       const assignments: LessonAssignment[] = values.teacherAssignments.map((assignment, index) => {
         const startTime = assignment.time || '';
         const duration = (assignment.duration as LessonDurationMinutes) || 60;
         const endTime = calculateEndTime(startTime, duration);
         
+        // Create unique ID using index, teacherId, day, and time to ensure uniqueness
+        const uniqueId = `${assignment.teacherId}-${assignment.day}-${assignment.time}-${index}`;
+        
         return {
-          id: assignment.scheduleSlotId || `assignment-${index}`,
+          id: uniqueId,
           teacherId: assignment.teacherId,
           teacherName: getTeacherName(assignment.teacherId),
           instrument: getTeacherInstrument(assignment.teacherId),
@@ -104,13 +104,28 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
           notes: assignment.notes
         };
       });
-      console.log('🔄 StudentLessonScheduler: Setting lesson assignments from form:', assignments);
-      setLessonAssignments(assignments);
-    } else {
-      console.log('🔄 StudentLessonScheduler: No teacherAssignments in form, clearing local assignments');
-      setLessonAssignments([]);
+      
+      // Only update if assignments actually changed to prevent loops
+      if (JSON.stringify(assignments) !== JSON.stringify(lessonAssignments)) {
+        setLessonAssignments(assignments);
+      }
+    } else if (lessonAssignments.length > 0) {
+      // Only clear local assignments if form is actually empty and not being updated
+      setTimeout(() => {
+        if (values.teacherAssignments.length === 0) {
+          setLessonAssignments([]);
+        }
+      }, 50);
     }
   }, [values.teacherAssignments]);
+
+  // Debug logging useEffect
+  useEffect(() => {
+    console.log('🔍 Form data synchronization check:');
+    console.log('📝 Form teacherAssignments:', values.teacherAssignments?.length || 0);
+    console.log('🎯 Local assignments:', lessonAssignments.length);
+    console.log('👨‍🏫 Teacher IDs in form:', values.teacherIds?.length || 0);
+  }, [values.teacherAssignments, lessonAssignments, values.teacherIds]);
 
   // Get teacher name by ID
   const getTeacherName = (teacherId: string): string => {
@@ -139,16 +154,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Handle slot selection from AvailableSlotsFinder
   const handleSlotSelect = (slot: AvailableSlot) => {
-    console.log('📍 StudentLessonScheduler.handleSlotSelect called with slot:', slot);
-    console.log('📍 Available slot properties:', Object.keys(slot));
-    console.log('📍 possibleStartTime:', slot.possibleStartTime, 'possibleEndTime:', slot.possibleEndTime);
-    console.log('📍 Previous selectedSlot:', selectedSlot);
     setSelectedSlot(slot);
-    console.log('📍 selectedSlot state will be updated to:', slot);
     
     // Check if the slot has the required properties
     if (!slot.timeBlockId || !slot.possibleStartTime) {
-      console.warn('⚠️ Selected slot is missing timeBlockId or time properties:', {
+      console.warn('⚠️ Selected slot is missing required properties:', {
         timeBlockId: slot.timeBlockId,
         possibleStartTime: slot.possibleStartTime
       });
@@ -157,25 +167,15 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Add lesson assignment
   const handleAddLesson = () => {
-    console.log('🎯 handleAddLesson called!');
-    console.log('selectedSlot:', selectedSlot);
-    console.log('selectedTeacherId:', selectedTeacherId);
-    
     if (!selectedSlot || !selectedTeacherId) {
       console.log('❌ Missing selectedSlot or selectedTeacherId');
       return;
     }
 
     // Get the actual start and end times from the slot
-    const startTime = selectedSlot.possibleStartTime;
-    const endTime = selectedSlot.possibleEndTime;
-    
-    console.log('🕐 Time extraction:', {
-      possibleStartTime: selectedSlot.possibleStartTime,
-      finalStartTime: startTime,
-      possibleEndTime: selectedSlot.possibleEndTime,
-      finalEndTime: endTime
-    });
+    // Handle different property names for time
+    const startTime = selectedSlot.possibleStartTime || (selectedSlot as any).startTime || (selectedSlot as any).lessonStartTime;
+    const endTime = selectedSlot.possibleEndTime || (selectedSlot as any).endTime || (selectedSlot as any).lessonEndTime;
 
     if (!startTime) {
       console.error('❌ No start time available in slot:', selectedSlot);
@@ -184,7 +184,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     }
 
     const newAssignment: LessonAssignment = {
-      id: `lesson-${Date.now()}`,
+      id: `${selectedTeacherId}-${selectedSlot.day}-${startTime}-${Date.now()}`,
       teacherId: selectedTeacherId,
       teacherName: getTeacherName(selectedTeacherId),
       instrument: getTeacherInstrument(selectedTeacherId),
@@ -198,8 +198,6 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
       status: 'pending',
       notes: ''
     };
-
-    console.log('📝 Created newAssignment:', newAssignment);
 
     const updatedAssignments = [...lessonAssignments, newAssignment];
     setLessonAssignments(updatedAssignments);
@@ -216,11 +214,9 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
         notes: assignment.notes || ''
       }));
 
-    console.log('📋 Form assignments to set:', formAssignments);
-
     try {
       setFieldValue('teacherAssignments', formAssignments);
-      console.log('✅ setFieldValue(teacherAssignments) called successfully');
+      console.log('✅ Added lesson assignment successfully');
     } catch (error) {
       console.error('❌ setFieldValue(teacherAssignments) failed:', error);
     }
@@ -229,20 +225,24 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     const teacherIds = [...new Set(updatedAssignments.map(a => a.teacherId))];
     try {
       setFieldValue('teacherIds', teacherIds);
-      console.log('✅ setFieldValue(teacherIds) called successfully');
     } catch (error) {
       console.error('❌ setFieldValue(teacherIds) failed:', error);
     }
 
-    console.log('✅ Updated form values - teacherAssignments:', formAssignments.length, 'items');
-    console.log('✅ Updated teacherIds:', teacherIds);
-
-    // Check current form values after update
-    setTimeout(() => {
-      console.log('🔍 Current form values.teacherAssignments:', values.teacherAssignments);
-      console.log('🔍 Current form values.teacherIds:', values.teacherIds);
-      console.log('🔍 Local lessonAssignments state:', lessonAssignments);
-    }, 100);
+    // Validate form data persistence without setTimeout to avoid race conditions
+    const validateFormData = () => {
+      if (values.teacherAssignments.length === 0 && formAssignments.length > 0) {
+        console.log('🚨 FORM DATA LOST! Restoring assignments immediately...');
+        setFieldValue('teacherAssignments', formAssignments);
+        setFieldValue('teacherIds', teacherIds);
+      }
+    };
+    
+    // Immediate validation
+    validateFormData();
+    
+    // Backup validation after a short delay
+    setTimeout(validateFormData, 50);
 
     // Reset selection
     setSelectedSlot(null);
@@ -250,9 +250,10 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     setShowSlotFinder(false);
     setShowTeacherSelect(false);
     
-    // CRITICAL FIX: Trigger refresh of available slots to update conflict detection
-    setRefreshTrigger(prev => prev + 1);
-    console.log('🔄 Triggered slot refresh to update conflict detection');
+    // Trigger refresh to update conflict detection
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+    }, 200);
   };
 
   // Remove lesson assignment
@@ -263,33 +264,63 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Confirm removal
   const confirmRemoveLesson = () => {
+    console.log('🗑️ Removing assignment with ID:', assignmentToRemove);
+    console.log('📋 Current assignments before removal:', lessonAssignments.map(a => ({ id: a.id, teacher: a.teacherName, time: a.startTime })));
+    
+    // Find the specific assignment to remove from the local state
+    const assignmentToRemoveData = lessonAssignments.find(a => a.id === assignmentToRemove);
+    if (!assignmentToRemoveData) {
+      console.error('❌ Assignment to remove not found:', assignmentToRemove);
+      return;
+    }
+    
+    console.log('🎯 Found assignment to remove:', {
+      teacher: assignmentToRemoveData.teacherName,
+      day: assignmentToRemoveData.day,
+      time: assignmentToRemoveData.startTime
+    });
+
+    // Remove from local state
     const updatedAssignments = lessonAssignments.filter(a => a.id !== assignmentToRemove);
     setLessonAssignments(updatedAssignments);
 
-    // Update form data - ensure all required fields are present
-    const formAssignments = updatedAssignments
-      .filter(assignment => assignment.startTime) // Only include assignments with valid start times
-      .map(assignment => ({
-        teacherId: assignment.teacherId,
-        scheduleSlotId: assignment.timeBlockId,
-        day: assignment.day,
-        time: assignment.startTime,
-        duration: assignment.duration || 60,
-        notes: assignment.notes || ''
-      }));
+    // Find the corresponding assignment in the form data by matching teacherId, day, and time
+    const currentFormAssignments = values.teacherAssignments || [];
+    const updatedFormAssignments = currentFormAssignments.filter(formAssignment => {
+      const matches = formAssignment.teacherId === assignmentToRemoveData.teacherId &&
+                     formAssignment.day === assignmentToRemoveData.day &&
+                     formAssignment.time === assignmentToRemoveData.startTime;
+      
+      if (matches) {
+        console.log('🎯 Removing form assignment:', {
+          teacher: formAssignment.teacherId,
+          day: formAssignment.day,
+          time: formAssignment.time
+        });
+      }
+      
+      return !matches;
+    });
 
-    setFieldValue('teacherAssignments', formAssignments);
+    console.log('📝 Updated form assignments:', updatedFormAssignments.length, 'remaining');
+    setFieldValue('teacherAssignments', updatedFormAssignments);
 
-    // Update teacherIds
-    const teacherIds = [...new Set(updatedAssignments.map(a => a.teacherId))];
+    // Update teacherIds - only include teachers that still have assignments
+    const teacherIds = [...new Set(updatedFormAssignments.map(a => a.teacherId))];
+    console.log('👨‍🏫 Updated teacher IDs:', teacherIds);
     setFieldValue('teacherIds', teacherIds);
 
     setConfirmDialogOpen(false);
     setAssignmentToRemove('');
     
-    // CRITICAL FIX: Trigger refresh of available slots to update conflict detection
-    setRefreshTrigger(prev => prev + 1);
-    console.log('🔄 Triggered slot refresh after lesson removal');
+    console.log('🗑️ Lesson removed. Updated assignments:', updatedFormAssignments.length);
+    console.log('🗑️ Updated teacherIds:', teacherIds);
+    
+    // CRITICAL FIX: Trigger refresh with delay to ensure form data is persisted
+    setTimeout(() => {
+      setRefreshTrigger(prev => prev + 1);
+      console.log('🔄 Triggered delayed slot refresh after lesson removal');
+    }, 500); // Give time for form to auto-save or update
   };
 
   // Group assignments by teacher
@@ -347,7 +378,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
                 </div>
                 
                 <div className="lessons-list">
-                  {assignments.map((assignment) => (
+                  {assignments.map((assignment, assignmentIndex) => (
                     <div key={assignment.id} className={`lesson-card ${assignment.status}`}>
                       <div className="lesson-main-info">
                         <div className="lesson-time">
@@ -525,6 +556,12 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
             selectedSlot={selectedSlot}
             refreshTrigger={refreshTrigger}
             showAdvancedFilters={showAdvancedFilters}
+            currentStudentAssignments={lessonAssignments.map(assignment => ({
+              teacherId: assignment.teacherId,
+              day: assignment.day,
+              time: assignment.startTime,
+              duration: assignment.duration
+            }))}
             key={`${selectedTeacherId}-${selectedDuration}-${refreshTrigger}`}
           />
           
@@ -542,7 +579,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
                 <div className="preview-item">
                   <Clock size={14} />
                   <span>
-                    {selectedSlot.possibleStartTime} - {selectedSlot.possibleEndTime}
+                    {(() => {
+                      const startTime = selectedSlot.possibleStartTime || (selectedSlot as any).startTime || (selectedSlot as any).lessonStartTime;
+                      const endTime = selectedSlot.possibleEndTime || (selectedSlot as any).endTime || (selectedSlot as any).lessonEndTime || (startTime ? calculateEndTime(startTime, selectedSlot.duration) : '');
+                      return startTime && endTime ? `${startTime} - ${endTime}` : 'זמן לא זמין';
+                    })()}
                   </span>
                 </div>
                 <div className="preview-item">

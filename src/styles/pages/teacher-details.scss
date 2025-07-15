@@ -289,7 +289,145 @@
   background-color: var(--bg-tertiary);
 }
 
-/* Student card grid (for teachers) */
+/* Compact Students Overview - Teacher Dashboard */
+.compact-students-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.compact-student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.compact-student-row:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.1);
+  transform: translateY(-1px);
+}
+
+/* Student Info Section */
+.student-info-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 60%;
+}
+
+.student-avatar-compact {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.student-details-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.student-name-compact {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.student-instrument-compact {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Lessons Section */
+.lessons-compact {
+  display: flex;
+  align-items: center;
+  flex: 0 1 auto;
+  min-width: 0;
+  justify-content: flex-end;
+}
+
+.lessons-list-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.lesson-item-compact {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.4rem;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.lesson-day-compact {
+  font-weight: 600;
+  color: var(--primary-color);
+  min-width: auto;
+  font-size: 0.85rem;
+}
+
+.lesson-time-compact {
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+}
+
+.lesson-duration-compact {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.more-lessons-compact {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+}
+
+.no-lessons-compact {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+
+/* Legacy student card styles - keep for backward compatibility */
 .students-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -318,20 +456,6 @@
   transform: translateY(-2px);
 }
 
-.student-avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background-color: var(--primary-color);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-  flex-shrink: 0;
-}
-
 .student-info {
   flex: 1;
   min-width: 0;
@@ -339,37 +463,19 @@
   flex-direction: column;
 }
 
-.student-name {
-  font-weight: 500;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 0.9rem;
-}
-
-.student-instrument {
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-}
-
 /* Orchestra grid */
 .orchestras-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 0.75rem;
 }
 
 .orchestra-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  background-color: rgba(var(--primary-color-rgb), 0.1);
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+  background-color: var(--bg-light);
+  border-radius: 6px;
+  padding: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
   transition: all 0.2s ease;
 }
 
@@ -378,22 +484,65 @@
 }
 
 .orchestra-card.clickable:hover {
-  background-color: rgba(var(--primary-color-rgb), 0.15);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
 }
 
-.orchestra-card svg {
-  color: var(--primary-color);
+.orchestra-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
 }
 
-.orchestra-card span {
-  text-align: center;
+.orchestra-name {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 500;
+  color: var(--primary-color);
+  
+  svg {
+    color: var(--primary-color);
+  }
 }
 
 .orchestra-type {
   font-size: 0.8rem;
   color: var(--text-secondary);
+  margin-left: 0.25rem;
+}
+
+.orchestra-details {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  
+  .rehearsal-time, .location, .member-count {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    svg {
+      flex-shrink: 0;
+      color: var(--text-secondary);
+    }
+  }
+  
+  .rehearsal-time {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  .status-inactive {
+    color: var(--danger-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
 }
 
 /* Information grid layout */
@@ -601,10 +750,66 @@
     grid-template-columns: 1fr;
   }
   
-  .students-grid,
-  .orchestras-grid {
+  .students-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
+
+  .compact-students-overview {
+    gap: 0.4rem;
+  }
+  
+  .compact-student-row {
+    padding: 0.5rem;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .student-info-compact {
+    gap: 0.5rem;
+    max-width: 50%;
+  }
+
+  .student-avatar-compact {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
+  .student-name-compact {
+    font-size: 0.85rem;
+  }
+
+  .student-instrument-compact {
+    font-size: 0.7rem;
+  }
+
+  .lessons-compact {
+    justify-content: flex-end;
+  }
+
+  .lessons-list-compact {
+    justify-content: flex-end;
+    gap: 0.2rem;
+  }
+
+  .lesson-item-compact {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+
+  .lesson-day-compact {
+    font-size: 0.8rem;
+  }
+
+  .lesson-time-compact {
+    font-size: 0.75rem;
+  }
+
+  .lesson-duration-compact {
+    font-size: 0.7rem;
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -649,8 +854,7 @@
     padding: 0.6rem 1.25rem;
   }
   
-  .students-grid,
-  .orchestras-grid {
+  .students-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.4rem;
   }

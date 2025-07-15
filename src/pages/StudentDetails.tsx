@@ -30,6 +30,7 @@ export function StudentDetails() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+    navigateToStudentEdit,
     teachersData,
     teachersLoading,
     teachersError,
@@ -150,10 +151,7 @@ export function StudentDetails() {
                   student={student}
                   isOpen={openSections.schedule}
                   onToggle={() => toggleSection('schedule')}
-                  onEditSchedule={() => {
-                    // Navigate to student edit form
-                    window.location.href = `/students/${student._id}/edit`;
-                  }}
+                  onEditSchedule={navigateToStudentEdit}
                 />
 
                 <OrchestrasSection

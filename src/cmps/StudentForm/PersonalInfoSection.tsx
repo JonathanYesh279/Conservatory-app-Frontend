@@ -36,7 +36,7 @@ export function PersonalInfoSection() {
           name="academicInfo.class"
           as="select"
           required
-          style={{ flex: '0.8' }}
+          className="class-select"
         >
           {VALID_CLASSES.map((grade) => (
             <option key={grade} value={grade}>
@@ -61,7 +61,7 @@ export function PersonalInfoSection() {
           name="personalInfo.age"
           as="select"
           required
-          style={{ flex: '0.6' }}
+          className="age-select"
         >
           <option value="">בחר גיל</option>
           {Array.from({ length: 97 }, (_, i) => i + 3).map((age) => (

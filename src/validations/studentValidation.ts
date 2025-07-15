@@ -3,7 +3,7 @@ import * as Yup from 'yup';
 import {
   VALID_CLASSES,
   VALID_INSTRUMENTS,
-  TEST_STATUSES,
+  EXTENDED_TEST_STATUSES,
   DAYS_OF_WEEK,
   LESSON_DURATIONS,
 } from '../constants/formConstants';
@@ -21,13 +21,13 @@ const instrumentProgressSchema = Yup.object({
     .max(8, 'שלב חייב להיות מספר בין 1 ל-8'),
   tests: Yup.object({
     stageTest: Yup.object({
-      status: Yup.string().oneOf(TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+      status: Yup.string().oneOf(EXTENDED_TEST_STATUSES, 'סטטוס מבחן לא תקין'),
       notes: Yup.string(),
       lastTestDate: Yup.date().nullable(),
       nextTestDate: Yup.date().nullable(),
     }),
     technicalTest: Yup.object({
-      status: Yup.string().oneOf(TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+      status: Yup.string().oneOf(EXTENDED_TEST_STATUSES, 'סטטוס מבחן לא תקין'),
       notes: Yup.string(),
       lastTestDate: Yup.date().nullable(),
       nextTestDate: Yup.date().nullable(),

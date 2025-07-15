@@ -203,8 +203,24 @@ export const studentService = {
       delete updateData._id;
     }
 
+    // Remove read-only fields from teacherAssignments to prevent backend validation errors
+    if (updateData.teacherAssignments) {
+      updateData.teacherAssignments = updateData.teacherAssignments.map((assignment: any) => {
+        const { createdAt, updatedAt, ...cleanAssignment } = assignment;
+        return cleanAssignment;
+      });
+    }
+
+    // Remove read-only fields from theoryLessonAssignments if they exist
+    if (updateData.theoryLessonAssignments) {
+      updateData.theoryLessonAssignments = updateData.theoryLessonAssignments.map((assignment: any) => {
+        const { createdAt, updatedAt, ...cleanAssignment } = assignment;
+        return cleanAssignment;
+      });
+    }
+
     console.log(`Updating student with ID: ${studentId}`);
-    console.log('Update data:', updateData);
+    console.log('Clean update data:', updateData);
 
     // Use PUT method for updating
     return httpService.put(`student/${studentId}`, updateData);

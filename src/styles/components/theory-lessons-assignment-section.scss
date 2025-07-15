@@ -35,6 +35,17 @@
         padding: 0.75rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         border: 1px solid var(--border-color);
+        transition: all 0.2s ease;
+        
+        &.clickable {
+          cursor: pointer;
+          
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-color);
+          }
+        }
         
         .assignment-header {
           display: flex;
@@ -78,8 +89,21 @@
           font-size: 0.9rem;
           color: var(--text-muted);
           
-          .day-time, .location {
+          .teacher-name, .day-time, .location {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             margin-bottom: 0.25rem;
+            
+            svg {
+              flex-shrink: 0;
+              color: var(--text-secondary);
+            }
+          }
+          
+          .teacher-name {
+            color: var(--text-secondary);
+            font-weight: 500;
           }
         }
       }
@@ -157,6 +181,100 @@
             width: 100%;
           }
         }
+      }
+    }
+  }
+  
+  .form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    width: 100%;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    
+    label {
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      text-align: right;
+    }
+    
+    select {
+      background-color: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      color: var(--text-primary);
+      padding: 0.4rem 0.5rem;
+      width: 100%;
+      font-size: 0.8rem;
+      text-align: right;
+      line-height: 1.2;
+      max-height: 2.5rem;
+      
+      option {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        padding: 0.25rem 0.5rem;
+        color: var(--text-primary);
+        background-color: var(--bg-input);
+      }
+      
+      optgroup {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        background-color: var(--bg-secondary);
+        padding: 0.25rem;
+        
+        option {
+          font-size: 0.7rem;
+          font-weight: normal;
+          color: var(--text-primary);
+          padding-right: 1rem;
+          line-height: 1.4;
+        }
+      }
+      
+      &:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+      
+      &[disabled] {
+        background-color: var(--bg-disabled);
+        color: var(--text-disabled);
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  .loading-indicator {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  /* Media queries */
+  @media (max-width: 768px) {
+    .form-row {
+      gap: 0.5rem;
+    }
+    
+    select {
+      font-size: 0.75rem;
+      
+      option {
+        font-size: 0.7rem;
+      }
+      
+      optgroup option {
+        font-size: 0.65rem;
       }
     }
   }

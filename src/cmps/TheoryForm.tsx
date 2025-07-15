@@ -9,6 +9,7 @@ import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 import { useStudentStore } from '../store/studentStore';
+// Removed Toast import - error handling is now done by parent component
 import { 
   TheoryLessonValidationSchema, 
   TheoryBulkValidationSchema,
@@ -49,10 +50,10 @@ export function TheoryForm({
   // Store hooks
   const { currentSchoolYear, loadCurrentSchoolYear } = useSchoolYearStore();
   const { students, saveStudent, loadStudents } = useStudentStore();
+  // Error handling is now done by parent component via onSubmit/onBulkSubmit
   
   // Form state
   const [formMode, setFormMode] = useState<'single' | 'bulk'>('single');
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [excludedDate, setExcludedDate] = useState('');
   
   // Student selection state
@@ -135,7 +136,7 @@ export function TheoryForm({
         console.log('Loaded school year:', schoolYear);
       } catch (error) {
         console.error('Failed to load school year:', error);
-        setSubmitError('Failed to load school year. Please try again.');
+        // Error will be handled by parent component
       }
     };
 
@@ -249,12 +250,10 @@ export function TheoryForm({
   // Handle form submission for single theory lesson
   const handleSingleSubmit = async (values: TheoryFormValues) => {
     try {
-      setSubmitError(null);
       // Ensure school year ID is set
       const schoolYearId = values.schoolYearId || currentSchoolYear?._id;
       if (!schoolYearId) {
-        setSubmitError('שנת הלימודים לא נטענה. אנא רענן את הדף.');
-        return;
+        throw new Error('שנת הלימודים לא נטענה. אנא רענן את הדף.');
       }
 
       // Update the school year ID in values
@@ -274,11 +273,7 @@ export function TheoryForm({
         );
       }
     } catch (error) {
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'אירעה שגיאה בשמירת שיעור התאוריה'
-      );
+      // Error handling is now done by the parent component via Toast
       throw error;
     }
   };
@@ -287,14 +282,10 @@ export function TheoryForm({
   const handleBulkSubmit = async (values: BulkTheoryFormValues) => {
     try {
       console.log('Bulk submit handler called with values:', values);
-      setSubmitError(null);
       // Ensure school year ID is set
       const schoolYearId = values.schoolYearId || currentSchoolYear?._id;
       if (!schoolYearId) {
-        const error = 'שנת הלימודים לא נטענה. אנא רענן את הדף.';
-        console.error(error);
-        setSubmitError(error);
-        return;
+        throw new Error('שנת הלימודים לא נטענה. אנא רענן את הדף.');
       }
 
       // Prepare data for bulk creation
@@ -309,11 +300,7 @@ export function TheoryForm({
       console.log('Bulk creation completed successfully');
     } catch (error) {
       console.error('Error in handleBulkSubmit:', error);
-      setSubmitError(
-        error instanceof Error
-          ? error.message
-          : 'אירעה שגיאה ביצירת שיעורי התאוריה'
-      );
+      // Error handling is now done by the parent component via Toast
       throw error;
     }
   };
@@ -367,7 +354,7 @@ export function TheoryForm({
           }
         </h2>
 
-        {submitError && <div className='error-message'>{submitError}</div>}
+        {/* Error messages are now handled via Toast notifications */}
 
         {/* Mode Toggle */}
         {!theoryLesson?._id && (
@@ -686,7 +673,7 @@ export function TheoryForm({
                 onClose();
               } catch (err) {
                 console.error('Bulk submit failed:', err);
-                setSubmitError(err instanceof Error ? err.message : 'Unknown error occurred');
+                // Error will be handled by parent component
               } finally {
                 actions.setSubmitting(false);
               }
@@ -702,7 +689,7 @@ export function TheoryForm({
                   handleSubmit(e);
                 }}
               >
-                {submitError && <div className='error-message'>{submitError}</div>}
+                {/* Error messages are now handled via Toast notifications */}
                 {/* Theory Information */}
                 <div className='form-section'>
                   <h3>פרטי שיעור תאוריה</h3>
@@ -979,7 +966,7 @@ export function TheoryForm({
                       // Direct submission as a fallback method
                       if (!currentSchoolYear?._id) {
                         console.error('No school year ID available');
-                        setSubmitError('School year ID is required. Please reload the page and try again.');
+                        throw new Error('שנת הלימודים לא נטענה. אנא רענן את הדף.');
                         return;
                       }
                       
@@ -1008,7 +995,8 @@ export function TheoryForm({
                         }
                       } catch (err) {
                         console.error('Direct submission error:', err);
-                        setSubmitError(err instanceof Error ? err.message : 'Unknown error');
+                        // Error will be handled by parent component
+                        throw err;
                       }
                     }}
                   >

@@ -86,6 +86,18 @@ export function StudentIndex() {
     }
   }, [location.pathname, isDetailPage]);
 
+  // Effect to handle edit student navigation from details page
+  useEffect(() => {
+    const state = location.state as { editStudentId?: string } | null;
+    if (state?.editStudentId) {
+      const student = students.find((s) => s._id === state.editStudentId) || null;
+      setSelectedStudent(student);
+      setIsFormOpen(true);
+      // Clear the state to prevent reopening on subsequent navigation
+      navigate('/students', { replace: true, state: {} });
+    }
+  }, [location.state, navigate, students]);
+
   const handleAddStudent = () => {
     setSelectedStudent(null);
     setIsFormOpen(true);

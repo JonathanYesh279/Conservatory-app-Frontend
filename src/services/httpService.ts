@@ -1,5 +1,6 @@
 // Enhanced version of src/services/httpService.ts with better error handling and request timeout
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+import { sanitizeError, handleApiError } from '../utils/errorHandler';
 
 // Base URL based on environment
 const BASE_URL =
@@ -226,44 +227,17 @@ async function ajax<T = any>(
 
     return response.data;
   } catch (err: any) {
-    // Log the error with more detailed information
-    console.error(`Error ${method} ${endpoint}:`, {
-      message: err.message,
-      status: err.response?.status,
-      data: err.response?.data,
-      endpoint,
-      params,
-    });
-
-    // Create a more user-friendly error message based on the type of error
-    let errorMessage = 'An unexpected error occurred';
-
-    if (err.response) {
-      // The request was made and the server responded with an error status
-      if (err.response.data?.error) {
-        errorMessage = err.response.data.error;
-      } else if (err.response.status === 404) {
-        errorMessage = `The requested resource was not found (${endpoint})`;
-      } else if (err.response.status === 403) {
-        errorMessage = 'You do not have permission to perform this action';
-      } else if (err.response.status === 401) {
-        errorMessage = 'Your session has expired. Please login again';
-      } else if (err.response.status === 409) {
-        errorMessage = err.response.data?.message || err.response.data?.error || 'A conflict occurred - this resource already exists or conflicts with existing data';
-      } else if (err.response.status >= 500) {
-        errorMessage = 'A server error occurred. Please try again later';
-      }
-    } else if (err.request) {
-      // The request was made but no response was received
-      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
-        errorMessage =
-          'The request timed out. Please check your connection and try again';
-      } else {
-        errorMessage =
-          'Network error - unable to connect to the server. Please check your connection';
-      }
-    }
-
-    throw new Error(errorMessage);
+    // Use centralized error handling
+    const sanitizedError = handleApiError(err, `${method} ${endpoint}`);
+    
+    // Throw an error with the sanitized user message
+    const error = new Error(sanitizedError.userMessage);
+    
+    // Attach additional metadata for debugging
+    (error as any).errorId = sanitizedError.errorId;
+    (error as any).developerMessage = sanitizedError.developerMessage;
+    (error as any).originalError = err;
+    
+    throw error;
   }
 }

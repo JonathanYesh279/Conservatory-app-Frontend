@@ -32,6 +32,7 @@ export function StudentDetailsMain() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+    navigateToStudentEdit,
     formatDate,
     retryLoadTeachers,
   } = useStudentDetailsState();
@@ -296,10 +297,7 @@ export function StudentDetailsMain() {
         student={student}
         isOpen={openSections.schedule}
         onToggle={() => toggleSection('schedule')}
-        onEditSchedule={() => {
-          // TODO: Implement edit schedule functionality
-          console.log('Edit schedule clicked');
-        }}
+        onEditSchedule={navigateToStudentEdit}
       />
     </div>
   );

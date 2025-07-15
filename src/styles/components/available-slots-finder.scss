@@ -431,7 +431,7 @@
 
         .day-slots {
           display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
           gap: 1rem;
         }
       }
@@ -709,10 +709,14 @@
   .available-slots-finder {
     .slots-container {
       .slots-list.compact {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 1rem;
         max-width: 100%;
         overflow: hidden;
+      }
+      
+      .day-slots {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
       }
 
       .slot-card {

@@ -84,6 +84,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.75rem;
     text-align: right;
     
@@ -96,11 +97,15 @@
       .teacher-name {
         font-weight: 500;
         color: var(--primary-color);
+        border: 1px solid var(--border-color);
+        padding: 0.55rem 1rem;
+        border-radius: 0.75rem;
       }
     }
     
     .location-info,
     .student-info {
+      flex-direction: row;
       display: flex;
       align-items: center;
       gap: 0.5rem;

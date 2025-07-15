@@ -133,6 +133,26 @@ input:-moz-autofill {
   }
 }
 
+/* Specific sizing for select fields */
+.form-row.two-columns > .form-group.class-select {
+  flex: 0.8;
+  min-width: 120px;
+}
+
+.form-row.three-columns > .form-group.age-select {
+  flex: 0.6;
+  min-width: 100px;
+}
+
+/* Ensure proper sizing on mobile */
+@media (max-width: 768px) {
+  .form-row.two-columns > .form-group.class-select,
+  .form-row.three-columns > .form-group.age-select {
+    flex: 1;
+    min-width: unset;
+  }
+}
+
 /* Checkbox specific styling */
 .form-checkbox {
   display: flex;

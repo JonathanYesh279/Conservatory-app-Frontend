@@ -8,6 +8,7 @@ import {
   User,
   Calendar,
   ArrowLeft,
+  AlertCircle,
 } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, FormikHelpers } from 'formik';
@@ -18,6 +19,8 @@ import { useTeacherStore } from '../store/teacherStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 import { useToast } from './Toast';
 import { Orchestra, orchestraService } from '../services/orchestraService';
+import { DuplicateConfirmationModal } from './DuplicateConfirmationModal';
+import { DuplicateDetectionInfo } from '../utils/errorHandler';
 import { FormField } from './FormComponents/FormField';
 import { TeacherTimeBlockManager } from './TeacherForm/TeacherTimeBlockManager';
 import { TimeBlock } from '../types/schedule';
@@ -88,11 +91,56 @@ export function TeacherForm({
   const [loadingOrchestras, setLoadingOrchestras] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [duplicateInfo, setDuplicateInfo] = useState<DuplicateDetectionInfo | null>(null);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
+  const [forceDuplicateCreation, setForceDuplicateCreation] = useState(false);
 
   // Store access
   const { saveTeacher, isLoading } = useTeacherStore();
   const { currentSchoolYear } = useSchoolYearStore();
-  const { addToast } = useToast();
+  const { addToast, showError } = useToast();
+
+  // Helper function to check if user has admin privileges
+  const isAdmin = () => {
+    // TODO: Implement proper admin check based on your auth system
+    // For now, return false - replace with actual admin check
+    return false;
+  };
+
+  // Helper function to reset duplicate state
+  const resetDuplicateState = () => {
+    setDuplicateInfo(null);
+    setShowDuplicateModal(false);
+    setPendingFormData(null);
+    setForceDuplicateCreation(false);
+  };
+
+  // Helper function to handle duplicate confirmation
+  const handleDuplicateConfirmation = async (forceCreate: boolean) => {
+    if (!pendingFormData) return;
+
+    setForceDuplicateCreation(forceCreate);
+    setShowDuplicateModal(false);
+
+    try {
+      const dataToSend = {
+        ...pendingFormData,
+        forceCreate,
+        adminOverride: forceCreate && isAdmin()
+      };
+
+      await processSaveTeacher(dataToSend);
+    } catch (err) {
+      console.error('Error in duplicate confirmation:', err);
+      showError(err as Error);
+    }
+  };
+
+  // Helper function to handle duplicate cancellation
+  const handleDuplicateCancel = () => {
+    resetDuplicateState();
+  };
 
   // Determine if this is a new teacher or existing teacher
   const isNewTeacher = !teacher?._id;
@@ -194,12 +242,53 @@ export function TeacherForm({
     fetchOrchestras();
   }, []);
 
+  // Process the actual teacher save operation
+  const processSaveTeacher = async (dataToSend: any) => {
+    const teacherId = dataToSend._id;
+    
+    // Save or update teacher
+    let savedTeacher;
+    if (teacherId) {
+      savedTeacher = await saveTeacher(dataToSend, teacherId);
+    } else {
+      savedTeacher = await saveTeacher(dataToSend);
+    }
+
+    // Show success toast
+    const toastMessage = teacherId 
+      ? `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} עודכן בהצלחה` 
+      : `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} נוסף בהצלחה`;
+    
+    addToast({
+      type: 'success',
+      message: toastMessage,
+    });
+
+    // Reset duplicate state
+    resetDuplicateState();
+
+    // Call optional onSave callback
+    if (onSave) {
+      onSave();
+    }
+
+    // Close the form after successful save
+    handleModalClose();
+
+    return savedTeacher;
+  };
+
   // Form submission handler
   const handleSubmit = async (
     values: TeacherFormData,
     { setSubmitting, setValues }: FormikHelpers<TeacherFormData>
   ) => {
     setApiError(null);
+    resetDuplicateState();
+    
+    // Prepare data for submission - declare outside try block for error handling
+    let dataToSend: any;
+    
     try {
       // Ensure credentials email matches personal email
       if (
@@ -217,9 +306,6 @@ export function TeacherForm({
         setValues(values, false);
       }
       const teacherId = values._id;
-
-      // Prepare data for submission
-      let dataToSend: any;
 
       if (teacherId) {
         // For updates: explicitly include only what we want to update
@@ -271,38 +357,41 @@ export function TeacherForm({
         ];
       }
 
-      // Save or update teacher
-      let savedTeacher;
-      if (teacherId) {
-        savedTeacher = await saveTeacher(dataToSend, teacherId);
-      } else {
-        savedTeacher = await saveTeacher(dataToSend);
+      // Add force creation flag if it was set
+      if (forceDuplicateCreation) {
+        dataToSend.forceCreate = true;
+        dataToSend.adminOverride = isAdmin();
       }
 
-      // Show success toast
-      const toastMessage = teacherId 
-        ? `המורה ${values.personalInfo.fullName} עודכן בהצלחה` 
-        : `המורה ${values.personalInfo.fullName} נוסף בהצלחה`;
+      await processSaveTeacher(dataToSend);
       
-      addToast({
-        type: 'success',
-        message: toastMessage,
-      });
-
-      // Call optional onSave callback
-      if (onSave) {
-        onSave();
-      }
-
-      // Close the form after successful save
-      handleModalClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error saving teacher:', err);
-      // More detailed error display
-      const errorMessage =
-        err instanceof Error ? err.message : 'שגיאה לא ידועה בשמירת המורה';
-      console.error('Error message:', errorMessage);
-      setApiError(errorMessage);
+      
+      // Check if this is a duplicate detection error
+      const errorResponse = err?.response?.data || err;
+      
+      if (errorResponse?.code === 'DUPLICATE_TEACHER_DETECTED' && errorResponse?.details) {
+        // Handle duplicate detection
+        const duplicateDetails = errorResponse.details;
+        
+        setDuplicateInfo({
+          blocked: duplicateDetails.blocked || false,
+          reason: duplicateDetails.reason || 'נמצאו כפילויות במערכת',
+          duplicates: duplicateDetails.duplicates || [],
+          warnings: duplicateDetails.warnings || duplicateDetails.potentialDuplicates || [],
+          canOverride: duplicateDetails.canOverride || isAdmin(),
+          adminOverride: duplicateDetails.adminOverride || false
+        });
+        
+        // Store the prepared data for potential retry
+        setPendingFormData(JSON.parse(JSON.stringify(dataToSend)));
+        setShowDuplicateModal(true);
+      } else {
+        // Handle other errors normally
+        showError(err as Error);
+        setApiError(null);
+      }
     } finally {
       setSubmitting(false);
     }
@@ -328,7 +417,22 @@ export function TeacherForm({
               </button>
             </div>
 
-            {apiError && <div className='error-message'>{apiError}</div>}
+            {apiError && (
+              <div className='api-error-banner'>
+                <div className='error-content'>
+                  <AlertCircle size={16} />
+                  <span>{apiError}</span>
+                </div>
+                <button 
+                  type="button" 
+                  onClick={() => setApiError(null)}
+                  className="error-close-btn"
+                  aria-label="סגור הודעת שגיאה"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
 
             <Formik
               initialValues={getInitialFormValues()}
@@ -954,6 +1058,19 @@ export function TeacherForm({
         </div>
         {renderModalContent()}
       </div>
+      
+      {/* Duplicate Confirmation Modal */}
+      {duplicateInfo && (
+        <DuplicateConfirmationModal
+          isOpen={showDuplicateModal}
+          onClose={() => setShowDuplicateModal(false)}
+          duplicateInfo={duplicateInfo}
+          onConfirm={handleDuplicateConfirmation}
+          onCancel={handleDuplicateCancel}
+          isAdmin={isAdmin()}
+          isSubmitting={isLoading}
+        />
+      )}
     </div>
   );
 }

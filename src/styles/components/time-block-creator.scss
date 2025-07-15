@@ -42,20 +42,24 @@
     }
     
     .close-btn {
-      background: none;
-      border: none;
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary);
       color: var(--text-secondary);
-      cursor: pointer;
-      width: 2rem;
-      height: 2rem;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.5rem;
+      border: none;
+      cursor: pointer;
       transition: all 0.2s ease;
+      z-index: 5;
       
       &:hover {
-        background: var(--bg-tertiary);
+        background-color: var(--bg-secondary);
         color: var(--text-primary);
       }
       
@@ -630,21 +634,32 @@
 @media (max-width: 768px) {
   .time-block-creator-overlay {
     padding: 0.5rem;
+    padding-bottom: 1rem; // Extra bottom padding
 
     .time-block-creator {
       max-width: none;
-      max-height: 95vh;
+      max-height: calc(100vh - 2rem); // Allow more height
+      min-height: 70vh; // Ensure minimum height
 
       .creator-header {
         padding: 1rem;
+        flex-shrink: 0; // Prevent shrinking
 
         h2 {
           font-size: 1.125rem;
+        }
+        
+        .close-btn {
+          top: 1rem;
+          left: 1rem;
+          width: 28px;
+          height: 28px;
         }
       }
 
       .wizard-progress {
         padding: 1rem;
+        flex-shrink: 0; // Prevent shrinking
 
         .progress-step {
           padding: 0.5rem 0;
@@ -663,10 +678,20 @@
 
       .wizard-content {
         padding: 1rem;
+        padding-bottom: 2rem; // Extra bottom padding for content
+        flex: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
       }
 
       .wizard-navigation {
         padding: 1rem;
+        padding-bottom: 1.5rem; // Extra bottom padding for navigation
+        flex-shrink: 0; // Prevent shrinking
+        position: sticky; // Make it sticky at bottom
+        bottom: 0;
+        background: var(--bg-card); // Ensure background
+        border-top: 1px solid var(--divider-color); // Visual separation
         flex-direction: column;
 
         .nav-btn {
@@ -719,8 +744,39 @@
 }
 
 @media (max-width: 480px) {
+  .time-block-creator-overlay {
+    padding: 0.25rem;
+    padding-bottom: 1.5rem; // Even more bottom padding on small screens
+    
+    .time-block-creator {
+      max-height: calc(100vh - 1rem); // Maximize available height
+      
+      .wizard-content {
+        padding-bottom: 3rem; // More content bottom padding
+      }
+      
+      .wizard-navigation {
+        padding-bottom: 2rem; // More navigation bottom padding
+      }
+    }
+  }
+  
   .day-selection-step .day-selector {
     grid-template-columns: 1fr;
+  }
+}
+
+// Additional fix for iOS Safari viewport height issues
+@supports (height: -webkit-fill-available) {
+  @media (max-width: 768px) {
+    .time-block-creator-overlay {
+      height: 100vh;
+      height: -webkit-fill-available;
+      
+      .time-block-creator {
+        max-height: calc(-webkit-fill-available - 2rem);
+      }
+    }
   }
 }
 

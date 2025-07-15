@@ -1,5 +1,6 @@
 // src/services/theoryService.ts
 import { httpService } from './httpService';
+import { handleApiError } from '../utils/errorHandler';
 
 export interface TheoryLesson {
   _id: string;
@@ -277,8 +278,15 @@ export const theoryService = {
 
       return response;
     } catch (error) {
-      console.error('Error in bulk create:', error);
-      throw error;
+      // Use centralized error handling
+      const sanitizedError = handleApiError(error, 'bulkCreateTheoryLessons');
+      
+      // Re-throw with sanitized error message
+      const newError = new Error(sanitizedError.userMessage);
+      (newError as any).errorId = sanitizedError.errorId;
+      (newError as any).developerMessage = sanitizedError.developerMessage;
+      
+      throw newError;
     }
   },
 

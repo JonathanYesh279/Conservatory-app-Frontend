@@ -192,6 +192,42 @@
       gap: 1rem;
       margin-bottom: 1rem;
       
+      // Enhanced styling for full-width day of week row
+      &.full-width {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        
+        .form-group {
+          width: 100%;
+          
+          select[name="dayOfWeek"] {
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.7rem 2.5rem 0.7rem 0.75rem;
+            min-width: 180px;
+            border-width: 1px;
+            
+            &:focus {
+              border-color: #4169e1;
+              box-shadow: 0 0 0 2px rgba(65, 105, 225, 0.2);
+            }
+          }
+        }
+        
+        // Specific help text styling for day of week
+        .help-text,
+        div[style*="marginTop"] {
+          color: #888 !important;
+          font-size: 0.6rem !important;
+          margin-top: 0.15rem !important;
+          line-height: 1.1 !important;
+          font-weight: 300 !important;
+          opacity: 0.6 !important;
+          font-style: italic !important;
+        }
+      }
+      
       .form-group {
         flex: 1;
         margin-bottom: 0.5rem;
@@ -264,6 +300,21 @@
           background-position: left 0.75rem center;
           background-size: 1rem;
           padding-left: 2.5rem;
+          
+          // Enhanced styling for day of week dropdown
+          &[name="dayOfWeek"] {
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.65rem 2.5rem 0.65rem 0.75rem;
+            min-width: 160px;
+            width: 100%;
+            
+            option {
+              font-size: 0.9rem;
+              font-weight: 400;
+              padding: 0.4rem;
+            }
+          }
         }
         
         textarea {
@@ -278,9 +329,13 @@
         }
         
         .help-text {
-          color: var(--text-secondary, #a0aec0);
-          font-size: 0.8rem;
-          margin-top: 0.35rem;
+          color: #8a8a8a !important;
+          font-size: 0.65rem !important;
+          margin-top: 0.2rem !important;
+          line-height: 1.2 !important;
+          font-weight: 300 !important;
+          opacity: 0.7 !important;
+          font-style: italic !important;
         }
       }
     }
@@ -487,6 +542,12 @@
     
     .form-row {
       gap: 0.75rem;
+      
+      &.full-width .form-group select[name="dayOfWeek"] {
+        font-size: 0.9rem;
+        padding: 0.65rem 2.5rem 0.65rem 0.75rem;
+        min-width: 150px;
+      }
     }
     
     .form-actions {

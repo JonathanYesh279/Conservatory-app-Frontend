@@ -1,5 +1,5 @@
 // src/cmps/StudentDetails/sections/TheoryLessonsSection.tsx
-import { ChevronDown, ChevronUp, BookOpen, RefreshCw } from 'lucide-react';
+import { ChevronDown, ChevronUp, BookOpen, RefreshCw, User, Clock, MapPin } from 'lucide-react';
 import { Student } from '../../../services/studentService';
 import { TheoryLesson } from '../../../services/theoryService';
 import { useEffect, useState, useRef } from 'react';
@@ -124,7 +124,15 @@ export function TheoryLessonsSection({
       >
         <BookOpen size={16} />
         <span>
-          שיעורי העשרה {hasTheoryLessons ? `(${studentTheoryLessonIds.length})` : ''}
+          שיעורי העשרה {hasTheoryLessons ? (() => {
+            // Count unique theory lesson groups
+            const uniqueGroups = theoryLessons.reduce((groups, lesson) => {
+              const groupKey = `${lesson.category}-${lesson.teacherId}-${lesson.dayOfWeek}-${lesson.startTime}-${lesson.endTime}-${lesson.location}`;
+              groups.add(groupKey);
+              return groups;
+            }, new Set());
+            return `(${uniqueGroups.size})`;
+          })() : ''}
         </span>
         {isOpen ? (
           <ChevronUp size={18} className='sd-toggle-icon' />
@@ -157,40 +165,72 @@ export function TheoryLessonsSection({
               ))}
             </div>
           ) : (
-            // Use fully loaded theory lessons data
-            <div className='sd-theory-lessons-grid'>
-              {theoryLessons.map((theoryLesson) => (
-                <div
-                  key={theoryLesson._id}
-                  className='sd-theory-lesson-card clickable'
-                  onClick={() => onTheoryLessonClick(theoryLesson._id)}
-                >
-                  <div className="sd-theory-lesson-header">
-                    <BookOpen size={20} />
-                    <span className="sd-theory-lesson-category">{theoryLesson.category}</span>
-                  </div>
+            // Use consolidated theory lesson groups with swiper structure
+            <div className='sd-theory-lessons-swiper'>
+              {(() => {
+                // Group theory lessons by category, teacher, day, time, and location
+                const theoryLessonGroups = theoryLessons.reduce((groups, lesson) => {
+                  const groupKey = `${lesson.category}-${lesson.teacherId}-${lesson.dayOfWeek}-${lesson.startTime}-${lesson.endTime}-${lesson.location}`;
                   
-                  <div className="sd-theory-lesson-details">
-                    {theoryLesson.teacherId && (
-                      <div className="sd-theory-lesson-teacher">
-                        <span>מורה: {teacherNames[theoryLesson.teacherId] || 'לא ידוע'}</span>
+                  if (!groups[groupKey]) {
+                    groups[groupKey] = {
+                      category: lesson.category,
+                      teacherId: lesson.teacherId,
+                      teacherName: teacherNames[lesson.teacherId] || 'לא ידוע',
+                      dayOfWeek: lesson.dayOfWeek,
+                      startTime: lesson.startTime,
+                      endTime: lesson.endTime,
+                      location: lesson.location,
+                      lessonCount: 0,
+                      lessons: []
+                    };
+                  }
+                  
+                  groups[groupKey].lessonCount++;
+                  groups[groupKey].lessons.push(lesson);
+                  
+                  return groups;
+                }, {} as Record<string, any>);
+                
+                return Object.values(theoryLessonGroups).map((group: any, index) => (
+                  <div
+                    key={`theory-group-${index}`}
+                    className='sd-theory-lesson-compact-card clickable'
+                    onClick={() => onTheoryLessonClick(group.lessons[0]._id)}
+                  >
+                    <div className="sd-theory-card-header">
+                      <div className="sd-theory-card-icon">
+                        <BookOpen size={16} />
                       </div>
-                    )}
+                      <div className="sd-theory-card-info">
+                        <div className="sd-theory-card-title">{group.category}</div>
+                        <div className="sd-theory-card-count">{group.lessonCount} מפגשים</div>
+                      </div>
+                    </div>
                     
-                    {theoryLesson.dayOfWeek !== undefined && theoryLesson.startTime && theoryLesson.endTime && (
-                      <div className="sd-theory-lesson-schedule">
-                        <span>{formatTimeDisplay(theoryLesson.dayOfWeek, theoryLesson.startTime, theoryLesson.endTime)}</span>
+                    <div className="sd-theory-card-details">
+                      <div className="sd-theory-card-detail">
+                        <User size={12} />
+                        <span>{group.teacherName}</span>
                       </div>
-                    )}
-                    
-                    {theoryLesson.location && (
-                      <div className="sd-theory-lesson-location">
-                        <span>מיקום: {theoryLesson.location}</span>
-                      </div>
-                    )}
+                      
+                      {group.dayOfWeek !== undefined && group.startTime && group.endTime && (
+                        <div className="sd-theory-card-detail">
+                          <Clock size={12} />
+                          <span>{formatTimeDisplay(group.dayOfWeek, group.startTime, group.endTime)}</span>
+                        </div>
+                      )}
+                      
+                      {group.location && (
+                        <div className="sd-theory-card-detail">
+                          <MapPin size={12} />
+                          <span>{group.location}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           )}
         </div>

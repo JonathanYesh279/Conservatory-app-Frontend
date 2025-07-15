@@ -526,6 +526,7 @@
 @media (max-width: 768px) {
   .orchestra-form {
     padding: 1rem;
+    padding-bottom: 1.5rem; // Extra bottom padding for mobile
     align-items: flex-start;
     
     .form-modal {
@@ -533,6 +534,7 @@
       max-width: none;
       max-height: calc(100vh - 2rem);
       padding: 1.5rem 1rem;
+      padding-bottom: 3rem; // Extra bottom padding for form content
       border-radius: 1rem 1rem 0 0;
       margin: 0;
       margin-top: auto;

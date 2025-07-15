@@ -4,7 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
-import { Filter, Plus } from 'lucide-react';
+import { Filter, Plus, RefreshCw } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
 import { useSearchbar } from '../hooks/useSearchbar';
@@ -13,6 +13,8 @@ import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { OrchestraList } from '../cmps/OrchestraList';
 import { OrchestraForm } from '../cmps/OrchestraForm';
 import { useSchoolYearStore } from '../store/schoolYearStore';
+import { syncAllOrchestraMembers } from '../utils/orchestraSync';
+import { useToast } from '../cmps/Toast';
 
 export function OrchestraIndex() {
   const {
@@ -34,6 +36,10 @@ export function OrchestraIndex() {
   const [orchestraToDelete, setOrchestraToDelete] = useState<string | null>(
     null
   );
+
+  // State for synchronization
+  const [isSyncing, setIsSyncing] = useState(false);
+  const { showSuccess, showError } = useToast();
 
   // Define which fields to search in orchestras
   const orchestraSearchFields = (orchestra: Orchestra) => [
@@ -108,6 +114,21 @@ export function OrchestraIndex() {
     alert('Open filter dialog');
   };
 
+  const handleSyncOrchestras = async () => {
+    setIsSyncing(true);
+    try {
+      await syncAllOrchestraMembers();
+      showSuccess('סנכרון התזמורות הושלם בהצלחה');
+      // Reload orchestras to show updated member counts
+      await loadOrchestras();
+    } catch (error) {
+      console.error('Error syncing orchestras:', error);
+      showError('אירעה שגיאה בסנכרון התזמורות');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   // Check if user can add/edit orchestras
   const canAddOrchestra = isAdmin;
   const canEditOrchestra = isAdmin || isConductor;
@@ -133,6 +154,18 @@ export function OrchestraIndex() {
                 >
                   <Filter className='icon' />
                 </button>
+
+                {isAdmin && (
+                  <button
+                    className={`btn-icon sync-btn ${isSyncing ? 'syncing' : ''}`}
+                    onClick={handleSyncOrchestras}
+                    disabled={isSyncing}
+                    aria-label='סנכרון תזמורות-תלמידים'
+                    title='סנכרון תזמורות-תלמידים'
+                  >
+                    <RefreshCw className={`icon ${isSyncing ? 'spin' : ''}`} />
+                  </button>
+                )}
 
                 {canAddOrchestra && (
                   <button

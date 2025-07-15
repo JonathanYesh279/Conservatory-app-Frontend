@@ -7,6 +7,7 @@ import {
   theoryService,
 } from '../services/theoryService';
 import { useSchoolYearStore } from './schoolYearStore';
+import { checkTheoryLessonConflicts, formatConflictsForUser, checkSingleTheoryLessonConflicts } from '../utils/theoryConflictDetection';
 
 interface TheoryState {
   theoryLessons: TheoryLesson[];
@@ -144,6 +145,20 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
       } else {
         // Add new theory lesson
         console.log('Adding new theory lesson with data:', theoryLessonToSave);
+        
+        // Check for conflicts with existing lessons (only for new lessons)
+        const existingLessons = get().theoryLessons;
+        const conflicts = checkSingleTheoryLessonConflicts(existingLessons, theoryLessonToSave);
+        
+        if (conflicts.length > 0) {
+          const conflictMessage = formatConflictsForUser(conflicts);
+          console.warn('Single theory lesson conflicts detected:', conflicts);
+          console.warn('Conflict message for user:', conflictMessage);
+          
+          // Throw an error with the user-friendly message
+          throw new Error(conflictMessage);
+        }
+        
         savedTheoryLesson = await theoryService.addTheoryLesson(theoryLessonToSave);
 
         set({
@@ -276,18 +291,30 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
 
       console.log('Formatted data for bulk create:', formattedData);
 
+      // Check for conflicts with existing lessons
+      const existingLessons = get().theoryLessons;
+      const conflicts = checkTheoryLessonConflicts(existingLessons, formattedData);
+      
+      if (conflicts.length > 0) {
+        const conflictMessage = formatConflictsForUser(conflicts);
+        
+        // In a real implementation, this should trigger a confirmation dialog
+        // For now, we'll log the conflicts and allow developers to see them
+        console.warn('Theory lesson conflicts detected:', conflicts);
+        console.warn('Conflict message for user:', conflictMessage);
+        
+        // Throw an error with the user-friendly message
+        throw new Error(conflictMessage);
+      }
+
       // Execute API call
       const result = await theoryService.bulkCreateTheoryLessons(formattedData);
       console.log('Bulk create result:', result);
 
-      // After bulk creating, refresh the theory lesson list
-      if (formattedData.category) {
-        await get().loadTheoryLessonsByCategory(formattedData.category);
-      } else if (formattedData.teacherId) {
-        await get().loadTheoryLessonsByTeacher(formattedData.teacherId);
-      } else {
-        await get().loadTheoryLessons();
-      }
+      // After bulk creating, refresh the theory lesson list with current filter
+      // This ensures we don't lose previously displayed lessons
+      const currentFilter = get().filterBy;
+      await get().loadTheoryLessons(currentFilter);
 
       set({ isLoading: false });
       return result;

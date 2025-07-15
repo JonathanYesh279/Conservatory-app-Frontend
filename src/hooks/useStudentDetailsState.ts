@@ -219,6 +219,17 @@ export function useStudentDetailsState() {
     navigate(`/theory/${theoryLessonId}`);
   };
 
+  // Navigate to student edit form
+  const navigateToStudentEdit = () => {
+    if (student?._id) {
+      navigate('/students', { 
+        state: { 
+          editStudentId: student._id 
+        }
+      });
+    }
+  };
+
   // Get initials for avatar display
   const getInitials = (name: string): string => {
     if (!name) return '';
@@ -416,6 +427,7 @@ export function useStudentDetailsState() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+    navigateToStudentEdit,
     teachersData,
     teachersLoading,
     teachersError,

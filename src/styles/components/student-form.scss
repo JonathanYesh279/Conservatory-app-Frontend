@@ -14,8 +14,9 @@
   padding: 6rem 1.5rem 3rem 1.5rem;
   
   @media (max-width: 768px) {
-    padding: 1rem 0.5rem;
+    padding: 0 0.5rem;
     align-items: flex-start;
+    overflow-y: auto; // Ensure parent can scroll if needed
   }
   
   .overlay {
@@ -47,12 +48,13 @@
     @media (max-width: 768px) {
       width: 100%;
       max-width: none;
-      max-height: calc(100vh - 2rem);
+      max-height: calc(100vh - 4rem);
       padding: 1.5rem 1rem;
-      padding-bottom: 3rem;
+      padding-bottom: 1rem; // Normal bottom padding
       border-radius: 1rem 1rem 0 0;
       margin: 0;
-      margin-top: auto;
+      margin-top: 2rem; // Add top margin instead of auto to ensure buttons are in viewport
+      margin-bottom: 2rem; // Add bottom margin for safe area
     }
     
     /* Show scrollbar only when scrolling */
@@ -99,6 +101,15 @@
       gap: 1rem;
       margin-top: 1.5rem;
       padding-top: 0.75rem;
+      
+      @media (max-width: 768px) {
+        position: static;
+        background-color: var(--bg-card);
+        padding: 1.5rem 0;
+        margin-top: 2rem;
+        border-top: 1px solid var(--border-color);
+        width: 100%;
+      }
       
       .btn {
         padding: 0.6rem 1.25rem;
@@ -279,9 +290,10 @@
 @media (max-width: 599px) {
   .student-form .form-modal {
     width: 100%;
-    max-height: 90vh;
+    max-height: calc(100vh - 4rem);
     padding: 1.25rem;
     padding-top: 74px;
+    padding-bottom: 1rem; // Normal bottom padding
     
     h2 {
       font-size: 1.2rem;
@@ -289,12 +301,65 @@
     }
     
     .form-actions {
-      padding-top: 0.75rem;
-      margin-top: 1rem;
+      position: static;
+      background-color: var(--bg-card);
+      padding: 1.5rem 0;
+      margin-top: 2rem;
+      border-top: 1px solid var(--border-color);
+      width: 100%;
       
       .btn {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.6rem 1.2rem;
+        font-size: 1rem;
+        min-height: 44px; // Minimum touch target size for mobile
+      }
+    }
+  }
+}
+
+// Specific styles for AvailableSlotsFinder inside student form modal
+.student-form .form-modal {
+  .available-slots-finder {
+    .slots-container {
+      max-width: 100%;
+      overflow: hidden;
+      
+      .slots-list.compact {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+        max-width: 100%;
+      }
+      
+      .day-slots {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.75rem;
+      }
+      
+      .slot-card {
+        min-height: 120px;
+        max-width: 100%;
+        box-sizing: border-box;
+        word-wrap: break-word;
+        overflow: hidden;
+      }
+    }
+  }
+}
+
+// Desktop specific adjustments for student form
+@media (min-width: 1025px) {
+  .student-form .form-modal {
+    .available-slots-finder {
+      .slots-container {
+        .slots-list.compact {
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        }
+        
+        .day-slots {
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        }
       }
     }
   }

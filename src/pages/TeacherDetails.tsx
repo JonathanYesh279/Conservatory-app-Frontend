@@ -4,6 +4,7 @@ import { teacherService, Teacher } from '../services/teacherService'
 import { Orchestra, orchestraService } from '../services/orchestraService'
 import { studentService } from '../services/studentService'
 import { theoryService, TheoryLesson } from '../services/theoryService'
+import { useRehearsalStore } from '../store/rehearsalStore'
 import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
 import { TeacherTimeBlockManager } from '../cmps/TeacherForm/TeacherTimeBlockManager'
 import {
@@ -51,6 +52,9 @@ export function TeacherDetails() {
   const [theoryLessons, setTheoryLessons] = useState<TheoryLesson[]>([]);
   const [theoryLessonsLoading, setTheoryLessonsLoading] = useState(false);
 
+  // Rehearsal store for getting orchestra rehearsal times
+  const { rehearsals, loadRehearsals } = useRehearsalStore();
+
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     students: false,
@@ -90,6 +94,9 @@ export function TeacherDetails() {
 
       // Load related data if teacher data exists
       if (teacherData) {
+        // Load rehearsals for orchestras
+        await loadRehearsals();
+        
         // Load theory lessons for this teacher
         await loadTheoryLessons(id);
 
@@ -235,6 +242,80 @@ export function TeacherDetails() {
       console.error('Failed to load students by teacher assignment:', err);
       setStudents([]);
     }
+  };
+
+  // Helper function to get rehearsal times for an orchestra
+  const getOrchestraRehearsalTimes = (orchestraId: string) => {
+    // Find rehearsals for this orchestra
+    const orchestraRehearsals = rehearsals.filter(r => r.groupId === orchestraId);
+    
+    if (orchestraRehearsals.length > 0) {
+      // Get the most common rehearsal pattern (assuming regular weekly rehearsals)
+      const rehearsal = orchestraRehearsals[0]; // Take the first one as representative
+      const days = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
+      const dayName = days[rehearsal.dayOfWeek] || 'לא ידוע';
+      
+      return {
+        dayOfWeek: rehearsal.dayOfWeek,
+        dayName: `יום ${dayName}`,
+        startTime: rehearsal.startTime,
+        endTime: rehearsal.endTime,
+        timeRange: `${rehearsal.startTime}-${rehearsal.endTime}`,
+        fullSchedule: `יום ${dayName} ${rehearsal.startTime}-${rehearsal.endTime}`
+      };
+    }
+
+    // Fallback: Use orchestra name to determine typical schedule times
+    return null;
+  };
+
+  // Helper function to format day names
+  const formatDay = (day: string) => {
+    const dayMap: Record<string, string> = {
+      'Sunday': 'ראשון',
+      'Monday': 'שני', 
+      'Tuesday': 'שלישי',
+      'Wednesday': 'רביעי',
+      'Thursday': 'חמישי',
+      'Friday': 'שישי',
+      'Saturday': 'שבת'
+    };
+    return dayMap[day] || day;
+  };
+
+  // Helper function to organize student lessons by day
+  const organizeStudentLessons = (student: StudentReference) => {
+    if (!student.assignments) return [];
+    
+    const lessonsMap: Record<string, any[]> = {};
+    
+    student.assignments.forEach(assignment => {
+      const day = assignment.day;
+      if (!lessonsMap[day]) {
+        lessonsMap[day] = [];
+      }
+      lessonsMap[day].push({
+        time: assignment.time,
+        duration: assignment.duration,
+        day: assignment.day
+      });
+    });
+
+    // Sort lessons by time within each day
+    Object.keys(lessonsMap).forEach(day => {
+      lessonsMap[day].sort((a, b) => a.time.localeCompare(b.time));
+    });
+
+    return lessonsMap;
+  };
+
+  // Helper function to get next lesson for a student
+  const getNextLesson = (student: StudentReference) => {
+    if (!student.assignments || student.assignments.length === 0) return null;
+    
+    // For now, return the first lesson - could be enhanced with actual date logic
+    const sortedLessons = student.assignments.sort((a, b) => a.time.localeCompare(b.time));
+    return sortedLessons[0];
   };
 
   // Load orchestra details
@@ -452,30 +533,66 @@ export function TeacherDetails() {
                   {openSections.students && (
                     <div className='section-content'>
                       {students.length > 0 ? (
-                        <div className='members-list'>
-                          <ul className='members-items'>
-                            {students.map((student) => (
-                              <li 
+                        <div className='compact-students-overview'>
+                          {students.map((student) => {
+                            const assignments = student.assignments || [];
+                            
+                            return (
+                              <div 
                                 key={student._id} 
-                                className='member-item clickable'
+                                className='compact-student-row clickable'
                                 onClick={() => navigateToStudent(student._id)}
                               >
-                                <div className='member-info'>
-                                  <div className='member-avatar'>
+                                {/* Student Info */}
+                                <div className='student-info-compact'>
+                                  <div className='student-avatar-compact'>
                                     {student.fullName.charAt(0)}
                                   </div>
-                                  <div className='member-details'>
-                                    <div className='member-name'>
+                                  <div className='student-details-compact'>
+                                    <div className='student-name-compact'>
                                       {student.fullName}
                                     </div>
-                                    <div className='member-instrument'>
-                                      {student.instrument}
-                                    </div>
+                                    {student.instrument && (
+                                      <div className='student-instrument-compact'>
+                                        {student.instrument}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
-                              </li>
-                            ))}
-                          </ul>
+
+                                {/* Lessons Schedule */}
+                                <div className='lessons-compact'>
+                                  {assignments.length > 0 ? (
+                                    <div className='lessons-list-compact'>
+                                      {assignments.slice(0, 3).map((assignment, index) => (
+                                        <div key={index} className='lesson-item-compact'>
+                                          <span className='lesson-day-compact'>
+                                            {formatDay(assignment.day)}
+                                          </span>
+                                          <span className='lesson-time-compact'>
+                                            {formatLessonTime(assignment.time, assignment.duration)}
+                                          </span>
+                                          <span className='lesson-duration-compact'>
+                                            ({assignment.duration} דק')
+                                          </span>
+                                        </div>
+                                      ))}
+                                      {assignments.length > 3 && (
+                                        <div className='more-lessons-compact'>
+                                          +{assignments.length - 3}
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className='no-lessons-compact'>
+                                      אין שיעורים
+                                    </div>
+                                  )}
+                                </div>
+
+                              </div>
+                            );
+                          })}
                         </div>
                       ) : teacher.teaching?.studentIds?.length ? (
                         <div className='loading-section'>
@@ -529,17 +646,50 @@ export function TeacherDetails() {
                             </div>
                           ) : orchestras.length > 0 ? (
                             <div className='orchestras-grid'>
-                              {orchestras.map((orchestra) => (
-                                <div
-                                  key={orchestra._id}
-                                  className='orchestra-card clickable'
-                                  onClick={() =>
-                                    navigateToOrchestra(orchestra._id)
-                                  }
-                                >
-                                  <span>{orchestra.name}</span>
-                                </div>
-                              ))}
+                              {orchestras.map((orchestra) => {
+                                const rehearsalTimes = getOrchestraRehearsalTimes(orchestra._id);
+                                return (
+                                  <div
+                                    key={orchestra._id}
+                                    className='orchestra-card clickable'
+                                    onClick={() =>
+                                      navigateToOrchestra(orchestra._id)
+                                    }
+                                  >
+                                    <div className='orchestra-header'>
+                                      <div className='orchestra-name'>
+                                        <Music size={12} />
+                                        <span>{orchestra.name}</span>
+                                      </div>
+                                    </div>
+                                    <div className='orchestra-details'>
+                                      {rehearsalTimes && (
+                                        <div className='rehearsal-time'>
+                                          <Clock size={12} />
+                                          <span>{rehearsalTimes.fullSchedule}</span>
+                                        </div>
+                                      )}
+                                      {orchestra.location && (
+                                        <div className='location'>
+                                          <MapPin size={12} />
+                                          <span>מיקום: {orchestra.location}</span>
+                                        </div>
+                                      )}
+                                      {orchestra.memberIds && orchestra.memberIds.length > 0 && (
+                                        <div className='member-count'>
+                                          <Users size={12} />
+                                          <span>{orchestra.memberIds.length} חברים</span>
+                                        </div>
+                                      )}
+                                      {!orchestra.isActive && (
+                                        <div className='status-inactive'>
+                                          תזמורת לא פעילה
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           ) : (
                             <div className='no-orchestra-message'>

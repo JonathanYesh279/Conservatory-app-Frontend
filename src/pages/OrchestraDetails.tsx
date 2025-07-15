@@ -1,7 +1,7 @@
 // src/pages/OrchestraDetails.tsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowLeft } from 'lucide-react'
+import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowLeft, MoreHorizontal, Trash2, User } from 'lucide-react'
 import { useOrchestraStore } from '../store/orchestraStore'
 import { useTeacherStore } from '../store/teacherStore'
 import { useStudentStore } from '../store/studentStore'
@@ -276,16 +276,26 @@ export function OrchestraDetails() {
               <h2 className='header-title'>{selectedOrchestra.name}</h2>
 
               <div className='header-actions'>
-                {canEdit && (
-                  <button className='action-btn edit' onClick={handleEdit}>
-                    <Edit size={16} />
-                  </button>
-                )}
-
-                {isAdmin && (
-                  <button className='action-btn delete' onClick={handleDelete}>
-                    <X size={16} />
-                  </button>
+                {(canEdit || isAdmin) && (
+                  <div className='actions-dropdown'>
+                    <button className='actions-trigger'>
+                      <MoreHorizontal size={18} />
+                    </button>
+                    <div className='actions-menu'>
+                      {canEdit && (
+                        <button className='action-item edit' onClick={handleEdit}>
+                          <Edit size={14} />
+                          <span>עריכה</span>
+                        </button>
+                      )}
+                      {isAdmin && (
+                        <button className='action-item delete' onClick={handleDelete}>
+                          <Trash2 size={14} />
+                          <span>מחיקה</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 <button
@@ -308,6 +318,7 @@ export function OrchestraDetails() {
                   }`}
                   onClick={toggleInfoSection}
                 >
+                  <Music size={16} />
                   {selectedOrchestra.type === 'הרכב' ? 'פרטי הרכב' : 'פרטי התזמורת'}
                   {showInfoSection ? (
                     <ChevronUp className='toggle-icon' size={20} />
@@ -318,29 +329,51 @@ export function OrchestraDetails() {
 
                 {showInfoSection && (
                   <div className='section-content'>
-                    <div className='info-row'>
-                      <span className='info-label'>מנצח:</span>
-                      <span className='info-value'>
-                        {isLoadingConductor
-                          ? 'טוען...'
-                          : conductor && 'personalInfo' in conductor
-                          ? conductor.personalInfo.fullName
-                          : 'לא הוגדר'}
-                      </span>
-                    </div>
+                    <div className='orchestra-info-grid'>
+                      <div className='info-item'>
+                        <span className='info-label'>
+                          <User size={14} />
+                          מנצח:
+                        </span>
+                        <span className='info-value'>
+                          {isLoadingConductor
+                            ? 'טוען...'
+                            : conductor && 'personalInfo' in conductor
+                            ? conductor.personalInfo.fullName
+                            : 'לא הוגדר'}
+                        </span>
+                      </div>
 
-                    <div className='info-row'>
-                      <span className='info-label'>מספר תלמידים:</span>
-                      <span className='info-value'>
-                        {selectedOrchestra.memberIds?.length || 0}
-                      </span>
-                    </div>
+                      <div className='info-item'>
+                        <span className='info-label'>
+                          <MapPin size={14} />
+                          מיקום:
+                        </span>
+                        <span className='info-value'>
+                          {selectedOrchestra.location || 'לא הוגדר'}
+                        </span>
+                      </div>
 
-                    <div className='info-row'>
-                      <span className='info-label'>מספר חזרות:</span>
-                      <span className='info-value'>
-                        {rehearsals?.length || 0}
-                      </span>
+                      <div className='info-item'>
+                        <span className='info-label'>
+                          <Users size={14} />
+                          תלמידים:
+                        </span>
+                        <span className='info-value'>
+                          {selectedOrchestra.memberIds?.length || 0}
+                        </span>
+                      </div>
+
+                      <div className='info-item'>
+                        <span className='info-label'>
+                          <Calendar size={14} />
+                          חזרות:
+                        </span>
+                        <span className='info-value'>
+                          {rehearsals?.length || 0}
+                        </span>
+                      </div>
+
                     </div>
                   </div>
                 )}

@@ -607,9 +607,10 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
           <h2>יצירת יום לימוד חדש</h2>
           <button 
             type="button"
-            className="close-btn" 
+            className="btn-icon close-btn" 
             onClick={onCancel}
             disabled={wizardState.isSubmitting}
+            aria-label="סגור"
           >
             <X size={20} />
           </button>

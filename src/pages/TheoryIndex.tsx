@@ -16,7 +16,7 @@ import { useToast } from '../cmps/Toast';
 export function TheoryIndex() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { addToast } = useToast();
+  const { addToast, showError, showSuccess } = useToast();
 
   const {
     theoryLessons,
@@ -55,12 +55,9 @@ export function TheoryIndex() {
       const savedTheoryLesson = await saveTheoryLesson(theoryLessonData);
       
       // Show success toast
-      addToast({
-        type: 'success',
-        message: theoryLessonData._id 
-          ? `שיעור התאוריה עודכן בהצלחה`
-          : `שיעור התאוריה נוסף בהצלחה`,
-      });
+      showSuccess(theoryLessonData._id 
+        ? `שיעור התאוריה עודכן בהצלחה`
+        : `שיעור התאוריה נוסף בהצלחה`);
       
       setIsFormOpen(false);
       setEditingTheoryLesson(null);
@@ -74,11 +71,8 @@ export function TheoryIndex() {
     } catch (err) {
       console.error('Error saving theory lesson:', err);
       
-      // Show error toast
-      addToast({
-        type: 'danger',
-        message: 'אירעה שגיאה בשמירת שיעור התאוריה',
-      });
+      // Show error toast with centralized error handling
+      showError(err as Error);
       
       throw err;
     }
@@ -101,20 +95,14 @@ export function TheoryIndex() {
       console.log('Bulk creation result:', result);
       
       // Show success toast
-      addToast({
-        type: 'success',
-        message: `נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`,
-      });
+      showSuccess(`נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`);
       
       setIsFormOpen(false);
     } catch (err) {
       console.error('Error bulk creating theory lessons:', err);
       
-      // Show error toast
-      addToast({
-        type: 'danger',
-        message: err instanceof Error ? err.message : 'אירעה שגיאה ביצירת שיעורי התאוריה',
-      });
+      // Show error toast with centralized error handling
+      showError(err as Error);
       
       throw err;
     }
@@ -126,10 +114,7 @@ export function TheoryIndex() {
       await removeTheoryLesson(theoryLessonId);
       
       // Show success toast
-      addToast({
-        type: 'success',
-        message: 'שיעור התאוריה נמחק לצמיתות בהצלחה',
-      });
+      showSuccess('שיעור התאוריה נמחק לצמיתות בהצלחה');
       
       // Navigate back to the index if we were on the deleted theory lesson
       if (location.pathname.includes(theoryLessonId)) {
@@ -138,11 +123,8 @@ export function TheoryIndex() {
     } catch (err) {
       console.error('Error deleting theory lesson:', err);
       
-      // Show error toast
-      addToast({
-        type: 'danger',
-        message: 'אירעה שגיאה במחיקת שיעור התאוריה',
-      });
+      // Show error toast with centralized error handling
+      showError(err as Error);
     } finally {
       setConfirmDelete({ isOpen: false, theoryLessonId: null });
     }

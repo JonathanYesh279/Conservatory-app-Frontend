@@ -147,9 +147,7 @@ export function StudentForm({
     values: StudentFormData,
     formikHelpers: FormikHelpers<StudentFormData>
   ) => {
-    console.log('🚀 StudentForm.handleSubmit called!', values);
-    console.log('🚀 Form is submitting, isSubmitting:', isSubmitting);
-    console.log('🚀 Formik setSubmitting available:', typeof formikHelpers.setSubmitting);
+    console.log('🚀 StudentForm.handleSubmit called');
     
     try {
       setFormError(null);
@@ -174,8 +172,7 @@ export function StudentForm({
         isActive: values.isActive,
       };
 
-      console.log('📝 Student data prepared for submission:', studentData);
-      console.log('📋 Teacher assignments count:', values.teacherAssignments?.length || 0);
+      console.log('📝 Submitting student with', values.teacherAssignments?.length || 0, 'teacher assignments');
 
       // Save student data
       await saveStudentData(studentData, values);
@@ -232,15 +229,6 @@ export function StudentForm({
           validateOnChange={true}
         >
           {({ isSubmitting: formikSubmitting, errors, touched, isValid, values }) => {
-            console.log('🔍 Formik state:', { 
-              isSubmitting: formikSubmitting, 
-              isValid, 
-              errors: Object.keys(errors).length > 0 ? errors : 'No errors',
-              touched: Object.keys(touched).length > 0 ? touched : 'No touched fields',
-              hasInstruments: values.academicInfo?.instrumentProgress?.length > 0,
-              hasStudentEmail: !!values.personalInfo?.studentEmail,
-              instrumentCount: values.academicInfo?.instrumentProgress?.length || 0
-            });
             
             return (
             <Form>
@@ -269,16 +257,20 @@ export function StudentForm({
                   className='btn primary'
                   disabled={isSubmitting || formikSubmitting}
                   onClick={(e) => {
-                    console.log('🎯 Submit button clicked!', {
-                      type: e.currentTarget.type,
-                      disabled: e.currentTarget.disabled,
-                      isSubmitting,
-                      formikSubmitting,
-                      isValid,
-                      errors: Object.keys(errors)
-                    });
                     if (!isValid) {
-                      console.log('❌ Form is not valid, errors:', errors);
+                      // Log only essential validation errors for debugging
+                      if (errors.academicInfo) {
+                        console.log('📚 Academic info validation errors:', errors.academicInfo);
+                      }
+                      if (errors.personalInfo) {
+                        console.log('👤 Personal info validation errors:', errors.personalInfo);
+                      }
+                      if (errors.teacherAssignments) {
+                        console.log('👨‍🏫 Teacher assignment validation errors:', errors.teacherAssignments);
+                      }
+                      
+                      // Show user-friendly error messages
+                      alert('יש שגיאות בטופס. אנא בדוק את השדות המסומנים באדום ותקן אותם לפני השליחה.');
                     }
                   }}
                 >
