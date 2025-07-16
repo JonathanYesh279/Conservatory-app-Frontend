@@ -34,11 +34,9 @@
     padding: 2rem;
     padding-bottom: 3rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 25px rgba(0, 0, 0, 0.2);
-    margin: auto;
     border: 1px solid var(--border-color);
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
-    height: 750px;
     
     &:hover {
       scrollbar-color: var(--border-color) transparent;
@@ -419,60 +417,40 @@
       padding: 2rem 0 0.5rem 0;
       
       button {
-          padding: 1rem 2.5rem;
-          border-radius: 0.75rem;
-          font-weight: 600;
-          font-size: 0.95rem;
+          width: 146px;
+          height: 39px;
+          border-radius: 0.5rem;
+          font-weight: 500;
+          font-size: 1rem;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          min-width: 140px;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
           
           &.primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            background: var(--primary-color);
             color: white;
             border: none;
-            box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.25),
-                       0 2px 8px rgba(0, 0, 0, 0.1);
             
             &:hover:not(:disabled) {
-              transform: translateY(-2px);
-              box-shadow: 0 8px 24px rgba(var(--primary-color-rgb), 0.35),
-                         0 4px 12px rgba(0, 0, 0, 0.15);
-            }
-            
-            &:active {
-              transform: translateY(-1px);
-              box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.25);
+              background: var(--primary-dark);
             }
             
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
-              transform: none;
-              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
           }
           
           &.secondary {
-            background-color: var(--bg-card);
+            background-color: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
             
             &:hover {
               background-color: var(--bg-secondary);
-              border-color: var(--primary-color);
-              transform: translateY(-2px);
-              box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.1),
-                         0 3px 10px rgba(0, 0, 0, 0.08);
-            }
-            
-            &:active {
-              transform: translateY(-1px);
             }
           }
         }
@@ -519,25 +497,24 @@
     width: 100%;
     max-width: 950px;
     padding: 1.85rem;
-    height: 555px;
   }
 }
 
 @media (max-width: 768px) {
   .orchestra-form {
     padding: 1rem;
-    padding-bottom: 1.5rem; // Extra bottom padding for mobile
     align-items: flex-start;
     
     .form-modal {
       width: 100%;
       max-width: none;
-      max-height: calc(100vh - 2rem);
+      max-height: calc(100vh - 4rem);
       padding: 1.5rem 1rem;
-      padding-bottom: 3rem; // Extra bottom padding for form content
+      padding-bottom: 1rem;
       border-radius: 1rem 1rem 0 0;
       margin: 0;
-      margin-top: auto;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
     
       h2 {
         font-size: 1.2rem;
@@ -592,14 +569,13 @@
       .form-actions {
         padding-top: 1.5rem;
         margin-top: 1.5rem;
-        flex-direction: column;
+        flex-direction: row;
         gap: 0.75rem;
         
         button {
-          width: 100%;
-          min-width: auto;
-          padding: 0.875rem 1.5rem;
-          font-size: 0.9rem;
+          width: 146px;
+          height: 39px;
+          font-size: 1rem;
         }
       }
     }

@@ -174,6 +174,23 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         savedTeacher = await teacherService.addTeacher(teacher);
       }
 
+      // Validate the saved teacher structure
+      if (!savedTeacher || !savedTeacher._id || !savedTeacher.personalInfo) {
+        console.error('Invalid teacher structure returned from API:', {
+          hasData: !!savedTeacher,
+          hasId: !!savedTeacher?._id,
+          hasPersonalInfo: !!savedTeacher?.personalInfo,
+          fullData: savedTeacher
+        });
+        throw new Error('Invalid teacher data received from server');
+      }
+      
+      console.log('Teacher saved successfully with structure:', {
+        id: savedTeacher._id,
+        personalInfo: savedTeacher.personalInfo,
+        roles: savedTeacher.roles
+      });
+
       // Update the teachers array
       const teachers = [...get().teachers];
       const index = teachers.findIndex((t) => t._id === savedTeacher._id);

@@ -93,16 +93,18 @@ export function TeacherList({
 
   return (
     <div className='teacher-grid'>
-      {teachers.map((teacher) => (
-        <TeacherPreview
-          key={teacher._id}
-          teacher={teacher}
-          onEdit={onEdit}
-          onView={onView || onEdit}
-          onRemove={onRemove}
-          studentCount={teacherStudentCounts[teacher._id] || 0}
-        />
-      ))}
+      {teachers
+        .filter(teacher => teacher && teacher._id && teacher.personalInfo)
+        .map((teacher) => (
+          <TeacherPreview
+            key={teacher._id}
+            teacher={teacher}
+            onEdit={onEdit}
+            onView={onView || onEdit}
+            onRemove={onRemove}
+            studentCount={teacherStudentCounts[teacher._id] || 0}
+          />
+        ))}
     </div>
   );
 }

@@ -151,11 +151,11 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
   // First get the base data using the update function
   const prepared = prepareTeacherForUpdate(teacher);
 
-  // Then add credentials for new teacher
+  // For new teachers, only include email in credentials (password will be set via invitation)
   if (teacher.credentials) {
     prepared.credentials = {
       email: teacher.personalInfo?.email || teacher.credentials.email || '',
-      password: teacher.credentials.password || '',
+      // Password removed - will be set via invitation system
     };
   }
 
@@ -189,7 +189,21 @@ function createPlaceholderTeacher(teacherId: string): Teacher {
 export const teacherService = {
   async getTeachers(filterBy: TeacherFilter = {}): Promise<Teacher[]> {
     try {
-      return await httpService.get('teacher', filterBy);
+      const response = await httpService.get('teacher', filterBy);
+      
+      // Handle wrapped response structure {success: true, data: [...]}
+      let teachersData = response;
+      if (response && response.success && response.data) {
+        teachersData = response.data;
+      }
+      
+      // Ensure we return an array
+      if (!Array.isArray(teachersData)) {
+        console.warn('Teachers response is not an array:', teachersData);
+        return [];
+      }
+      
+      return teachersData;
     } catch (error) {
       console.error('Failed to get teachers:', error);
       throw new Error('Failed to load teachers. Please try again later.');
@@ -207,13 +221,19 @@ export const teacherService = {
       console.log(`Fetching teacher with ID: ${teacherId}`);
       const response = await httpService.get(`teacher/${teacherId}`);
 
-      if (!response || !response._id) {
+      // Handle wrapped response structure {success: true, data: {...}}
+      let teacherData = response;
+      if (response && response.success && response.data) {
+        teacherData = response.data;
+      }
+
+      if (!teacherData || !teacherData._id) {
         console.warn(`No valid teacher data found for ID ${teacherId}`);
         return createPlaceholderTeacher(teacherId);
       }
 
-      console.log(`Teacher data received:`, response);
-      return response;
+      console.log(`Teacher data received:`, teacherData);
+      return teacherData;
     } catch (error) {
       console.error(`Failed to get teacher with ID ${teacherId}:`, error);
       // Instead of returning null, return a placeholder teacher object
@@ -259,16 +279,22 @@ export const teacherService = {
       console.log(`Fetching teachers with role '${role}' from API`);
       const response = await httpService.get(`teacher/role/${role}`);
 
-      if (!Array.isArray(response)) {
+      // Handle wrapped response structure {success: true, data: [...]}
+      let teachersData = response;
+      if (response && response.success && response.data) {
+        teachersData = response.data;
+      }
+
+      if (!Array.isArray(teachersData)) {
         console.warn(
           `API response for getTeachersByRole is not an array:`,
-          response
+          teachersData
         );
         return [];
       }
 
       // Filter to ensure we only get active teachers with the exact role
-      const filteredTeachers = response.filter(
+      const filteredTeachers = teachersData.filter(
         (teacher) =>
           teacher.isActive !== false &&
           teacher.roles &&
@@ -299,7 +325,25 @@ export const teacherService = {
     const prepared = prepareNewTeacher(teacher);
     console.log('Creating new teacher with data:', prepared);
     try {
-      return await httpService.post('teacher', prepared);
+      const response = await httpService.post('teacher', prepared);
+      
+      // Handle wrapped response structure {success: true, data: {...}}
+      let teacherData = response;
+      if (response && response.success && response.data) {
+        teacherData = response.data;
+      }
+      
+      // Validate teacher data structure
+      if (!teacherData || !teacherData._id || !teacherData.personalInfo) {
+        console.error('Invalid teacher response structure:', {
+          originalResponse: response,
+          extractedData: teacherData
+        });
+        throw new Error('Invalid teacher data received from server');
+      }
+      
+      console.log('Successfully created teacher:', teacherData);
+      return teacherData;
     } catch (error) {
       console.error('Failed to add new teacher:', error);
       throw new Error(
@@ -319,7 +363,25 @@ export const teacherService = {
 
     try {
       // Send update request
-      return await httpService.put(`teacher/${teacherId}`, prepared);
+      const response = await httpService.put(`teacher/${teacherId}`, prepared);
+      
+      // Handle wrapped response structure {success: true, data: {...}}
+      let teacherData = response;
+      if (response && response.success && response.data) {
+        teacherData = response.data;
+      }
+      
+      // Validate teacher data structure
+      if (!teacherData || !teacherData._id || !teacherData.personalInfo) {
+        console.error('Invalid teacher update response structure:', {
+          originalResponse: response,
+          extractedData: teacherData
+        });
+        throw new Error('Invalid teacher data received from server');
+      }
+      
+      console.log('Successfully updated teacher:', teacherData);
+      return teacherData;
     } catch (error) {
       console.error(`Failed to update teacher ${teacherId}:`, error);
       throw new Error(

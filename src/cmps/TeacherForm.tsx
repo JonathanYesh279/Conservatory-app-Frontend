@@ -9,6 +9,7 @@ import {
   Calendar,
   ArrowLeft,
   AlertCircle,
+  Mail,
 } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { Formik, Form, FormikHelpers } from 'formik';
@@ -192,7 +193,6 @@ export function TeacherForm({
         schoolYears: teacher.schoolYears || [],
         credentials: {
           email: teacher.personalInfo?.email || '',
-          password: '', // Don't include password for updates
         },
         isActive: teacher.isActive !== false,
       };
@@ -257,7 +257,7 @@ export function TeacherForm({
     // Show success toast
     const toastMessage = teacherId 
       ? `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} עודכן בהצלחה` 
-      : `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} נוסף בהצלחה`;
+      : `הזמנה נשלחה בהצלחה ל-${dataToSend.personalInfo?.email || 'המורה'}`;
     
     addToast({
       type: 'success',
@@ -937,79 +937,23 @@ export function TeacherForm({
                       </div>
                     )}
 
-                    {/* Authentication - Only shown for new teachers */}
+                    {/* Invitation Info - Only shown for new teachers */}
                     {isNewTeacher && (
                       <div className='form-section'>
-                        <h3>הרשאות</h3>
-
-                        {/* Email (this should be disabled and synced with the personal email) */}
-                        <div className='form-row full-width'>
-                          <FormField
-                            label='דוא"ל (להתחברות)'
-                            name='credentials.email'
-                            type='email'
-                            required
-                            disabled={true} // Always disabled - synced with personal email
-                          />
-                        </div>
-
-                        {/* Password */}
-                        <div className='form-row full-width'>
-                          <div className='form-group'>
-                            <label
-                              htmlFor='password'
-                              className={
-                                errors.credentials?.password &&
-                                touched.credentials?.password
-                                  ? 'required-field is-invalid'
-                                  : 'required-field'
-                              }
-                            >
-                              סיסמה
-                            </label>
-                            <div className='password-input-container'>
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                id='password'
-                                name='credentials.password'
-                                value={values.credentials.password}
-                                onChange={(e) => {
-                                  setFieldValue(
-                                    'credentials.password',
-                                    e.target.value
-                                  );
-                                }}
-                                className={
-                                  errors.credentials?.password &&
-                                  touched.credentials?.password
-                                    ? 'is-invalid'
-                                    : ''
-                                }
-                                required
-                                disabled={isSubmitting}
-                              />
-                              <button
-                                type='button'
-                                className='toggle-password-btn'
-                                onClick={() => setShowPassword(!showPassword)}
-                                aria-label={
-                                  showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'
-                                }
-                                disabled={isSubmitting}
-                              >
-                                {showPassword ? (
-                                  <EyeOff size={16} />
-                                ) : (
-                                  <Eye size={16} />
-                                )}
-                              </button>
-                            </div>
-                            {errors.credentials?.password &&
-                              touched.credentials?.password && (
-                                <div className='form-error'>
-                                  {errors.credentials.password}
-                                </div>
-                              )}
+                        <h3>הזמנה למערכת</h3>
+                        
+                        <div className='invitation-info-card'>
+                          <div className='invitation-icon'>
+                            <Mail size={24} />
+                          </div>
+                          <div className='invitation-content'>
+                            <h4>הזמנה תישלח אוטומטית</h4>
+                            <p>
+                              לאחר שמירת המורה, תישלח הזמנה אוטומטית לכתובת הדוא"ל <strong>{values.personalInfo.email}</strong>
+                            </p>
+                            <p>
+                              המורה יקבל קישור להגדרת סיסמה ויוכל להתחבר למערכת
+                            </p>
                           </div>
                         </div>
                       </div>

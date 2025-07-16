@@ -27,8 +27,15 @@ export function TeacherPreview({
   onRemove,
   studentCount,
 }: TeacherPreviewProps) {
+  // Safety check for teacher data
+  if (!teacher || !teacher.personalInfo) {
+    console.error('TeacherPreview: Invalid teacher data', teacher);
+    return null;
+  }
+
   // Get initials for avatar
   const getInitials = (name: string): string => {
+    if (!name) return 'NA';
     return name
       .split(' ')
       .map((n) => n[0])

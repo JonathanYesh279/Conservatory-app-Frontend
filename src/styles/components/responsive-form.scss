@@ -6,7 +6,6 @@
     position: relative;
     background-color: var(--bg-card, #1e2a3b);
     border-radius: 1rem;
-    max-height: 95vh;
     overflow-y: auto;
     box-shadow: var(--shadow-lg, 0 8px 30px rgba(0, 0, 0, 0.4));
     margin: 0 auto;
@@ -406,7 +405,8 @@
     border-top: 1px solid var(--border-color, rgba(100, 100, 100, 0.3));
     
     button {
-      padding: 0.6rem 1.5rem;
+      width: 146px;
+      height: 39px;
       border-radius: 0.5rem;
       font-weight: 500;
       cursor: pointer;
@@ -650,9 +650,12 @@
     .form-actions {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
+      position: relative !important;
+      bottom: auto !important;
       
       button {
-        padding: 0.5rem 1rem;
+        width: 146px;
+        height: 39px;
         font-size: 0.9rem;
       }
     }

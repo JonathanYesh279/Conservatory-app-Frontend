@@ -113,7 +113,7 @@ export const teacherValidationSchema = Yup.object().shape({
     })
   ),
 
-  // Credentials - only validated for new teachers
+  // Credentials - email only for new teachers (password will be set via invitation)
   credentials: Yup.object().when('_id', {
     is: (id: string) => !id, // Only apply when _id is not present (new teacher)
     then: () =>
@@ -121,9 +121,7 @@ export const teacherValidationSchema = Yup.object().shape({
         email: Yup.string()
           .required('דוא"ל הוא שדה חובה')
           .email('כתובת דוא"ל לא תקינה'),
-        password: Yup.string()
-          .required('סיסמה היא שדה חובה')
-          .min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
+        // Password removed - will be set via invitation system
       }),
     otherwise: () => Yup.object(), // No validation for existing teachers
   }),
@@ -165,7 +163,6 @@ export interface TeacherFormData {
   }>;
   credentials: {
     email: string;
-    password: string;
   };
   isActive: boolean;
 }
@@ -194,7 +191,6 @@ export const initialTeacherFormValues: TeacherFormData = {
   schoolYears: [],
   credentials: {
     email: '',
-    password: '',
   },
   isActive: true,
 };

@@ -8,6 +8,7 @@ import {
   Outlet,
 } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
 import { useTeacherStore } from './store/teacherStore'; // Import teacher store
@@ -80,6 +81,7 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path='/login' element={<LoginPage />} />
+              <Route path='/accept-invitation/:token' element={<AcceptInvitationPage />} />
               <Route
                 path='/event-registration'
                 element={<EventRegistrationForm />}

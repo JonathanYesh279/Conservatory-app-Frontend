@@ -3,6 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  max-height: 100vh;
   width: 100%;
   position: relative;
   overflow: hidden;
@@ -306,6 +307,146 @@
       .icon {
         width: 20px;
         height: 20px;
+      }
+    }
+    
+    // Password validation indicators
+    .password-validation {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+      
+      .validation-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        
+        svg {
+          width: 16px;
+          height: 16px;
+          transition: color 0.2s ease;
+        }
+        
+        &.valid svg {
+          color: #10b981;
+        }
+        
+        &.invalid svg {
+          color: #ef4444;
+        }
+      }
+    }
+    
+    // Toggle password buttons
+    .toggle-password-btn {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 4px;
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: rgba(255, 255, 255, 0.9);
+      }
+      
+      [data-theme="light"] & {
+        color: var(--primary-color);
+        
+        &:hover {
+          color: var(--primary-dark);
+        }
+      }
+    }
+    
+    // Loading spinner
+    .loading-spinner {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      
+      .spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        border-top: 3px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    // Smaller form variant for invitation acceptance
+    &.compact-form {
+      max-width: 320px;
+      padding: 2rem 2rem;
+      gap: 1.5rem;
+      
+      h1 {
+        font-size: 1.8rem;
+        margin-bottom: 0.25rem;
+      }
+      
+      .subtitle {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .form-section {
+        gap: 1.25rem;
+      }
+      
+      .input-container {
+        input {
+          height: 48px;
+          padding: 1rem 2.25rem;
+          font-size: 0.9rem;
+        }
+        
+        label {
+          font-size: 0.9rem;
+        }
+      }
+      
+      .password-validation {
+        gap: 0.5rem;
+        
+        .validation-item {
+          font-size: 0.8rem;
+          
+          svg {
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
+      
+      button[type="submit"] {
+        padding: 0.7rem;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+      }
+      
+      .invitation-info {
+        font-size: 0.8rem;
+        margin-top: 0.5rem;
+        
+        p {
+          margin: 0;
+          color: rgba(255, 255, 255, 0.8);
+        }
       }
     }
   }
