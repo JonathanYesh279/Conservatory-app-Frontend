@@ -1,455 +1,144 @@
-// Additional styling for invitation acceptance page
-// This extends the existing login-page styles
+// Accept Invitation Page styles - extending the original login page design
+// This file adds specific styles for the invitation acceptance functionality
+// while maintaining the original login page design
 
 .login-page {
-  // Enhanced gradient background
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  // Password validation indicators
+  .password-validation {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+    
+    .validation-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.9);
+      
+      svg {
+        width: 16px;
+        height: 16px;
+        transition: color 0.2s ease;
+      }
+      
+      &.valid svg {
+        color: #10b981;
+      }
+      
+      &.invalid svg {
+        color: #ef4444;
+      }
+    }
+  }
   
-  .login-form {
-    // Enhanced container styling
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    overflow: hidden;
-    position: relative;
+  // Toggle password buttons
+  .toggle-password-btn {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: color 0.2s ease;
     
-    // Gradient top border
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 4px;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    &:hover {
+      color: rgba(255, 255, 255, 0.9);
     }
     
-    // Music note logo
-    &::after {
-      content: '🎵';
-      position: absolute;
-      top: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 48px;
-      z-index: 1;
+    [data-theme="light"] & {
+      color: var(--primary-color);
+      
+      &:hover {
+        color: var(--primary-dark);
+      }
     }
+  }
+  
+  // Loading spinner
+  .loading-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     
-    // Adjust header spacing for logo
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  // Smaller form variant for invitation acceptance
+  .login-form.compact-form {
+    max-width: 320px;
+    padding: 2rem 2rem;
+    gap: 1.5rem;
+    
     h1 {
-      margin-top: 80px;
-      font-size: 28px;
-      font-weight: 600;
-      color: #2c3e50;
+      font-size: 1.8rem;
+      margin-bottom: 0.25rem;
     }
     
     .subtitle {
-      color: #7f8c8d;
-      font-size: 16px;
-      margin-bottom: 30px;
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
     }
     
-    // Loading spinner
-    .loading-spinner {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-      
-      .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid rgba(102, 126, 234, 0.3);
-        border-top: 3px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
+    .form-section {
+      gap: 1.25rem;
     }
-
-    // Error message enhancements
-    .error-message {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      text-align: center;
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-      animation: slideIn 0.3s ease;
-      
-      svg {
-        flex-shrink: 0;
-      }
-    }
-
-    // Enhanced input styling
+    
     .input-container {
-      position: relative;
-      margin-bottom: 25px;
-      
-      input[type="password"] {
-        width: 100%;
-        padding: 15px 50px 15px 20px;
-        border: 2px solid #e1e5e9;
-        border-radius: 12px;
-        font-size: 16px;
-        background-color: #f8f9fa;
-        transition: all 0.3s ease;
-        direction: ltr;
-        
-        &:focus {
-          outline: none;
-          border-color: #667eea;
-          background-color: white;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        &::placeholder {
-          color: #a0a6b1;
-        }
+      input {
+        height: 48px;
+        padding: 1rem 2.25rem;
+        font-size: 0.9rem;
       }
       
       label {
-        position: absolute;
-        top: 50%;
-        right: 20px;
-        transform: translateY(-50%);
-        color: #34495e;
-        font-weight: 600;
-        font-size: 14px;
-        pointer-events: none;
-        transition: all 0.3s ease;
-        
-        // Float label when input has value or is focused
-        input.has-value + &,
-        input:focus + & {
-          top: -10px;
-          font-size: 12px;
-          color: #667eea;
-          background: white;
-          padding: 0 5px;
-        }
-      }
-      
-      .toggle-password-btn {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        color: #7f8c8d;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 4px;
-        transition: color 0.2s ease, background-color 0.2s ease;
-        
-        &:hover {
-          color: #667eea;
-          background-color: rgba(102, 126, 234, 0.1);
-        }
-        
-        &:focus {
-          outline: none;
-          box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
-        }
+        font-size: 0.9rem;
       }
     }
-
-    // Password validation indicators
+    
     .password-validation {
-      display: flex;
-      flex-direction: column;
       gap: 0.5rem;
-      margin-top: 0.5rem;
-      margin-bottom: 25px;
       
       .validation-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-        
-        &.valid {
-          color: #22c55e;
-          
-          svg {
-            color: #22c55e;
-          }
-        }
-        
-        &.invalid {
-          color: #7f8c8d;
-          
-          svg {
-            color: #bdc3c7;
-          }
-        }
+        font-size: 0.8rem;
         
         svg {
-          width: 16px;
-          height: 16px;
-          flex-shrink: 0;
+          width: 14px;
+          height: 14px;
         }
       }
     }
-
-    // Enhanced button styling
-    button[type="submit"] {
-      width: 100%;
-      padding: 18px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      
-      &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-      }
-      
-      &:active {
-        transform: translateY(0);
-      }
-      
-      &:disabled {
-        background: #bdc3c7;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-      }
-    }
-
-    // Invitation info
-    .invitation-info {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #e1e5e9;
-      
-      p {
-        color: #7f8c8d;
-        font-size: 0.9rem;
-        margin: 0;
-      }
-    }
-
-    // Success message styling
-    .success-message {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-      border-radius: 12px;
-      padding: 15px;
-      margin: 20px 0;
-      text-align: center;
-      font-weight: 500;
-      animation: slideIn 0.3s ease;
-    }
-
-    // Loading state
-    .loading {
-      text-align: center;
-      margin-top: 20px;
-      color: #667eea;
-      
-      &::after {
-        content: '';
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #667eea;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 10px;
-      }
-    }
-
-    // Footer styling
-    .footer {
-      text-align: center;
-      margin-top: 30px;
-      padding-top: 20px;
-      border-top: 1px solid #e1e5e9;
-      color: #7f8c8d;
-      font-size: 14px;
-      
-      p {
-        margin: 5px 0;
-        
-        &:first-child {
-          font-weight: 500;
-        }
-      }
-    }
-  }
-}
-
-// Animations
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Responsive adjustments
-@media (max-width: 480px) {
-  .login-page {
-    padding: 10px;
     
-    .login-form {
-      padding: 25px;
-      margin: 10px;
-      
-      &::after {
-        top: 25px;
-        font-size: 40px;
-      }
-      
-      h1 {
-        font-size: 24px;
-        margin-top: 65px;
-      }
-      
-      .input-container {
-        input[type="password"] {
-          padding: 15px 45px 15px 15px;
-        }
-        
-        .toggle-password-btn {
-          left: 12px;
-        }
-      }
-      
-      button[type="submit"] {
-        padding: 15px;
-        font-size: 14px;
-      }
+    button[type="submit"] {
+      padding: 0.7rem;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
     }
-  }
-}
-
-// Dark mode specific adjustments
-body.dark-theme {
-  .login-page {
-    .login-form {
-      background: #1a1a1a;
-      color: #ffffff;
+    
+    .invitation-info {
+      font-size: 0.8rem;
+      margin-top: 0.5rem;
       
-      &::before {
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      }
-      
-      h1 {
-        color: #ffffff;
-      }
-      
-      .subtitle {
-        color: #a0a0a0;
-      }
-      
-      .input-container {
-        input[type="password"] {
-          background-color: #2a2a2a;
-          border-color: #404040;
-          color: #ffffff;
-          
-          &:focus {
-            border-color: #667eea;
-            background-color: #1a1a1a;
-          }
-          
-          &::placeholder {
-            color: #666666;
-          }
-        }
-        
-        label {
-          color: #a0a0a0;
-          
-          input.has-value + &,
-          input:focus + & {
-            color: #667eea;
-            background: #1a1a1a;
-          }
-        }
-        
-        .toggle-password-btn {
-          color: #a0a0a0;
-          
-          &:hover {
-            color: #667eea;
-            background-color: rgba(102, 126, 234, 0.2);
-          }
-        }
-      }
-      
-      .error-message {
-        background-color: #2a1a1a;
-        color: #ff6b6b;
-        border-color: #4a2a2a;
-      }
-      
-      .success-message {
-        background-color: #1a2a1a;
-        color: #4ade80;
-        border-color: #2a4a2a;
-      }
-      
-      .invitation-info {
-        border-top-color: #404040;
-        
-        p {
-          color: #a0a0a0;
-        }
-      }
-      
-      .footer {
-        border-top-color: #404040;
-        color: #a0a0a0;
-      }
-    }
-  }
-}
-
-// RTL specific styles
-html[dir="rtl"] {
-  .login-page .login-form {
-    .input-container {
-      .toggle-password-btn {
-        left: auto;
-        right: 15px;
-      }
-      
-      input[type="password"] {
-        text-align: right;
-        padding: 15px 20px 15px 50px;
-      }
-      
-      label {
-        left: 20px;
-        right: auto;
+      p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.8);
       }
     }
   }
