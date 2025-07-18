@@ -14,6 +14,9 @@ import { studentValidationSchema } from '../../validations/studentValidation';
 import { useStudentApiService } from '../../hooks/useStudentApiService';
 import { useSchoolYearStore } from '../../store/schoolYearStore';
 import { LessonDuration } from '../../types/schedule';
+import { useAuth } from '../../hooks/useAuth';
+import { useAuthorization, createAuthorizationContext } from '../../utils/authorization';
+import { sanitizeError } from '../../utils/errorHandler';
 
 // Import from constants file
 import {
@@ -43,10 +46,15 @@ export function StudentForm({
 }: StudentFormProps) {
   const { currentSchoolYear } = useSchoolYearStore();
   const [formError, setFormError] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
   const { saveStudentData, isSubmitting, error } = useStudentApiService({
     onClose,
     onStudentCreated,
   });
+
+  // Initialize authorization
+  const authContext = createAuthorizationContext(user, isAuthenticated);
+  const auth = useAuthorization(authContext);
 
   // Accessibility hook
   const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
@@ -152,6 +160,15 @@ export function StudentForm({
     try {
       setFormError(null);
       
+      // Check authorization before proceeding
+      if (student?._id) {
+        // Editing existing student
+        auth.validateAction('update', student as Student, 'student');
+      } else {
+        // Adding new student
+        auth.validateAction('add', undefined, 'student');
+      }
+      
       // Prepare student data for submission
       const studentData: Partial<Student> = {
         _id: values._id,
@@ -183,7 +200,10 @@ export function StudentForm({
       // Close form is handled by the API service via onClose prop
     } catch (err) {
       console.error('Error during form submission:', err);
-      setFormError(err instanceof Error ? err.message : 'שגיאה בשמירת תלמיד');
+      
+      // Use sanitized error handling
+      const sanitizedError = sanitizeError(err);
+      setFormError(sanitizedError.userMessage);
       formikHelpers.setSubmitting(false);
     }
   };

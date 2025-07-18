@@ -19,15 +19,29 @@ export function TheoryPreview({
   onRemove,
   isToday = false,
 }: TheoryPreviewProps) {
+  // Safety check for theory lesson data
+  if (!theoryLesson || !theoryLesson._id) {
+    console.error('TheoryPreview: Invalid theory lesson data', theoryLesson);
+    return null;
+  }
   // Calculate duration in minutes
-  const calculateDuration = (startTime: string, endTime: string): number => {
-    const [startHours, startMinutes] = startTime.split(':').map(Number);
-    const [endHours, endMinutes] = endTime.split(':').map(Number);
+  const calculateDuration = (startTime: string | undefined, endTime: string | undefined): number => {
+    if (!startTime || !endTime) {
+      return 60; // Default to 1 hour if times are missing
+    }
+    
+    try {
+      const [startHours, startMinutes] = startTime.split(':').map(Number);
+      const [endHours, endMinutes] = endTime.split(':').map(Number);
 
-    const start = startHours * 60 + startMinutes;
-    const end = endHours * 60 + endMinutes;
+      const start = startHours * 60 + startMinutes;
+      const end = endHours * 60 + endMinutes;
 
-    return end - start;
+      return end - start;
+    } catch (error) {
+      console.error('Error calculating duration:', error, { startTime, endTime });
+      return 60; // Default to 1 hour if calculation fails
+    }
   };
 
   // Format duration for display
@@ -48,7 +62,10 @@ export function TheoryPreview({
     }
   };
 
-  const duration = calculateDuration(theoryLesson.startTime, theoryLesson.endTime);
+  // Safely calculate duration with fallbacks
+  const startTime = theoryLesson.startTime || '09:00';
+  const endTime = theoryLesson.endTime || '10:00';
+  const duration = calculateDuration(startTime, endTime);
   const studentCount = theoryLesson.studentIds?.length || 0;
 
   return (

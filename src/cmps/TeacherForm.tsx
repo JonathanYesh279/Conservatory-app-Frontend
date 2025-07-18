@@ -21,10 +21,12 @@ import { useSchoolYearStore } from '../store/schoolYearStore';
 import { useToast } from './Toast';
 import { Orchestra, orchestraService } from '../services/orchestraService';
 import { DuplicateConfirmationModal } from './DuplicateConfirmationModal';
-import { DuplicateDetectionInfo } from '../utils/errorHandler';
+import { DuplicateDetectionInfo, sanitizeError } from '../utils/errorHandler';
 import { FormField } from './FormComponents/FormField';
 import { TeacherTimeBlockManager } from './TeacherForm/TeacherTimeBlockManager';
 import { TimeBlock } from '../types/schedule';
+import { useAuth } from '../hooks/useAuth';
+import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
 import {
   teacherValidationSchema,
   initialTeacherFormValues,
@@ -101,12 +103,15 @@ export function TeacherForm({
   const { saveTeacher, isLoading } = useTeacherStore();
   const { currentSchoolYear } = useSchoolYearStore();
   const { addToast, showError } = useToast();
+  const { user, isAuthenticated } = useAuth();
+
+  // Initialize authorization
+  const authContext = createAuthorizationContext(user, isAuthenticated);
+  const auth = useAuthorization(authContext);
 
   // Helper function to check if user has admin privileges
   const isAdmin = () => {
-    // TODO: Implement proper admin check based on your auth system
-    // For now, return false - replace with actual admin check
-    return false;
+    return auth.isAdmin();
   };
 
   // Helper function to reset duplicate state
@@ -285,6 +290,22 @@ export function TeacherForm({
   ) => {
     setApiError(null);
     resetDuplicateState();
+    
+    // Check authorization before proceeding
+    try {
+      if (teacher?._id) {
+        // Editing existing teacher
+        auth.validateAction('update', teacher as Teacher, 'teacher');
+      } else {
+        // Adding new teacher
+        auth.validateAction('add', undefined, 'teacher');
+      }
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      setApiError(sanitizedError.userMessage);
+      setSubmitting(false);
+      return;
+    }
     
     // Prepare data for submission - declare outside try block for error handling
     let dataToSend: any;

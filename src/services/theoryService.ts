@@ -179,7 +179,16 @@ export const theoryService = {
     }
 
     console.log('Adding theory lesson with data:', theoryLesson);
-    return httpService.post('theory', theoryLesson);
+    const response = await httpService.post('theory', theoryLesson);
+    
+    // Handle wrapped response format from backend
+    if (response && typeof response === 'object' && 'data' in response) {
+      console.log('Backend returned wrapped response:', response);
+      return response.data;
+    }
+    
+    // If response is already unwrapped, return as is
+    return response;
   },
 
   // Update an existing theory lesson
@@ -196,7 +205,16 @@ export const theoryService = {
       theoryLessonWithoutId.dayOfWeek = date.getDay();
     }
 
-    return httpService.put(`theory/${theoryLessonId}`, theoryLessonWithoutId);
+    const response = await httpService.put(`theory/${theoryLessonId}`, theoryLessonWithoutId);
+    
+    // Handle wrapped response format from backend
+    if (response && typeof response === 'object' && 'data' in response) {
+      console.log('Backend returned wrapped update response:', response);
+      return response.data;
+    }
+    
+    // If response is already unwrapped, return as is
+    return response;
   },
 
   // Hard delete a theory lesson (permanently removes from database)
@@ -276,6 +294,13 @@ export const theoryService = {
         }
       );
 
+      // Handle wrapped response format from backend
+      if (response && typeof response === 'object' && 'data' in response) {
+        console.log('Backend returned wrapped bulk response:', response);
+        return response.data;
+      }
+      
+      // If response is already unwrapped, return as is
       return response;
     } catch (error) {
       // Use centralized error handling
@@ -295,7 +320,16 @@ export const theoryService = {
     theoryLessonId: string,
     attendance: { present: string[]; absent: string[] }
   ): Promise<TheoryLesson> {
-    return httpService.put(`theory/${theoryLessonId}/attendance`, attendance);
+    const response = await httpService.put(`theory/${theoryLessonId}/attendance`, attendance);
+    
+    // Handle wrapped response format from backend
+    if (response && typeof response === 'object' && 'data' in response) {
+      console.log('Backend returned wrapped attendance response:', response);
+      return response.data;
+    }
+    
+    // If response is already unwrapped, return as is
+    return response;
   },
 
   async getAttendance(
@@ -306,11 +340,29 @@ export const theoryService = {
 
   // Student enrollment
   async addStudentToTheory(theoryLessonId: string, studentId: string): Promise<TheoryLesson> {
-    return httpService.post(`theory/${theoryLessonId}/student`, { studentId });
+    const response = await httpService.post(`theory/${theoryLessonId}/student`, { studentId });
+    
+    // Handle wrapped response format from backend
+    if (response && typeof response === 'object' && 'data' in response) {
+      console.log('Backend returned wrapped add student response:', response);
+      return response.data;
+    }
+    
+    // If response is already unwrapped, return as is
+    return response;
   },
 
   async removeStudentFromTheory(theoryLessonId: string, studentId: string): Promise<TheoryLesson> {
-    return httpService.delete(`theory/${theoryLessonId}/student/${studentId}`);
+    const response = await httpService.delete(`theory/${theoryLessonId}/student/${studentId}`);
+    
+    // Handle wrapped response format from backend
+    if (response && typeof response === 'object' && 'data' in response) {
+      console.log('Backend returned wrapped remove student response:', response);
+      return response.data;
+    }
+    
+    // If response is already unwrapped, return as is
+    return response;
   },
 
   async getStudentTheoryAttendanceStats(studentId: string, category?: string): Promise<any> {

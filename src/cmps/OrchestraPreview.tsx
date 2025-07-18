@@ -68,8 +68,8 @@ export function OrchestraPreview({
           <div className='orchestra-info'>
             <h3 className='orchestra-name'>{orchestra.name}</h3>
             <div className='orchestra-type'>
-              <Users size={14} />
-              <span>{getMembersCountText(memberCount)}</span>
+              <Music size={14} />
+              <span>{orchestra.type}</span>
             </div>
           </div>
         </div>
@@ -78,11 +78,14 @@ export function OrchestraPreview({
       <div className='preview-content'>
         <div className='info-row'>
           <div className='info-item'>
+            <Users size={16} />
+            <span>{getMembersCountText(memberCount)}</span>
+          </div>
+          
+          <div className='info-item'>
             <Calendar size={16} />
             <span>{getRehearsalsCountText(rehearsalCount)}</span>
           </div>
-
-          {/* We can add additional info here if needed */}
         </div>
       </div>
 

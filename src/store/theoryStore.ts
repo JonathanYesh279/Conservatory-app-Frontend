@@ -160,6 +160,13 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
         }
         
         savedTheoryLesson = await theoryService.addTheoryLesson(theoryLessonToSave);
+        console.log('Theory lesson saved, returned data:', savedTheoryLesson);
+
+        // Validate that we received a proper theory lesson with ID
+        if (!savedTheoryLesson || !savedTheoryLesson._id) {
+          console.error('Backend returned invalid theory lesson data:', savedTheoryLesson);
+          throw new Error('שגיאה: השרת לא החזיר מזהה תקין לשיעור התאוריה החדש');
+        }
 
         set({
           theoryLessons: [...get().theoryLessons, savedTheoryLesson],
@@ -310,6 +317,12 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
       // Execute API call
       const result = await theoryService.bulkCreateTheoryLessons(formattedData);
       console.log('Bulk create result:', result);
+
+      // Validate the bulk creation result
+      if (!result || typeof result.insertedCount !== 'number' || !Array.isArray(result.theoryLessonIds)) {
+        console.error('Backend returned invalid bulk creation result:', result);
+        throw new Error('שגיאה: השרת לא החזיר תוצאה תקינה ליצירת שיעורי התאוריה');
+      }
 
       // After bulk creating, refresh the theory lesson list with current filter
       // This ensures we don't lose previously displayed lessons

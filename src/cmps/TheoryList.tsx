@@ -45,7 +45,11 @@ export function TheoryList({
 
     // Sort theory lessons within each group by start time
     Object.values(dateGroups).forEach((group) => {
-      group.theoryLessons.sort((a, b) => a.startTime.localeCompare(b.startTime));
+      group.theoryLessons.sort((a, b) => {
+        const timeA = a.startTime || '00:00';
+        const timeB = b.startTime || '00:00';
+        return timeA.localeCompare(timeB);
+      });
     });
 
     // Convert to array and sort with today first, then by date
@@ -89,8 +93,9 @@ export function TheoryList({
 
   // Get teacher name by id
   const getTeacherName = (teacherId: string) => {
+    if (!teacherId || !teachers) return 'מדריך לא מוגדר';
     const teacher = teachers.find((t) => t._id === teacherId);
-    return teacher ? teacher.personalInfo.fullName : 'מדריך לא מוגדר';
+    return teacher?.personalInfo?.fullName || 'מדריך לא מוגדר';
   };
 
   return (
@@ -106,17 +111,19 @@ export function TheoryList({
           </div>
 
           <div className='theory-grid'>
-            {theoryLessons.map((theoryLesson) => (
-              <TheoryPreview
-                key={theoryLesson._id}
-                theoryLesson={theoryLesson}
-                teacherName={getTeacherName(theoryLesson.teacherId)}
-                onEdit={onEdit}
-                onView={onView}
-                onRemove={onRemove}
-                isToday={isToday}
-              />
-            ))}
+            {theoryLessons
+              .filter(theoryLesson => theoryLesson && theoryLesson._id) // Filter out invalid lessons
+              .map((theoryLesson, index) => (
+                <TheoryPreview
+                  key={theoryLesson._id || `theory-${date}-${index}`}
+                  theoryLesson={theoryLesson}
+                  teacherName={getTeacherName(theoryLesson.teacherId)}
+                  onEdit={onEdit}
+                  onView={onView}
+                  onRemove={onRemove}
+                  isToday={isToday}
+                />
+              ))}
           </div>
         </div>
       ))}

@@ -4,12 +4,14 @@ import { Edit, Trash2, Calendar, Award, Music } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
 import { studentService } from '../services/studentService'; // Use studentService directly
+import { AuthorizationContext, useAuthorization } from '../utils/authorization';
 
 interface StudentPreviewProps {
   student: Student;
   onView: (studentId: string) => void;
   onEdit: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
+  authContext?: AuthorizationContext;
 }
 
 export function StudentPreview({
@@ -17,6 +19,7 @@ export function StudentPreview({
   onView,
   onEdit,
   onRemove,
+  authContext,
 }: StudentPreviewProps) {
   // Local state for the current student data
   const [currentStudent, setCurrentStudent] = useState<Student>(student);
@@ -26,6 +29,9 @@ export function StudentPreview({
 
   // Track if we've already fetched updated data to prevent infinite loops
   const [hasRefreshed, setHasRefreshed] = useState(false);
+
+  // Initialize authorization
+  const auth = authContext ? useAuthorization(authContext) : null;
 
   // Update the component when the original student prop changes
   useEffect(() => {
@@ -180,6 +186,14 @@ export function StudentPreview({
     return null;
   }
 
+  // Get permissions for this student
+  const permissions = auth?.getStudentActionPermissions(displayStudent) || {
+    canEdit: true,
+    canDelete: true,
+    showEditButton: true,
+    showDeleteButton: true
+  };
+
   return (
     <div className='student-preview' onClick={() => onView(displayStudent._id)}>
       <div className='preview-header'>
@@ -281,18 +295,20 @@ export function StudentPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
-          <button
-            className='action-btn edit'
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(displayStudent._id);
-            }}
-            aria-label='ערוך תלמיד'
-          >
-            <Edit size={20} />
-          </button>
+          {permissions.showEditButton && (
+            <button
+              className='action-btn edit'
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(displayStudent._id);
+              }}
+              aria-label='ערוך תלמיד'
+            >
+              <Edit size={20} />
+            </button>
+          )}
 
-          {onRemove && (
+          {permissions.showDeleteButton && onRemove && (
             <button
               className='action-btn delete'
               onClick={(e) => {

@@ -980,13 +980,13 @@ export function TheoryForm({
                       try {
                         const result = await onBulkSubmit(formData);
                         
-                        // If lessons were created successfully and have IDs
-                        if (result && Array.isArray(result) && result.length > 0) {
+                        // If lessons were created successfully and have IDs, update student references
+                        if (result && result.theoryLessonIds && Array.isArray(result.theoryLessonIds) && result.theoryLessonIds.length > 0) {
                           // Update student references for each created lesson
-                          for (const lesson of result) {
-                            if (lesson._id) {
+                          for (const lessonId of result.theoryLessonIds) {
+                            if (lessonId) {
                               await updateStudentReferences(
-                                lesson._id,
+                                lessonId,
                                 [],  // No previous members for new lessons
                                 formData.studentIds
                               );

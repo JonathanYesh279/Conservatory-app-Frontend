@@ -62,9 +62,15 @@ export function TheoryIndex() {
       setIsFormOpen(false);
       setEditingTheoryLesson(null);
       
-      // Navigate to the theory lesson details if not already there
-      if (location.pathname !== `/theory/${savedTheoryLesson._id}`) {
-        navigate(`/theory/${savedTheoryLesson._id}`);
+      // Navigate to the theory lesson details only if we have a valid ID
+      if (savedTheoryLesson && savedTheoryLesson._id) {
+        if (location.pathname !== `/theory/${savedTheoryLesson._id}`) {
+          navigate(`/theory/${savedTheoryLesson._id}`);
+        }
+      } else {
+        console.warn('Theory lesson saved but no ID returned, staying on index page');
+        // Reload the theory lessons to show the newly created one
+        loadTheoryLessons();
       }
       
       return savedTheoryLesson;
@@ -95,9 +101,16 @@ export function TheoryIndex() {
       console.log('Bulk creation result:', result);
       
       // Show success toast
-      showSuccess(`נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`);
+      if (result && result.insertedCount > 0) {
+        showSuccess(`נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`);
+      } else {
+        showSuccess('שיעורי התאוריה נוצרו בהצלחה');
+      }
       
       setIsFormOpen(false);
+      
+      // Return the result for the form to handle any additional logic
+      return result;
     } catch (err) {
       console.error('Error bulk creating theory lessons:', err);
       

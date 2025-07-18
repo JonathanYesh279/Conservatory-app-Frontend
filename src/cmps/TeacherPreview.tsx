@@ -11,6 +11,7 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { openWhatsApp } from '../utils/phoneUtils.ts'; // Import the utility function
+import { AuthorizationContext, useAuthorization } from '../utils/authorization';
 
 interface TeacherPreviewProps {
   teacher: Teacher;
@@ -18,6 +19,7 @@ interface TeacherPreviewProps {
   onEdit: (teacherId: string) => void;
   onRemove?: (teacherId: string) => void;
   studentCount?: number; // Add optional student count prop
+  authContext?: AuthorizationContext;
 }
 
 export function TeacherPreview({
@@ -26,12 +28,16 @@ export function TeacherPreview({
   onEdit,
   onRemove,
   studentCount,
+  authContext,
 }: TeacherPreviewProps) {
   // Safety check for teacher data
   if (!teacher || !teacher.personalInfo) {
     console.error('TeacherPreview: Invalid teacher data', teacher);
     return null;
   }
+
+  // Initialize authorization
+  const auth = authContext ? useAuthorization(authContext) : null;
 
   // Get initials for avatar
   const getInitials = (name: string): string => {
@@ -177,29 +183,45 @@ export function TeacherPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
-          <button
-            className='action-btn edit'
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit(teacher._id);
-            }}
-            aria-label='ערוך מורה'
-          >
-            <Edit size={20} />
-          </button>
+          {/* Get permissions for this teacher */}
+          {(() => {
+            const permissions = auth?.getTeacherActionPermissions(teacher) || {
+              canEdit: true,
+              canDelete: true,
+              showEditButton: true,
+              showDeleteButton: true
+            };
+            
+            return (
+              <>
+                {permissions.showEditButton && (
+                  <button
+                    className='action-btn edit'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(teacher._id);
+                    }}
+                    aria-label='ערוך מורה'
+                  >
+                    <Edit size={20} />
+                  </button>
+                )}
 
-          {onRemove && (
-            <button
-              className='action-btn delete'
-              onClick={(e) => {
-                e.stopPropagation();
-                onRemove(teacher._id);
-              }}
-              aria-label='מחק מורה'
-            >
-              <Trash2 size={20} />
-            </button>
-          )}
+                {permissions.showDeleteButton && onRemove && (
+                  <button
+                    className='action-btn delete'
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemove(teacher._id);
+                    }}
+                    aria-label='מחק מורה'
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                )}
+              </>
+            );
+          })()}
         </div>
 
         <div className='date-info'>

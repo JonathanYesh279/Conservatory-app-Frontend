@@ -13,6 +13,9 @@ import { TeacherList } from '../cmps/TeacherList';
 import { TeacherForm } from '../cmps/TeacherForm';
 import { StudentForm } from '../cmps/StudentForm/StudentForm';
 import { Student } from '../services/studentService';
+import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
+import { sanitizeError } from '../utils/errorHandler';
+import { useToast } from '../cmps/Toast';
 
 export function TeacherIndex() {
   const {
@@ -56,9 +59,14 @@ export function TeacherIndex() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const { addToast } = useToast();
 
-  const isAdmin = user?.roles.includes('מנהל');
+  // Initialize authorization
+  const authContext = createAuthorizationContext(user, isAuthenticated);
+  const auth = useAuthorization(authContext);
+
+  const isAdmin = auth.isAdmin();
   const isDetailPage =
     location.pathname.includes('/teachers/') &&
     !location.pathname.endsWith('/teachers/');
@@ -88,24 +96,35 @@ export function TeacherIndex() {
 
   // Handler functions for teacher CRUD operations
   const handleAddTeacher = () => {
-    // Important: First clear all teacher state before opening the form
-    console.log('Adding new teacher, clearing previous teacher data');
+    try {
+      auth.validateAction('add', undefined, 'teacher');
+      
+      // Important: First clear all teacher state before opening the form
+      console.log('Adding new teacher, clearing previous teacher data');
 
-    // Reset all teacher states properly
-    clearSelectedTeacher(); // Clear the store state first
-    setTeacherToEdit(null);
-    setCreatedStudent(null);
+      // Reset all teacher states properly
+      clearSelectedTeacher(); // Clear the store state first
+      setTeacherToEdit(null);
+      setCreatedStudent(null);
 
-    // Make sure the form is closed before opening it again
-    // This ensures the useEffect for form closing will trigger
-    // which helps reset state completely
-    setIsTeacherFormOpen(false);
+      // Make sure the form is closed before opening it again
+      // This ensures the useEffect for form closing will trigger
+      // which helps reset state completely
+      setIsTeacherFormOpen(false);
 
-    // Now, after states are cleared, open the form in the next tick
-    setTimeout(() => {
-      console.log('Opening empty teacher form');
-      setIsTeacherFormOpen(true);
-    }, 10); // Small delay to ensure state updates have happened
+      // Now, after states are cleared, open the form in the next tick
+      setTimeout(() => {
+        console.log('Opening empty teacher form');
+        setIsTeacherFormOpen(true);
+      }, 10); // Small delay to ensure state updates have happened
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
+    }
   };
 
   const handleCloseTeacherForm = () => {
@@ -143,10 +162,22 @@ export function TeacherIndex() {
 
   const handleEditTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId) || null;
-    console.log('Editing teacher:', teacher?.personalInfo?.fullName);
-    setTeacherToEdit(teacher);
-    setSelectedTeacher(teacher); // Update the store as well
-    setIsTeacherFormOpen(true);
+    if (!teacher) return;
+    
+    try {
+      auth.validateAction('edit', teacher, 'teacher');
+      console.log('Editing teacher:', teacher?.personalInfo?.fullName);
+      setTeacherToEdit(teacher);
+      setSelectedTeacher(teacher); // Update the store as well
+      setIsTeacherFormOpen(true);
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
+    }
   };
 
   const handleViewTeacher = (teacherId: string) => {
@@ -155,9 +186,19 @@ export function TeacherIndex() {
 
   const handleRemoveTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId);
-    if (teacher) {
+    if (!teacher) return;
+    
+    try {
+      auth.validateAction('delete', teacher, 'teacher');
       setTeacherToDelete(teacherId);
       setIsConfirmDialogOpen(true);
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
     }
   };
 
@@ -167,8 +208,21 @@ export function TeacherIndex() {
         await removeTeacher(teacherToDelete);
         setTeacherToDelete(null);
         setIsConfirmDialogOpen(false);
+        
+        // Show success toast
+        addToast({
+          type: 'success',
+          message: 'המורה נמחק בהצלחה',
+          autoCloseTime: 3000
+        });
       } catch (err) {
         console.error('Failed to remove teacher:', err);
+        const sanitizedError = sanitizeError(err);
+        addToast({
+          type: 'danger',
+          message: sanitizedError.userMessage,
+          autoCloseTime: 5000
+        });
       }
     }
   };
@@ -179,7 +233,7 @@ export function TeacherIndex() {
   };
 
   // Only admin can add new teachers
-  const canAddTeacher = isAdmin;
+  const canAddTeacher = auth.canAddTeacher();
 
   // Handle successful save of a teacher
   const handleSaveSuccess = () => {
@@ -234,7 +288,8 @@ export function TeacherIndex() {
             isLoading={isLoading}
             onEdit={handleEditTeacher}
             onView={handleViewTeacher}
-            onRemove={isAdmin ? handleRemoveTeacher : undefined}
+            onRemove={handleRemoveTeacher}
+            authContext={authContext}
           />
         )}
 

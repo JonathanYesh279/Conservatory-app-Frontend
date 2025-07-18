@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Teacher } from '../services/teacherService';
 import { studentService } from '../services/studentService';
 import { TeacherPreview } from './TeacherPreview.tsx';
+import { AuthorizationContext } from '../utils/authorization';
 
 interface TeacherListProps {
   teachers: Teacher[];
@@ -10,6 +11,7 @@ interface TeacherListProps {
   onEdit: (teacherId: string) => void;
   onView?: (teacherId: string) => void;
   onRemove?: (teacherId: string) => void;
+  authContext?: AuthorizationContext;
 }
 
 export function TeacherList({
@@ -18,6 +20,7 @@ export function TeacherList({
   onEdit,
   onView,
   onRemove,
+  authContext,
 }: TeacherListProps) {
   // State to track student counts for each teacher
   const [teacherStudentCounts, setTeacherStudentCounts] = useState<Record<string, number>>({});
@@ -103,6 +106,7 @@ export function TeacherList({
             onView={onView || onEdit}
             onRemove={onRemove}
             studentCount={teacherStudentCounts[teacher._id] || 0}
+            authContext={authContext}
           />
         ))}
     </div>

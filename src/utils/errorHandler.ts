@@ -78,8 +78,8 @@ const GENERIC_ERROR_MESSAGES = {
   network: 'בעיה בחיבור לשרת. אנא נסה שוב בעוד מספר רגעים.',
   server: 'שגיאה פנימית בשרת. אנא נסה שוב מאוחר יותר.',
   notFound: 'המשאב המבוקש לא נמצא.',
-  unauthorized: 'אין לך הרשאות לבצע פעולה זו.',
-  forbidden: 'הגישה נדחתה.',
+  unauthorized: 'אין לך הרשאות לבצע פעולה זו. אנא פנה למנהל המערכת.',
+  forbidden: 'הגישה נדחתה. אין לך הרשאות מתאימות.',
   timeout: 'הפעולה ארכה זמן רב מדי. אנא נסה שוב.',
   conflict: 'קיים קונפליקט בנתונים. אנא רענן את הדף ונסה שוב.',
   duplicateEmail: 'כתובת האימייל הזו כבר קיימת במערכת. אנא השתמש בכתובת אימייל אחרת.',
@@ -88,6 +88,17 @@ const GENERIC_ERROR_MESSAGES = {
   duplicateOrchestra: 'תזמורת עם שם זה כבר קיימת במערכת.',
   duplicateTheory: 'שיעור תאוריה עם פרטים אלו כבר קיים במערכת.',
   theoryConflict: 'קיים שיעור תאוריה באותו זמן. בחר זמן אחר.',
+  // Authorization specific errors
+  notAuthorizedToUpdate: 'אין לך הרשאות לעדכן תלמיד זה. רק המורה הקבוע או המנהל יכולים לעדכן.',
+  notAuthorizedToDelete: 'אין לך הרשאות למחוק תלמיד זה. רק המנהל יכול למחוק תלמידים.',
+  notAuthorizedToView: 'אין לך הרשאות לצפות בתלמיד זה.',
+  studentNotAssigned: 'תלמיד זה לא מוקצה אליך. פנה למנהל המערכת.',
+  // Teacher-specific authorization errors
+  notAuthorizedToUpdateTeacher: 'אין לך הרשאות לעדכן מורה זה. רק המנהל יכול לעדכן מורים אחרים.',
+  notAuthorizedToDeleteTeacher: 'אין לך הרשאות למחוק מורה זה. רק המנהל יכול למחוק מורים.',
+  notAuthorizedToViewTeacher: 'אין לך הרשאות לצפות במורה זה.',
+  notAuthorizedToAddTeacher: 'אין לך הרשאות להוסיף מורה חדש. רק המנהל יכול להוסיף מורים.',
+  canOnlyEditOwnProfile: 'אתה יכול לערוך רק את הפרופיל שלך.',
   // Multi-field duplicate detection messages
   duplicateNamePhone: 'מורה עם שם מלא ומספר טלפון זהים כבר קיים במערכת.',
   duplicateNameAddress: 'מורה עם שם מלא וכתובת דומים כבר קיים במערכת.',
@@ -106,10 +117,69 @@ function containsSensitiveInfo(message: string): boolean {
 }
 
 /**
- * Detects specific duplicate error types based on message content
+ * Detects specific error types based on message content
  */
-function detectDuplicateErrorType(message: string): keyof typeof GENERIC_ERROR_MESSAGES | null {
+function detectSpecificErrorType(message: string): keyof typeof GENERIC_ERROR_MESSAGES | null {
   const lowerMessage = message.toLowerCase();
+  
+  // Authorization errors (most specific first)
+  if (lowerMessage.includes('not authorized to update student') || 
+      lowerMessage.includes('not authorized to update') ||
+      lowerMessage.includes('לא מורשה לעדכן תלמיד') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('update'))) {
+    return 'notAuthorizedToUpdate';
+  }
+  
+  if (lowerMessage.includes('not authorized to delete student') || 
+      lowerMessage.includes('not authorized to delete') ||
+      lowerMessage.includes('לא מורשה למחוק תלמיד') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('delete'))) {
+    return 'notAuthorizedToDelete';
+  }
+  
+  if (lowerMessage.includes('not authorized to view student') || 
+      lowerMessage.includes('not authorized to view') ||
+      lowerMessage.includes('לא מורשה לצפות בתלמיד') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('view'))) {
+    return 'notAuthorizedToView';
+  }
+  
+  if (lowerMessage.includes('student not assigned to you') || 
+      lowerMessage.includes('student not assigned') ||
+      lowerMessage.includes('תלמיד לא מוקצה אליך')) {
+    return 'studentNotAssigned';
+  }
+  
+  // Teacher-specific authorization errors
+  if (lowerMessage.includes('not authorized to update teacher') || 
+      lowerMessage.includes('לא מורשה לעדכן מורה') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('teacher') && lowerMessage.includes('update'))) {
+    return 'notAuthorizedToUpdateTeacher';
+  }
+  
+  if (lowerMessage.includes('not authorized to delete teacher') || 
+      lowerMessage.includes('לא מורשה למחוק מורה') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('teacher') && lowerMessage.includes('delete'))) {
+    return 'notAuthorizedToDeleteTeacher';
+  }
+  
+  if (lowerMessage.includes('not authorized to view teacher') || 
+      lowerMessage.includes('לא מורשה לצפות במורה') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('teacher') && lowerMessage.includes('view'))) {
+    return 'notAuthorizedToViewTeacher';
+  }
+  
+  if (lowerMessage.includes('not authorized to add teacher') || 
+      lowerMessage.includes('לא מורשה להוסיף מורה') ||
+      (lowerMessage.includes('not authorized') && lowerMessage.includes('teacher') && lowerMessage.includes('add'))) {
+    return 'notAuthorizedToAddTeacher';
+  }
+  
+  if (lowerMessage.includes('can only edit own profile') || 
+      lowerMessage.includes('יכול לערוך רק את הפרופיל שלך') ||
+      lowerMessage.includes('own profile')) {
+    return 'canOnlyEditOwnProfile';
+  }
   
   // Multi-field duplicate detection (most specific first)
   if (lowerMessage.includes('full_profile_duplicate') || 
@@ -259,10 +329,10 @@ function categorizeError(error: ErrorResponse): keyof typeof GENERIC_ERROR_MESSA
   if (message) {
     const lowerMessage = message.toLowerCase();
     
-    // Check for specific duplicate errors first (most specific)
-    const duplicateType = detectDuplicateErrorType(message);
-    if (duplicateType) {
-      return duplicateType;
+    // Check for specific error types first (most specific)
+    const specificType = detectSpecificErrorType(message);
+    if (specificType) {
+      return specificType;
     }
     
     // Check for theory lesson conflicts (more specific)

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StudentFormData } from '../constants/formConstants';
 import { studentService, Student } from '../services/studentService';
 import { useToast } from '../cmps/Toast';
+import { sanitizeError } from '../utils/errorHandler';
 
 interface UseStudentApiServiceProps {
   onClose?: () => void;
@@ -112,11 +113,20 @@ export const useStudentApiService = ({
       return savedStudent;
     } catch (err) {
       console.error('Error saving student data:', err);
-      const errorObj =
-        err instanceof Error ? err : new Error('Failed to save student data');
+      
+      // Use sanitized error handling
+      const sanitizedError = sanitizeError(err);
+      const errorObj = new Error(sanitizedError.userMessage);
 
       setError(errorObj);
       setIsSubmitting(false);
+
+      // Show user-friendly error toast
+      addToast({
+        type: 'danger',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 5000
+      });
 
       if (onError) {
         onError(errorObj);
@@ -145,10 +155,14 @@ export const useStudentApiService = ({
     } catch (err) {
       console.error('Error undoing student creation:', err);
       
+      // Use sanitized error handling
+      const sanitizedError = sanitizeError(err);
+      
       // Show error toast
       addToast({
         type: 'danger',
-        message: 'אירעה שגיאה בעת ביטול הוספת התלמיד',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 5000
       });
     }
   };

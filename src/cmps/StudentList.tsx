@@ -1,6 +1,7 @@
 // src/cmps/StudentList.tsx
 import { Student } from '../services/studentService';
 import { StudentPreview } from './StudentPreview';
+import { AuthorizationContext } from '../utils/authorization';
 
 interface StudentListProps {
   students: Student[];
@@ -8,6 +9,7 @@ interface StudentListProps {
   onEdit: (studentId: string) => void;
   onView?: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
+  authContext?: AuthorizationContext;
 }
 
 export function StudentList({
@@ -16,6 +18,7 @@ export function StudentList({
   onEdit,
   onView,
   onRemove,
+  authContext,
 }: StudentListProps) {
   if (isLoading && students.length === 0) {
     return <div className='loading-state'>טוען תלמידים...</div>;
@@ -39,6 +42,7 @@ export function StudentList({
           onEdit={onEdit}
           onView={onView || onEdit} // Use view handler or fall back to edit
           onRemove={onRemove}
+          authContext={authContext}
         />
       ))}
     </div>

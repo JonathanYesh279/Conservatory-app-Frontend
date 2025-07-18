@@ -17,6 +17,9 @@ import { Student } from '../services/studentService.ts';
 import { StudentForm } from '../cmps/StudentForm/index.ts';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useSchoolYearStore } from '../store/schoolYearStore';
+import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
+import { sanitizeError } from '../utils/errorHandler';
+import { useToast } from '../cmps/Toast';
 
 export function StudentIndex() {
   const { students, isLoading, error, loadStudents, removeStudent } =
@@ -51,9 +54,14 @@ export function StudentIndex() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
+  const { addToast } = useToast();
 
-  const isAdmin = user?.roles.includes('מנהל');
+  // Initialize authorization
+  const authContext = createAuthorizationContext(user, isAuthenticated);
+  const auth = useAuthorization(authContext);
+
+  const isAdmin = auth.isAdmin();
   const isDetailPage =
     location.pathname.includes('/students/') &&
     !location.pathname.endsWith('/students/');
@@ -99,8 +107,18 @@ export function StudentIndex() {
   }, [location.state, navigate, students]);
 
   const handleAddStudent = () => {
-    setSelectedStudent(null);
-    setIsFormOpen(true);
+    try {
+      auth.validateAction('add', undefined, 'student');
+      setSelectedStudent(null);
+      setIsFormOpen(true);
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
+    }
   };
 
   const handleCloseForm = useCallback(() => {
@@ -117,8 +135,20 @@ export function StudentIndex() {
 
   const handleEditStudent = (studentId: string) => {
     const student = students.find((s) => s._id === studentId) || null;
-    setSelectedStudent(student);
-    setIsFormOpen(true);
+    if (!student) return;
+    
+    try {
+      auth.validateAction('edit', student, 'student');
+      setSelectedStudent(student);
+      setIsFormOpen(true);
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
+    }
   };
 
   const handleViewStudent = (studentId: string) => {
@@ -128,9 +158,19 @@ export function StudentIndex() {
   // Updated to show confirmation dialog instead of browser prompt
   const handleRemoveStudent = (studentId: string) => {
     const student = students.find((s) => s._id === studentId);
-    if (student) {
+    if (!student) return;
+    
+    try {
+      auth.validateAction('delete', student, 'student');
       setStudentToDelete(studentId);
       setIsConfirmDialogOpen(true);
+    } catch (err) {
+      const sanitizedError = sanitizeError(err);
+      addToast({
+        type: 'warning',
+        message: sanitizedError.userMessage,
+        autoCloseTime: 4000
+      });
     }
   };
 
@@ -142,8 +182,21 @@ export function StudentIndex() {
         setStudentToDelete(null);
         // Refresh the list after removing a student
         setShouldRefreshList(true);
+        
+        // Show success toast
+        addToast({
+          type: 'success',
+          message: 'התלמיד נמחק בהצלחה',
+          autoCloseTime: 3000
+        });
       } catch (err) {
         console.error('Failed to remove student:', err);
+        const sanitizedError = sanitizeError(err);
+        addToast({
+          type: 'danger',
+          message: sanitizedError.userMessage,
+          autoCloseTime: 5000
+        });
       }
     }
   };
@@ -153,7 +206,7 @@ export function StudentIndex() {
     alert('Open filter dialog');
   };
 
-  const canAddStudent = isAdmin || user?.roles.includes('מורה');
+  const canAddStudent = auth.canAddStudent();
 
   return (
     <div className='app-container'>
@@ -199,7 +252,8 @@ export function StudentIndex() {
             isLoading={isLoading}
             onEdit={handleEditStudent}
             onView={handleViewStudent}
-            onRemove={isAdmin ? handleRemoveStudent : undefined}
+            onRemove={handleRemoveStudent}
+            authContext={authContext}
           />
         )}
 
