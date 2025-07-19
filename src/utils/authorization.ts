@@ -30,6 +30,9 @@ export interface AuthorizationContext {
 export const ROLES = {
   ADMIN: 'מנהל',
   TEACHER: 'מורה',
+  CONDUCTOR: 'מנצח',
+  ENSEMBLE_INSTRUCTOR: 'מדריך הרכב',
+  THEORY_TEACHER: 'מורה תאוריה',
   STUDENT: 'תלמיד',
   PARENT: 'הורה'
 } as const;
@@ -69,6 +72,20 @@ export class AuthorizationManager {
    */
   isStudent(): boolean {
     return this.hasRole(ROLES.STUDENT);
+  }
+
+  /**
+   * Check if user is conductor
+   */
+  isConductor(): boolean {
+    return this.hasRole(ROLES.CONDUCTOR);
+  }
+
+  /**
+   * Check if user is ensemble instructor
+   */
+  isEnsembleInstructor(): boolean {
+    return this.hasRole(ROLES.ENSEMBLE_INSTRUCTOR);
   }
 
   /**
@@ -193,6 +210,55 @@ export class AuthorizationManager {
   }
 
   /**
+   * Check if user can view orchestras
+   */
+  canViewOrchestras(): boolean {
+    return this.isAdmin() || this.isConductor() || this.isEnsembleInstructor() || this.isTeacher();
+  }
+
+  /**
+   * Check if user can create orchestras
+   */
+  canCreateOrchestra(): boolean {
+    return this.isAdmin();
+  }
+
+  /**
+   * Check if user can edit a specific orchestra
+   */
+  canEditOrchestra(orchestra: any): boolean {
+    if (!this.context.user || !orchestra) return false;
+    
+    // Admin can edit all orchestras
+    if (this.isAdmin()) return true;
+    
+    // Conductor can edit orchestras they conduct
+    if (this.isConductor() || this.isEnsembleInstructor()) {
+      // Check if user is the conductor of this orchestra
+      return orchestra.conductorId === this.context.user._id;
+    }
+    
+    return false;
+  }
+
+  /**
+   * Check if user can delete a specific orchestra
+   */
+  canDeleteOrchestra(orchestra: any): boolean {
+    if (!this.context.user) return false;
+    
+    // Only admin can delete orchestras
+    return this.isAdmin();
+  }
+
+  /**
+   * Check if user can update a specific orchestra
+   */
+  canUpdateOrchestra(orchestra: any): boolean {
+    return this.canEditOrchestra(orchestra);
+  }
+
+  /**
    * Check if a student is assigned to a specific teacher
    */
   private isStudentAssignedToTeacher(student: Student, teacherId: string): boolean {
@@ -244,6 +310,20 @@ export class AuthorizationManager {
       canUpdate: this.canUpdateTeacher(teacher),
       showEditButton: this.canEditTeacher(teacher),
       showDeleteButton: this.canDeleteTeacher(teacher)
+    };
+  }
+
+  /**
+   * Check if user should see action buttons (edit/delete) for an orchestra
+   */
+  getOrchestraActionPermissions(orchestra: any) {
+    return {
+      canView: this.canViewOrchestras(),
+      canEdit: this.canEditOrchestra(orchestra),
+      canDelete: this.canDeleteOrchestra(orchestra),
+      canUpdate: this.canUpdateOrchestra(orchestra),
+      showEditButton: this.canEditOrchestra(orchestra),
+      showDeleteButton: this.canDeleteOrchestra(orchestra)
     };
   }
 

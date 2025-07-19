@@ -12,6 +12,7 @@ import { RehearsalForm } from '../cmps/RehearsalForm'
 import { ConfirmDialog } from '../cmps/ConfirmDialog'
 import { Student } from '../services/studentService'
 import { Rehearsal } from '../services/rehearsalService'
+import { useAuthorization, createAuthorizationContext } from '../utils/authorization'
 
 // Define member interface
 interface OrchestraMember {
@@ -75,11 +76,18 @@ export function OrchestraDetails() {
   const [showMembersSection, setShowMembersSection] = useState(false)
   const [showRehearsalsSection, setShowRehearsalsSection] = useState(false)
 
-  // Check permissions
-  const isAdmin = user?.roles?.includes('מנהל') || false
-  const isConductor = user?.roles?.includes('מנצח') || false
-  const canEdit =
-    isAdmin || (isConductor && selectedOrchestra?.conductorId === user?._id)
+  // Authorization setup
+  const authContext = createAuthorizationContext(user, !!user)
+  const authManager = useAuthorization(authContext)
+  
+  // Get orchestra permissions
+  const orchestraPermissions = selectedOrchestra 
+    ? authManager.getOrchestraActionPermissions(selectedOrchestra)
+    : { canEdit: false, canDelete: false, showEditButton: false, showDeleteButton: false }
+    
+  const canEdit = orchestraPermissions.canEdit
+  const canDelete = orchestraPermissions.canDelete
+  const isAdmin = authManager.isAdmin()
 
   // Load orchestra data
   useEffect(() => {
@@ -276,19 +284,19 @@ export function OrchestraDetails() {
               <h2 className='header-title'>{selectedOrchestra.name}</h2>
 
               <div className='header-actions'>
-                {(canEdit || isAdmin) && (
+                {(orchestraPermissions.showEditButton || orchestraPermissions.showDeleteButton) && (
                   <div className='actions-dropdown'>
                     <button className='actions-trigger'>
                       <MoreHorizontal size={18} />
                     </button>
                     <div className='actions-menu'>
-                      {canEdit && (
+                      {orchestraPermissions.showEditButton && (
                         <button className='action-item edit' onClick={handleEdit}>
                           <Edit size={14} />
                           <span>עריכה</span>
                         </button>
                       )}
-                      {isAdmin && (
+                      {orchestraPermissions.showDeleteButton && (
                         <button className='action-item delete' onClick={handleDelete}>
                           <Trash2 size={14} />
                           <span>מחיקה</span>
@@ -459,8 +467,8 @@ export function OrchestraDetails() {
 
                 {showRehearsalsSection && (
                   <div className='section-content'>
-                    {/* Add Rehearsal Button - Only visible for admin/conductor */}
-                    {canEdit && (
+                    {/* Add Rehearsal Button - Only visible for authorized users */}
+                    {orchestraPermissions.canEdit && (
                       <div className='add-rehearsal-btn-container'>
                         <button
                           className='btn primary add-rehearsal-btn'
@@ -494,7 +502,7 @@ export function OrchestraDetails() {
                                   <span>{formatDate(rehearsal.date)}</span>
                                 </div>
 
-                                {canEdit && (
+                                {orchestraPermissions.canEdit && (
                                   <div className='rehearsal-actions'>
                                     <button
                                       className='action-btn edit'
