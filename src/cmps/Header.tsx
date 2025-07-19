@@ -41,12 +41,15 @@ export function Header() {
   // Create initials for avatar placeholder
   const userInitials = user?.fullName
     ? user.fullName
+        .trim() // Remove leading/trailing whitespace
         .split(' ')
+        .filter(name => name.length > 0) // Remove empty strings
         .map(name => name[0])
         .join('')
         .substring(0, 2)
         .toUpperCase()
     : 'U'
+
 
   return (
     <header className='header'>

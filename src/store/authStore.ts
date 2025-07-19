@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { httpService } from '../services/httpService'
+import { authService } from '../services/authService'
 import { User } from '../types/teacher'
 
 interface LoginResponse {
@@ -17,13 +18,14 @@ interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  isInitialized: boolean
   error: string | null
   
   
   // Actions
   login: (email: string, password: string) => Promise<User>
   logout: () => Promise<void>
-  initialize: () => void
+  initialize: () => Promise<void>
   clearError: () => void
 }
 
@@ -31,25 +33,40 @@ export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  isInitialized: false,
   error: null,
 
-  // Initialize auth state from localStorage
-  initialize: () => {
-    const storedUser = localStorage.getItem('user');
-    const accessToken = localStorage.getItem('accessToken');
-
-    if (storedUser && accessToken) {
-      try {
-        const user = JSON.parse(storedUser) as User;
+  // Initialize auth state with session validation
+  initialize: async () => {
+    set({ isLoading: true, isInitialized: false });
+    
+    try {
+      const isValid = await authService.validateSession();
+      
+      if (isValid) {
+        const user = authService.getCurrentUser();
         set({
           user,
           isAuthenticated: true,
+          isLoading: false,
+          isInitialized: true,
         });
-      } catch (err) {
-        // Invalid stored data, clear it
-        localStorage.removeItem('user');
-        localStorage.removeItem('accessToken');
+      } else {
+        set({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+          isInitialized: true,
+        });
       }
+    } catch (err) {
+      console.error('Session validation failed:', err);
+      set({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        isInitialized: true,
+      });
     }
   },
 
@@ -57,24 +74,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      // Make API request
-      const response = await httpService.post<LoginResponse>('auth/login', {
-        email,
-        password,
-      });
-
-      // Store tokens and user data
-      localStorage.setItem('accessToken', response.accessToken);
-      localStorage.setItem('user', JSON.stringify(response.teacher));
+      const user = await authService.login(email, password);
 
       // Update state
       set({
-        user: response.teacher,
+        user,
         isAuthenticated: true,
         isLoading: false,
       });
 
-      return response.teacher;
+      return user;
     } catch (err) {
       // Handle errors
       const errorMessage = err instanceof Error ? err.message : 'Login failed';
@@ -87,15 +96,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: async () => {
     set({ isLoading: true });
     try {
-      // Call logout endpoint
-      await httpService.post('auth/logout');
+      await authService.logout();
     } catch (err) {
       console.error('Logout failed:', err);
     } finally {
-      // Clean up local storage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('user');
-
       // Reset state
       set({
         user: null,

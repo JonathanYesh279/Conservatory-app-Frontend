@@ -75,6 +75,8 @@ export interface User {
   _id: string;
   fullName: string;
   email: string;
+  phone?: string;
+  address?: string;
   roles: string[];
   avatarUrl?: string;
   professionalInfo?: {

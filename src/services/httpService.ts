@@ -1,6 +1,7 @@
 // Enhanced version of src/services/httpService.ts with better error handling and request timeout
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { sanitizeError, handleApiError } from '../utils/errorHandler';
+import { authService } from './authService';
 
 // Base URL based on environment
 const BASE_URL =
@@ -30,38 +31,34 @@ interface RetryConfig extends AxiosRequestConfig {
 
 // Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      // Make sure this line is working correctly
-      config.headers.Authorization = `Bearer ${token}`;
-
-      // Add debugging for token
-      console.log(
-        'Sending request with token:',
-        token.substring(0, 10) + '...'
-      );
-    } else {
-      console.warn('No auth token found for request to:', config.url);
+  async (config) => {
+    // Skip token attachment for auth endpoints
+    if (config.url?.includes('auth/refresh') || config.url?.includes('auth/login')) {
+      return config;
     }
 
-    // Debug: Check if schoolYearId is being added here
-    if (config.url?.includes('available-slots')) {
-      console.log('Request interceptor - available-slots request config:', {
-        url: config.url,
-        params: config.params,
-        data: config.data,
-        headers: config.headers
-      });
-      
-      if (config.params && 'schoolYearId' in config.params) {
-        console.error('CONTAMINATION DETECTED in request interceptor - params contains schoolYearId:', config.params);
-        console.trace();
-        
-        // Try to remove it here as a last resort
-        delete config.params.schoolYearId;
-        console.log('Removed schoolYearId from params. New params:', config.params);
+    const token = authService.getToken();
+    if (token) {
+      // Check if token is expired and try to refresh
+      if (authService.isTokenExpired(token)) {
+        try {
+          const newToken = await authService.refreshToken();
+          config.headers.Authorization = `Bearer ${newToken}`;
+        } catch (error) {
+          // If refresh fails, clear auth data and let the request proceed
+          authService.clearAuthData();
+          // Redirect to login will be handled by response interceptor
+        }
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
       }
+
+      // Add debugging for token in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Sending request with token:', token.substring(0, 10) + '...');
+      }
+    } else if (process.env.NODE_ENV === 'development') {
+      console.warn('No auth token found for request to:', config.url);
     }
 
     return config;
@@ -77,7 +74,7 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryConfig;
 
-    // If there's no config or it's already retried, reject
+    // If there's no config, reject
     if (!originalRequest) {
       return Promise.reject(error);
     }
@@ -87,36 +84,37 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = 0;
     }
 
-    // Handle 401 Unauthorized - try to refresh token
-    if (error.response?.status === 401 && originalRequest._retry === 0) {
-      try {
-        // Mark as retried for token refresh
-        originalRequest._retry = 1;
+    // Handle 401 Unauthorized - determine if it's token expiration or auth failure
+    if (error.response?.status === 401) {
+      // Skip refresh for auth endpoints
+      if (originalRequest.url?.includes('auth/refresh') || originalRequest.url?.includes('auth/login')) {
+        return Promise.reject(error);
+      }
 
-        // Get new token
-        const response = await axiosInstance.post('/auth/refresh');
-        const { accessToken } = response.data;
-
-        // Save new token
-        localStorage.setItem('accessToken', accessToken);
-
-        // Update Authorization header and retry
-        if (!originalRequest.headers) {
-          originalRequest.headers = {};
+      // Only try to refresh once per request
+      if (originalRequest._retry === 0) {
+        try {
+          originalRequest._retry = 1;
+          
+          // Try to refresh token using auth service
+          const newToken = await authService.refreshToken();
+          
+          // Update Authorization header and retry
+          if (!originalRequest.headers) {
+            originalRequest.headers = {};
+          }
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return axiosInstance(originalRequest);
+        } catch (refreshError) {
+          // Clear auth data and redirect to login
+          authService.clearAuthData();
+          
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          
+          return Promise.reject(refreshError);
         }
-        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        // Clear auth data if refresh fails
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('user');
-
-        // Redirect to login (in a more sophisticated setup, this would be handled by context)
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
-        }
-
-        return Promise.reject(refreshError);
       }
     }
 
@@ -132,9 +130,12 @@ axiosInstance.interceptors.response.use(
 
       // Wait before retrying (with exponential backoff)
       const retryDelay = RETRY_DELAY_MS * 2 ** (originalRequest._retry - 1);
-      console.log(
-        `Retrying request (${originalRequest._retry}/${MAX_RETRIES}) after ${retryDelay}ms...`
-      );
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log(
+          `Retrying request (${originalRequest._retry}/${MAX_RETRIES}) after ${retryDelay}ms...`
+        );
+      }
 
       await delay(retryDelay);
       return axiosInstance(originalRequest);

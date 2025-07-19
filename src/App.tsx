@@ -17,6 +17,7 @@ import { EventRegistrationForm } from './cmps/EventRegistrationForm';
 import { useEffect } from 'react';
 import { ToastProvider } from './cmps/Toast';
 import ToastTest from './cmps/Toast/ToastTest';
+import './utils/debugUtils'; // Import debug utils for development
 
 import { Dashboard } from './pages/Dashboard.tsx';
 import { StudentIndex } from './pages/StudentIndex.tsx';
@@ -29,6 +30,8 @@ import { RehearsalIndex } from './pages/RehearsalIndex.tsx';
 import { RehearsalDetails } from './pages/RehearsalDetails.tsx';
 import { TheoryIndex } from './pages/TheoryIndex.tsx';
 import { TheoryDetails } from './pages/TheoryDetails.tsx';
+import { UserProfile } from './pages/UserProfile.tsx';
+import { ResetPassword } from './pages/ResetPassword.tsx';
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -44,6 +47,7 @@ const queryClient = new QueryClient({
 function ProtectedRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
   const loadBasicTeacherData = useTeacherStore(
     (state) => state.loadBasicTeacherData
   );
@@ -55,8 +59,19 @@ function ProtectedRoute() {
     }
   }, [isAuthenticated, loadBasicTeacherData]);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  // Show loading while validating session
+  if (!isInitialized || isLoading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        fontSize: '18px'
+      }}>
+        Validating session...
+      </div>
+    );
   }
 
   if (!isAuthenticated) {
@@ -81,6 +96,7 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path='/login' element={<LoginPage />} />
+              <Route path='/reset-password/:token' element={<ResetPassword />} />
               <Route path='/accept-invitation/:token' element={<AcceptInvitationPage />} />
               <Route
                 path='/event-registration'
@@ -94,6 +110,7 @@ function App() {
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path='/dashboard' element={<Dashboard />} />
+              <Route path='/profile' element={<UserProfile />} />
 
               {/* Student routes */}
               <Route path='/students' element={<StudentIndex />}>

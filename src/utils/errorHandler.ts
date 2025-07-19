@@ -82,6 +82,19 @@ const GENERIC_ERROR_MESSAGES = {
   forbidden: 'הגישה נדחתה. אין לך הרשאות מתאימות.',
   timeout: 'הפעולה ארכה זמן רב מדי. אנא נסה שוב.',
   conflict: 'קיים קונפליקט בנתונים. אנא רענן את הדף ונסה שוב.',
+  tokenExpired: 'פג תוקף ההתחברות. אנא התחבר מחדש.',
+  invalidToken: 'אימות לא תקין. אנא התחבר מחדש.',
+  sessionExpired: 'פג תוקף הפעלה. אנא התחבר מחדש.',
+  authenticationFailed: 'שגיאה בהתחברות. אנא בדוק את הנתונים ונסה שוב.',
+  // Password management errors
+  missingPasswords: 'יש למלא את הסיסמה הנוכחית והסיסמה החדשה',
+  incorrectCurrentPassword: 'הסיסמה הנוכחית שגויה',
+  weakPassword: 'הסיסמה חייבת להכיל לפחות 6 תווים',
+  samePassword: 'הסיסמה החדשה חייבת להיות שונה מהסיסמה הנוכחית',
+  missingEmail: 'יש להזין כתובת אימייל',
+  missingResetData: 'נתוני איפוס הסיסמה חסרים',
+  resetTokenExpired: 'פג תוקף הקישור לאיפוס סיסמה. אנא בקש קישור חדש.',
+  invalidResetToken: 'הקישור לאיפוס סיסמה לא תקין או פג תוקפו',
   duplicateEmail: 'כתובת האימייל הזו כבר קיימת במערכת. אנא השתמש בכתובת אימייל אחרת.',
   duplicatePhone: 'מספר הטלפון הזה כבר קיים במערכת. אנא השתמש במספר טלפון אחר.',
   duplicateStudent: 'תלמיד עם פרטים אלו כבר קיים במערכת.',
@@ -122,6 +135,89 @@ function containsSensitiveInfo(message: string): boolean {
 function detectSpecificErrorType(message: string): keyof typeof GENERIC_ERROR_MESSAGES | null {
   const lowerMessage = message.toLowerCase();
   
+  // Authentication errors (most specific first)
+  if (lowerMessage.includes('token expired') || 
+      lowerMessage.includes('jwt expired') ||
+      lowerMessage.includes('token has expired') ||
+      lowerMessage.includes('התחברות פגה') ||
+      lowerMessage.includes('פג תוקף')) {
+    return 'tokenExpired';
+  }
+  
+  if (lowerMessage.includes('invalid token') || 
+      lowerMessage.includes('malformed token') ||
+      lowerMessage.includes('jwt malformed') ||
+      lowerMessage.includes('אימות לא תקין')) {
+    return 'invalidToken';
+  }
+  
+  if (lowerMessage.includes('session expired') || 
+      lowerMessage.includes('session invalid') ||
+      lowerMessage.includes('פג תוקף הפעלה')) {
+    return 'sessionExpired';
+  }
+  
+  if (lowerMessage.includes('authentication failed') || 
+      lowerMessage.includes('login failed') ||
+      lowerMessage.includes('שגיאה בהתחברות') ||
+      lowerMessage.includes('התחברות נכשלה')) {
+    return 'authenticationFailed';
+  }
+
+  // Password management errors
+  if (lowerMessage.includes('missing_passwords') || 
+      lowerMessage.includes('missing passwords') ||
+      lowerMessage.includes('חסרים נתוני סיסמה')) {
+    return 'missingPasswords';
+  }
+
+  if (lowerMessage.includes('incorrect_current_password') || 
+      lowerMessage.includes('incorrect current password') ||
+      lowerMessage.includes('current password is wrong') ||
+      lowerMessage.includes('הסיסמה הנוכחית שגויה')) {
+    return 'incorrectCurrentPassword';
+  }
+
+  if (lowerMessage.includes('weak_password') || 
+      lowerMessage.includes('weak password') ||
+      lowerMessage.includes('password too short') ||
+      lowerMessage.includes('סיסמה חלשה')) {
+    return 'weakPassword';
+  }
+
+  if (lowerMessage.includes('same_password') || 
+      lowerMessage.includes('same password') ||
+      lowerMessage.includes('new password same as current') ||
+      lowerMessage.includes('סיסמה זהה')) {
+    return 'samePassword';
+  }
+
+  if (lowerMessage.includes('missing_email') || 
+      lowerMessage.includes('missing email') ||
+      lowerMessage.includes('חסר אימייל')) {
+    return 'missingEmail';
+  }
+
+  if (lowerMessage.includes('missing_reset_data') || 
+      lowerMessage.includes('missing reset data') ||
+      lowerMessage.includes('חסרים נתוני איפוס')) {
+    return 'missingResetData';
+  }
+
+  if (lowerMessage.includes('reset_token_expired') || 
+      lowerMessage.includes('reset token expired') ||
+      lowerMessage.includes('token has expired') ||
+      lowerMessage.includes('פג תוקף הקישור')) {
+    return 'resetTokenExpired';
+  }
+
+  if (lowerMessage.includes('invalid_reset_token') || 
+      lowerMessage.includes('invalid reset token') ||
+      lowerMessage.includes('invalid or malformed token') ||
+      lowerMessage.includes('קישור לא תקין')) {
+    return 'invalidResetToken';
+  }
+
   // Authorization errors (most specific first)
   if (lowerMessage.includes('not authorized to update student') || 
       lowerMessage.includes('not authorized to update') ||
