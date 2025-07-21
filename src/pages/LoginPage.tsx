@@ -1,7 +1,6 @@
 import { useState, FormEvent } from 'react'
-import { Mail, Lock, Sun, Moon, ArrowLeft } from 'lucide-react'
+import { Mail, Lock, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
-import { useTheme } from '../hooks/useTheme'
 import { Navigate } from 'react-router-dom'
 import { passwordService } from '../services/passwordService'
 import { sanitizeError } from '../utils/errorHandler'
@@ -15,7 +14,6 @@ export function LoginPage() {
   const [forgotPasswordError, setForgotPasswordError] = useState<string | null>(null)
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState<string | null>(null)
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
-  const { theme, toggleTheme } = useTheme()
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -76,20 +74,8 @@ export function LoginPage() {
   }
   
   return (
-    <div className='login-page'>
+    <div className='login-page' data-theme='dark'>
       <div className='login-form'>
-        <button 
-          className='theme-toggle' 
-          onClick={toggleTheme}
-          aria-label='Toggle theme'
-        >
-          {theme === 'dark' ? (
-            <Sun className='icon' />
-          ) : (
-            <Moon className='icon' />
-          )}
-        </button>
-        
         {!showForgotPassword ? (
           <>
             <h1>התחברות</h1>

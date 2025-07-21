@@ -210,6 +210,24 @@ export class AuthorizationManager {
   }
 
   /**
+   * Check if user can manage teacher schedules/time blocks
+   * Only admin or the teacher themselves can manage schedules
+   */
+  canManageTeacherSchedule(teacher: Teacher): boolean {
+    if (!this.context.user) return false;
+    
+    // Admin can manage all teacher schedules
+    if (this.isAdmin()) return true;
+    
+    // Teacher can only manage their own schedule
+    if (this.isTeacher()) {
+      return teacher._id === this.context.user._id;
+    }
+    
+    return false;
+  }
+
+  /**
    * Check if user can view orchestras
    */
   canViewOrchestras(): boolean {

@@ -9,6 +9,12 @@
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease;
   
+  // Force dark theme for login page
+  &[data-theme="dark"] {
+    // Override any light theme styles
+    color-scheme: dark;
+  }
+  
   // Background image with overlay - changes based on theme
   &::before {
     content: '';
@@ -25,11 +31,10 @@
     transition: opacity 0.3s ease;
   }
   
-  // Darker overlay for dark mode
-  [data-theme="dark"] & {
-    &::before {
-      opacity: 0.7;
-    }
+  // Darker overlay for dark mode - always applied for login page
+  &[data-theme="dark"]::before,
+  [data-theme="dark"] &::before {
+    opacity: 0.7;
   }
   
   // Add a subtle overlay that moves with mouse for depth
@@ -63,8 +68,9 @@
     transition: all 0.3s ease;
     border: 1px solid rgba(255, 255, 255, 0.25);
     
-    // Dark mode specific adjustments
-    [data-theme="dark"] & {
+    // Dark mode specific adjustments - always applied for login page
+    .login-page[data-theme="dark"] &,
+    [data-theme="dark"] .login-page & {
       background-color: rgba(17, 24, 39, 0.7);
       border-color: rgba(255, 255, 255, 0.1);
     }
@@ -337,31 +343,6 @@
       font-weight: 500;
     }
     
-    .theme-toggle {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(255, 255, 255, 0.2);
-      border: none;
-      border-radius: 50%;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      
-      &:hover {
-        background: rgba(255, 255, 255, 0.3);
-      }
-      
-      .icon {
-        width: 20px;
-        height: 20px;
-      }
-    }
   }
 }
 

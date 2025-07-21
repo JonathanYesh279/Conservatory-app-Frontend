@@ -293,7 +293,7 @@ export function TeacherForm({
     
     // Check authorization before proceeding
     try {
-      if (teacher?._id) {
+      if (values._id) {
         // Editing existing teacher
         auth.validateAction('update', teacher as Teacher, 'teacher');
       } else {
@@ -330,7 +330,9 @@ export function TeacherForm({
 
       if (teacherId) {
         // For updates: explicitly include only what we want to update
+        console.log('🔧 FIXED VERSION LOADED - Update path with _id:', teacherId);
         dataToSend = {
+          _id: teacherId, // IMPORTANT: Include the _id for updates
           personalInfo: values.personalInfo,
           roles: values.roles,
           professionalInfo: values.professionalInfo,
@@ -681,7 +683,9 @@ export function TeacherForm({
                                 : 'required-field'
                             }
                           >
-                            תפקידים
+                            תפקידים {!isAdmin() && teacher?._id && (
+                              <span className="readonly-indicator">(צפייה בלבד)</span>
+                            )}
                           </label>
                           <div className='checkbox-group'>
                             {VALID_ROLES.map((role) => (
@@ -715,7 +719,7 @@ export function TeacherForm({
 
                                     setFieldValue('roles', updatedRoles);
                                   }}
-                                  disabled={isSubmitting}
+                                  disabled={isSubmitting || (!isAdmin() && !!teacher?._id)}
                                 />
                                 <label htmlFor={`role-${role}`}>{role}</label>
                               </div>

@@ -4,6 +4,10 @@ import { httpService } from '../services/httpService';
 import { passwordService } from '../services/passwordService';
 import { Teacher } from '../types/teacher';
 import { sanitizeError } from '../utils/errorHandler';
+import { TeacherTimeBlockView } from '../cmps/TimeBlock/TeacherTimeBlockView';
+import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
+import { studentService, Student } from '../services/studentService';
+import { orchestraService, Orchestra } from '../services/orchestraService';
 import { 
   User, 
   Mail, 
@@ -18,7 +22,11 @@ import {
   Eye, 
   EyeOff,
   Lock,
-  ArrowLeft
+  ArrowLeft,
+  Users,
+  Clock,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface UserProfileData {
@@ -33,6 +41,13 @@ interface UserProfileData {
   professionalInfo?: {
     instrument: string;
     isActive: boolean;
+  };
+  teaching?: {
+    studentIds: string[];
+    schedule: any[];
+  };
+  conducting?: {
+    orchestraIds: string[];
   };
   credentials?: {
     email: string;
@@ -49,13 +64,30 @@ interface PasswordForm {
 }
 
 export function UserProfile() {
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<UserProfileData | null>(null);
   const [saving, setSaving] = useState(false);
+
+  // Teacher-specific data
+  const [students, setStudents] = useState<Student[]>([]);
+  const [orchestras, setOrchestras] = useState<Orchestra[]>([]);
+  const [loadingStudents, setLoadingStudents] = useState(false);
+  const [loadingOrchestras, setLoadingOrchestras] = useState(false);
+
+  // Collapsible sections
+  const [openSections, setOpenSections] = useState({
+    students: false,
+    orchestras: false,
+    schedule: false,
+  });
+
+  // Authorization
+  const authContext = createAuthorizationContext(user, isAuthenticated);
+  const auth = useAuthorization(authContext);
 
   // Get role badge color (matching TeacherPreview)
   const getRoleBadgeColor = (role: string): string => {
@@ -118,6 +150,33 @@ export function UserProfile() {
     }
   }, [user]);
 
+  // Load teacher data when profile data is available
+  useEffect(() => {
+    if (profileData && isTeacher()) {
+      loadTeacherData();
+    }
+  }, [profileData]);
+
+  // Check if user is a teacher
+  const isTeacher = () => {
+    return profileData?.roles?.some(role => 
+      role === 'מורה' || role === 'מורה תאוריה' || role === 'מנצח'
+    ) || false;
+  };
+
+  // Check if user is a conductor
+  const isConductor = () => {
+    return profileData?.roles?.includes('מנצח') || false;
+  };
+
+  // Toggle section visibility
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
   const loadUserProfile = async () => {
     if (!user) return;
     
@@ -156,6 +215,49 @@ export function UserProfile() {
     }
   };
 
+  // Load teacher-specific data
+  const loadTeacherData = async () => {
+    if (!user?._id) return;
+
+    try {
+      // Load students assigned to this teacher
+      if (isTeacher()) {
+        setLoadingStudents(true);
+        try {
+          const allStudents = await studentService.getStudents();
+          const teacherStudents = allStudents.filter(student => {
+            const hasTeacherInIds = student.teacherIds && student.teacherIds.includes(user._id);
+            const hasTeacherAssignments = student.teacherAssignments && 
+              student.teacherAssignments.some((assignment: any) => assignment.teacherId === user._id);
+            return hasTeacherInIds || hasTeacherAssignments;
+          });
+          setStudents(teacherStudents);
+        } catch (err) {
+          console.error('Failed to load students:', err);
+        } finally {
+          setLoadingStudents(false);
+        }
+      }
+
+      // Load orchestras if user is a conductor
+      if (isConductor() && profileData?.conducting?.orchestraIds) {
+        setLoadingOrchestras(true);
+        try {
+          const orchestraData = await orchestraService.getOrchestrasByIds(
+            profileData.conducting.orchestraIds
+          );
+          setOrchestras(orchestraData);
+        } catch (err) {
+          console.error('Failed to load orchestras:', err);
+        } finally {
+          setLoadingOrchestras(false);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load teacher data:', err);
+    }
+  };
+
   const handleEdit = () => {
     setIsEditing(true);
     setEditData(profileData);
@@ -174,11 +276,15 @@ export function UserProfile() {
     try {
       setSaving(true);
       
-      // Only send the fields that should be updated
+      // Only send the fields that should be updated, including required backend fields
       const updateData = {
         personalInfo: editData.personalInfo,
         roles: editData.roles,
-        professionalInfo: editData.professionalInfo
+        professionalInfo: editData.professionalInfo,
+        teaching: profileData.teaching || { studentIds: [], schedule: [] },
+        credentials: {
+          email: editData.personalInfo.email
+        }
       };
       
       console.log('Sending update data:', updateData);
@@ -495,6 +601,149 @@ export function UserProfile() {
               </div>
             </div>
           )}
+          {/* Teacher-specific sections */}
+          {isTeacher() && (
+            <>
+            {/* Students Section */}
+            <div className="card">
+              <div 
+                className={`card-header clickable ${openSections.students ? 'active' : ''}`}
+                onClick={() => toggleSection('students')}
+              >
+                <Users size={20} />
+                <h2>התלמידים שלי ({students.length})</h2>
+                {openSections.students ? (
+                  <ChevronUp size={18} className="toggle-icon" />
+                ) : (
+                  <ChevronDown size={18} className="toggle-icon" />
+                )}
+              </div>
+              
+              {openSections.students && (
+                <div className="card-body">
+                  {loadingStudents ? (
+                    <div className="loading-section">
+                      <div className="spinner-small"></div>
+                      <span>טוען תלמידים...</span>
+                    </div>
+                  ) : students.length > 0 ? (
+                    <div className="students-grid">
+                      {students.map(student => (
+                        <div key={student._id} className="student-card">
+                          <div className="student-info">
+                            <div className="student-name">
+                              {student.personalInfo?.fullName || 'תלמיד לא ידוע'}
+                            </div>
+                            <div className="student-details">
+                              {student.academicInfo?.instrument && (
+                                <span className="instrument">
+                                  <Music size={12} />
+                                  {student.academicInfo.instrument}
+                                </span>
+                              )}
+                              {student.academicInfo?.class && (
+                                <span className="class">
+                                  כיתה {student.academicInfo.class}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="no-data">
+                      <Users size={32} />
+                      <p>אין תלמידים מוקצים</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Orchestras Section - Only for conductors */}
+            {isConductor() && (
+              <div className="card">
+                <div 
+                  className={`card-header clickable ${openSections.orchestras ? 'active' : ''}`}
+                  onClick={() => toggleSection('orchestras')}
+                >
+                  <Music size={20} />
+                  <h2>התזמורות שלי ({orchestras.length})</h2>
+                  {openSections.orchestras ? (
+                    <ChevronUp size={18} className="toggle-icon" />
+                  ) : (
+                    <ChevronDown size={18} className="toggle-icon" />
+                  )}
+                </div>
+                
+                {openSections.orchestras && (
+                  <div className="card-body">
+                    {loadingOrchestras ? (
+                      <div className="loading-section">
+                        <div className="spinner-small"></div>
+                        <span>טוען תזמורות...</span>
+                      </div>
+                    ) : orchestras.length > 0 ? (
+                      <div className="orchestras-grid">
+                        {orchestras.map(orchestra => (
+                          <div key={orchestra._id} className="orchestra-card">
+                            <div className="orchestra-info">
+                              <div className="orchestra-name">
+                                {orchestra.name}
+                              </div>
+                              {orchestra.location && (
+                                <div className="orchestra-location">
+                                  <MapPin size={12} />
+                                  {orchestra.location}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="no-data">
+                        <Music size={32} />
+                        <p>אין תזמורות מוקצות</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {/* Schedule Section */}
+            {(isTeacher() || isConductor()) && profileData && (
+              <div className="card">
+                <div 
+                  className={`card-header clickable ${openSections.schedule ? 'active' : ''}`}
+                  onClick={() => toggleSection('schedule')}
+                >
+                  <Calendar size={20} />
+                  <h2>מערכת השעות שלי</h2>
+                  {openSections.schedule ? (
+                    <ChevronUp size={18} className="toggle-icon" />
+                  ) : (
+                    <ChevronDown size={18} className="toggle-icon" />
+                  )}
+                </div>
+                
+                {openSections.schedule && (
+                  <div className="card-body">
+                    <TeacherTimeBlockView
+                      teacherId={user?._id || ''}
+                      teacherName={profileData?.personalInfo?.fullName || 'Teacher'}
+                      readOnly={!auth.canManageTeacherSchedule(profileData as any)}
+                      isAdmin={auth.isAdmin()}
+                      className="profile-schedule"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+            </>
+          )}
+
         </div>
 
         {/* Sidebar */}

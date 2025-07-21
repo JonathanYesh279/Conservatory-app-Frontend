@@ -42,8 +42,6 @@ export const NavbarProvider: React.FC<NavbarProviderProps> = ({ children }) => {
 
   // Handle scroll-based navbar and browser UI hiding
   useEffect(() => {
-    // Initialize mobile UI controller
-    mobileUIController.initializeCSS();
 
     // Check if we're on mobile
     const isMobile = () => {

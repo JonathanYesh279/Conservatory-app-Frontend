@@ -1,268 +1,266 @@
-// Utility functions for hiding/showing mobile browser UI
+// Simple browser address bar hiding utility
 
 export class MobileUIController {
-  private isHidden = false;
-  private originalViewport = '';
-  private timeoutId: NodeJS.Timeout | null = null;
-  private isInitialized = false;
-
-  constructor() {
-    // Store original viewport meta tag
-    const viewport = document.querySelector('meta[name=viewport]');
-    if (viewport) {
-      this.originalViewport = viewport.getAttribute('content') || '';
-    }
-  }
+  private hideTimeout: NodeJS.Timeout | null = null;
 
   // Check if device is mobile
   private isMobile(): boolean {
-    // Debug mode: force mobile detection for testing
-    const debugMobile = localStorage.getItem('debug-mobile-ui') === 'true';
-    
-    return debugMobile || 
-           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           (window.innerWidth <= 768 && 'ontouchstart' in window);
+    return window.innerWidth <= 768 || 
+           /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   }
 
-  // Check if iOS Safari
+  // Enhanced iOS detection
+  private isIOS(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent);
+  }
+
+  // iOS Safari detection
   private isIOSSafari(): boolean {
     const ua = navigator.userAgent;
-    return /iPhone|iPad|iPod/.test(ua) && 
-           !(window as any).MSStream && 
-           (/Safari/.test(ua) && !/Chrome|CriOS|FxiOS/.test(ua));
+    const isIOS = this.isIOS();
+    const isSafari = /Safari/.test(ua) && !/Chrome|CriOS|FxiOS|OPiOS|mercury/i.test(ua);
+    const isWebView = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(ua);
+    return isIOS && (isSafari || isWebView);
   }
 
-  // Check if Android Chrome
+  // iOS Chrome detection
+  private isIOSChrome(): boolean {
+    const ua = navigator.userAgent;
+    return this.isIOS() && /CriOS|Chrome/i.test(ua);
+  }
+
+  // Android Chrome detection
   private isAndroidChrome(): boolean {
     const ua = navigator.userAgent;
-    return /Android/.test(ua) && /Chrome/.test(ua) && !/Edge|Samsung/.test(ua);
+    return /Android/i.test(ua) && /Chrome/i.test(ua);
   }
 
-  // Hide browser UI
+  // Get the actual scrollable container
+  private getScrollContainer(): Element | null {
+    return document.querySelector('.app-container') || 
+           document.querySelector('.main-content') || 
+           document.querySelector('main') || 
+           document.documentElement;
+  }
+
+  // Hide browser address bar
   hideBrowserUI(): void {
     if (!this.isMobile()) return;
-
-    this.isHidden = true;
-
-    // Debug logging
-    if (localStorage.getItem('debug-mobile-ui') === 'true') {
-      console.log('🔽 Hiding mobile UI');
+    
+    const debug = false; // Disable for production
+    if (debug) {
+      console.log('🔽 MobileUI: Hiding browser UI');
     }
-
-    // Method 1: Viewport manipulation for address bar hiding
-    this.setMinimalViewport();
-
-    // Method 2: Platform-specific tricks
+    
+    // Clear any existing timeout
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+    }
+    
+    const scrollContainer = this.getScrollContainer();
+    
     if (this.isIOSSafari()) {
-      this.hideIOSSafariUI();
+      // iOS Safari specific hiding
+      this.hideScrollUI(scrollContainer, 'ios-safari-ui-hidden', debug);
+    } else if (this.isIOSChrome()) {
+      // iOS Chrome specific hiding
+      this.hideScrollUI(scrollContainer, 'ios-chrome-ui-hidden', debug);
     } else if (this.isAndroidChrome()) {
-      this.hideAndroidChromeUI();
+      // Android Chrome specific hiding
+      this.hideScrollUI(scrollContainer, 'android-chrome-ui-hidden', debug);
+    } else {
+      // Other mobile browsers
+      this.hideScrollUI(scrollContainer, 'mobile-ui-hidden', debug);
     }
-
-    // Method 3: Add CSS class for custom styling
-    document.body.classList.add('mobile-ui-hidden');
-
-    // Method 4: Simple scroll trick to hide address bar
-    this.triggerScrollHide();
   }
 
+  // Universal scroll-based UI hiding
+  private hideScrollUI(container: Element | null, className: string, debug: boolean): void {
+    this.hideTimeout = setTimeout(() => {
+      // Get current scroll position from the actual container
+      const currentScrollY = container?.scrollTop || window.pageYOffset || 0;
+      
+      if (debug) {
+        console.log(`📊 Current scroll position: ${currentScrollY}`);
+        console.log(`📱 Container: ${container?.className || 'window'}`);
+      }
+      
+      // Multiple aggressive approaches to trigger browser UI hiding
+      this.triggerScrollHide(container, currentScrollY, className, debug);
+    }, 50);
+  }
 
-  // Show browser UI
+  // Aggressive scroll manipulation to hide browser UI
+  private triggerScrollHide(container: Element | null, currentY: number, className: string, debug: boolean): void {
+    if (debug) {
+      console.log(`🎯 Starting aggressive browser UI hiding...`);
+    }
+
+    // Method 1: Create fake content to enable scrolling if needed
+    this.ensureScrollable();
+    
+    // Method 2: Multiple rapid scroll attempts
+    for (let i = 0; i < 5; i++) {
+      setTimeout(() => {
+        // Scroll down then back up to trigger UI hiding
+        window.scrollTo(0, 50 + i * 10);
+        if (container && container !== document.documentElement) {
+          container.scrollTop = 50 + i * 10;
+        }
+        
+        setTimeout(() => {
+          window.scrollTo(0, currentY);
+          if (container && container !== document.documentElement) {
+            container.scrollTop = currentY;
+          }
+        }, 50);
+      }, i * 100);
+    }
+    
+    // Method 3: Force fullscreen using requestFullscreen API
+    setTimeout(() => {
+      this.attemptFullscreen(debug);
+    }, 200);
+    
+    // Method 4: Viewport height manipulation
+    setTimeout(() => {
+      this.manipulateViewport(debug);
+    }, 300);
+    
+    // Method 5: CSS class for styling
+    setTimeout(() => {
+      document.body.classList.add(className);
+      document.documentElement.classList.add(className);
+      
+      if (debug) {
+        console.log(`🎯 Applied ${className} class to body and html`);
+      }
+    }, 400);
+  }
+
+  // Ensure page is scrollable
+  private ensureScrollable(): void {
+    const body = document.body;
+    const currentHeight = body.scrollHeight;
+    const viewportHeight = window.innerHeight;
+    
+    if (currentHeight <= viewportHeight) {
+      // Add temporary invisible content to make page scrollable
+      const spacer = document.createElement('div');
+      spacer.id = 'browser-ui-spacer';
+      spacer.style.height = '200vh';
+      spacer.style.width = '1px';
+      spacer.style.position = 'absolute';
+      spacer.style.top = '0';
+      spacer.style.left = '-1000px';
+      spacer.style.visibility = 'hidden';
+      spacer.style.pointerEvents = 'none';
+      
+      body.appendChild(spacer);
+      
+      // Remove it after a delay
+      setTimeout(() => {
+        const existingSpacer = document.getElementById('browser-ui-spacer');
+        if (existingSpacer) {
+          existingSpacer.remove();
+        }
+      }, 2000);
+    }
+  }
+
+  // Attempt to use fullscreen API
+  private attemptFullscreen(debug: boolean): void {
+    const element = document.documentElement;
+    
+    if (element.requestFullscreen) {
+      element.requestFullscreen().catch(() => {
+        if (debug) console.log('📱 Fullscreen API not available');
+      });
+    } else if ((element as any).webkitRequestFullscreen) {
+      (element as any).webkitRequestFullscreen();
+    } else if ((element as any).mozRequestFullScreen) {
+      (element as any).mozRequestFullScreen();
+    } else if ((element as any).msRequestFullscreen) {
+      (element as any).msRequestFullscreen();
+    }
+    
+    if (debug) {
+      console.log('📱 Attempted fullscreen request');
+    }
+  }
+
+  // Manipulate viewport properties
+  private manipulateViewport(debug: boolean): void {
+    // Change viewport meta tag
+    let viewport = document.querySelector('meta[name="viewport"]') as HTMLMetaElement;
+    
+    if (!viewport) {
+      viewport = document.createElement('meta');
+      viewport.name = 'viewport';
+      document.head.appendChild(viewport);
+    }
+    
+    const originalContent = viewport.content;
+    
+    // Try different viewport settings to trigger UI hiding
+    const viewportSettings = [
+      'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui',
+      'width=device-width, initial-scale=1.0, user-scalable=no, minimal-ui',
+      'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no'
+    ];
+    
+    viewportSettings.forEach((setting, index) => {
+      setTimeout(() => {
+        viewport.content = setting;
+        if (debug) {
+          console.log(`📱 Applied viewport setting ${index + 1}: ${setting}`);
+        }
+      }, index * 100);
+    });
+    
+    // Restore original after attempts
+    setTimeout(() => {
+      viewport.content = originalContent;
+    }, 1000);
+  }
+
+  // Show browser address bar
   showBrowserUI(): void {
     if (!this.isMobile()) return;
-
-    this.isHidden = false;
-
-    // Debug logging
-    if (localStorage.getItem('debug-mobile-ui') === 'true') {
-      console.log('🔼 Showing mobile UI');
-    }
-
-    // Restore original viewport
-    this.restoreViewport();
-
-    // Remove platform-specific styles
-    if (this.isIOSSafari()) {
-      this.restoreIOSSafariUI();
-    } else if (this.isAndroidChrome()) {
-      this.restoreAndroidChromeUI();
-    }
-
-    // Remove CSS class
-    document.body.classList.remove('mobile-ui-hidden');
-
-    // Clear any pending timeouts
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-    }
-  }
-
-  // Simple scroll trigger to hide browser UI
-  private triggerScrollHide(): void {
-    const currentY = window.pageYOffset;
     
-    // Force a minimal scroll to trigger browser UI hiding
-    window.scrollTo(0, Math.max(1, currentY + 1));
-    
-    setTimeout(() => {
-      window.scrollTo(0, currentY);
-    }, 50);
-  }
-
-
-  private setMinimalViewport(): void {
-    const viewport = document.querySelector('meta[name=viewport]');
-    if (viewport) {
-      viewport.setAttribute('content', 
-        'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, minimal-ui'
-      );
-    }
-  }
-
-  private restoreViewport(): void {
-    const viewport = document.querySelector('meta[name=viewport]');
-    if (viewport && this.originalViewport) {
-      viewport.setAttribute('content', this.originalViewport);
-    }
-  }
-
-  private hideIOSSafariUI(): void {
-    // Force Safari to hide its UI by scrolling
-    const currentScroll = window.pageYOffset;
-    
-    // Set fixed height to prevent content jump
-    document.body.style.height = '100vh';
-    document.documentElement.style.height = '100vh';
-    
-    // Trigger Safari UI hide
-    this.timeoutId = setTimeout(() => {
-      window.scrollTo(0, Math.max(currentScroll, 1));
-      
-      // Additional timeout to ensure UI is hidden
-      setTimeout(() => {
-        window.scrollTo(0, currentScroll);
-      }, 100);
-    }, 50);
-  }
-
-  private restoreIOSSafariUI(): void {
-    document.body.style.height = '';
-    document.documentElement.style.height = '';
-  }
-
-  private hideAndroidChromeUI(): void {
-    // Android Chrome specific hiding
-    const currentScroll = window.pageYOffset;
-    
-    // Set full viewport height
-    document.body.style.height = '100vh';
-    document.documentElement.style.height = '100vh';
-    
-    // Force Chrome to hide address bar
-    this.timeoutId = setTimeout(() => {
-      window.scrollTo(0, Math.max(currentScroll, 1));
-      
-      // Additional scroll to ensure UI is hidden
-      setTimeout(() => {
-        window.scrollTo(0, currentScroll);
-        // Add body class to trigger CSS
-        document.body.classList.add('chrome-ui-hidden');
-      }, 100);
-    }, 50);
-  }
-
-  private restoreAndroidChromeUI(): void {
-    document.body.style.height = '';
-    document.documentElement.style.height = '';
-    document.body.classList.remove('chrome-ui-hidden');
-  }
-
-
-  private forceLayoutUpdate(): void {
-    // Force browser to recalculate layout
-    const dummy = document.createElement('div');
-    dummy.style.position = 'absolute';
-    dummy.style.top = '-9999px';
-    dummy.style.height = '1px';
-    document.body.appendChild(dummy);
-    
-    // Remove after a frame
-    requestAnimationFrame(() => {
-      document.body.removeChild(dummy);
-    });
-  }
-
-  // Check if browser UI is currently hidden
-  isUIHidden(): boolean {
-    return this.isHidden;
-  }
-
-  // Initialize CSS for mobile UI hiding
-  initializeCSS(): void {
-    if (!this.isMobile()) return;
-
-    const style = document.createElement('style');
-    style.id = 'mobile-ui-controller-styles';
-    style.textContent = `
-      /* Minimal mobile UI styles for browser hiding */
-      .mobile-ui-hidden {
-        min-height: 100vh;
-        min-height: 100dvh;
-      }
-      
-      /* iOS Safari specific */
-      @supports (-webkit-touch-callout: none) {
-        .mobile-ui-hidden .bottom-nav {
-          bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem)) !important;
-        }
-      }
-      
-      /* Android Chrome specific */
-      .chrome-ui-hidden .bottom-nav {
-        bottom: 0.5rem !important;
-      }
-      
-      /* Ensure bottom nav stays visible and positioned correctly */
-      .mobile-ui-hidden .bottom-nav {
-        position: fixed !important;
-        bottom: 0.5rem !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        z-index: 9999 !important;
-      }
-
-      /* PWA mode adjustments */
-      @media (display-mode: standalone) {
-        .mobile-ui-hidden .bottom-nav {
-          bottom: max(1rem, env(safe-area-inset-bottom, 1rem)) !important;
-        }
-      }
-
-      /* Landscape orientation specific */
-      @media (orientation: landscape) and (max-height: 500px) {
-        .mobile-ui-hidden .bottom-nav {
-          bottom: 0.25rem !important;
-          padding: 0.25rem 0.5rem !important;
-        }
-      }
-    `;
-    
-    // Remove existing styles if any
-    const existing = document.getElementById('mobile-ui-controller-styles');
-    if (existing) {
-      existing.remove();
+    const debug = false; // Disable for production
+    if (debug) {
+      console.log('🔼 MobileUI: Showing browser UI');
     }
     
-    document.head.appendChild(style);
-  }
-
-  // Cleanup method
-  destroy(): void {
-    this.showBrowserUI();
+    // Clear any pending hide operations
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = null;
+    }
     
-    const styles = document.getElementById('mobile-ui-controller-styles');
-    if (styles) {
-      styles.remove();
+    // Remove all mobile UI classes
+    document.body.classList.remove(
+      'ios-safari-ui-hidden',
+      'ios-chrome-ui-hidden', 
+      'android-chrome-ui-hidden',
+      'mobile-ui-hidden',
+      'ios-ui-hidden' // Legacy class
+    );
+    
+    // Scroll to top slightly to trigger browser UI show
+    const scrollContainer = this.getScrollContainer();
+    if (scrollContainer && scrollContainer !== document.documentElement) {
+      const currentY = scrollContainer.scrollTop;
+      if (currentY > 0) {
+        scrollContainer.scrollTop = Math.max(currentY - 1, 0);
+      }
+    }
+    
+    // Also try window scroll
+    const currentWindowY = window.pageYOffset;
+    if (currentWindowY > 0) {
+      window.scrollTo({ top: Math.max(currentWindowY - 1, 0), behavior: 'auto' });
     }
   }
 }

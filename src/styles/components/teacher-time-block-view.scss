@@ -476,6 +476,71 @@
       }
     }
   }
+
+  // Empty state for no working days
+  .no-working-days {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    min-height: 300px;
+
+    .no-blocks-message {
+      text-align: center;
+      max-width: 400px;
+
+      svg {
+        color: var(--text-secondary);
+        opacity: 0.6;
+        margin-bottom: 1rem;
+      }
+
+      h4 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      p {
+        margin: 0 0 1.5rem 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .add-block-btn.primary {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        background: var(--primary-color);
+        color: white;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+          background: var(--primary-dark);
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+          transform: translateY(-1px);
+        }
+
+        &:active {
+          transform: translateY(0);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        svg {
+          color: white;
+        }
+      }
+    }
+  }
 }
 
 // Responsive design

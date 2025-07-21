@@ -29,11 +29,21 @@ interface RetryConfig extends AxiosRequestConfig {
   _retry?: number;
 }
 
+// Helper function to check if a URL is invitation-related
+const isInvitationEndpoint = (url?: string): boolean => {
+  if (!url) return false;
+  return url.includes('/teacher/invitation/validate') || 
+         url.includes('/teacher/invitation/accept') || 
+         url.includes('/teacher/invitation/resend');
+};
+
 // Request interceptor for adding auth token
 axiosInstance.interceptors.request.use(
   async (config) => {
-    // Skip token attachment for auth endpoints
-    if (config.url?.includes('auth/refresh') || config.url?.includes('auth/login')) {
+    // Skip token attachment for auth endpoints and invitation endpoints
+    if (config.url?.includes('auth/refresh') || 
+        config.url?.includes('auth/login') || 
+        isInvitationEndpoint(config.url)) {
       return config;
     }
 
@@ -86,8 +96,10 @@ axiosInstance.interceptors.response.use(
 
     // Handle 401 Unauthorized - determine if it's token expiration or auth failure
     if (error.response?.status === 401) {
-      // Skip refresh for auth endpoints
-      if (originalRequest.url?.includes('auth/refresh') || originalRequest.url?.includes('auth/login')) {
+      // Skip refresh for auth endpoints and invitation endpoints
+      if (originalRequest.url?.includes('auth/refresh') || 
+          originalRequest.url?.includes('auth/login') || 
+          isInvitationEndpoint(originalRequest.url)) {
         return Promise.reject(error);
       }
 
@@ -106,10 +118,11 @@ axiosInstance.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
-          // Clear auth data and redirect to login
+          // Clear auth data and redirect to login, but skip redirect for invitation endpoints
           authService.clearAuthData();
           
-          if (window.location.pathname !== '/login') {
+          // Skip redirect for invitation-related endpoints to allow them to handle their own errors
+          if (window.location.pathname !== '/login' && !isInvitationEndpoint(originalRequest.url)) {
             window.location.href = '/login';
           }
           

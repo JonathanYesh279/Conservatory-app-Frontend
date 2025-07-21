@@ -151,7 +151,18 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
         throw new Error(result.message || 'שגיאה במחיקת יום הלימוד');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'שגיאה במחיקת יום לימוד';
+      console.error('TimeBlockStore delete error:', error);
+      
+      let errorMessage = 'שגיאה במחיקת יום לימוד';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('404') || error.message.includes('Not Found')) {
+          errorMessage = 'יום הלימוד לא נמצא במערכת. ייתכן שכבר נמחק.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       set({ error: errorMessage, isLoading: false });
       return false;
     }

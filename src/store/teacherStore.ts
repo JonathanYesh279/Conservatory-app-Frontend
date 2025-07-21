@@ -168,9 +168,14 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     try {
       let savedTeacher;
 
-      if (teacherId) {
-        savedTeacher = await teacherService.updateTeacher(teacherId, teacher);
+      // Force detection of update operation - check both teacherId parameter AND teacher._id
+      const actualTeacherId = teacherId || teacher._id;
+      
+      if (actualTeacherId) {
+        console.log('🎯 FORCE UPDATE MODE - teacherId:', actualTeacherId);
+        savedTeacher = await teacherService.updateTeacher(actualTeacherId, teacher);
       } else {
+        console.log('🎯 CREATE MODE - no ID found');
         savedTeacher = await teacherService.addTeacher(teacher);
       }
 

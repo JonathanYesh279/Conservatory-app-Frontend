@@ -104,7 +104,7 @@
       max-width: none;
       max-height: calc(100vh - 4rem);
       padding: 1.5rem 1rem;
-      padding-bottom: 1rem;
+      padding-bottom: 5rem;
       border-radius: 1rem 1rem 0 0;
       margin: 0;
       margin-top: 2rem;
@@ -347,6 +347,19 @@
           font-size: 0.8rem;
           margin-top: 0.25rem;
         }
+        
+        .form-info {
+          color: var(--text-secondary);
+          font-size: 0.8rem;
+          margin-top: 0.25rem;
+          font-style: italic;
+        }
+      }
+      
+      .readonly-indicator {
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+        font-weight: normal;
       }
     }
     
@@ -425,6 +438,16 @@
           
           &:focus + label:before {
             box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.2);
+          }
+          
+          &:disabled + label {
+            opacity: 0.6;
+            cursor: not-allowed;
+            
+            &:before {
+              background-color: var(--bg-tertiary);
+              border-color: var(--border-color);
+            }
           }
         }
       }
@@ -576,6 +599,7 @@
       width: 100%;
       padding: 1.25rem;
       padding-top: 1.25rem;
+      padding-bottom: 6rem;
 
       .form-section {
         margin-bottom: 1.25rem;

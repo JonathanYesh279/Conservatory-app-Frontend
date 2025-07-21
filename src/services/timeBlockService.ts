@@ -369,15 +369,24 @@ export const timeBlockService = {
     message: string;
   }> {
     try {
+      console.log('TimeBlockService: Deleting time block:', timeBlockId);
+      const endpoint = `schedule/time-blocks/${timeBlockId}`;
+      console.log('Delete endpoint:', endpoint);
+      
       const response = await httpService.delete<{
         success: boolean;
         affectedAssignments: LessonAssignment[];
         message: string;
-      }>(`schedule/time-blocks/${timeBlockId}`);
+      }>(endpoint);
 
+      console.log('Delete response:', response);
       return response;
     } catch (error) {
-      console.error('Failed to delete time block:', error);
+      console.error('TimeBlockService delete error:', error);
+      console.error('Error details:', {
+        timeBlockId,
+        error: error instanceof Error ? error.message : error
+      });
       throw new Error('שגיאה במחיקת יום הלימוד');
     }
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Search,
   Filter,
@@ -95,6 +95,30 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     }));
   }, [initialDuration]);
 
+  // Define performSearch function before useEffect that uses it
+  const performSearch = useCallback(async () => {
+    if (!teacherId || !searchCriteria.duration) {
+      // Search skipped: missing required parameters
+      return;
+    }
+
+    try {
+      setIsSearching(true);
+      // Starting slot search
+      if ('schoolYearId' in searchCriteria) {
+        console.error('CONTAMINATION DETECTED in AvailableSlotsFinder - criteria contains schoolYearId:', searchCriteria);
+        console.trace();
+      }
+      await findAvailableSlots(teacherId, searchCriteria);
+      // Note: availableSlots will be updated asynchronously by the store
+      // Slot search completed
+    } catch (error) {
+      console.error('❌ SEARCH FAILED:', error);
+    } finally {
+      setIsSearching(false);
+    }
+  }, [teacherId, searchCriteria, findAvailableSlots]);
+
   // Perform search when criteria changes - debounced to prevent excessive calls
   useEffect(() => {
     if (searchCriteria.duration && teacherId) {
@@ -110,7 +134,7 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
       
       return () => clearTimeout(searchTimeout);
     }
-  }, [searchCriteria, teacherId]);
+  }, [searchCriteria.duration, searchCriteria.preferredDays, searchCriteria.preferredTimeRange, teacherId, performSearch]);
 
   // Notify parent of found slots - only when actually needed
   useEffect(() => {
@@ -261,37 +285,15 @@ const AvailableSlotsFinder: React.FC<AvailableSlotsFinderProps> = ({
     return hasOverlap;
   };
 
-  const performSearch = async () => {
-    if (!teacherId || !searchCriteria.duration) {
-      // Search skipped: missing required parameters
-      return;
-    }
 
-    try {
-      setIsSearching(true);
-      // Starting slot search
-      if ('schoolYearId' in searchCriteria) {
-        console.error('CONTAMINATION DETECTED in AvailableSlotsFinder - criteria contains schoolYearId:', searchCriteria);
-        console.trace();
-      }
-      await findAvailableSlots(teacherId, searchCriteria);
-      // Note: availableSlots will be updated asynchronously by the store
-      // Slot search completed
-    } catch (error) {
-      console.error('❌ SEARCH FAILED:', error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  const updateSearchCriteria = (updates: Partial<SlotSearchCriteria>) => {
+  const updateSearchCriteria = useCallback((updates: Partial<SlotSearchCriteria>) => {
     // Search criteria updated
     if ('schoolYearId' in updates) {
       console.error('CONTAMINATION DETECTED: schoolYearId in updates', updates);
       console.trace(); // This will show the call stack
     }
     setSearchCriteria(prev => ({ ...prev, ...updates }));
-  };
+  }, []);
 
   const resetSearch = () => {
     setSearchCriteria({

@@ -1,5 +1,5 @@
 // src/cmps/TimeBlock/TeacherTimeBlockView.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar,
   Clock,
@@ -10,19 +10,16 @@ import {
   MapPin,
   AlertCircle,
   CheckCircle,
-  Settings,
   BarChart3,
   TrendingUp,
   Target,
 } from 'lucide-react';
 import { useTimeBlockStore } from '../../store/timeBlockStore';
 import TimeBlockCreator from './TimeBlockCreator';
-import AvailableSlotsFinder from './AvailableSlotsFinder';
 import { ConfirmDialog } from '../ConfirmDialog';
 import {
   TimeBlockResponse,
   LessonAssignment,
-  AvailableSlot,
   HebrewDayName,
   HEBREW_DAYS,
   LessonDurationMinutes,
@@ -34,6 +31,7 @@ interface TeacherTimeBlockViewProps {
   onTimeBlockChange?: (timeBlocks: TimeBlockResponse[]) => void;
   readOnly?: boolean;
   className?: string;
+  isAdmin?: boolean;
 }
 
 interface TimeBlockFormData {
@@ -49,7 +47,8 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
   teacherName,
   onTimeBlockChange,
   readOnly = false,
-  className = ''
+  className = '',
+  isAdmin = false
 }) => {
   const {
     currentTeacherSchedule,
@@ -66,12 +65,18 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
 
   // Component state
   const [showCreator, setShowCreator] = useState(false);
-  const [showSlotFinder, setShowSlotFinder] = useState(false);
   const [editingTimeBlock, setEditingTimeBlock] = useState<TimeBlockResponse | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [timeBlockToDelete, setTimeBlockToDelete] = useState<TimeBlockResponse | null>(null);
   const [viewMode, setViewMode] = useState<'blocks' | 'calendar' | 'stats'>('blocks');
   const [selectedDay, setSelectedDay] = useState<HebrewDayName | null>(null);
+
+  // Ensure non-admin users can't access stats view
+  useEffect(() => {
+    if (!isAdmin && viewMode === 'stats') {
+      setViewMode('blocks');
+    }
+  }, [isAdmin, viewMode]);
 
   // Load teacher schedule on mount
   useEffect(() => {
@@ -133,11 +138,24 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     if (!timeBlockToDelete) return;
 
     try {
-      await deleteTimeBlock(timeBlockToDelete._id);
+      console.log('Attempting to delete time block:', timeBlockToDelete._id);
+      const result = await deleteTimeBlock(timeBlockToDelete._id);
+      console.log('Delete result:', result);
       setShowDeleteConfirm(false);
       setTimeBlockToDelete(null);
+      // Reload the schedule to get updated data
+      loadTeacherSchedule(teacherId);
     } catch (err) {
       console.error('Failed to delete time block:', err);
+      console.error('Delete error details:', {
+        timeBlockId: timeBlockToDelete._id,
+        error: err
+      });
+      
+      // Keep the dialog open and show error
+      // The error will be displayed by the timeBlockStore error state
+      setShowDeleteConfirm(false);
+      setTimeBlockToDelete(null);
     }
   };
 
@@ -149,11 +167,6 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     loadTeacherSchedule(teacherId);
   };
 
-  // Handle slot selection from finder
-  const handleSlotSelected = (slot: AvailableSlot) => {
-    console.log('Selected slot:', slot);
-    // Here you would typically open a lesson assignment modal
-  };
 
   // Get time blocks grouped by day
   const getTimeBlocksByDay = (): Record<HebrewDayName, TimeBlockResponse[]> => {
@@ -299,41 +312,53 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
   const renderBlocksView = () => {
     const timeBlocksByDay = getTimeBlocksByDay();
 
+    // Filter days to show only those with time blocks
+    const daysWithBlocks = HEBREW_DAYS.filter(day => {
+      const dayBlocks = timeBlocksByDay[day] || [];
+      return dayBlocks.length > 0;
+    });
+
     return (
       <div className="time-blocks-view">
-        {HEBREW_DAYS.map(day => {
-          const dayBlocks = timeBlocksByDay[day] || [];
-          
-          return (
-            <div key={day} className="day-column">
-              <div className="day-header">
-                <h4>{day}</h4>
-                <span className="block-count">({dayBlocks.length})</span>
-                {!readOnly && (
-                  <button
-                    type="button"
-                    className="add-block-btn"
-                    onClick={() => {
-                      setSelectedDay(day);
-                      handleCreateTimeBlock();
-                    }}
-                    title="הוסף יום לימוד"
-                  >
-                    <Plus size={14} />
-                  </button>
-                )}
-              </div>
-              
-              <div className="day-blocks">
-                {dayBlocks.length === 0 ? (
-                  <div className="no-blocks">אין ימי לימוד</div>
-                ) : (
-                  dayBlocks.map(renderTimeBlockCard)
-                )}
-              </div>
+        {daysWithBlocks.length === 0 ? (
+          <div className="no-working-days">
+            <div className="no-blocks-message">
+              <Calendar size={32} />
+              <h4>אין ימי לימוד</h4>
+              <p>למורה זה אין ימי לימוד מוגדרים</p>
             </div>
-          );
-        })}
+          </div>
+        ) : (
+          daysWithBlocks.map(day => {
+            const dayBlocks = timeBlocksByDay[day] || [];
+            
+            return (
+              <div key={day} className="day-column">
+                <div className="day-header">
+                  <h4>{day}</h4>
+                  <span className="block-count">({dayBlocks.length})</span>
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      className="add-block-btn"
+                      onClick={() => {
+                        setSelectedDay(day);
+                        handleCreateTimeBlock();
+                      }}
+                      title="הוסף יום לימוד"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  )}
+                </div>
+                
+                <div className="day-blocks">
+                  {dayBlocks.map(renderTimeBlockCard)}
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     );
   };
@@ -425,44 +450,36 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         </div>
 
         <div className="header-actions">
-          <div className="view-controls">
-            <button
-              type="button"
-              className={`view-btn ${viewMode === 'blocks' ? 'active' : ''}`}
-              onClick={() => setViewMode('blocks')}
-            >
-              <Calendar size={16} />
-              ימי לימוד
-            </button>
-            <button
-              type="button"
-              className={`view-btn ${viewMode === 'stats' ? 'active' : ''}`}
-              onClick={() => setViewMode('stats')}
-            >
-              <BarChart3 size={16} />
-              סטטיסטיקות
-            </button>
-          </div>
+          {isAdmin && (
+            <div className="view-controls">
+              <button
+                type="button"
+                className={`view-btn ${viewMode === 'blocks' ? 'active' : ''}`}
+                onClick={() => setViewMode('blocks')}
+              >
+                <Calendar size={16} />
+                ימי לימוד
+              </button>
+              <button
+                type="button"
+                className={`view-btn ${viewMode === 'stats' ? 'active' : ''}`}
+                onClick={() => setViewMode('stats')}
+              >
+                <BarChart3 size={16} />
+                סטטיסטיקות
+              </button>
+            </div>
+          )}
 
           {!readOnly && (
-            <>
-              <button
-                type="button"
-                className="find-slots-btn"
-                onClick={() => setShowSlotFinder(!showSlotFinder)}
-              >
-                <Settings size={16} />
-                חיפוש זמינות
-              </button>
-              <button
-                type="button"
-                className="add-block-btn primary"
-                onClick={handleCreateTimeBlock}
-              >
-                <Plus size={16} />
-                הוסף יום לימוד
-              </button>
-            </>
+            <button
+              type="button"
+              className="add-block-btn primary"
+              onClick={handleCreateTimeBlock}
+            >
+              <Plus size={16} />
+              הוסף יום לימוד
+            </button>
           )}
         </div>
       </div>
@@ -475,16 +492,6 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         </div>
       )}
 
-      {/* Slot finder */}
-      {showSlotFinder && (
-        <div className="slot-finder-section">
-          <AvailableSlotsFinder
-            teacherId={teacherId}
-            onSlotSelect={handleSlotSelected}
-            compact={true}
-          />
-        </div>
-      )}
 
       {/* Content */}
       <div className="time-block-content">

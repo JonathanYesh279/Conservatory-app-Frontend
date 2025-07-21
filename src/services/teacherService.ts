@@ -1,6 +1,7 @@
 // src/services/teacherService.ts
 import { httpService } from './httpService';
 
+
 export interface Teacher {
   _id: string;
   personalInfo: {
@@ -60,6 +61,11 @@ export interface TeacherFilter {
 function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
   // Create a new object with only the properties we want to update
   const prepared: any = {};
+
+  // IMPORTANT: Always preserve the _id for existing teachers
+  if (teacher._id) {
+    prepared._id = teacher._id;
+  }
 
   // Always include these basic fields if present
   if (teacher.personalInfo) {
@@ -151,11 +157,17 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
   // First get the base data using the update function
   const prepared = prepareTeacherForUpdate(teacher);
 
-  // For new teachers, only include email in credentials (password will be set via invitation)
-  if (teacher.credentials) {
-    prepared.credentials = {
-      email: teacher.personalInfo?.email || teacher.credentials.email || '',
-      // Password removed - will be set via invitation system
+  // For new teachers, always include email in credentials (password will be set via invitation)
+  prepared.credentials = {
+    email: teacher.personalInfo?.email || teacher.credentials?.email || '',
+    // Password removed - will be set via invitation system
+  };
+
+  // Always include teaching field with defaults for new teachers
+  if (!prepared.teaching) {
+    prepared.teaching = {
+      studentIds: [],
+      schedule: []
     };
   }
 

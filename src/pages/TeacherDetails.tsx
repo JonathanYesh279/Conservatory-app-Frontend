@@ -7,6 +7,9 @@ import { theoryService, TheoryLesson } from '../services/theoryService'
 import { useRehearsalStore } from '../store/rehearsalStore'
 import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
 import { TeacherTimeBlockManager } from '../cmps/TeacherForm/TeacherTimeBlockManager'
+import { TeacherTimeBlockView } from '../cmps/TimeBlock/TeacherTimeBlockView'
+import { useAuth } from '../hooks/useAuth'
+import { AuthorizationManager } from '../utils/authorization'
 import {
   User,
   Calendar,
@@ -54,6 +57,10 @@ export function TeacherDetails() {
 
   // Rehearsal store for getting orchestra rehearsal times
   const { rehearsals, loadRehearsals } = useRehearsalStore();
+
+  // Authentication and authorization
+  const { user, isAuthenticated } = useAuth();
+  const authManager = new AuthorizationManager({ user, isAuthenticated });
 
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
@@ -732,13 +739,25 @@ export function TeacherDetails() {
 
                   {openSections.schedule && (
                     <div className='section-content'>
-                      <TeacherTimeBlockManager
-                        teacherId={teacher._id}
-                        teacherName={teacher.personalInfo?.fullName || 'מורה לא ידוע'}
-                        onTimeBlockChange={() => {
-                          // Empty callback to prevent infinite loops
-                        }}
-                      />
+                      {authManager.canManageTeacherSchedule(teacher) ? (
+                        <TeacherTimeBlockManager
+                          teacherId={teacher._id}
+                          teacherName={teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                          onTimeBlockChange={() => {
+                            // Empty callback to prevent infinite loops
+                          }}
+                        />
+                      ) : (
+                        <div className='read-only-schedule'>
+                          <TeacherTimeBlockView
+                            teacherId={teacher._id}
+                            teacherName={teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                            readOnly={true}
+                            isAdmin={authManager.isAdmin()}
+                            onTimeBlockChange={() => {}}
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

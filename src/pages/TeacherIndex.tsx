@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
@@ -29,6 +29,11 @@ export function TeacherIndex() {
     selectedTeacher,
   } = useTeacherStore();
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user, isAuthenticated } = useAuth();
+  const { addToast } = useToast();
+
   // State for modal forms and dialogs
   const [isTeacherFormOpen, setIsTeacherFormOpen] = useState(false);
   const [isStudentFormOpen, setIsStudentFormOpen] = useState(false);
@@ -43,24 +48,24 @@ export function TeacherIndex() {
     instrument?: string;
   } | null>(null);
 
-  // Define which fields to search in teachers
-  const teacherSearchFields = (teacher: Teacher) => [
+  // Define which fields to search in teachers - memoized to prevent infinite loop
+  const teacherSearchFields = useMemo(() => (teacher: Teacher) => [
     teacher.personalInfo.fullName,
     teacher.professionalInfo?.instrument || '',
     teacher.personalInfo.email || '',
     teacher.personalInfo.phone || '',
-  ];
+  ], []);
+
+  // Filter out current user from teachers list - memoized to prevent infinite loop
+  const teachersWithoutCurrentUser = useMemo(() => {
+    return teachers.filter(teacher => teacher._id !== user?._id);
+  }, [teachers, user?._id]);
 
   // Use the search hook
   const { filteredEntities: filteredTeachers, handleSearch } = useSearchbar(
-    teachers,
+    teachersWithoutCurrentUser,
     teacherSearchFields
   );
-
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
-  const { addToast } = useToast();
 
   // Initialize authorization
   const authContext = createAuthorizationContext(user, isAuthenticated);
