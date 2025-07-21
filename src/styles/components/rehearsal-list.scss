@@ -5,7 +5,6 @@
   flex-direction: column;
   padding: 0 0.5rem;
   gap: 2rem;
-  padding-bottom: 85px;
   
   // Date group
   .rehearsal-date-group {
@@ -34,7 +33,7 @@
       gap: 1rem;
       overflow-x: auto;
       scroll-behavior: smooth;
-      padding-bottom: 0.5rem;
+      padding-bottom: 0;
       
       // Enable horizontal scrolling
       &::-webkit-scrollbar {

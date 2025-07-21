@@ -43,22 +43,6 @@
       }
     }
     
-    .clear-button {
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0.25rem;
-      border-radius: 50%;
-      margin-right: 0.25rem;
-      
-      &:hover {
-        background-color: var(--bg-tertiary);
-      }
-    }
   }
   
   // Dark mode adjustments

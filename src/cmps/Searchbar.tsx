@@ -1,5 +1,5 @@
 // src/cmps/Searchbar.tsx
-import { Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useState } from 'react';
 
 interface SearchbarProps {
@@ -21,10 +21,6 @@ export function Searchbar({
     onSearch(value);
   };
 
-  const clearSearch = () => {
-    setSearchQuery('');
-    onSearch('');
-  };
 
   return (
     <div className={`search-bar-container ${className}`}>
@@ -37,11 +33,6 @@ export function Searchbar({
           placeholder={placeholder}
           className='search-input'
         />
-        {searchQuery && (
-          <button className='clear-button' onClick={clearSearch}>
-            <X size={16} />
-          </button>
-        )}
       </div>
     </div>
   );
