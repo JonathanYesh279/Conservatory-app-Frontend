@@ -2,30 +2,15 @@
 
 // Teacher form modal
 .teacher-form {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
+  // Remove fixed positioning since ModalPortal handles it
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rem 1.5rem 3rem 1.5rem;
   
   @media (max-width: 768px) {
-    padding: 1rem;
-    align-items: flex-start;
-  }
-  
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(3px);
+    align-items: stretch;
   }
   
   .form-modal {
@@ -101,14 +86,13 @@
     
     @media (max-width: 768px) {
       width: 100%;
-      max-width: none;
-      max-height: calc(100vh - 4rem);
-      padding: 1.5rem 1rem;
-      padding-bottom: 5rem;
-      border-radius: 1rem 1rem 0 0;
+      height: 100%;
+      padding: 1rem 1rem 2rem 1rem;
+      border-radius: 0;
       margin: 0;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-card);
     }
     
     /* Show scrollbar only when scrolling */
@@ -152,34 +136,36 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 0 1.25rem 0;
+    padding: 0 0.5rem 1.25rem 0;
     position: relative;
     background: none; /* Override any inherited background */
-
-    h2 {
-      font-size: 1.4rem;
-      color: var(--text-primary);
-      text-align: center;
-      flex: 1;
-    }
 
     .btn-icon {
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background-color: var(--bg-tertiary);
+      background-color: rgba(var(--bg-tertiary-rgb), 0.9);
       color: var(--text-secondary);
       display: flex;
       align-items: center;
       justify-content: center;
-      border: none;
+      border: 1px solid var(--border-color);
       cursor: pointer;
       transition: all 0.2s ease;
       z-index: 5;
+      flex-shrink: 0;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
       &:hover {
-        background-color: var(--bg-secondary);
+        background-color: rgba(var(--bg-secondary-rgb), 0.9);
         color: var(--text-primary);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      &:active {
+        transform: scale(0.95);
       }
 
       &.back-btn {
@@ -187,8 +173,18 @@
       }
 
       &.close-btn {
-        order: 1;
+        order: -1; /* Put close button first */
       }
+    }
+
+    h2 {
+      font-size: 1.4rem;
+      color: var(--text-primary);
+      text-align: center;
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      margin-left: 2.5rem; /* Push title toward center, accounting for close button */
     }
   }
 
@@ -564,15 +560,26 @@
   .teacher-form {
     .teacher-modal-header {
       padding: 0 0 1rem 0;
-
-      h2 {
-        font-size: 1.2rem;
-      }
+      flex-shrink: 0;
 
       .btn-icon {
         width: 28px;
         height: 28px;
+        
+        &.close-btn {
+          /* No absolute positioning needed anymore */
+        }
       }
+
+      h2 {
+        font-size: 1.2rem;
+        margin-left: 2rem; /* Adjust for smaller mobile close button */
+      }
+    }
+
+    .teacher-form-content {
+      flex: 1;
+      overflow-y: auto;
     }
 
     .schedule-management {
@@ -788,8 +795,18 @@
       }
       
       .form-actions {
-        padding-top: 0.75rem;
-        margin-top: 1rem;
+        padding: 1.5rem 1rem;
+        margin-top: auto;
+        margin-right: 0;
+        flex-shrink: 0;
+        border-top: 1px solid var(--border-color);
+        background-color: var(--bg-card);
+        
+        .btn {
+          width: 146px;
+          height: 39px;
+          font-size: 1rem;
+        }
       }
     }
   }

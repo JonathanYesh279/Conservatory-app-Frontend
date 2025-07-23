@@ -76,7 +76,7 @@ html {
   right: 0;
   bottom: 0;
   padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: 1rem;
+  padding-bottom: 5.1rem; /* Add bottom padding for always-visible navbar */
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
   overflow-y: auto;
@@ -100,6 +100,13 @@ html {
   /* Mobile specific styles */
   @media screen and (max-width: 768px) {
     -webkit-overflow-scrolling: touch;
+    /* iOS smooth scrolling fixes */
+    scroll-behavior: smooth;
+    overscroll-behavior-y: none;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Force hardware acceleration for smoother scrolling */
+    will-change: scroll-position;
   }
 }
 

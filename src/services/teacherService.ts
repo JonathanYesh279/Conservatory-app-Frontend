@@ -39,6 +39,11 @@ export interface Teacher {
     lastLogin?: string;
     password?: string;
   };
+  invitationInfo?: {
+    mode: 'EMAIL' | 'DEFAULT_PASSWORD';
+    requiresPasswordChange: boolean;
+    defaultPassword?: string;
+  };
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;

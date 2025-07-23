@@ -179,6 +179,23 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         savedTeacher = await teacherService.addTeacher(teacher);
       }
 
+      // Handle new teacher creation success message
+      if (!actualTeacherId && savedTeacher.invitationInfo) {
+        const { invitationInfo } = savedTeacher
+
+        if (invitationInfo.mode === 'DEFAULT_PASSWORD') {
+          // Show success message with default password
+          console.log('Teacher created with default password:', {
+            email: savedTeacher.credentials?.email || savedTeacher.personalInfo.email,
+            password: invitationInfo.defaultPassword,
+            requiresPasswordChange: invitationInfo.requiresPasswordChange
+          })
+
+          // You can trigger a toast notification here if you have a toast system
+          // Example: toast.success(`Teacher created! Email: ${email}, Password: ${password}`)
+        }
+      }
+
       // Validate the saved teacher structure
       if (!savedTeacher || !savedTeacher._id || !savedTeacher.personalInfo) {
         console.error('Invalid teacher structure returned from API:', {

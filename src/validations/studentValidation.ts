@@ -46,7 +46,82 @@ const teacherAssignmentSchema = Yup.object({
   duration: Yup.number().oneOf(LESSON_DURATIONS, 'משך שיעור לא תקין'),
 });
 
-// Main validation schema for the entire student form
+// Validation schema factory function that accepts context for conditional validation
+export const createStudentValidationSchema = (isAdmin = false, isUpdate = false) => {
+  return Yup.object({
+    personalInfo: Yup.object({
+      fullName: Yup.string().required('שם מלא הוא שדה חובה'),
+      phone: Yup.string().required('טלפון הוא שדה חובה').matches(phoneRegExp, {
+        message: 'מספר טלפון לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)',
+        excludeEmptyString: true,
+      }),
+      age: Yup.number()
+        .nullable()
+        .transform((value, originalValue) => {
+          // Handle empty string or null/undefined
+          if (originalValue === '' || originalValue === null || originalValue === undefined) {
+            return null;
+          }
+          return value;
+        })
+        .min(5, 'גיל מינימלי הוא 5')
+        .max(99, 'גיל מקסימלי הוא 99'),
+      address: Yup.string().required('כתובת היא שדה חובה'),
+      parentName: Yup.string(),
+      parentPhone: Yup.string()
+        .nullable()
+        .transform((value) => (!value ? null : value))
+        .matches(phoneRegExp, {
+          message: 'מספר טלפון הורה לא תקין (צריך להתחיל ב-05 ולכלול 10 ספרות)',
+          excludeEmptyString: true,
+        }),
+      parentEmail: Yup.string()
+        .nullable()
+        .transform((value) => (!value ? null : value))
+        .matches(emailRegExp, {
+          message: 'כתובת אימייל הורה לא תקינה',
+          excludeEmptyString: true,
+        }),
+      studentEmail: Yup.string()
+        .nullable()
+        .transform((value) => (!value ? null : value))
+        .matches(emailRegExp, {
+          message: 'כתובת אימייל תלמיד לא תקינה',
+          excludeEmptyString: true,
+        }),
+    }),
+
+    academicInfo: Yup.object({
+      instrumentProgress: Yup.array()
+        .of(instrumentProgressSchema), // Removed min(1) requirement
+      class: (() => {
+        // If admin or updating existing student, class is not required
+        if (isAdmin || isUpdate) {
+          return Yup.string()
+            .nullable()
+            .transform((value) => (!value ? null : value))
+            .oneOf([...VALID_CLASSES, null], 'כיתה לא תקינה');
+        }
+        // For non-admin creating new student, class is required
+        return Yup.string()
+          .required('כיתה היא שדה חובה')
+          .oneOf(VALID_CLASSES, 'כיתה לא תקינה');
+      })(),
+    }),
+
+    teacherAssignments: Yup.array().of(teacherAssignmentSchema),
+
+    orchestraAssignments: Yup.array().of(
+      Yup.object({
+        orchestraId: Yup.string(),
+      })
+    ),
+
+    isActive: Yup.boolean(),
+  });
+};
+
+// Legacy export for backward compatibility
 export const studentValidationSchema = Yup.object({
   personalInfo: Yup.object({
     fullName: Yup.string().required('שם מלא הוא שדה חובה'),

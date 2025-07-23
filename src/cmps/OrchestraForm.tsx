@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, User, Search, X as XIcon } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { ModalPortal } from './ModalPortal';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Orchestra } from '../services/orchestraService';
 import { Student } from '../services/studentService';
@@ -338,17 +339,8 @@ export function OrchestraForm({
   if (!isOpen) return null;
 
   return (
-    <div className='orchestra-form responsive-form'>
-      <div className='overlay' onClick={onClose}></div>
+    <ModalPortal isOpen={isOpen} onClose={onClose} className="orchestra-form responsive-form">
       <div className='form-modal' {...modalProps}>
-        <button
-          className='btn-icon close-btn'
-          onClick={onClose}
-          aria-label='סגור'
-        >
-          <X size={20} />
-        </button>
-
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
           {orchestra?._id ? 'טופס עריכת פרטי הרכב קיים במערכת' : 'טופס הוספת הרכב חדש למערכת'}
@@ -375,15 +367,26 @@ export function OrchestraForm({
 
             return (
               <Form>
-                <h2 {...titleProps}>
-                  {orchestra?._id
-                    ? isOrchestra
-                      ? 'עריכת תזמורת'
-                      : 'עריכת הרכב'
-                    : isOrchestra
-                    ? 'הוספת תזמורת חדשה'
-                    : 'הוספת הרכב חדש'}
-                </h2>
+                {/* Form Header with Close Button */}
+                <div className='form-header'>
+                  <button
+                    className='btn-icon close-btn'
+                    onClick={onClose}
+                    aria-label='סגור'
+                    type='button'
+                  >
+                    <X size={20} />
+                  </button>
+                  <h2 {...titleProps}>
+                    {orchestra?._id
+                      ? isOrchestra
+                        ? 'עריכת תזמורת'
+                        : 'עריכת הרכב'
+                      : isOrchestra
+                      ? 'הוספת תזמורת חדשה'
+                      : 'הוספת הרכב חדש'}
+                  </h2>
+                </div>
 
                 {apiError && <div className='error-message'>{apiError}</div>}
 
@@ -604,6 +607,6 @@ export function OrchestraForm({
           }}
         </Formik>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

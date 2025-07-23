@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useModalAccessibility } from '../../hooks/useModalAccessibility';
+import { ModalPortal } from '../ModalPortal';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Student } from '../../services/studentService';
 import { PersonalInfoSection } from './PersonalInfoSection';
@@ -10,7 +11,7 @@ import { InstrumentSection } from './InstrumentSection';
 import { StudentLessonScheduler } from './StudentLessonScheduler';
 import { OrchestraAssignmentSection } from './OrchestraAssignmentSection';
 import { TheoryLessonAssignmentSection } from './TheoryLessonAssignmentSection';
-import { studentValidationSchema } from '../../validations/studentValidation';
+import { createStudentValidationSchema } from '../../validations/studentValidation';
 import { useStudentApiService } from '../../hooks/useStudentApiService';
 import { useSchoolYearStore } from '../../store/schoolYearStore';
 import { LessonDuration } from '../../types/schedule';
@@ -55,6 +56,10 @@ export function StudentForm({
   // Initialize authorization
   const authContext = createAuthorizationContext(user, isAuthenticated);
   const auth = useAuthorization(authContext);
+  
+  // Check if user is admin and if this is an update operation
+  const isAdminUser = auth.isAdmin();
+  const isUpdateOperation = !!student?._id;
 
   // Accessibility hook
   const { modalProps, titleProps, descriptionProps } = useModalAccessibility({
@@ -217,18 +222,20 @@ export function StudentForm({
   if (!isOpen) return null;
 
   return (
-    <div className='student-form'>
-      <div className='overlay' onClick={handleCancel}></div>
+    <ModalPortal isOpen={isOpen} onClose={handleCancel} className="student-form responsive-form">
       <div className='form-modal' {...modalProps}>
-        <button
-          className='btn-icon close-btn'
-          onClick={handleCancel}
-          aria-label='סגור'
-        >
-          <X size={20} />
-        </button>
-
-        <h2 {...titleProps}>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
+        {/* Form Header with Close Button */}
+        <div className='form-header'>
+          <button
+            className='btn-icon close-btn'
+            onClick={handleCancel}
+            aria-label='סגור'
+            type='button'
+          >
+            <X size={20} />
+          </button>
+          <h2 {...titleProps}>{student?._id ? 'עריכת תלמיד' : 'הוספת תלמיד חדש'}</h2>
+        </div>
         
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
@@ -242,7 +249,7 @@ export function StudentForm({
 
         <Formik
           initialValues={createInitialFormData()}
-          validationSchema={studentValidationSchema}
+          validationSchema={createStudentValidationSchema(isAdminUser, isUpdateOperation)}
           onSubmit={handleSubmit}
           enableReinitialize
           validateOnMount={true}
@@ -315,6 +322,6 @@ export function StudentForm({
           }}
         </Formik>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

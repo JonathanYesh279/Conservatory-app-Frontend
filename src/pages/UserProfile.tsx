@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { httpService } from '../services/httpService';
+import { authService } from '../services/authService';
 import { passwordService } from '../services/passwordService';
 import { Teacher } from '../types/teacher';
 import { sanitizeError } from '../utils/errorHandler';
@@ -65,6 +67,8 @@ interface PasswordForm {
 
 export function UserProfile() {
   const { user, isAuthenticated } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,12 +147,39 @@ export function UserProfile() {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
+  // Check if password change is forced
+  const isPasswordChangeForced = searchParams.get('forcePasswordChange') === 'true' || 
+                                localStorage.getItem('requiresPasswordChange') === 'true';
+
   useEffect(() => {
     if (user) {
       initializeFromUser();
       loadUserProfile();
     }
   }, [user]);
+
+  // Handle auth state refresh when coming from password change
+  useEffect(() => {
+    const handleAuthRefresh = async () => {
+      const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true';
+      const requiresPasswordChange = localStorage.getItem('requiresPasswordChange') === 'true';
+      
+      if (forcePasswordChange || requiresPasswordChange) {
+        try {
+          // Refresh auth state to ensure we have valid tokens
+          await authService.validateSession();
+        } catch (error) {
+          console.error('Auth validation failed:', error);
+          // If validation fails, redirect to login
+          navigate('/login');
+        }
+      }
+    };
+
+    if (user) {
+      handleAuthRefresh();
+    }
+  }, [user, searchParams, navigate]);
 
   // Load teacher data when profile data is available
   useEffect(() => {
@@ -349,18 +380,36 @@ export function UserProfile() {
 
     try {
       setPasswordLoading(true);
-      await passwordService.changePassword({
+      const response = await passwordService.changePassword({
         currentPassword: passwordForm.currentPassword,
         newPassword: passwordForm.newPassword
       });
       
-      setPasswordSuccess('הסיסמה שונתה בהצלחה. תתבקש להתחבר מחדש.');
+      // Handle new tokens if returned by backend
+      if (response.accessToken) {
+        authService.setToken(response.accessToken);
+        console.log('Updated access token after password change');
+      }
+      
+      if (response.refreshToken) {
+        localStorage.setItem('refreshToken', response.refreshToken);
+        console.log('Updated refresh token after password change');
+      }
+      
+      setPasswordSuccess('הסיסמה שונתה בהצלחה!');
       setPasswordForm({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
       setShowPasswordForm(false);
+
+      // Clear forced password change flags
+      localStorage.removeItem('requiresPasswordChange');
+      if (searchParams.get('forcePasswordChange')) {
+        searchParams.delete('forcePasswordChange');
+        setSearchParams(searchParams);
+      }
       
       // Clear success message after 3 seconds
       setTimeout(() => {
@@ -382,8 +431,31 @@ export function UserProfile() {
     }));
   };
 
-  const handleGoBack = () => {
-    window.history.back();
+  const handleGoBack = async () => {
+    try {
+      // Check if password was recently changed
+      const requiresPasswordChange = localStorage.getItem('requiresPasswordChange');
+      const forcePasswordChange = searchParams.get('forcePasswordChange') === 'true';
+      
+      if (requiresPasswordChange === 'true' || forcePasswordChange) {
+        // Clear the flags
+        localStorage.removeItem('requiresPasswordChange');
+        if (forcePasswordChange) {
+          searchParams.delete('forcePasswordChange');
+          setSearchParams(searchParams);
+        }
+        
+        // Force refresh auth state to pick up new tokens
+        await authService.validateSession();
+      }
+      
+      // Navigate back to home/dashboard safely
+      navigate('/');
+    } catch (error) {
+      console.error('Navigation error:', error);
+      // If auth validation fails, redirect to login
+      navigate('/login');
+    }
   };
 
   if (loading) {
@@ -808,6 +880,23 @@ export function UserProfile() {
             </div>
           </div>
 
+          {/* Forced Password Change Warning */}
+          {isPasswordChangeForced && (
+            <div className="card" style={{ borderColor: '#ff6b6b', backgroundColor: '#fff5f5' }}>
+              <div className="card-body">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#d63031' }}>
+                  <Lock size={24} />
+                  <div>
+                    <h3 style={{ margin: 0, color: '#d63031' }}>שינוי סיסמה נדרש</h3>
+                    <p style={{ margin: '8px 0 0 0', color: '#636e72' }}>
+                      עליך לשנות את הסיסמה שלך לפני שתוכל להמשיך להשתמש במערכת
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Password Change Card */}
           <div className="card">
             <div className="card-header">
@@ -816,12 +905,13 @@ export function UserProfile() {
               <button 
                 onClick={() => setShowPasswordForm(!showPasswordForm)}
                 className="btn btn-outline"
+                style={isPasswordChangeForced ? { display: 'none' } : {}}
               >
                 {showPasswordForm ? 'ביטול' : 'שינוי סיסמה'}
               </button>
             </div>
             
-            {showPasswordForm && (
+            {(showPasswordForm || isPasswordChangeForced) && (
               <div className="card-body">
                 <form onSubmit={handlePasswordChange}>
                   {passwordError && (

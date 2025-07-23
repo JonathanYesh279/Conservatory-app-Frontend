@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, Music } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { ModalPortal } from './ModalPortal';
 import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { Rehearsal } from '../services/rehearsalService';
@@ -246,19 +247,27 @@ export function RehearsalForm({
   if (!isOpen) return null;
 
   return (
-    <div className='rehearsal-form'>
-      <div className='overlay' onClick={onClose}></div>
+    <ModalPortal isOpen={isOpen} onClose={onClose} className="rehearsal-form responsive-form">
       <div className='form-modal' {...modalProps}>
-        <button className='close-btn' onClick={onClose} aria-label='סגור'>
-          <X size={20} />
-        </button>
+        {/* Form Header with Close Button */}
+        <div className='form-header'>
+          <button
+            className='btn-icon close-btn'
+            onClick={onClose}
+            aria-label='סגור'
+            type='button'
+          >
+            <X size={20} />
+          </button>
+          <h2 {...titleProps}>
+            {rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}
+          </h2>
+        </div>
 
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
           {rehearsal?._id ? 'טופס עריכת חזרה קיימת במערכת' : 'טופס הוספת חזרה חדשה למערכת'}
         </div>
-
-        <h2 {...titleProps}>{rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}</h2>
 
         {error && <div className='error-message'>{error}</div>}
         {formError && <div className='error-message'>{formError}</div>}
@@ -583,6 +592,6 @@ export function RehearsalForm({
           </Formik>
         )}
       </div>
-    </div>
+    </ModalPortal>
   );
 }

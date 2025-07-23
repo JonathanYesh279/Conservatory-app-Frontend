@@ -158,6 +158,27 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+// Response interceptor for handling password change requirements
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    // Handle password change requirement
+    if (error.response?.status === 403) {
+      const errorData = error.response.data as any
+      if (errorData?.code === 'PASSWORD_CHANGE_REQUIRED') {
+        // Store flag for password change requirement
+        localStorage.setItem('requiresPasswordChange', 'true')
+        // Redirect to profile page with password change flag
+        window.location.href = '/profile?forcePasswordChange=true'
+        return Promise.reject(new Error('Redirecting to password change'))
+      }
+    }
+
+    // Handle other HTTP errors (keep existing logic)
+    return Promise.reject(error)
+  }
+)
+
 // Type for params/data
 type RequestData = Record<string, any> | null;
 

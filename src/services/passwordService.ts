@@ -17,6 +17,8 @@ export interface ResetPasswordRequest {
 export interface PasswordResponse {
   success: boolean;
   message: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
 
 export const passwordService = {

@@ -43,35 +43,13 @@ export class MobileUIController {
            document.documentElement;
   }
 
-  // Hide browser address bar
+  // Hide browser address bar - simplified for PWA
   hideBrowserUI(): void {
     if (!this.isMobile()) return;
     
-    const debug = false; // Disable for production
-    if (debug) {
-      console.log('🔽 MobileUI: Hiding browser UI');
-    }
-    
-    // Clear any existing timeout
-    if (this.hideTimeout) {
-      clearTimeout(this.hideTimeout);
-    }
-    
-    const scrollContainer = this.getScrollContainer();
-    
-    if (this.isIOSSafari()) {
-      // iOS Safari specific hiding
-      this.hideScrollUI(scrollContainer, 'ios-safari-ui-hidden', debug);
-    } else if (this.isIOSChrome()) {
-      // iOS Chrome specific hiding
-      this.hideScrollUI(scrollContainer, 'ios-chrome-ui-hidden', debug);
-    } else if (this.isAndroidChrome()) {
-      // Android Chrome specific hiding
-      this.hideScrollUI(scrollContainer, 'android-chrome-ui-hidden', debug);
-    } else {
-      // Other mobile browsers
-      this.hideScrollUI(scrollContainer, 'mobile-ui-hidden', debug);
-    }
+    // In PWA mode, just add CSS class without aggressive scroll manipulation
+    document.body.classList.add('mobile-ui-hidden');
+    document.documentElement.classList.add('mobile-ui-hidden');
   }
 
   // Universal scroll-based UI hiding
@@ -224,14 +202,9 @@ export class MobileUIController {
     }, 1000);
   }
 
-  // Show browser address bar
+  // Show browser address bar - simplified for PWA
   showBrowserUI(): void {
     if (!this.isMobile()) return;
-    
-    const debug = false; // Disable for production
-    if (debug) {
-      console.log('🔼 MobileUI: Showing browser UI');
-    }
     
     // Clear any pending hide operations
     if (this.hideTimeout) {
@@ -247,21 +220,6 @@ export class MobileUIController {
       'mobile-ui-hidden',
       'ios-ui-hidden' // Legacy class
     );
-    
-    // Scroll to top slightly to trigger browser UI show
-    const scrollContainer = this.getScrollContainer();
-    if (scrollContainer && scrollContainer !== document.documentElement) {
-      const currentY = scrollContainer.scrollTop;
-      if (currentY > 0) {
-        scrollContainer.scrollTop = Math.max(currentY - 1, 0);
-      }
-    }
-    
-    // Also try window scroll
-    const currentWindowY = window.pageYOffset;
-    if (currentWindowY > 0) {
-      window.scrollTo({ top: Math.max(currentWindowY - 1, 0), behavior: 'auto' });
-    }
   }
 }
 

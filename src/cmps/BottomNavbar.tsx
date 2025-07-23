@@ -1,11 +1,9 @@
 import { Link, useLocation } from 'react-router-dom'
 import { BookOpen, Calendar, Music, Users, GraduationCap } from 'lucide-react'
-import { useScrollHide } from '../hooks/useScrollHide'
 
 export function BottomNavbar() {
   const location = useLocation()
   const path = location.pathname
-  const isHidden = useScrollHide()
   
   // Define navigation items
   const navItems = [
@@ -37,9 +35,7 @@ export function BottomNavbar() {
   ]
 
   return (
-    <nav 
-      className={`bottom-nav ${isHidden ? 'hidden' : 'visible'}`}
-    >
+    <nav className="bottom-nav visible">
       <div className='nav-items'>
         {navItems.map((item) => {
           const isActive =

@@ -20,6 +20,7 @@ interface LoginResponse {
     }
     credentials?: {
       email: string
+      requiresPasswordChange?: boolean
     }
   }
 }
@@ -88,6 +89,16 @@ async function login(email: string, password: string): Promise<User> {
     // Transform teacher data to user format
     const user = transformTeacherToUser(response.teacher)
     localStorage.setItem('user', JSON.stringify(user))
+
+    // Check if password change is required after successful login
+    if (response.teacher.credentials?.requiresPasswordChange) {
+      // Store flag for password change requirement
+      localStorage.setItem('requiresPasswordChange', 'true')
+      // Redirect to profile page with password change flag
+      setTimeout(() => {
+        window.location.href = '/profile?forcePasswordChange=true'
+      }, 100)
+    }
 
     return user
   } catch (err) {

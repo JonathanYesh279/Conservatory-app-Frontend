@@ -12,6 +12,7 @@ import {
   Mail,
 } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { ModalPortal } from './ModalPortal';
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
@@ -260,14 +261,32 @@ export function TeacherForm({
     }
 
     // Show success toast
-    const toastMessage = teacherId 
-      ? `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} עודכן בהצלחה` 
-      : `הזמנה נשלחה בהצלחה ל-${dataToSend.personalInfo?.email || 'המורה'}`;
-    
-    addToast({
-      type: 'success',
-      message: toastMessage,
-    });
+    if (teacherId) {
+      // Update message
+      addToast({
+        type: 'success',
+        message: `המורה ${dataToSend.personalInfo?.fullName || 'המורה'} עודכן בהצלחה`,
+      });
+    } else {
+      // Handle invitation info display for new teachers
+      if (savedTeacher.invitationInfo?.mode === 'DEFAULT_PASSWORD') {
+        const email = savedTeacher.credentials?.email || savedTeacher.personalInfo.email;
+        const password = savedTeacher.invitationInfo.defaultPassword;
+
+        // Show success message with credentials
+        addToast({
+          type: 'success',
+          message: `מורה נוצר בהצלחה!\nפרטי התחברות:\nאימייל: ${email}\nסיסמה: ${password}\n(המורה יידרש לשנות סיסמה בכניسה הראשונה)`,
+          autoClose: false, // Don't auto-close so admin can copy the details
+        });
+      } else {
+        // Show normal success message for email invitation
+        addToast({
+          type: 'success',
+          message: `הזמנה נשלחה בהצלחה ל-${dataToSend.personalInfo?.email || 'המורה'}`,
+        });
+      }
+    }
 
     // Reset duplicate state
     resetDuplicateState();
@@ -430,7 +449,6 @@ export function TeacherForm({
         return (
           <div className='teacher-form-view'>
             <div className='teacher-modal-header'>
-              <h2 {...titleProps}>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
               <button
                 className='btn-icon close-btn'
                 onClick={handleModalClose}
@@ -438,6 +456,7 @@ export function TeacherForm({
               >
                 <X size={20} />
               </button>
+              <h2 {...titleProps}>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
             </div>
 
             {apiError && (
@@ -1018,8 +1037,7 @@ export function TeacherForm({
   };
 
   return (
-    <div className='teacher-form responsive-form'>
-      <div className='overlay' onClick={handleModalClose}></div>
+    <ModalPortal isOpen={isOpen} onClose={handleModalClose} className="teacher-form responsive-form">
       <div className='form-modal' {...modalProps}>
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
@@ -1040,6 +1058,6 @@ export function TeacherForm({
           isSubmitting={isLoading}
         />
       )}
-    </div>
+    </ModalPortal>
   );
 }

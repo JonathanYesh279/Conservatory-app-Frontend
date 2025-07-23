@@ -1,32 +1,16 @@
 // src/styles/components/student-form.scss
 
-// Student form modal
+// Student form modal - now works with ModalPortal
 .student-form {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 100;
+  // Remove fixed positioning since ModalPortal handles it
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rem 1.5rem 3rem 1.5rem;
   
   @media (max-width: 768px) {
-    padding: 0 0.5rem;
-    align-items: flex-start;
-    overflow-y: auto; // Ensure parent can scroll if needed
-  }
-  
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(3px);
+    align-items: stretch;
   }
   
   .form-modal {
@@ -47,14 +31,28 @@
     
     @media (max-width: 768px) {
       width: 100%;
-      max-width: none;
-      max-height: calc(100vh - 4rem);
-      padding: 1.5rem 1rem;
-      padding-bottom: 1rem; // Normal bottom padding
-      border-radius: 1rem 1rem 0 0;
+      height: 100%;
+      padding: 1rem 1rem 2rem 1rem;
+      border-radius: 0;
       margin: 0;
-      margin-top: 2rem; // Add top margin instead of auto to ensure buttons are in viewport
-      margin-bottom: 2rem; // Add bottom margin for safe area
+      display: flex;
+      flex-direction: column;
+      background-color: var(--bg-card);
+      
+      .form-header {
+        margin-bottom: 1.5rem;
+        padding: 0;
+        
+        .close-btn {
+          width: 28px;
+          height: 28px;
+        }
+        
+        h2 {
+          font-size: 1.2rem;
+          margin-left: 2rem; /* Adjust for smaller mobile close button */
+        }
+      }
     }
     
     /* Show scrollbar only when scrolling */
@@ -62,35 +60,52 @@
       scrollbar-color: var(--border-color) transparent; /* For Firefox */
     }
     
-    h2 {
-      margin-top: 0;
-      margin-bottom: 1.25rem;
-      padding-bottom: 0.75rem;
-      color: var(--text-primary);
-      text-align: center;
-      font-size: 1.4rem;
-    }
-    
-    .close-btn {
-      position: absolute;
-      top: 4.3rem;
-      left: 1rem;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      background-color: var(--bg-tertiary);
-      color: var(--text-secondary);
+    .form-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      z-index: 5;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      padding: 0 0.5rem;
+      position: relative;
       
-      &:hover {
-        background-color: var(--bg-secondary);
+      .close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: rgba(var(--bg-tertiary-rgb), 0.9);
+        backdrop-filter: blur(8px);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        flex-shrink: 0;
+        
+        &:hover {
+          background-color: rgba(var(--bg-secondary-rgb), 0.9);
+          color: var(--text-primary);
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+      
+      h2 {
+        margin: 0;
+        padding: 0;
         color: var(--text-primary);
+        text-align: center;
+        font-size: 1.4rem;
+        font-weight: 600;
+        flex: 1;
+        margin-left: 2.5rem; /* Push title toward center, accounting for close button */
       }
     }
     
@@ -110,6 +125,7 @@
         border-top: 1px solid var(--border-color);
         width: 100%;
       }
+
       
       .btn {
         width: 146px;
@@ -294,10 +310,15 @@
 @media (max-width: 599px) {
   .student-form .form-modal {
     width: 100%;
-    max-height: calc(100vh - 4rem);
-    padding: 1.25rem;
+    max-height: 97vh;
     padding-top: 74px;
+    padding-inline: 0;
     padding-bottom: 1rem; // Normal bottom padding
+
+    .close-btn {
+      top: 4.2rem;
+      left: 1rem;
+    }
     
     h2 {
       font-size: 1.2rem;

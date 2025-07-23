@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, BookOpen, User, Search, X as XIcon } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { ModalPortal } from './ModalPortal';
 import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { TheoryLesson, THEORY_CATEGORIES, THEORY_LOCATIONS, BulkTheoryLessonData } from '../services/theoryService';
@@ -335,24 +336,30 @@ export function TheoryForm({
   };
 
   return (
-    <div className='theory-form-overlay'>
-      <div className='overlay' onClick={onClose}></div>
+    <ModalPortal isOpen={isOpen} onClose={onClose} className="theory-form-overlay responsive-form">
       <div className='form-modal' {...modalProps} onClick={(e) => e.stopPropagation()}>
-        <button className='close-button' onClick={onClose}>
-          <X size={20} />
-        </button>
-        
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
           {theoryLesson?._id ? 'טופס עריכת שיעור תאוריה קיים במערכת' : 'טופס הוספת שיעור תאוריה חדש למערכת'}
         </div>
         
-        <h2 {...titleProps}>
-          {theoryLesson?._id 
-            ? 'עריכת שיעור תאוריה' 
-            : 'הוספת שיעור תאוריה חדש'
-          }
-        </h2>
+        {/* Form Header with Close Button */}
+        <div className='form-header'>
+          <button 
+            className='close-button' 
+            onClick={onClose}
+            type='button'
+            aria-label='סגור'
+          >
+            <X size={20} />
+          </button>
+          <h2 {...titleProps}>
+            {theoryLesson?._id 
+              ? 'עריכת שיעור תאוריה' 
+              : 'הוספת שיעור תאוריה חדש'
+            }
+          </h2>
+        </div>
 
         {/* Error messages are now handled via Toast notifications */}
 
@@ -1011,6 +1018,6 @@ export function TheoryForm({
           </Formik>
         )}
       </div>
-    </div>
+    </ModalPortal>
   );
 }
