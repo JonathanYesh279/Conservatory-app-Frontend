@@ -27,37 +27,16 @@ export function StudentPreview({
   // State to store orchestra names after fetching them
   const [orchestraNames, setOrchestraNames] = useState<string[]>([]);
 
-  // Track if we've already fetched updated data to prevent infinite loops
-  const [hasRefreshed, setHasRefreshed] = useState(false);
-
   // Initialize authorization
   const auth = authContext ? useAuthorization(authContext) : null;
 
   // Update the component when the original student prop changes
   useEffect(() => {
     setCurrentStudent(student);
-    setHasRefreshed(false); // Reset refresh flag when student prop changes
   }, [student]);
 
-  // Fetch the latest student data once when component mounts
-  useEffect(() => {
-    // Only fetch once per student and only if we haven't already refreshed
-    if (student?._id && !hasRefreshed) {
-      const getLatestStudentData = async () => {
-        try {
-          const latestStudent = await studentService.getStudentById(
-            student._id
-          );
-          setCurrentStudent(latestStudent);
-          setHasRefreshed(true); // Mark as refreshed to prevent further calls
-        } catch (error) {
-          console.error('Error fetching latest student data:', error);
-        }
-      };
-
-      getLatestStudentData();
-    }
-  }, [student?._id, hasRefreshed]);
+  // Note: Removed direct API call to avoid overriding store's local changes
+  // The student data should come from the store which applies local stage changes
 
   // Fetch orchestra names when component mounts or currentStudent changes
   useEffect(() => {

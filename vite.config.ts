@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',
+    host: '0.0.0.0', // This is key for WSL2
     port: 5173,
     strictPort: true,
     cors: true,

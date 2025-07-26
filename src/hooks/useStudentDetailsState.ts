@@ -6,14 +6,43 @@ import { teacherService } from '../services/teacherService';
 import { orchestraService } from '../services/orchestraService';
 import { theoryService, TheoryLesson } from '../services/theoryService';
 import { TestStatus } from '../services/studentService';
+import { useStudentStore } from '../store/studentStore';
 
 export function useStudentDetailsState() {
   const { studentId } = useParams<{ studentId: string }>();
   const [student, setStudent] = useState<Student | null>(null);
+  
+  // Get the student store update function for cross-page state consistency
+  const { updateStudentStage: updateStoreStage } = useStudentStore();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [isUpdatingTest, setIsUpdatingTest] = useState(false);
+  const [isUpdatingStage, setIsUpdatingStage] = useState(false);
+  
+  // Store local stage changes that haven't been persisted to backend yet
+  const [localStageChanges, setLocalStageChanges] = useState<Record<string, number>>({});
+
+  // Function to merge student data with local stage changes
+  const mergeStudentWithLocalChanges = (studentData: Student): Student => {
+    if (Object.keys(localStageChanges).length === 0) {
+      return studentData;
+    }
+
+    return {
+      ...studentData,
+      academicInfo: {
+        ...studentData.academicInfo,
+        instrumentProgress: studentData.academicInfo.instrumentProgress.map(instrument => {
+          const localStage = localStageChanges[instrument.instrumentName];
+          if (localStage !== undefined) {
+            return { ...instrument, currentStage: localStage };
+          }
+          return instrument;
+        })
+      }
+    };
+  };
 
   // Teachers data - simplified without assignments
   const [teachersData, setTeachersData] = useState<{
@@ -59,14 +88,28 @@ export function useStudentDetailsState() {
 
       try {
         console.log(`Fetching student data for ID: ${studentId}`);
-        const studentData = await studentService.getStudentById(
-          studentId || ''
-        );
+        
+        // First, try to get the student from the store (which has local changes applied)
+        const { students, selectedStudent } = useStudentStore.getState();
+        const storeStudent = students.find(s => s._id === studentId) || 
+                           (selectedStudent?._id === studentId ? selectedStudent : null);
+        
+        let studentData: Student;
+        
+        if (storeStudent) {
+          console.log('Using student data from store (with local changes):', storeStudent);
+          studentData = storeStudent;
+        } else {
+          console.log('Student not found in store, fetching from API');
+          const apiStudent = await studentService.getStudentById(studentId || '');
+          // Apply local stage changes to the fetched data
+          studentData = mergeStudentWithLocalChanges(apiStudent);
+        }
 
         if (!isMounted) return;
 
         if (studentData) {
-          console.log(`Student data fetched successfully:`, studentData);
+          console.log(`Student data loaded successfully:`, studentData);
           setStudent(studentData);
 
           // Load teachers immediately if there are teacher IDs
@@ -411,6 +454,124 @@ export function useStudentDetailsState() {
     }
   };
 
+  // Update student instrument stage
+  const updateStudentStage = async (
+    instrumentName: string,
+    newStage: number
+  ) => {
+    if (!student || !studentId) {
+      console.error('Cannot update stage: No student or studentId available');
+      return undefined;
+    }
+
+    setIsUpdatingStage(true);
+
+    try {
+      console.log(
+        `Updating stage for ${instrumentName} to ${newStage}`
+      );
+
+      // Find the instrument in the student's instrumentProgress array
+      const instrumentIndex = student.academicInfo.instrumentProgress.findIndex(
+        (i) => i.instrumentName === instrumentName
+      );
+
+      if (instrumentIndex === -1) {
+        console.error(`Instrument ${instrumentName} not found in student data`);
+        return undefined;
+      }
+
+      // Get the current instrument data
+      const instrument =
+        student.academicInfo.instrumentProgress[instrumentIndex];
+
+      // Get previous stage
+      const previousStage = instrument.currentStage;
+
+      console.log(`Previous stage: ${previousStage}, New stage: ${newStage}`);
+
+      // Store the local stage change
+      setLocalStageChanges(prev => ({
+        ...prev,
+        [instrumentName]: newStage
+      }));
+
+      // Also update the student store for cross-page consistency
+      if (studentId) {
+        updateStoreStage(studentId, instrumentName, newStage);
+      }
+
+      // Apply the change to current student data immediately
+      const updatedStudent = mergeStudentWithLocalChanges({
+        ...student,
+        academicInfo: {
+          ...student.academicInfo,
+          instrumentProgress: student.academicInfo.instrumentProgress.map(instr => {
+            if (instr.instrumentName === instrumentName) {
+              return { ...instr, currentStage: newStage };
+            }
+            return instr;
+          })
+        }
+      });
+
+      // Update the UI immediately
+      setStudent(updatedStudent);
+
+      // Call the backend API to update the instrument stage
+      const result = await studentService.updateStudentStage(
+        studentId,
+        instrumentName,
+        newStage
+      );
+
+      console.log('Stage update successful:', result);
+
+      // If the backend update was successful, clear the local change
+      // (For now this won't happen since we're using local update only)
+      setLocalStageChanges(prev => {
+        const updated = { ...prev };
+        delete updated[instrumentName];
+        return updated;
+      });
+
+      // Update with the actual response from the server (merged with any remaining local changes)
+      const finalStudent = mergeStudentWithLocalChanges(result);
+      setStudent(finalStudent);
+
+      return finalStudent;
+    } catch (error) {
+      console.error('Failed to update instrument stage:', error);
+
+      // Revert the local stage change on error
+      setLocalStageChanges(prev => {
+        const updated = { ...prev };
+        delete updated[instrumentName];
+        return updated;
+      });
+
+      // Also revert the store change
+      if (studentId) {
+        const originalInstrument = student.academicInfo.instrumentProgress.find(
+          (i) => i.instrumentName === instrumentName
+        );
+        if (originalInstrument) {
+          updateStoreStage(studentId, instrumentName, originalInstrument.currentStage);
+        }
+      }
+
+      // Revert the UI to show the original stage
+      const revertedStudent = mergeStudentWithLocalChanges(student);
+      setStudent(revertedStudent);
+
+      console.log('Reverted stage change due to error');
+
+      return undefined;
+    } finally {
+      setIsUpdatingStage(false);
+    }
+  };
+
   return {
     student,
     isLoading,
@@ -438,5 +599,7 @@ export function useStudentDetailsState() {
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,
+    updateStudentStage,
+    isUpdatingStage,
   };
 }

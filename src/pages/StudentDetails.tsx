@@ -1,6 +1,7 @@
 // src/pages/StudentDetails.tsx
 import { useStudentDetailsState } from '../hooks/useStudentDetailsState';
 import { RefreshCw, ArrowLeft, User, Music } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 // Import section components
 import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection';
@@ -41,7 +42,17 @@ export function StudentDetails() {
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,
+    updateStudentStage,
+    isUpdatingStage,
   } = useStudentDetailsState();
+
+  const { user } = useAuth();
+
+  // Check if user can edit stage (admin or teacher assigned to this student)
+  const canEditStage = Boolean(user && (
+    user.roles.includes('מנהל') || 
+    (user.roles.includes('מורה') && student?.teacherIds?.includes(user._id))
+  ));
 
   if (isLoading) {
     return (
@@ -125,13 +136,16 @@ export function StudentDetails() {
 
               {/* Main academic content area with all sections */}
               <div className='sd-card-scroll-area'>
-                {/* Use the separate InstrumentsSection component - now read-only */}
+                {/* Use the separate InstrumentsSection component - now editable */}
                 {student.academicInfo.instrumentProgress?.length > 0 && (
                   <InstrumentsSection
                     student={student}
                     isOpen={openSections.instruments}
                     onToggle={() => toggleSection('instruments')}
                     getStageColor={getStageColor}
+                    updateStudentStage={updateStudentStage}
+                    isUpdatingStage={isUpdatingStage}
+                    canEditStage={canEditStage}
                   />
                 )}
 

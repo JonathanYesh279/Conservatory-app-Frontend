@@ -1,0 +1,262 @@
+// Rehearsal Bulk Update Dialog Styles
+.rehearsal-bulk-update-dialog {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 450px;
+  width: 100%;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border-color);
+  animation: slideIn 0.3s ease;
+  margin: 0 auto;
+
+  .dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+
+    .warning-icon {
+      color: var(--warning);
+      flex-shrink: 0;
+    }
+
+    h3 {
+      color: var(--text-primary);
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+  }
+
+  .dialog-content {
+    margin-bottom: 1.5rem;
+
+    .orchestra-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      margin-bottom: 1.25rem;
+
+      svg {
+        color: var(--primary-color);
+        flex-shrink: 0;
+      }
+
+      .orchestra-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1rem;
+      }
+
+      .rehearsal-count {
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+    }
+
+    .changes-summary {
+      margin-bottom: 1.25rem;
+
+      h4 {
+        color: var(--text-primary);
+        margin: 0 0 0.75rem 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+      }
+
+      .changes-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          padding: 0.5rem 0.75rem;
+          background: var(--bg-secondary);
+          border-radius: 6px;
+          margin-bottom: 0.5rem;
+          font-size: 0.9rem;
+          color: var(--text-primary);
+          border-right: 3px solid var(--primary-color);
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
+    }
+
+    .warning-message {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.875rem;
+      background: rgba(var(--warning-rgb), 0.1);
+      border: 1px solid rgba(var(--warning-rgb), 0.2);
+      border-radius: 8px;
+
+      svg {
+        color: var(--warning);
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-primary);
+        line-height: 1.4;
+      }
+    }
+  }
+
+  .dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+      min-width: 120px;
+
+      &.primary {
+        background: var(--warning);
+        color: white;
+        border: 1px solid var(--warning);
+
+        &:hover {
+          background: var(--warning-dark);
+          border-color: var(--warning-dark);
+        }
+      }
+    }
+  }
+}
+
+// Override ModalPortal's modal-content width for this specific dialog
+.modal-portal .modal-content:has(.rehearsal-bulk-update-dialog) {
+  max-width: 450px !important;
+  width: auto !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Dark mode adjustments
+[data-theme="dark"] {
+  .rehearsal-bulk-update-dialog {
+    .orchestra-info {
+      background: rgba(var(--primary-rgb), 0.1);
+    }
+
+    .changes-list li {
+      background: rgba(var(--primary-rgb), 0.1);
+    }
+
+    .warning-message {
+      background: rgba(var(--warning-rgb), 0.15);
+      border-color: rgba(var(--warning-rgb), 0.3);
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 767px) {
+  .rehearsal-bulk-update-dialog {
+    max-width: 360px;
+    width: 92%;
+    padding: 1.25rem;
+
+    .dialog-header {
+      margin-bottom: 1rem;
+
+      h3 {
+        font-size: 1rem;
+      }
+    }
+
+    .dialog-content {
+      margin-bottom: 1.25rem;
+
+      .orchestra-info {
+        padding: 0.875rem;
+        margin-bottom: 1rem;
+
+        .orchestra-name {
+          font-size: 0.95rem;
+        }
+
+        .rehearsal-count {
+          font-size: 0.8rem;
+        }
+      }
+
+      .changes-summary {
+        margin-bottom: 1rem;
+
+        h4 {
+          font-size: 0.9rem;
+        }
+
+        .changes-list li {
+          padding: 0.5rem 0.65rem;
+          font-size: 0.85rem;
+        }
+      }
+
+      .warning-message {
+        padding: 0.75rem;
+
+        p {
+          font-size: 0.85rem;
+        }
+      }
+    }
+
+    .dialog-actions {
+      gap: 0.75rem;
+
+      .btn {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.85rem;
+        min-width: 100px;
+      }
+    }
+  }
+
+  .modal-portal .modal-content:has(.rehearsal-bulk-update-dialog) {
+    max-width: 360px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .rehearsal-bulk-update-dialog {
+    max-width: 320px;
+    width: 95%;
+    padding: 1rem;
+
+    .dialog-actions {
+      flex-direction: column;
+      
+      .btn {
+        width: 100%;
+      }
+    }
+  }
+
+  .modal-portal .modal-content:has(.rehearsal-bulk-update-dialog) {
+    max-width: 320px !important;
+  }
+}

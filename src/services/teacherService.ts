@@ -24,6 +24,15 @@ export interface Teacher {
       duration: number;
       isActive: boolean;
     }>;
+    timeBlocks?: Array<{
+      _id: string;
+      day: string;
+      startTime: string;
+      endTime: string;
+      location?: string;
+      notes?: string;
+      isActive: boolean;
+    }>;
   };
   conducting?: {
     orchestraIds: string[];
@@ -147,6 +156,11 @@ function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
           ...(item.isActive !== undefined ? { isActive: item.isActive } : {}),
         }));
       }
+    }
+
+    // Include timeBlocks if present (for time block management)
+    if (teacher.teaching.timeBlocks && Array.isArray(teacher.teaching.timeBlocks)) {
+      prepared.teaching.timeBlocks = [...teacher.teaching.timeBlocks];
     }
   }
 

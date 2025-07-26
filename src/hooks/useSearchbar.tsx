@@ -63,7 +63,7 @@ export function useSearchbar<T extends SearchableEntity>(
           return false;
         }
 
-        // Check if any field contains the search query
+        // Check if any field starts with the search query (more precise search)
         return fieldsToSearch.some((fieldValue) => {
           // Safety check for fieldValue
           if (typeof fieldValue !== 'string') {
@@ -73,7 +73,7 @@ export function useSearchbar<T extends SearchableEntity>(
             );
             return false;
           }
-          return fieldValue.toLowerCase().includes(lowercaseQuery);
+          return fieldValue.toLowerCase().startsWith(lowercaseQuery);
         });
       } catch (err) {
         console.error('Error filtering entity:', err);

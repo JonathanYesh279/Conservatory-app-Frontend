@@ -20,42 +20,72 @@
   
   // Header with orchestra name and type
   .preview-header {
-    background: var(--header-bg);
-    padding: 1.25rem;
+    background: linear-gradient(135deg, var(--header-bg) 0%, rgba(var(--bg-secondary-rgb, 248, 249, 250), 0.8) 100%);
+    padding: 1.5rem;
     display: flex;
     align-items: center;
     gap: 1rem;
     border-bottom: 1px solid var(--divider-color);
-    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 0%, rgba(var(--primary-color-rgb), 0.02) 100%);
+      pointer-events: none;
+    }
 
     .orchestra-header-container {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      align-items: stretch;
+      gap: 2rem;
       width: 100%;
       min-width: 0;
+      position: relative;
+      z-index: 1;
+      direction: rtl;
       
       .orchestra-info {
         display: flex;
         flex-direction: column;
         justify-content: center;
-        padding: 0.4rem 0.75rem;
-        gap: 0.3rem;
         border-radius: 0.75rem;
-        background-color: rgba(var(--primary-color-rgb), 0.1);
-        border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+        background-color: rgba(var(--primary-color-rgb), 0.05);
+        border: 1px solid rgba(var(--primary-color-rgb), 0.1);
+        padding: 0.35rem 0.7rem;
         margin-bottom: 0;
-        min-width: 0;
-        flex: 1;
-        max-width: 70%;
+        min-width: 200px;
+        flex: 2;
+        max-width: none;
+        direction: rtl;
+        text-align: right;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        
+        &:hover {
+          background: linear-gradient(135deg, 
+            rgba(var(--primary-color-rgb), 0.18) 0%, 
+            rgba(var(--primary-color-rgb), 0.12) 100%);
+          border-color: rgba(var(--primary-color-rgb), 0.35);
+          transform: translateY(-2px);
+          box-shadow: 
+            0 8px 25px rgba(var(--primary-color-rgb), 0.25),
+            0 4px 8px rgba(0, 0, 0, 0.1);
+        }
       }
       
       .avatar-section {
         flex-shrink: 0;
         
         .avatar {
-          width: 2.75rem;
-          height: 2.75rem;
+          width: 40px;
+          height: 40px;
           border-radius: 50%;
           color: white;
           display: flex;
@@ -63,7 +93,18 @@
           justify-content: center;
           font-weight: 600;
           font-size: 1rem;
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+          box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.15),
+            0 2px 6px rgba(0, 0, 0, 0.1);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          
+          &:hover {
+            transform: translateY(-1px) scale(1.03);
+            box-shadow: 
+              0 6px 20px rgba(0, 0, 0, 0.2),
+              0 3px 8px rgba(0, 0, 0, 0.15);
+          }
         }
       }
     }
@@ -76,29 +117,86 @@
 
       .orchestra-name {
         margin: 0;
-        font-size: 0.9rem;
-        font-weight: 600;
+        font-size: 1.1rem;
+        font-weight: 700;
         color: var(--text-primary);
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+        margin-bottom: 0.1rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        line-height: 1.2;
+        min-width: 0;
       }
       
       .orchestra-type {
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: 0.5rem;
         color: var(--text-secondary);
-        font-size: 0.8rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        font-size: 0.85rem;
+        font-weight: 500;
+        letter-spacing: 0.005em;
         
         svg {
           color: var(--primary-color);
-          opacity: 0.7;
+          opacity: 0.8;
           flex-shrink: 0;
+        }
+      }
+      
+      .conductor-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.6rem 0.9rem;
+        background: linear-gradient(135deg, 
+          rgba(var(--success-rgb, 40, 167, 69), 0.35) 0%, 
+          rgba(var(--success-rgb, 40, 167, 69), 0.25) 100%);
+        border: 2px solid rgba(var(--success-rgb, 40, 167, 69), 0.45);
+        border-radius: 1.5rem;
+        color: var(--success, #28a745);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        flex-shrink: 2;
+        min-width: 0;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 
+          0 4px 12px rgba(var(--success-rgb, 40, 167, 69), 0.2),
+          0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        
+        &::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, 
+            transparent 0%, 
+            rgba(255, 255, 255, 0.1) 50%, 
+            transparent 100%);
+          transition: left 0.5s ease;
+        }
+        
+        &:hover {
+          background: linear-gradient(135deg, 
+            rgba(var(--success-rgb, 40, 167, 69), 0.45) 0%, 
+            rgba(var(--success-rgb, 40, 167, 69), 0.35) 100%);
+          border-color: rgba(var(--success-rgb, 40, 167, 69), 0.6);
+          transform: translateY(-2px);
+          box-shadow: 
+            0 8px 25px rgba(var(--success-rgb, 40, 167, 69), 0.3),
+            0 4px 8px rgba(0, 0, 0, 0.1);
+            
+          &::before {
+            left: 100%;
+          }
         }
       }
     }
@@ -247,6 +345,33 @@
 }
 
 // Media queries for responsiveness
+@media (max-width: 768px) {
+  .orchestra-preview {
+    .preview-header {
+      .orchestra-header-container {
+        align-items: center;
+        gap: 1rem;
+        
+        .orchestra-info {
+          padding: 0.8rem 1rem;
+          min-width: 180px;
+        }
+        
+        .conductor-badge {
+          padding: 0.5rem 0.7rem;
+          font-size: 0.7rem;
+        }
+        
+        .avatar-section .avatar {
+          width: 40px;
+          height: 40px;
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+}
+
 @media (max-width: 576px) {
   .orchestra-preview {
     .preview-header {
@@ -256,8 +381,8 @@
         gap: 0.75rem;
         
         .orchestra-info {
-          max-width: 75%;
-          padding: 0.35rem 0.6rem;
+          padding: 0.7rem 0.9rem;
+          min-width: 160px;
           
           .orchestra-name {
             font-size: 0.95rem;
@@ -268,10 +393,17 @@
           }
         }
         
-        .avatar-section .avatar {
-          width: 2.5rem;
-          height: 2.5rem;
-          font-size: 0.9rem;
+        .conductor-badge {
+          font-size: 0.65rem;
+          padding: 0.4rem 0.6rem;
+        }
+        
+        .avatar-section {
+          .avatar {
+            width: 40px;
+            height: 40px;
+            font-size: 0.85rem;
+          }
         }
       }
     }

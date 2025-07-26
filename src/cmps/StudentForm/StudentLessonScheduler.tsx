@@ -3,6 +3,7 @@ import {
   User, Calendar, Clock, MapPin, CheckCircle, AlertCircle, 
   Trash2, Plus, Search, Filter, Star, RotateCcw 
 } from 'lucide-react';
+import { SearchableTeacherSelect } from '../SearchableTeacherSelect';
 import { useFormikContext } from 'formik';
 import { StudentFormData } from '../../constants/formConstants';
 import { useTeacherStore } from '../../store/teacherStore';
@@ -460,33 +461,16 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
               <User size={16} />
               מורה
             </label>
-            <select
-              id="teacherSelect"
-              className="form-select"
-              value={selectedTeacherId}
-              onChange={(e) => handleTeacherSelect(e.target.value)}
+            <SearchableTeacherSelect
+              teachers={teachers}
+              selectedTeacherId={selectedTeacherId}
+              onSelect={handleTeacherSelect}
+              newTeacherInfo={newTeacherInfo}
+              isLoading={isLoadingTeachers}
               disabled={isLoadingTeachers || isSubmitting}
-            >
-              <option value="">בחר מורה</option>
-              {newTeacherInfo && (
-                <option value="new-teacher">
-                  {newTeacherInfo.fullName}
-                  {newTeacherInfo.instrument && ` (${newTeacherInfo.instrument})`}
-                  {' (מורה חדש)'}
-                </option>
-              )}
-              {teachers
-                .filter(teacher => teacher.isActive)
-                .map((teacher) => (
-                <option key={teacher._id} value={teacher._id}>
-                  {teacher.personalInfo.fullName}
-                  {teacher.professionalInfo?.instrument && ` (${teacher.professionalInfo.instrument})`}
-                </option>
-              ))}
-            </select>
-            {isLoadingTeachers && (
-              <div className="loading-indicator">טוען מורים...</div>
-            )}
+              placeholder="בחר מורה"
+              className="teacher-select-input"
+            />
           </div>
 
           <div className="duration-selection">

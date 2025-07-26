@@ -3,11 +3,38 @@ import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
 import { sanitizeError, handleApiError } from '../utils/errorHandler';
 import { authService } from './authService';
 
-// Base URL based on environment
-const BASE_URL =
-  process.env.NODE_ENV === 'production'
-    ? '/api/'
-    : 'http://localhost:3001/api/';
+// Base URL with cross-device support
+const getBaseURL = () => {
+  if (process.env.NODE_ENV === 'production') {
+    return '/api/';
+  }
+  
+  // For development, determine the correct base URL based on where the frontend is running
+  const hostname = window.location.hostname;
+  
+  // If accessing from localhost, use localhost backend
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3001/api/';
+  }
+  
+  // If accessing from external device, use the machine's IP
+  // You can also set VITE_API_URL environment variable to override this
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    return `${apiUrl}/api/`;
+  }
+  
+  // Default to the Windows Wi-Fi IP for external access (mobile devices)
+  return 'http://10.100.102.3:3001/api/';
+};
+
+const BASE_URL = getBaseURL();
+
+// Debug logging in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔗 HTTP Service initialized with base URL:', BASE_URL);
+  console.log('🌐 Current hostname:', window.location.hostname);
+}
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -262,7 +289,18 @@ async function ajax<T = any>(
 
     return response.data;
   } catch (err: any) {
-    // Use centralized error handling
+    // Check if this is an expected 404 for time block endpoints that don't exist yet
+    const isExpected404 = err?.response?.status === 404 && 
+      (endpoint.includes('schedule/time-blocks/') && !endpoint.includes('/teacher/'));
+    
+    if (isExpected404) {
+      // Skip error logging and handling for expected 404s on time block endpoints
+      const error = new Error('Not Found');
+      (error as any).originalError = err;
+      throw error;
+    }
+    
+    // Use centralized error handling for all other errors
     const sanitizedError = handleApiError(err, `${method} ${endpoint}`);
     
     // Throw an error with the sanitized user message

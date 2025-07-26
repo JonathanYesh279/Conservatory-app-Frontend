@@ -8,3 +8,69 @@ label.required-field::after,
   font-weight: bold;
   display: inline-block;
 }
+
+// Consistent form input styles
+input,
+select,
+textarea,
+.form-input,
+.form-select,
+.form-textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border-input);
+  color: var(--text-primary);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+
+  &::placeholder {
+    color: var(--text-placeholder);
+  }
+
+  &:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
+  }
+
+  &:disabled {
+    background: var(--bg-tertiary);
+    color: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &.error {
+    border-color: var(--danger);
+    box-shadow: 0 0 0 2px rgba(var(--danger-rgb), 0.25);
+  }
+}
+
+// Select specific styles
+select,
+.form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 12px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 40px;
+  appearance: none;
+}
+
+// Dark theme select arrow
+[data-theme="dark"] {
+  select,
+  .form-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%9ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  }
+}
+
+// Textarea specific styles
+textarea,
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.5;
+}

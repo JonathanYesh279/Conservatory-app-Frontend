@@ -12,7 +12,8 @@ import { BottomNavbar } from '../cmps/BottomNavbar.tsx';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
-import { useSearchbar } from '../hooks/useSearchbar.tsx';
+import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown.tsx';
+import { FilterDropdown, FilterDropdownOptions } from '../cmps/FilterDropdown.tsx';
 import { Student } from '../services/studentService.ts';
 import { StudentForm } from '../cmps/StudentForm/index.ts';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
@@ -32,6 +33,9 @@ export function StudentIndex() {
   // Add state for the confirmation dialog
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+  
+  // Add filter dropdown state
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => {
@@ -46,10 +50,24 @@ export function StudentIndex() {
     return fields.filter((field): field is string => typeof field === 'string');
   };
 
-  // Use the search hook
-  const { filteredEntities: filteredStudents, handleSearch } = useSearchbar(
+  // Use the enhanced search and filter dropdown hook
+  const {
+    filteredEntities: filteredStudents,
+    handleSearch,
+    searchQuery,
+    filters,
+    handleApplyFilters,
+    hasActiveFilters,
+    availableInstruments,
+    ageRange,
+    classRange
+  } = useSearchAndFilterDropdown(
     students,
-    studentSearchFields
+    studentSearchFields,
+    (student: Student) => student.academicInfo.instrument || '',
+    (student: Student) => student.personalInfo.age || 0,
+    (student: Student) => parseInt(student.academicInfo.class || '0') || 0,
+    (student: Student) => student.personalInfo.fullName
   );
 
   const navigate = useNavigate();
@@ -202,8 +220,7 @@ export function StudentIndex() {
   };
 
   const handleFilter = () => {
-    // This would open your filter dialog
-    alert('Open filter dialog');
+    setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
 
   const canAddStudent = auth.canAddStudent();
@@ -222,13 +239,28 @@ export function StudentIndex() {
               />
 
               <div className='action-buttons'>
-                <button
-                  className='btn-icon filter-btn'
-                  onClick={handleFilter}
-                  aria-label='סנן תלמידים'
-                >
-                  <Filter className='icon' />
-                </button>
+                <div className='filter-container'>
+                  <button
+                    className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
+                    onClick={handleFilter}
+                    aria-label='סנן תלמידים'
+                  >
+                    <Filter className='icon' />
+                    {hasActiveFilters && <span className="filter-indicator" />}
+                  </button>
+                  
+                  <FilterDropdown
+                    isOpen={isFilterDropdownOpen}
+                    onToggle={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                    onApplyFilters={handleApplyFilters}
+                    availableInstruments={availableInstruments}
+                    ageRange={ageRange || undefined}
+                    classRange={classRange || undefined}
+                    currentFilters={filters}
+                    hasActiveFilters={hasActiveFilters}
+                    entityType="students"
+                  />
+                </div>
 
                 {canAddStudent && (
                   <button
@@ -288,6 +320,7 @@ export function StudentIndex() {
           cancelText='ביטול'
           type='danger'
         />
+
       </main>
       {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>

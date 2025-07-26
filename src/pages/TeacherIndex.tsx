@@ -5,7 +5,8 @@ import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
-import { useSearchbar } from '../hooks/useSearchbar';
+import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown.tsx';
+import { FilterDropdown, FilterDropdownOptions } from '../cmps/FilterDropdown.tsx';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useTeacherStore } from '../store/teacherStore';
 import { Teacher } from '../services/teacherService';
@@ -47,6 +48,9 @@ export function TeacherIndex() {
     fullName: string;
     instrument?: string;
   } | null>(null);
+  
+  // Add filter dropdown state
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   // Define which fields to search in teachers - memoized to prevent infinite loop
   const teacherSearchFields = useMemo(() => (teacher: Teacher) => [
@@ -61,10 +65,22 @@ export function TeacherIndex() {
     return teachers.filter(teacher => teacher._id !== user?._id);
   }, [teachers, user?._id]);
 
-  // Use the search hook
-  const { filteredEntities: filteredTeachers, handleSearch } = useSearchbar(
+  // Use the enhanced search and filter dropdown hook
+  const {
+    filteredEntities: filteredTeachers,
+    handleSearch,
+    searchQuery,
+    filters,
+    handleApplyFilters,
+    hasActiveFilters,
+    availableInstruments
+  } = useSearchAndFilterDropdown(
     teachersWithoutCurrentUser,
-    teacherSearchFields
+    teacherSearchFields,
+    (teacher: Teacher) => teacher.professionalInfo?.instrument || '',
+    undefined, // No age for teachers
+    undefined, // No class for teachers
+    (teacher: Teacher) => teacher.personalInfo.fullName
   );
 
   // Initialize authorization
@@ -233,8 +249,7 @@ export function TeacherIndex() {
   };
 
   const handleFilter = () => {
-    // This would open your filter dialog
-    alert('Open filter dialog');
+    setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
 
   // Only admin can add new teachers
@@ -263,13 +278,28 @@ export function TeacherIndex() {
               <Searchbar onSearch={handleSearch} placeholder='חיפוש מורים...' />
 
               <div className='action-buttons'>
-                <button
-                  className='btn-icon filter-btn'
-                  onClick={handleFilter}
-                  aria-label='סנן מורים'
-                >
-                  <Filter className='icon' />
-                </button>
+                <div className='filter-container'>
+                  <button
+                    className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
+                    onClick={handleFilter}
+                    aria-label='סנן מורים'
+                  >
+                    <Filter className='icon' />
+                    {hasActiveFilters && <span className="filter-indicator" />}
+                  </button>
+                  
+                  <FilterDropdown
+                    isOpen={isFilterDropdownOpen}
+                    onToggle={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                    onApplyFilters={handleApplyFilters}
+                    availableInstruments={availableInstruments}
+                    ageRange={undefined}
+                    classRange={undefined}
+                    currentFilters={filters}
+                    hasActiveFilters={hasActiveFilters}
+                    entityType="teachers"
+                  />
+                </div>
 
                 {canAddTeacher && (
                   <button

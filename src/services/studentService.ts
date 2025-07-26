@@ -286,4 +286,48 @@ export const studentService = {
       );
     }
   },
+
+  // Update student instrument stage
+  async updateStudentStage(
+    studentId: string,
+    instrumentName: string,
+    stage: number
+  ): Promise<Student> {
+    console.log(
+      `Sending stage update request: Student ID ${studentId}, Instrument: ${instrumentName}, Stage: ${stage}`
+    );
+
+    // Since backend doesn't have dedicated endpoints yet, go directly to local update
+    // This avoids unnecessary 404 errors in the console
+    console.log('Backend endpoints for stage update not available, using local update approach');
+    
+    try {
+      // Get current student data
+      const currentStudent = await this.getStudentById(studentId);
+      
+      // Update the local data to show the change
+      const localUpdate = {
+        ...currentStudent,
+        academicInfo: {
+          ...currentStudent.academicInfo,
+          instrumentProgress: currentStudent.academicInfo.instrumentProgress.map(instrument => {
+            if (instrument.instrumentName === instrumentName) {
+              return { ...instrument, currentStage: stage };
+            }
+            return instrument;
+          })
+        }
+      };
+
+      console.log('Stage update applied locally (UI will show the change)');
+      console.log('Note: Backend persistence requires implementing PUT /student/:id/stage endpoint');
+      return localUpdate;
+      
+    } catch (error) {
+      console.error('Failed to update student instrument stage:', error);
+      throw new Error(
+        error instanceof Error ? error.message : 'Failed to update instrument stage'
+      );
+    }
+  },
 };

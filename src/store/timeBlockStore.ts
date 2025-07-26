@@ -93,7 +93,33 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
   updateTimeBlock: async (timeBlockId: string, updateData: Partial<TimeBlockRequest>) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await timeBlockService.updateTimeBlock(timeBlockId, updateData);
+      let result;
+      
+      try {
+        // Try the normal update method first
+        result = await timeBlockService.updateTimeBlock(timeBlockId, updateData);
+      } catch (error: any) {
+        // Check if this is the special error indicating we need to use the teacher-based workaround
+        if (error?.message === 'updateTimeBlockViaTeacher') {
+          console.debug('Using teacher-based workaround for time block update');
+          
+          // We need the teacherId for the workaround - get it from current schedule
+          const currentSchedule = get().currentTeacherSchedule;
+          if (!currentSchedule) {
+            throw new Error('Cannot update time block: teacher information not available');
+          }
+          
+          // Use the workaround method
+          result = await timeBlockService.updateTimeBlockViaTeacher(
+            currentSchedule.teacherId,
+            timeBlockId,
+            updateData
+          );
+        } else {
+          // Re-throw other errors
+          throw error;
+        }
+      }
       
       if (result.success) {
         // Update the local state
@@ -126,7 +152,32 @@ export const useTimeBlockStore = create<TimeBlockState>((set, get) => ({
   deleteTimeBlock: async (timeBlockId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await timeBlockService.deleteTimeBlock(timeBlockId);
+      let result;
+      
+      try {
+        // Try the normal delete method first
+        result = await timeBlockService.deleteTimeBlock(timeBlockId);
+      } catch (error: any) {
+        // Check if this is the special error indicating we need to use the teacher-based workaround
+        if (error?.message === 'deleteTimeBlockViaTeacher') {
+          console.debug('Using teacher-based workaround for time block delete');
+          
+          // We need the teacherId for the workaround - get it from current schedule
+          const currentSchedule = get().currentTeacherSchedule;
+          if (!currentSchedule) {
+            throw new Error('Cannot delete time block: teacher information not available');
+          }
+          
+          // Use the workaround method
+          result = await timeBlockService.deleteTimeBlockViaTeacher(
+            currentSchedule.teacherId,
+            timeBlockId
+          );
+        } else {
+          // Re-throw other errors
+          throw error;
+        }
+      }
       
       if (result.success) {
         // Remove from local state

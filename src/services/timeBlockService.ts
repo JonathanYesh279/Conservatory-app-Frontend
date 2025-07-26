@@ -335,6 +335,7 @@ export const timeBlockService = {
 
   /**
    * Update an existing time block
+   * Since time blocks are stored within teacher documents, we need to update via teacher service
    */
   async updateTimeBlock(
     timeBlockId: string,
@@ -346,16 +347,127 @@ export const timeBlockService = {
     message: string;
   }> {
     try {
-      const response = await httpService.put<{
-        success: boolean;
-        updatedTimeBlock: TimeBlockResponse;
-        affectedAssignments: LessonAssignment[];
-        message: string;
-      }>(`schedule/time-blocks/${timeBlockId}`, updateData);
+      console.log('Updating time block:', timeBlockId, 'with data:', updateData);
+      
+      // Try the original endpoint first
+      try {
+        const response = await httpService.put<{
+          success: boolean;
+          updatedTimeBlock: TimeBlockResponse;
+          affectedAssignments: LessonAssignment[];
+          message: string;
+        }>(`schedule/time-blocks/${timeBlockId}`, updateData);
 
-      return response;
+        return response;
+      } catch (originalError: any) {
+        // Check for 404 errors in multiple ways since httpService might transform the error
+        const is404Error = 
+          originalError?.response?.status === 404 ||
+          originalError?.status === 404 ||
+          originalError?.message?.includes('404') ||
+          originalError?.message?.includes('Not Found') ||
+          (originalError?.message === 'Not Found' && originalError?.name !== 'ValidationError');
+        
+        if (is404Error) {
+          // Don't log 404 errors as they're expected - the API endpoint doesn't exist yet
+          console.debug('Time block API endpoint not available, using teacher-based update fallback');
+          throw new Error('updateTimeBlockViaTeacher'); // Special error to trigger workaround
+        }
+        
+        // Only log unexpected errors
+        console.error('Unexpected error in time block update:', originalError);
+        throw originalError;
+      }
     } catch (error) {
+      // Don't log the special fallback trigger error
+      if (error instanceof Error && error.message === 'updateTimeBlockViaTeacher') {
+        throw error; // Let the calling code handle the special error silently
+      }
+      
       console.error('Failed to update time block:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Update time block via teacher service (workaround for missing API endpoint)
+   */
+  async updateTimeBlockViaTeacher(
+    teacherId: string,
+    timeBlockId: string,
+    updateData: Partial<TimeBlockRequest>
+  ): Promise<{
+    success: boolean;
+    updatedTimeBlock: TimeBlockResponse;
+    affectedAssignments: LessonAssignment[];
+    message: string;
+  }> {
+    try {
+      // Get current teacher data
+      const { teacherService } = await import('./teacherService');
+      const teacherData = await teacherService.getTeacherById(teacherId);
+      
+      if (!teacherData) {
+        throw new Error('Teacher not found');
+      }
+
+      // Find the time block in the teacher's data
+      const timeBlocks = (teacherData as any)?.teaching?.timeBlocks || [];
+      const timeBlockIndex = timeBlocks.findIndex((block: any) => block._id === timeBlockId);
+      
+      if (timeBlockIndex === -1) {
+        throw new Error('Time block not found in teacher data');
+      }
+
+      // Update the time block
+      const updatedTimeBlock = {
+        ...timeBlocks[timeBlockIndex],
+        ...updateData,
+        updatedAt: new Date().toISOString()
+      };
+
+      // Update the time blocks array
+      const updatedTimeBlocks = [...timeBlocks];
+      updatedTimeBlocks[timeBlockIndex] = updatedTimeBlock;
+
+      // Update the teacher with the new time blocks
+      const updatedTeacherData = {
+        ...teacherData,
+        teaching: {
+          ...(teacherData as any).teaching,
+          timeBlocks: updatedTimeBlocks
+        }
+      };
+
+      // Save the updated teacher
+      await teacherService.updateTeacher(teacherId, updatedTeacherData);
+
+      // Transform back to expected response format
+      const transformedTimeBlock: TimeBlockResponse = {
+        _id: timeBlockId,
+        teacherId,
+        day: updatedTimeBlock.day,
+        startTime: updatedTimeBlock.startTime,
+        endTime: updatedTimeBlock.endTime,
+        totalDuration: updatedTimeBlock.totalDuration || this.calculateTotalDuration(updatedTimeBlock.startTime, updatedTimeBlock.endTime),
+        location: updatedTimeBlock.location || '',
+        notes: updatedTimeBlock.notes || '',
+        assignedLessons: updatedTimeBlock.assignedLessons || [],
+        availableMinutes: updatedTimeBlock.availableMinutes || this.calculateTotalDuration(updatedTimeBlock.startTime, updatedTimeBlock.endTime),
+        utilizationPercentage: updatedTimeBlock.utilizationPercentage || 0,
+        isActive: updatedTimeBlock.isActive !== false,
+        createdAt: updatedTimeBlock.createdAt || new Date().toISOString(),
+        updatedAt: updatedTimeBlock.updatedAt || new Date().toISOString()
+      };
+
+      return {
+        success: true,
+        updatedTimeBlock: transformedTimeBlock,
+        affectedAssignments: [],
+        message: 'יום הלימוד עודכן בהצלחה'
+      };
+    } catch (error) {
+      console.error('Failed to update time block via teacher service:', error);
       throw new Error('שגיאה בעדכון יום הלימוד');
     }
   },
@@ -373,20 +485,100 @@ export const timeBlockService = {
       const endpoint = `schedule/time-blocks/${timeBlockId}`;
       console.log('Delete endpoint:', endpoint);
       
-      const response = await httpService.delete<{
-        success: boolean;
-        affectedAssignments: LessonAssignment[];
-        message: string;
-      }>(endpoint);
+      // Try the original endpoint first
+      try {
+        const response = await httpService.delete<{
+          success: boolean;
+          affectedAssignments: LessonAssignment[];
+          message: string;
+        }>(endpoint);
 
-      console.log('Delete response:', response);
-      return response;
+        console.log('Delete response:', response);
+        return response;
+      } catch (originalError: any) {
+        // Check for 404 errors in multiple ways since httpService might transform the error
+        const is404Error = 
+          originalError?.response?.status === 404 ||
+          originalError?.status === 404 ||
+          originalError?.message?.includes('404') ||
+          originalError?.message?.includes('Not Found') ||
+          (originalError?.message === 'Not Found' && originalError?.name !== 'ValidationError');
+        
+        if (is404Error) {
+          // Don't log 404 errors as they're expected - the API endpoint doesn't exist yet
+          console.debug('Time block delete API endpoint not available, using teacher-based delete fallback');
+          throw new Error('deleteTimeBlockViaTeacher'); // Special error to trigger workaround
+        }
+        
+        // Only log unexpected errors
+        console.error('Unexpected error in time block delete:', originalError);
+        throw originalError;
+      }
     } catch (error) {
+      // Don't log the special fallback trigger error
+      if (error instanceof Error && error.message === 'deleteTimeBlockViaTeacher') {
+        throw error; // Let the calling code handle the special error silently
+      }
+      
       console.error('TimeBlockService delete error:', error);
-      console.error('Error details:', {
-        timeBlockId,
-        error: error instanceof Error ? error.message : error
-      });
+      throw error;
+    }
+  },
+
+  /**
+   * Delete time block via teacher service (workaround for missing API endpoint)
+   */
+  async deleteTimeBlockViaTeacher(
+    teacherId: string,
+    timeBlockId: string
+  ): Promise<{
+    success: boolean;
+    affectedAssignments: LessonAssignment[];
+    message: string;
+  }> {
+    try {
+      // Get current teacher data
+      const { teacherService } = await import('./teacherService');
+      const teacherData = await teacherService.getTeacherById(teacherId);
+      
+      if (!teacherData) {
+        throw new Error('Teacher not found');
+      }
+
+      // Find the time block in the teacher's data
+      const timeBlocks = (teacherData as any)?.teaching?.timeBlocks || [];
+      const timeBlockIndex = timeBlocks.findIndex((block: any) => block._id === timeBlockId);
+      
+      if (timeBlockIndex === -1) {
+        throw new Error('Time block not found in teacher data');
+      }
+
+      // Get the time block being deleted for affected assignments info
+      const deletedTimeBlock = timeBlocks[timeBlockIndex];
+      const affectedAssignments = deletedTimeBlock.assignedLessons || [];
+
+      // Remove the time block from the array
+      const updatedTimeBlocks = timeBlocks.filter((block: any) => block._id !== timeBlockId);
+
+      // Update the teacher with the new time blocks array
+      const updatedTeacherData = {
+        ...teacherData,
+        teaching: {
+          ...(teacherData as any).teaching,
+          timeBlocks: updatedTimeBlocks
+        }
+      };
+
+      // Save the updated teacher
+      await teacherService.updateTeacher(teacherId, updatedTeacherData);
+
+      return {
+        success: true,
+        affectedAssignments,
+        message: 'יום הלימוד נמחק בהצלחה'
+      };
+    } catch (error) {
+      console.error('Failed to delete time block via teacher service:', error);
       throw new Error('שגיאה במחיקת יום הלימוד');
     }
   },

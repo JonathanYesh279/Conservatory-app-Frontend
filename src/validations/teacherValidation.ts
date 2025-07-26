@@ -1,5 +1,6 @@
 // src/validations/teacherValidation.ts
 import * as Yup from 'yup';
+import { VALID_INSTRUMENTS as INSTRUMENTS_FROM_CONSTANTS } from '../constants/formConstants';
 
 // Constants for validation
 export const VALID_ROLES = [
@@ -10,25 +11,8 @@ export const VALID_ROLES = [
   'מורה תאוריה',
 ];
 
-export const VALID_INSTRUMENTS = [
-  'חצוצרה',
-  'חליל צד',
-  'קלרינט',
-  'קרן יער',
-  'בריטון',
-  'טרומבון',
-  'סקסופון',
-  'אבוב',
-  'כינור',
-  'צ׳לו',
-  'ויולה',
-  'קונטרבס',
-  'פסנתר',
-  'גיטרה',
-  'מדרימבה',
-  'תופים',
-  'הקשה',
-];
+// Re-export VALID_INSTRUMENTS for backward compatibility
+export const VALID_INSTRUMENTS = INSTRUMENTS_FROM_CONSTANTS;
 
 export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
 export const LESSON_DURATIONS = [30, 45, 60];
@@ -88,7 +72,7 @@ export const teacherValidationSchema = Yup.object().shape({
       ['מורה', 'מורה תאוריה'],
       Yup.string()
         .required('כלי נגינה הוא שדה חובה למורה')
-        .oneOf(VALID_INSTRUMENTS, 'כלי נגינה לא תקין')
+        .oneOf(INSTRUMENTS_FROM_CONSTANTS, 'כלי נגינה לא תקין')
     ),
     isActive: Yup.boolean().default(true),
   }),

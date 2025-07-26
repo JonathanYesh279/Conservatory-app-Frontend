@@ -1,21 +1,29 @@
 .bottom-nav {
+  /* Modern positioning with viewport units */
   position: fixed;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%) translateY(0);
-  -webkit-backdrop-filter: blur(10px);
-  border-top-right-radius: 1rem;
-  border-top-left-radius: 1rem;
-  border: 1px solid var(--nav-border);
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  
+  /* Proper background for visibility */
+  background-color: var(--bg-primary, #ffffff);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  
+  /* Clean visual styling */
+  
+  /* Layout */
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 0.75rem 0;
-  z-index: 50;
-  width: auto;
-  min-width: 320px;
-  max-width: 450px;
-  transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  padding: calc(0.75rem + env(safe-area-inset-bottom, 0px)) 1rem 0.75rem;
+  
+  /* Ensure it's above everything */
+  z-index: 10000;
+  
+  /* Smooth transitions */
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
 
   
   .nav-items {
@@ -23,6 +31,8 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
     gap: 0.5rem;
   }
   
@@ -57,7 +67,6 @@
     
     &.active {
       color: var(--primary-color);
-      background-color: rgba(var(--primary-color-rgb), 0.1);
       
       .nav-icon {
         color: var(--primary-color);
@@ -71,7 +80,6 @@
     }
     
     &:hover:not(.active) {
-      background-color: var(--bg-tertiary);
       color: var(--text-primary);
     }
   }
@@ -112,18 +120,21 @@
   }
 }
 
-// Media queries for smaller screens
-@media (max-width: 480px) {
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
   .bottom-nav {
-    width: calc(100% - 2rem);
-    min-width: 0;
+    padding: 0 0.75rem calc(0.5rem + 1rem);
     
     .nav-items {
-      justify-content: space-between;
+      max-width: 100%;
+      gap: 0.25rem;
     }
     
     .nav-item {
-      padding: 0.625rem 0.375rem;
+      min-width: auto;
+      padding: 0.5rem 0.3rem;
       
       .nav-icon {
         width: 20px;
@@ -131,125 +142,55 @@
       }
       
       .nav-label {
-        font-size: 0.625rem;
+        font-size: 0.65rem;
       }
     }
+  }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+  .bottom-nav {
+    padding: 0 0.75rem calc(0.5rem + 1rem);
     
-    .nav-item.home {
-      width: 45px;
-      height: 45px;
+    .nav-items {
+      gap: 0.2rem;
     }
-  }
-}
-
-// Enhanced mobile browser UI hiding - Universal
-@media (max-height: 800px) and (orientation: portrait) {
-  .mobile-ui-hidden,
-  .ios-safari-ui-hidden,
-  .ios-chrome-ui-hidden,
-  .android-chrome-ui-hidden {
-    .bottom-nav {
-      // Adjust bottom position when browser UI is hidden
-      bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-  }
-}
-
-// Aggressive CSS for browser UI hiding
-.mobile-ui-hidden,
-.ios-safari-ui-hidden,
-.ios-chrome-ui-hidden,
-.android-chrome-ui-hidden {
-  // Force full viewport height
-  min-height: 100vh !important;
-  min-height: 100dvh !important; // Dynamic viewport height
-  height: 100vh !important;
-  height: 100dvh !important;
-  
-  // Hide browser chrome
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  
-  overflow: hidden !important;
-  
-  // Force hardware acceleration
-  transform: translateZ(0) !important;
-  will-change: transform !important;
-  
-  // Prevent scrolling on body when UI is hidden
-  .app-container {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    height: 100vh !important;
-    height: 100dvh !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-}
-
-// iOS Safari specific adjustments
-@supports (-webkit-touch-callout: none) {
-  .ios-safari-ui-hidden {
-    .bottom-nav {
-      // Use safe area on iOS Safari
-      bottom: max(0.5rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem));
-    }
-  }
-}
-
-// iOS Chrome specific adjustments
-.ios-chrome-ui-hidden {
-  .bottom-nav {
-    // iOS Chrome needs different positioning
-    bottom: max(0.3rem, calc(env(safe-area-inset-bottom, 0px) + 0.3rem));
-    transition: all 0.3s ease-out;
-  }
-}
-
-// Android Chrome specific adjustments
-.android-chrome-ui-hidden {
-  .bottom-nav {
-    // Android Chrome positioning
-    bottom: 0.2rem;
-    transition: all 0.3s ease-out;
-  }
-}
-
-// PWA and standalone mode adjustments
-@media (display-mode: standalone) {
-  .bottom-nav {
-    bottom: max(1rem, calc(env(safe-area-inset-bottom, 0px) + 1rem));
-  }
-}
-
-// Additional mobile optimizations
-@media (max-width: 768px) and (max-height: 900px) {
-  .mobile-ui-hidden {
-    .bottom-nav {
-      // Enhanced positioning for mobile devices
-      bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+    
+    .nav-item {
+      padding: 0.4rem 0.2rem;
       
-      // Slightly smaller on mobile when UI is hidden
-      padding: 0.4rem 0.6rem;
+      .nav-icon {
+        width: 18px;
+        height: 18px;
+      }
       
-      .nav-item {
-        padding: 0.5rem 0.3rem;
-        
-        .nav-icon {
-          width: 18px;
-          height: 18px;
-        }
-        
-        .nav-label {
-          font-size: 0.6rem;
-        }
+      .nav-label {
+        font-size: 0.6rem;
+      }
+    }
+  }
+}
+
+/* Landscape mobile orientation */
+@media (max-height: 500px) and (orientation: landscape) {
+  .bottom-nav {
+    padding: calc(0.4rem + env(safe-area-inset-bottom, 0px)) 1rem 0.4rem;
+    
+    .nav-items {
+      padding: 0.3rem;
+    }
+    
+    .nav-item {
+      padding: 0.3rem 0.25rem;
+      
+      .nav-icon {
+        width: 16px;
+        height: 16px;
+      }
+      
+      .nav-label {
+        font-size: 0.55rem;
       }
     }
   }

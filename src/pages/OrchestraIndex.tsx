@@ -7,13 +7,14 @@ import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
-import { useSearchbar } from '../hooks/useSearchbar';
+import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown';
 import { Orchestra } from '../services/orchestraService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { OrchestraList } from '../cmps/OrchestraList';
 import { OrchestraForm } from '../cmps/OrchestraForm';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 import { useToast } from '../cmps/Toast';
+import { FilterDropdown } from '../cmps/FilterDropdown';
 
 export function OrchestraIndex() {
   const {
@@ -39,16 +40,30 @@ export function OrchestraIndex() {
   // State for synchronization
   const { showSuccess, showError } = useToast();
 
+  // State for filter dropdown
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   // Define which fields to search in orchestras
   const orchestraSearchFields = (orchestra: Orchestra) => [
     orchestra.name,
     orchestra.type,
   ];
 
-  // Use the search hook
-  const { filteredEntities: filteredOrchestras, handleSearch } = useSearchbar(
+  // Use the search and filter hook
+  const {
+    filteredEntities: filteredOrchestras,
+    handleSearch,
+    filters,
+    handleApplyFilters,
+    hasActiveFilters,
+    availableInstruments
+  } = useSearchAndFilterDropdown(
     orchestras,
-    orchestraSearchFields
+    orchestraSearchFields,
+    (orchestra: Orchestra) => orchestra.type, // Use type as the "instrument" for filtering
+    undefined, // No age filtering for orchestras
+    undefined, // No class filtering for orchestras
+    (orchestra: Orchestra) => orchestra.name // For sorting
   );
 
   const navigate = useNavigate();
@@ -108,8 +123,7 @@ export function OrchestraIndex() {
   };
 
   const handleFilter = () => {
-    // This would open your filter dialog
-    alert('Open filter dialog');
+    setIsFilterOpen(!isFilterOpen);
   };
 
 
@@ -131,14 +145,25 @@ export function OrchestraIndex() {
               />
 
               <div className='action-buttons'>
-                <button
-                  className='btn-icon filter-btn'
-                  onClick={handleFilter}
-                  aria-label='סנן תזמורות'
-                >
-                  <Filter className='icon' />
-                </button>
-
+                <div className='filter-container'>
+                  <button
+                    className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
+                    onClick={handleFilter}
+                    aria-label='סנן תזמורות'
+                  >
+                    <Filter className='icon' />
+                  </button>
+                  
+                  <FilterDropdown
+                    isOpen={isFilterOpen}
+                    onToggle={() => setIsFilterOpen(!isFilterOpen)}
+                    onApplyFilters={handleApplyFilters}
+                    availableInstruments={availableInstruments}
+                    currentFilters={filters}
+                    hasActiveFilters={hasActiveFilters}
+                    entityType="orchestras"
+                  />
+                </div>
 
                 {canAddOrchestra && (
                   <button

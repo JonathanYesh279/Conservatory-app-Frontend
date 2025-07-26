@@ -21,6 +21,8 @@ interface RehearsalState {
   loadRehearsalsByOrchestraId: (orchestraId: string) => Promise<void>;
   saveRehearsal: (rehearsal: Partial<Rehearsal>) => Promise<Rehearsal>;
   removeRehearsal: (rehearsalId: string) => Promise<void>;
+  removeRehearsalsByOrchestra: (orchestraId: string) => Promise<{ deletedCount: number }>;
+  updateRehearsalsByOrchestra: (orchestraId: string, updates: Partial<Rehearsal>) => Promise<{ updatedCount: number }>;
   bulkCreateRehearsals: (data: BulkRehearsalData) => Promise<{
     insertedCount: number;
     rehearsalIds: string[];
@@ -165,6 +167,63 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
         err instanceof Error ? err.message : 'Failed to remove rehearsal';
       set({ error: errorMessage, isLoading: false });
       console.error('Error removing rehearsal:', err);
+      throw err;
+    }
+  },
+
+  removeRehearsalsByOrchestra: async (orchestraId) => {
+    set({ isLoading: true, error: null });
+    try {
+      if (!orchestraId) {
+        throw new Error('Invalid orchestra ID');
+      }
+
+      // Make the API call
+      const result = await rehearsalService.removeRehearsalsByOrchestra(orchestraId);
+
+      // Update state by filtering out all rehearsals for this orchestra
+      set({
+        rehearsals: get().rehearsals.filter((r) => r.groupId !== orchestraId),
+        selectedRehearsal:
+          get().selectedRehearsal?.groupId === orchestraId
+            ? null
+            : get().selectedRehearsal,
+        isLoading: false,
+      });
+      return result;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to remove orchestra rehearsals';
+      set({ error: errorMessage, isLoading: false });
+      console.error('Error removing orchestra rehearsals:', err);
+      throw err;
+    }
+  },
+
+  updateRehearsalsByOrchestra: async (orchestraId, updates) => {
+    set({ isLoading: true, error: null });
+    try {
+      if (!orchestraId) {
+        throw new Error('Invalid orchestra ID');
+      }
+
+      // Remove fields that shouldn't be updated in bulk operations
+      const { _id, createdAt, updatedAt, groupId, date, schoolYearId, ...safeUpdates } = updates as any;
+
+      // Make the API call
+      const result = await rehearsalService.updateRehearsalsByOrchestra(orchestraId, safeUpdates);
+
+      // Refresh the rehearsals to get the updated data
+      // We reload instead of trying to update locally to ensure data consistency
+      await get().loadRehearsals(get().filterBy);
+
+      set({ isLoading: false });
+      return result;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update orchestra rehearsals';
+      set({ error: errorMessage, isLoading: false });
+      console.error('Error updating orchestra rehearsals:', err);
       throw err;
     }
   },

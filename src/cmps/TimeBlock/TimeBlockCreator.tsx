@@ -8,12 +8,14 @@ import {
   TimeBlockResponse,
   timeBlockService
 } from '../../services/timeBlockService';
+import { VALID_LOCATIONS } from '../../validations/constants';
 
 interface TimeBlockCreatorProps {
   teacherId: string;
   onBlockCreated?: (block: TimeBlockResponse | TimeBlockResponse[]) => void;
   onCancel?: () => void;
   initialData?: {
+    _id?: string; // Add ID for edit mode
     day?: HebrewDayName;
     startTime?: string;
     endTime?: string;
@@ -95,8 +97,11 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
   initialData,
   isOpen = true
 }) => {
+  // Determine if this is edit mode
+  const isEditMode = !!initialData;
   const { 
     createTimeBlock, 
+    updateTimeBlock,
     isLoading, 
     error, 
     clearError,
@@ -171,6 +176,20 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
     }));
   };
 
+  // Helper function to check if values have changed from initial data
+  const hasFormDataChanged = (): boolean => {
+    if (!isEditMode || !initialData) return true;
+    
+    const { formData } = wizardState;
+    return (
+      formData.day !== initialData.day ||
+      formData.startTime !== initialData.startTime ||
+      formData.endTime !== initialData.endTime ||
+      formData.location !== (initialData.location || '') ||
+      formData.notes !== (initialData.notes || '')
+    );
+  };
+
   // Validate current step
   const validateStep = (stepIndex: number): boolean => {
     const errors: Record<string, string> = {};
@@ -181,6 +200,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
         if (!formData.day) {
           errors.day = 'יש לבחור יום';
         }
+        // In edit mode, allow proceeding even if day hasn't changed
         break;
       case 1: // Time range
         if (!formData.startTime) {
@@ -198,8 +218,16 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
             errors.timeRange = 'יום לימוד חייב להיות לפחות 30 דקות';
           }
 
-          // Check for conflicts with existing time blocks (if schedule data is available)
-          if (currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
+          // Only check for conflicts if day/time has changed, or if not in edit mode
+          const shouldCheckConflicts = !isEditMode || (
+            initialData && (
+              formData.day !== initialData.day ||
+              formData.startTime !== initialData.startTime ||
+              formData.endTime !== initialData.endTime
+            )
+          );
+
+          if (shouldCheckConflicts && currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
             const newTimeBlock: TimeBlockRequest = {
               day: formData.day,
               startTime: formData.startTime,
@@ -208,9 +236,18 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
               notes: formData.notes
             };
 
+            // Filter out the current time block being edited to avoid self-conflict
+            const timeBlocksToCheck = isEditMode 
+              ? currentTeacherSchedule.timeBlocks.filter(block => 
+                  !(block.day === initialData?.day && 
+                    block.startTime === initialData?.startTime && 
+                    block.endTime === initialData?.endTime)
+                )
+              : currentTeacherSchedule.timeBlocks;
+
             const conflictValidation = timeBlockService.validateTimeBlockConflicts(
               newTimeBlock,
-              currentTeacherSchedule.timeBlocks
+              timeBlocksToCheck
             );
 
             if (conflictValidation.hasConflict) {
@@ -223,9 +260,11 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
             }
           }
         }
+        // In edit mode, allow proceeding even if time hasn't changed
         break;
       case 3: // Review step - final validation including recurring conflicts
-        if (formData.isRecurring && formData.recurringDays.length > 0 && currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
+        // Skip recurring conflicts check in edit mode if no time/day changes
+        if (!isEditMode && formData.isRecurring && formData.recurringDays.length > 0 && currentTeacherSchedule?.timeBlocks && currentTeacherSchedule.timeBlocks.length > 0) {
           const conflictingDays: string[] = [];
           
           for (const day of formData.recurringDays) {
@@ -292,7 +331,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
     }
   };
 
-  // Submit time block creation
+  // Submit time block creation or update
   const handleSubmit = async () => {
     if (!validateStep(wizardState.currentStep)) return;
 
@@ -300,8 +339,22 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
     clearError();
 
     try {
-      if (wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0) {
-        // Create multiple time blocks for recurring days
+      if (isEditMode && initialData?._id) {
+        // Update existing time block
+        const timeBlockData: TimeBlockRequest = {
+          day: wizardState.formData.day,
+          startTime: wizardState.formData.startTime,
+          endTime: wizardState.formData.endTime,
+          location: wizardState.formData.location,
+          notes: wizardState.formData.notes
+        };
+        
+        const result = await updateTimeBlock(initialData._id, timeBlockData);
+        if (result) {
+          onBlockCreated?.(result);
+        }
+      } else if (wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0) {
+        // Create multiple time blocks for recurring days (only in creation mode)
         const results: TimeBlockResponse[] = [];
         for (const day of wizardState.formData.recurringDays) {
           const timeBlockData: TimeBlockRequest = {
@@ -337,10 +390,10 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
         }
       }
     } catch (error) {
-      console.error('Failed to create time block:', error);
+      console.error(`Failed to ${isEditMode ? 'update' : 'create'} time block:`, error);
       setWizardState(prev => ({
         ...prev,
-        validationErrors: { submit: String((error instanceof Error ? error.message : error) || 'שגיאה ביצירת יום הלימוד') }
+        validationErrors: { submit: String((error instanceof Error ? error.message : error) || `שגיאה ב${isEditMode ? 'עדכון' : 'יצירת'} יום הלימוד`) }
       }));
     } finally {
       setWizardState(prev => ({ ...prev, isSubmitting: false }));
@@ -474,16 +527,11 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
                 className="select-input"
               >
                 <option value="">בחר מיקום</option>
-                <option value="חדר 1">חדר 1</option>
-                <option value="חדר 2">חדר 2</option>
-                <option value="חדר 3">חדר 3</option>
-                <option value="חדר 4">חדר 4</option>
-                <option value="חדר 5">חדר 5</option>
-                <option value="אולם קונצרטים">אולם קונצרטים</option>
-                <option value="אולפן הקלטות">אולפן הקלטות</option>
-                <option value="בית ספר">בית ספר</option>
-                <option value="מרכז תרבות">מרכז תרבות</option>
-                <option value="אחר">אחר</option>
+                {VALID_LOCATIONS.map((location) => (
+                  <option key={location} value={location}>
+                    {location}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -500,45 +548,50 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
               />
             </div>
 
-            <div className="recurring-toggle">
-              <label className="recurring-checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={formData.isRecurring}
-                  onChange={(e) => updateFormData({ isRecurring: e.target.checked })}
-                  className="recurring-checkbox"
-                />
-                <div className="recurring-checkbox-custom">
-                  <Copy size={16} />
+            {/* Hide recurring options in edit mode */}
+            {!isEditMode && (
+              <>
+                <div className="recurring-toggle">
+                  <label className="recurring-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={formData.isRecurring}
+                      onChange={(e) => updateFormData({ isRecurring: e.target.checked })}
+                      className="recurring-checkbox"
+                    />
+                    <div className="recurring-checkbox-custom">
+                      <Copy size={16} />
+                    </div>
+                    <div className="recurring-text">
+                      <span className="recurring-title">שכפול לימים נוספים</span>
+                      <span className="recurring-description">צור יום לימוד זהה בימים אחרים בשבוع</span>
+                    </div>
+                  </label>
                 </div>
-                <div className="recurring-text">
-                  <span className="recurring-title">שכפול לימים נוספים</span>
-                  <span className="recurring-description">צור יום לימוד זהה בימים אחרים בשבוע</span>
-                </div>
-              </label>
-            </div>
 
-            {formData.isRecurring && (
-              <div className="recurring-days">
-                <h4>בחר ימים נוספים:</h4>
-                <div className="recurring-day-selector">
-                  {HEBREW_DAYS.filter(day => day !== formData.day).map(day => (
-                    <label key={day} className="day-checkbox">
-                      <input
-                        type="checkbox"
-                        checked={formData.recurringDays.includes(day)}
-                        onChange={(e) => {
-                          const newDays = e.target.checked
-                            ? [...formData.recurringDays, day]
-                            : formData.recurringDays.filter(d => d !== day);
-                          updateFormData({ recurringDays: newDays });
-                        }}
-                      />
-                      <span className="checkbox-label">{day}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
+                {formData.isRecurring && (
+                  <div className="recurring-days">
+                    <h4>בחר ימים נוספים:</h4>
+                    <div className="recurring-day-selector">
+                      {HEBREW_DAYS.filter(day => day !== formData.day).map(day => (
+                        <label key={day} className="day-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={formData.recurringDays.includes(day)}
+                            onChange={(e) => {
+                              const newDays = e.target.checked
+                                ? [...formData.recurringDays, day]
+                                : formData.recurringDays.filter(d => d !== day);
+                              updateFormData({ recurringDays: newDays });
+                            }}
+                          />
+                          <span className="checkbox-label">{day}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         );
@@ -604,7 +657,7 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
       <div className="time-block-creator">
         {/* Header */}
         <div className="creator-header">
-          <h2>יצירת יום לימוד חדש</h2>
+          <h2>{isEditMode ? 'עריכת יום לימוד' : 'יצירת יום לימוד חדש'}</h2>
           <button 
             type="button"
             className="btn-icon close-btn" 
@@ -679,12 +732,14 @@ const TimeBlockCreator: React.FC<TimeBlockCreatorProps> = ({
               {wizardState.isSubmitting || isLoading ? (
                 <>
                   <div className="loading-spinner"></div>
-                  יוצר...
+                  {isEditMode ? 'מעדכן...' : 'יוצר...'}
                 </>
               ) : (
-                wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0
-                  ? `צור ${wizardState.formData.recurringDays.length} ימי לימוד`
-                  : 'צור יום לימוד'
+                isEditMode 
+                  ? 'עדכן יום לימוד'
+                  : wizardState.formData.isRecurring && wizardState.formData.recurringDays.length > 0
+                    ? `צור ${wizardState.formData.recurringDays.length} ימי לימוד`
+                    : 'צור יום לימוד'
               )}
             </button>
           )}

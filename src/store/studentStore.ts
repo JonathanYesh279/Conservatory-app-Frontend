@@ -13,6 +13,8 @@ interface StudentState {
   filterBy: StudentFilter;
   isLoading: boolean;
   error: string | null;
+  // Track local stage changes that haven't been persisted to backend
+  localStageChanges: Record<string, Record<string, number>>; // studentId -> instrumentName -> stage
 
   // Actions
   loadStudents: (filterBy?: StudentFilter) => Promise<void>;
@@ -23,7 +25,30 @@ interface StudentState {
   setFilter: (filterBy: Partial<StudentFilter>) => void;
   clearSelectedStudent: () => void;
   clearError: () => void;
+  updateStudentStage: (studentId: string, instrumentName: string, newStage: number) => void;
 }
+
+// Helper function to apply local stage changes to a student
+const applyLocalStageChanges = (student: Student, localChanges: Record<string, Record<string, number>>): Student => {
+  const studentChanges = localChanges[student._id];
+  if (!studentChanges || Object.keys(studentChanges).length === 0) {
+    return student;
+  }
+
+  return {
+    ...student,
+    academicInfo: {
+      ...student.academicInfo,
+      instrumentProgress: student.academicInfo.instrumentProgress.map(instrument => {
+        const localStage = studentChanges[instrument.instrumentName];
+        if (localStage !== undefined) {
+          return { ...instrument, currentStage: localStage };
+        }
+        return instrument;
+      })
+    }
+  };
+};
 
 export const useStudentStore = create<StudentState>((set, get) => ({
   students: [],
@@ -31,13 +56,21 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   filterBy: {},
   isLoading: false,
   error: null,
+  localStageChanges: {},
 
   loadStudents: async (filterBy = {}) => {
     set({ isLoading: true, error: null });
     try {
       const newFilterBy = { ...get().filterBy, ...filterBy };
       const students = await studentService.getStudents(newFilterBy);
-      set({ students, filterBy: newFilterBy, isLoading: false });
+      
+      // Apply local stage changes to preserve local updates
+      const currentState = get();
+      const studentsWithLocalChanges = students.map(student => 
+        applyLocalStageChanges(student, currentState.localStageChanges)
+      );
+      
+      set({ students: studentsWithLocalChanges, filterBy: newFilterBy, isLoading: false });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load students';
@@ -50,7 +83,12 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const student = await studentService.getStudentById(studentId);
-      set({ selectedStudent: student, isLoading: false });
+      
+      // Apply local stage changes to preserve local updates
+      const currentState = get();
+      const studentWithLocalChanges = applyLocalStageChanges(student, currentState.localStageChanges);
+      
+      set({ selectedStudent: studentWithLocalChanges, isLoading: false });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load student';
@@ -213,5 +251,63 @@ export const useStudentStore = create<StudentState>((set, get) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  updateStudentStage: (studentId: string, instrumentName: string, newStage: number) => {
+    const currentState = get();
+    
+    // Track this change in localStageChanges
+    const updatedLocalStageChanges = {
+      ...currentState.localStageChanges,
+      [studentId]: {
+        ...currentState.localStageChanges[studentId],
+        [instrumentName]: newStage
+      }
+    };
+    
+    // Update the student in the students array
+    const updatedStudents = currentState.students.map(student => {
+      if (student._id === studentId) {
+        return {
+          ...student,
+          academicInfo: {
+            ...student.academicInfo,
+            instrumentProgress: student.academicInfo.instrumentProgress.map(instrument => {
+              if (instrument.instrumentName === instrumentName) {
+                return { ...instrument, currentStage: newStage };
+              }
+              return instrument;
+            })
+          }
+        };
+      }
+      return student;
+    });
+
+    // Update the selected student if it matches
+    let updatedSelectedStudent = currentState.selectedStudent;
+    if (currentState.selectedStudent && currentState.selectedStudent._id === studentId) {
+      updatedSelectedStudent = {
+        ...currentState.selectedStudent,
+        academicInfo: {
+          ...currentState.selectedStudent.academicInfo,
+          instrumentProgress: currentState.selectedStudent.academicInfo.instrumentProgress.map(instrument => {
+            if (instrument.instrumentName === instrumentName) {
+              return { ...instrument, currentStage: newStage };
+            }
+            return instrument;
+          })
+        }
+      };
+    }
+
+    set({
+      students: updatedStudents,
+      selectedStudent: updatedSelectedStudent,
+      localStageChanges: updatedLocalStageChanges
+    });
+
+    console.log(`Updated stage in student store: ${instrumentName} -> ${newStage} for student ${studentId}`);
+    console.log('Local stage changes:', updatedLocalStageChanges);
   },
 }));

@@ -426,6 +426,7 @@ export function TeacherTimeBlockManager({
           onBlockCreated={handleTimeBlockCreated}
           onCancel={() => setShowCreator(false)}
           initialData={editingTimeBlock ? {
+            _id: editingTimeBlock._id,
             day: editingTimeBlock.day,
             startTime: editingTimeBlock.startTime,
             endTime: editingTimeBlock.endTime,

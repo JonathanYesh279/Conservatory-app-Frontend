@@ -7,6 +7,7 @@ import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { Rehearsal } from '../services/rehearsalService';
 import { useRehearsalStore } from '../store/rehearsalStore';
+import { RehearsalBulkUpdateDialog } from './RehearsalBulkUpdateDialog';
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 
@@ -56,7 +57,7 @@ export function RehearsalForm({
   const { addToast } = useToast();
 
   // Destructure values from stores
-  const { saveRehearsal, bulkCreateRehearsals, isLoading, error, clearError } =
+  const { saveRehearsal, bulkCreateRehearsals, updateRehearsalsByOrchestra, rehearsals, isLoading, error, clearError } =
     rehearsalStore;
   const { orchestras, loadOrchestras } = orchestraStore;
   const { currentSchoolYear, loadCurrentSchoolYear } = schoolYearStore;
@@ -69,6 +70,10 @@ export function RehearsalForm({
 
   // Error handling
   const [formError, setFormError] = useState('');
+
+  // Bulk update dialog state
+  const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
+  const [pendingBulkUpdate, setPendingBulkUpdate] = useState<any>(null);
 
   // Load data on mount
   useEffect(() => {
@@ -214,6 +219,87 @@ export function RehearsalForm({
     }
   };
 
+  // Handle bulk update
+  const handleBulkUpdate = (values: RehearsalFormValues) => {
+    if (!rehearsal?.groupId) {
+      setFormError('לא ניתן לבצע עדכון קבוצתי - לא נמצא מזהה תזמורת');
+      return;
+    }
+
+    // Prepare the update data (exclude fields that shouldn't be bulk updated)
+    const { _id, createdAt, updatedAt, groupId, date, schoolYearId, ...updateData } = values as any;
+    
+    // Calculate changes for display
+    const changes: string[] = [];
+    const originalRehearsal = rehearsal;
+
+    if (updateData.startTime !== originalRehearsal.startTime) {
+      changes.push(`שעת התחלה: ${updateData.startTime}`);
+    }
+    if (updateData.endTime !== originalRehearsal.endTime) {
+      changes.push(`שעת סיום: ${updateData.endTime}`);
+    }
+    if (updateData.location !== originalRehearsal.location) {
+      changes.push(`מיקום: ${updateData.location}`);
+    }
+    if (updateData.notes !== originalRehearsal.notes) {
+      changes.push(`הערות: ${updateData.notes || 'ללא הערות'}`);
+    }
+    // Note: groupId changes are not supported in bulk updates as they would move rehearsals between orchestras
+
+    if (changes.length === 0) {
+      setFormError('לא נמצאו שינויים לעדכון');
+      return;
+    }
+
+    // Store the pending update and show confirmation dialog
+    setPendingBulkUpdate({
+      orchestraId: rehearsal.groupId,
+      updates: updateData,
+      changes
+    });
+    setShowBulkUpdateDialog(true);
+  };
+
+  // Execute bulk update after confirmation
+  const executeBulkUpdate = async () => {
+    if (!pendingBulkUpdate) return;
+
+    try {
+      const result = await updateRehearsalsByOrchestra(
+        pendingBulkUpdate.orchestraId,
+        pendingBulkUpdate.updates
+      );
+
+      // Show success toast
+      addToast({
+        type: 'success',
+        message: `עודכנו ${result.updatedCount} חזרות בהצלחה`,
+      });
+
+      // Call onSave callback if provided
+      if (onSave) {
+        onSave();
+      }
+
+      // Close form
+      onClose();
+    } catch (err) {
+      console.error('Error updating rehearsals:', err);
+      const errorMessage = err instanceof Error ? err.message : 'שגיאה בעדכון החזרות';
+      setFormError(errorMessage);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: errorMessage,
+      });
+    } finally {
+      setPendingBulkUpdate(null);
+      setShowBulkUpdateDialog(false);
+    }
+  };
+
   // Add excluded date in bulk mode
   const addExcludedDate = (
     excludedDate: string,
@@ -304,7 +390,7 @@ export function RehearsalForm({
             onSubmit={handleSingleSubmit}
             enableReinitialize
           >
-            {() => (
+            {({ values }) => (
               <Form>
                 {/* Orchestra Selection */}
                 <div className='form-section'>
@@ -399,6 +485,19 @@ export function RehearsalForm({
                   <button type='submit' className='primary' disabled={isLoading}>
                     {isLoading ? 'שומר...' : rehearsal?._id ? 'עדכון' : 'הוספה'}
                   </button>
+                  
+                  {/* Bulk update button - only show when editing a rehearsal */}
+                  {rehearsal?._id && (
+                    <button 
+                      type='button' 
+                      className='warning' 
+                      disabled={isLoading}
+                      onClick={() => handleBulkUpdate(values)}
+                    >
+                      בצע עבור כל החזרות
+                    </button>
+                  )}
+                  
                   <button type='button' className='secondary' onClick={onClose}>
                     ביטול
                   </button>
@@ -590,6 +689,25 @@ export function RehearsalForm({
               </Form>
             )}
           </Formik>
+        )}
+        
+        {/* Bulk Update Dialog */}
+        {showBulkUpdateDialog && pendingBulkUpdate && (
+          <RehearsalBulkUpdateDialog
+            isOpen={showBulkUpdateDialog}
+            onClose={() => {
+              setShowBulkUpdateDialog(false);
+              setPendingBulkUpdate(null);
+            }}
+            orchestraName={
+              orchestras.find(o => o._id === pendingBulkUpdate.orchestraId)?.name || 'לא ידוע'
+            }
+            rehearsalCount={
+              rehearsals.filter(r => r.groupId === pendingBulkUpdate.orchestraId).length
+            }
+            changes={pendingBulkUpdate.changes}
+            onConfirmUpdate={executeBulkUpdate}
+          />
         )}
       </div>
     </ModalPortal>

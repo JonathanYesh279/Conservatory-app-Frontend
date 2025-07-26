@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mobile Testing Debug</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <h1>Mobile Testing Debug</h1>
+    <div id="info"></div>
+    
+    <script>
+        const info = document.getElementById('info');
+        
+        // Display connection info
+        info.innerHTML = `
+            <h2>Connection Info:</h2>
+            <p><strong>Current URL:</strong> ${window.location.href}</p>
+            <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+            <p><strong>Port:</strong> ${window.location.port}</p>
+            <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+            
+            <h2>Expected API URL:</h2>
+            <p id="api-url">Loading...</p>
+            
+            <h2>Test API Connection:</h2>
+            <button onclick="testAPI()">Test API Call</button>
+            <div id="api-result"></div>
+        `;
+        
+        // Simulate the API URL logic from httpService
+        const getExpectedAPIURL = () => {
+            const hostname = window.location.hostname;
+            
+            if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                return 'http://localhost:3001/api/';
+            }
+            
+            return 'http://10.100.102.3:3001/api/';
+        };
+        
+        document.getElementById('api-url').textContent = getExpectedAPIURL();
+        
+        // Test API function
+        window.testAPI = async () => {
+            const result = document.getElementById('api-result');
+            result.innerHTML = 'Testing...';
+            
+            try {
+                const apiURL = getExpectedAPIURL();
+                const response = await fetch(apiURL + 'health', { 
+                    method: 'GET',
+                    mode: 'cors'
+                });
+                
+                if (response.ok) {
+                    result.innerHTML = `<p style="color: green;">✅ API connection successful!</p>`;
+                } else {
+                    result.innerHTML = `<p style="color: orange;">⚠️ API responded with status: ${response.status}</p>`;
+                }
+            } catch (error) {
+                result.innerHTML = `<p style="color: red;">❌ API connection failed: ${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>

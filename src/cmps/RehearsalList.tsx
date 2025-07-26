@@ -12,6 +12,7 @@ interface RehearsalListProps {
   onEdit?: (rehearsalId: string) => void;
   onView: (rehearsalId: string) => void;
   onRemove?: (rehearsalId: string) => void;
+  onRemoveOrchestra?: (orchestraId: string, rehearsalId: string) => void;
 }
 
 export function RehearsalList({
@@ -21,7 +22,9 @@ export function RehearsalList({
   onEdit,
   onView,
   onRemove,
+  onRemoveOrchestra,
 }: RehearsalListProps) {
+
   // Group rehearsals by date with today's rehearsals first
   const groupedRehearsals = useMemo(() => {
     if (!rehearsals.length) return [];
@@ -114,6 +117,7 @@ export function RehearsalList({
                 onEdit={onEdit}
                 onView={onView}
                 onRemove={onRemove}
+                onRemoveOrchestra={onRemoveOrchestra}
                 isToday={isToday}
               />
             ))}

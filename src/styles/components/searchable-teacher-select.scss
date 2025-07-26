@@ -1,0 +1,259 @@
+// Searchable Teacher Select Component Styles
+.searchable-teacher-select {
+  position: relative;
+  width: 100%;
+
+  .select-input-container {
+    position: relative;
+  }
+
+  .select-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid var(--border-input);
+    border-radius: 6px;
+    background: var(--bg-input);
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25);
+    }
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-secondary);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .select-input {
+    flex: 1;
+    padding: 10px 40px 10px 40px;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+    cursor: text;
+    color: var(--text-primary);
+
+    &::placeholder {
+      color: var(--text-placeholder);
+    }
+
+    &:disabled {
+      color: var(--text-muted);
+      cursor: not-allowed;
+      background: var(--bg-tertiary);
+    }
+  }
+
+  .dropdown-toggle {
+    position: absolute;
+    right: 8px;
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+    color: var(--text-secondary);
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--text-secondary-rgb, 108, 117, 125), 0.1);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .chevron {
+      transition: transform 0.2s ease;
+      color: inherit;
+      
+      &.rotated {
+        transform: rotate(180deg);
+      }
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-input);
+      border-top: 2px solid var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+    box-shadow: var(--shadow-lg);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+
+    .no-results {
+      padding: 12px 16px;
+      color: var(--text-secondary);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .dropdown-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color 0.15s ease;
+      border-bottom: 1px solid var(--border-color);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:hover,
+      &.highlighted {
+        background: var(--bg-tertiary);
+      }
+
+      &.selected {
+        background: rgba(var(--primary-rgb), 0.1);
+        color: var(--primary-color);
+      }
+
+      &.placeholder-item {
+        color: var(--text-placeholder);
+        font-style: italic;
+      }
+
+      &.new-teacher {
+        background: rgba(var(--warning-rgb), 0.15);
+        border-right: 3px solid var(--warning);
+      }
+
+      .teacher-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+
+        .teacher-name {
+          font-weight: 500;
+          color: var(--text-primary);
+        }
+
+        .teacher-instrument {
+          color: var(--text-secondary);
+          font-size: 13px;
+        }
+
+        .new-badge {
+          background: var(--warning);
+          color: var(--text-primary);
+          padding: 2px 6px;
+          border-radius: 12px;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+        }
+      }
+
+      .check-icon {
+        color: var(--success);
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  .search-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-input);
+    border-top: none;
+    border-radius: 0 0 6px 6px;
+  }
+
+  // States
+  &.open {
+    .select-input-wrapper {
+      border-color: var(--primary-color);
+      border-radius: 6px 6px 0 0;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .dropdown-menu {
+      max-height: 150px;
+    }
+
+    .dropdown-item {
+      padding: 12px 16px;
+
+      .teacher-info {
+        .teacher-name {
+          font-size: 14px;
+        }
+
+        .teacher-instrument {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// RTL Support
+[dir="rtl"] .searchable-teacher-select {
+  .input-icon {
+    left: auto;
+    right: 12px;
+  }
+
+  .select-input {
+    padding: 10px 40px 10px 40px;
+  }
+
+  .dropdown-toggle {
+    right: auto;
+    left: 8px;
+  }
+
+  .dropdown-item {
+    &.new-teacher {
+      border-right: none;
+      border-left: 3px solid var(--warning);
+    }
+  }
+}

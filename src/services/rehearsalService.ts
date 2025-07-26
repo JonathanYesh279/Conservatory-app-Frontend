@@ -104,6 +104,110 @@ export const rehearsalService = {
     return httpService.delete(`rehearsal/${rehearsalId}`);
   },
 
+  // Bulk delete rehearsals by orchestra ID
+  async removeRehearsalsByOrchestra(orchestraId: string): Promise<{ deletedCount: number }> {
+    if (!orchestraId) {
+      throw new Error('Invalid orchestra ID');
+    }
+    
+    try {
+      // Try the bulk delete endpoint first
+      console.log('Attempting bulk delete for orchestra:', orchestraId);
+      const result = await httpService.delete(`rehearsal/orchestra/${orchestraId}`);
+      console.log('Bulk delete successful:', result);
+      return result;
+    } catch (error: any) {
+      console.log('Bulk delete failed, error:', error);
+      
+      // If the endpoint doesn't exist or returns 404, fall back to individual deletions
+      if (error.status === 404 || error.response?.status === 404) {
+        console.log('Bulk delete endpoint not available (404), falling back to individual deletions');
+        
+        // Get all rehearsals for this orchestra
+        const rehearsals = await this.getRehearsals({ groupId: orchestraId });
+        console.log(`Found ${rehearsals.length} rehearsals to delete for orchestra ${orchestraId}`);
+        
+        if (rehearsals.length === 0) {
+          return { deletedCount: 0 };
+        }
+        
+        // Delete each rehearsal individually
+        let deletedCount = 0;
+        const deletePromises = rehearsals.map(async (rehearsal) => {
+          try {
+            await this.removeRehearsal(rehearsal._id);
+            deletedCount++;
+            console.log(`Successfully deleted rehearsal ${rehearsal._id}`);
+          } catch (err) {
+            console.error(`Failed to delete rehearsal ${rehearsal._id}:`, err);
+            // Continue with other deletions even if one fails
+          }
+        });
+        
+        // Wait for all deletions to complete
+        await Promise.allSettled(deletePromises);
+        
+        console.log(`Fallback deletion completed: ${deletedCount} out of ${rehearsals.length} rehearsals deleted`);
+        return { deletedCount };
+      }
+      
+      // Re-throw other errors (auth, server errors, etc.)
+      throw error;
+    }
+  },
+
+  // Bulk update rehearsals by orchestra ID
+  async updateRehearsalsByOrchestra(orchestraId: string, updates: Partial<Rehearsal>): Promise<{ updatedCount: number }> {
+    if (!orchestraId) {
+      throw new Error('Invalid orchestra ID');
+    }
+    
+    try {
+      // Try the bulk update endpoint first
+      console.log('Attempting bulk update for orchestra:', orchestraId, 'with updates:', updates);
+      const result = await httpService.put(`rehearsal/orchestra/${orchestraId}`, updates);
+      console.log('Bulk update successful:', result);
+      return result;
+    } catch (error: any) {
+      console.log('Bulk update failed, error:', error);
+      
+      // If the endpoint doesn't exist or returns 404, fall back to individual updates
+      if (error.status === 404 || error.response?.status === 404) {
+        console.log('Bulk update endpoint not available (404), falling back to individual updates');
+        
+        // Get all rehearsals for this orchestra
+        const rehearsals = await this.getRehearsals({ groupId: orchestraId });
+        console.log(`Found ${rehearsals.length} rehearsals to update for orchestra ${orchestraId}`);
+        
+        if (rehearsals.length === 0) {
+          return { updatedCount: 0 };
+        }
+        
+        // Update each rehearsal individually
+        let updatedCount = 0;
+        const updatePromises = rehearsals.map(async (rehearsal) => {
+          try {
+            await this.updateRehearsal(rehearsal._id, updates);
+            updatedCount++;
+            console.log(`Successfully updated rehearsal ${rehearsal._id}`);
+          } catch (err) {
+            console.error(`Failed to update rehearsal ${rehearsal._id}:`, err);
+            // Continue with other updates even if one fails
+          }
+        });
+        
+        // Wait for all updates to complete
+        await Promise.allSettled(updatePromises);
+        
+        console.log(`Fallback update completed: ${updatedCount} out of ${rehearsals.length} rehearsals updated`);
+        return { updatedCount };
+      }
+      
+      // Re-throw other errors (auth, server errors, etc.)
+      throw error;
+    }
+  },
+
   // Bulk rehearsals creation
   async bulkCreateRehearsals(data: BulkRehearsalData): Promise<{
     insertedCount: number;

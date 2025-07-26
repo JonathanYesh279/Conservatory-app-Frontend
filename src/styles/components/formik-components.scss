@@ -73,8 +73,9 @@
 input.is-invalid,
 select.is-invalid,
 textarea.is-invalid {
-  border-color: #ff3b30;
-  background-color: rgba(255, 59, 48, 0.05);
+  border-color: var(--danger) !important;
+  background-color: rgba(var(--danger-rgb), 0.05) !important;
+  box-shadow: 0 0 0 2px rgba(var(--danger-rgb), 0.25) !important;
 }
 
 input:disabled,
@@ -83,6 +84,29 @@ textarea:disabled,
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+/* Ensure all form inputs use consistent base styles */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: var(--bg-input) !important;
+  border: 1px solid var(--border-input) !important;
+  color: var(--text-primary) !important;
+
+  &::placeholder {
+    color: var(--text-placeholder) !important;
+  }
+
+  &:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25) !important;
+  }
+
+  &:disabled {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-muted) !important;
+  }
 }
 
 /* Fix autocomplete styling to match dark theme */

@@ -8,6 +8,7 @@ interface RehearsalPreviewProps {
   onView: (rehearsalId: string) => void;
   onEdit?: (rehearsalId: string) => void;
   onRemove?: (rehearsalId: string) => void;
+  onRemoveOrchestra?: (orchestraId: string, rehearsalId: string) => void;
   isToday?: boolean;
 }
 
@@ -17,6 +18,7 @@ export function RehearsalPreview({
   onView,
   onEdit,
   onRemove,
+  onRemoveOrchestra,
   isToday = false,
 }: RehearsalPreviewProps) {
   // Calculate duration in minutes
@@ -97,7 +99,21 @@ export function RehearsalPreview({
             </button>
           )}
 
-          {onRemove && (
+          {onRemoveOrchestra && (
+            <button
+              className='action-btn delete'
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemoveOrchestra(rehearsal.groupId, rehearsal._id);
+              }}
+              aria-label='מחק חזרה'
+              title='מחק חזרה (אפשרויות מחיקה)'
+            >
+              <Trash2 size={20} />
+            </button>
+          )}
+          
+          {onRemove && !onRemoveOrchestra && (
             <button
               className='action-btn delete'
               onClick={(e) => {

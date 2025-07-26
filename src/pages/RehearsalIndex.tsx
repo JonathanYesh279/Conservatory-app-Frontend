@@ -16,10 +16,11 @@ import { Rehearsal, RehearsalFilter } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { RehearsalList } from '../cmps/RehearsalList';
 import { RehearsalForm } from '../cmps/RehearsalForm';
+import { RehearsalDeleteDialog } from '../cmps/RehearsalDeleteDialog';
 import { useToast } from '../cmps/Toast';
 
 export function RehearsalIndex() {
-  const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal } =
+  const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal, removeRehearsalsByOrchestra } =
     useRehearsalStore();
   const { orchestras, loadOrchestras } = useOrchestraStore();
   const { addToast } = useToast();
@@ -38,6 +39,10 @@ export function RehearsalIndex() {
   const [rehearsalToDelete, setRehearsalToDelete] = useState<string | null>(
     null
   );
+  
+  // State for bulk delete dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedRehearsalForDelete, setSelectedRehearsalForDelete] = useState<Rehearsal | null>(null);
 
   // Filter states
   const [selectedOrchestraId, setSelectedOrchestraId] = useState<string | null>(
@@ -165,6 +170,55 @@ export function RehearsalIndex() {
       }
     }
     setIsConfirmDialogOpen(false);
+  };
+
+  // Handle opening the delete dialog with options
+  const handleRehearsalDeleteWithOptions = (orchestraId: string, rehearsalId: string) => {
+    const rehearsal = rehearsals.find(r => r._id === rehearsalId);
+    if (rehearsal) {
+      setSelectedRehearsalForDelete(rehearsal);
+      setIsDeleteDialogOpen(true);
+    }
+  };
+
+  // Handle single rehearsal delete from dialog
+  const handleDeleteSingleRehearsal = async () => {
+    if (selectedRehearsalForDelete) {
+      try {
+        await removeRehearsal(selectedRehearsalForDelete._id);
+        
+        addToast({
+          type: 'success',
+          message: 'החזרה נמחקה בהצלחה',
+        });
+      } catch (err) {
+        console.error('Failed to remove rehearsal:', err);
+        addToast({
+          type: 'danger',
+          message: 'אירעה שגיאה במחיקת החזרה',
+        });
+      }
+    }
+  };
+
+  // Handle bulk delete all rehearsals for orchestra
+  const handleDeleteAllOrchestraRehearsals = async () => {
+    if (selectedRehearsalForDelete) {
+      try {
+        const result = await removeRehearsalsByOrchestra(selectedRehearsalForDelete.groupId);
+        
+        addToast({
+          type: 'success',
+          message: `נמחקו ${result.deletedCount} חזרות בהצלחה`,
+        });
+      } catch (err) {
+        console.error('Failed to remove orchestra rehearsals:', err);
+        addToast({
+          type: 'danger',
+          message: 'אירעה שגיאה במחיקת החזרות',
+        });
+      }
+    }
   };
 
   // Handle filter changes
@@ -306,7 +360,7 @@ export function RehearsalIndex() {
             isLoading={isLoading}
             onEdit={canEditRehearsal ? handleEditRehearsal : undefined}
             onView={handleViewRehearsal}
-            onRemove={isAdmin ? handleRemoveRehearsal : undefined}
+            onRemoveOrchestra={isAdmin ? handleRehearsalDeleteWithOptions : undefined}
             orchestras={orchestras}
           />
         )}
@@ -331,6 +385,33 @@ export function RehearsalIndex() {
           cancelText='ביטול'
           type='danger'
         />
+
+        {/* Rehearsal Delete Dialog */}
+        {isDeleteDialogOpen && selectedRehearsalForDelete && (
+          <RehearsalDeleteDialog
+            isOpen={isDeleteDialogOpen}
+            onClose={() => {
+              setIsDeleteDialogOpen(false);
+              setSelectedRehearsalForDelete(null);
+            }}
+            orchestraName={
+              orchestras.find(o => o._id === selectedRehearsalForDelete.groupId)?.name || 'לא ידוע'
+            }
+            orchestraRehearsalsCount={
+              rehearsals.filter(r => r.groupId === selectedRehearsalForDelete.groupId).length
+            }
+            onDeleteSingle={async () => {
+              await handleDeleteSingleRehearsal();
+              setIsDeleteDialogOpen(false);
+              setSelectedRehearsalForDelete(null);
+            }}
+            onDeleteAll={async () => {
+              await handleDeleteAllOrchestraRehearsals();
+              setIsDeleteDialogOpen(false);
+              setSelectedRehearsalForDelete(null);
+            }}
+          />
+        )}
 
         {/* Rehearsal Form Modal */}
         {isFormOpen && (

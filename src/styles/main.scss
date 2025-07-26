@@ -14,6 +14,8 @@
 @import './components/student-preview.scss';
 @import './components/floating-button.scss';
 @import './components/search-bar.scss';
+@import './components/filter-modal.scss';
+@import './components/filter-dropdown.scss';
 @import './components/student-form.scss';
 @import './components//confirm-dialog.scss';
 @import './components/teacher-list.scss';
@@ -46,6 +48,9 @@
 @import './components/duplicate-confirmation-modal.scss';
 @import './components/responsive-form.scss';
 @import './components/schedule.scss';
+@import './components/searchable-teacher-select.scss';
+@import './components/rehearsal-delete-dialog.scss';
+@import './components/rehearsal-bulk-update-dialog.scss';
 @import './components/time-block-creator.scss';
 @import './components/time-block-timeline.scss';
 @import './components/available-slots-finder.scss';

@@ -1,12 +1,19 @@
 // src/components/StudentDetails/sections/InstrumentsSection.tsx
 import { Music, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { Student } from '../../../services/studentService';
+import { useState } from 'react';
 
 interface InstrumentsSectionProps {
   student: Student;
   isOpen: boolean;
   onToggle: () => void;
   getStageColor: (stage: number) => string;
+  updateStudentStage?: (
+    instrumentName: string,
+    newStage: number
+  ) => Promise<Student | undefined>;
+  isUpdatingStage?: boolean;
+  canEditStage?: boolean;
 }
 
 export function InstrumentsSection({
@@ -14,7 +21,56 @@ export function InstrumentsSection({
   isOpen,
   onToggle,
   getStageColor,
+  updateStudentStage,
+  isUpdatingStage = false,
+  canEditStage = false,
 }: InstrumentsSectionProps) {
+  // State for stage dropdown
+  const [activeStageDropdown, setActiveStageDropdown] = useState<string | null>(null);
+
+  // Stage options (1-8)
+  const stageOptions = [1, 2, 3, 4, 5, 6, 7, 8];
+
+  // Toggle stage dropdown
+  const toggleStageDropdown = (instrumentName: string) => {
+    if (isUpdatingStage || !canEditStage) {
+      return;
+    }
+
+    if (activeStageDropdown === instrumentName) {
+      setActiveStageDropdown(null);
+    } else {
+      setActiveStageDropdown(instrumentName);
+    }
+  };
+
+  // Handle stage selection
+  const handleStageSelect = async (instrumentName: string, newStage: number) => {
+    if (isUpdatingStage || !updateStudentStage) {
+      return;
+    }
+
+    // Get current stage
+    const instrument = student.academicInfo.instrumentProgress.find(
+      (i) => i.instrumentName === instrumentName
+    );
+
+    if (!instrument || instrument.currentStage === newStage) {
+      setActiveStageDropdown(null);
+      return;
+    }
+
+    // Close dropdown
+    setActiveStageDropdown(null);
+
+    try {
+      await updateStudentStage(instrumentName, newStage);
+      console.log(`Updated stage for ${instrumentName} to ${newStage}`);
+    } catch (error) {
+      console.error(`Failed to update stage for ${instrumentName}:`, error);
+    }
+  };
+
   if (
     !student ||
     !student.academicInfo ||
@@ -82,13 +138,40 @@ export function InstrumentsSection({
                         </span>
                       )}
                     </div>
-                    <div
-                      className='sd-stage-badge'
-                      style={{
-                        backgroundColor: getStageColor(instrument.currentStage),
-                      }}
-                    >
-                      שלב {instrument.currentStage}
+                    <div className='sd-stage-badge-container'>
+                      <div
+                        className={`sd-stage-badge ${canEditStage ? 'sd-clickable' : ''} ${
+                          isUpdatingStage ? 'disabled' : ''
+                        }`}
+                        style={{
+                          backgroundColor: getStageColor(instrument.currentStage),
+                        }}
+                        onClick={() => toggleStageDropdown(instrument.instrumentName)}
+                      >
+                        שלב {instrument.currentStage}
+                      </div>
+
+                      {/* Stage dropdown */}
+                      {!isUpdatingStage &&
+                        canEditStage &&
+                        activeStageDropdown === instrument.instrumentName && (
+                          <div className='sd-stage-dropdown'>
+                            {stageOptions.map((stage) => (
+                              <div
+                                key={stage}
+                                className={`sd-dropdown-item ${
+                                  instrument.currentStage === stage ? 'selected' : ''
+                                }`}
+                                onClick={() =>
+                                  handleStageSelect(instrument.instrumentName, stage)
+                                }
+                              >
+                                {instrument.currentStage === stage && <Star size={12} />}
+                                שלב {stage}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   </div>
 

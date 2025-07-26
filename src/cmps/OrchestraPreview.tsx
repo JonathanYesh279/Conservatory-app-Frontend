@@ -1,6 +1,8 @@
 // src/cmps/OrchestraPreview.tsx
 import { Orchestra } from '../services/orchestraService';
-import { Edit, Trash2, Music, Users, Calendar } from 'lucide-react';
+import { Edit, Trash2, Music, Users, Calendar, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { teacherService } from '../services/teacherService';
 
 interface OrchestraPreviewProps {
   orchestra: Orchestra;
@@ -15,6 +17,28 @@ export function OrchestraPreview({
   onEdit,
   onRemove,
 }: OrchestraPreviewProps) {
+  const [conductorName, setConductorName] = useState<string>('');
+
+  // Fetch conductor name when component mounts
+  useEffect(() => {
+    const fetchConductorName = async () => {
+      if (orchestra.conductorId) {
+        try {
+          const teacher = await teacherService.getTeacherById(orchestra.conductorId);
+          if (teacher) {
+            setConductorName(teacher.personalInfo.fullName);
+          } else {
+            setConductorName('מנצח לא זמין');
+          }
+        } catch (error) {
+          console.error('Error fetching conductor:', error);
+          setConductorName('מנצח לא זמין');
+        }
+      }
+    };
+
+    fetchConductorName();
+  }, [orchestra.conductorId]);
   // Get background color based on orchestra type
   const getTypeColor = (type: string): string => {
     const typeColors: Record<string, string> = {
@@ -72,6 +96,12 @@ export function OrchestraPreview({
               <span>{orchestra.type}</span>
             </div>
           </div>
+          
+          {conductorName && (
+            <div className='conductor-badge'>
+              <span>מנצח: {conductorName}</span>
+            </div>
+          )}
         </div>
       </div>
 
