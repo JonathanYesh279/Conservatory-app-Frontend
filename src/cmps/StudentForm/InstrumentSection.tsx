@@ -220,7 +220,11 @@ export function InstrumentSection() {
       {instruments.length > 0 && (
         <div className='instruments-list'>
           {instruments.map((instrument, index) => (
+<<<<<<< Updated upstream
             <div key={`${instrument.instrumentName}-${instrument.currentStage}-${index}`} className='instrument-card'>
+=======
+            <div key={index} className='instrument-card'>
+>>>>>>> Stashed changes
               <div className='instrument-header'>
                 <div className='instrument-info'>
                   <div className='instrument-name-wrapper'>

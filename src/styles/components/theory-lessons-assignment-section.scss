@@ -35,6 +35,7 @@
         padding: 0.75rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         border: 1px solid var(--border-color);
+<<<<<<< Updated upstream
         transition: all 0.2s ease;
         
         &.clickable {
@@ -46,6 +47,8 @@
             border-color: var(--primary-color);
           }
         }
+=======
+>>>>>>> Stashed changes
         
         .assignment-header {
           display: flex;
@@ -89,6 +92,7 @@
           font-size: 0.9rem;
           color: var(--text-muted);
           
+<<<<<<< Updated upstream
           .teacher-name, .day-time, .location {
             display: flex;
             align-items: center;
@@ -104,6 +108,10 @@
           .teacher-name {
             color: var(--text-secondary);
             font-weight: 500;
+=======
+          .day-time, .location {
+            margin-bottom: 0.25rem;
+>>>>>>> Stashed changes
           }
         }
       }
@@ -184,6 +192,7 @@
       }
     }
   }
+<<<<<<< Updated upstream
   
   .form-row {
     display: flex;
@@ -278,4 +287,6 @@
       }
     }
   }
+=======
+>>>>>>> Stashed changes
 }

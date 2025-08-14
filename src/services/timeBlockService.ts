@@ -335,7 +335,10 @@ export const timeBlockService = {
 
   /**
    * Update an existing time block
+<<<<<<< Updated upstream
    * Since time blocks are stored within teacher documents, we need to update via teacher service
+=======
+>>>>>>> Stashed changes
    */
   async updateTimeBlock(
     timeBlockId: string,
@@ -347,6 +350,7 @@ export const timeBlockService = {
     message: string;
   }> {
     try {
+<<<<<<< Updated upstream
       console.log('Updating time block:', timeBlockId, 'with data:', updateData);
       
       // Try the original endpoint first
@@ -468,6 +472,18 @@ export const timeBlockService = {
       };
     } catch (error) {
       console.error('Failed to update time block via teacher service:', error);
+=======
+      const response = await httpService.put<{
+        success: boolean;
+        updatedTimeBlock: TimeBlockResponse;
+        affectedAssignments: LessonAssignment[];
+        message: string;
+      }>(`schedule/time-blocks/${timeBlockId}`, updateData);
+
+      return response;
+    } catch (error) {
+      console.error('Failed to update time block:', error);
+>>>>>>> Stashed changes
       throw new Error('שגיאה בעדכון יום הלימוד');
     }
   },
@@ -481,6 +497,7 @@ export const timeBlockService = {
     message: string;
   }> {
     try {
+<<<<<<< Updated upstream
       console.log('TimeBlockService: Deleting time block:', timeBlockId);
       const endpoint = `schedule/time-blocks/${timeBlockId}`;
       console.log('Delete endpoint:', endpoint);
@@ -579,6 +596,17 @@ export const timeBlockService = {
       };
     } catch (error) {
       console.error('Failed to delete time block via teacher service:', error);
+=======
+      const response = await httpService.delete<{
+        success: boolean;
+        affectedAssignments: LessonAssignment[];
+        message: string;
+      }>(`schedule/time-blocks/${timeBlockId}`);
+
+      return response;
+    } catch (error) {
+      console.error('Failed to delete time block:', error);
+>>>>>>> Stashed changes
       throw new Error('שגיאה במחיקת יום הלימוד');
     }
   },

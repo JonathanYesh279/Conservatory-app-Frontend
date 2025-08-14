@@ -1,5 +1,6 @@
 // src/styles/components/student-form.scss
 
+<<<<<<< Updated upstream
 // Student form modal - now works with ModalPortal
 .student-form {
   // Remove fixed positioning since ModalPortal handles it
@@ -11,6 +12,34 @@
   
   @media (max-width: 768px) {
     align-items: stretch;
+=======
+// Student form modal
+.student-form {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem 1.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+>>>>>>> Stashed changes
   }
   
   .form-modal {
@@ -31,6 +60,7 @@
     
     @media (max-width: 768px) {
       width: 100%;
+<<<<<<< Updated upstream
       height: 100%;
       padding: 1rem 1rem 2rem 1rem;
       border-radius: 0;
@@ -53,6 +83,15 @@
           margin-left: 2rem; /* Adjust for smaller mobile close button */
         }
       }
+=======
+      max-width: none;
+      max-height: calc(100vh - 2rem);
+      padding: 1.5rem 1rem;
+      padding-bottom: 3rem;
+      border-radius: 1rem 1rem 0 0;
+      margin: 0;
+      margin-top: auto;
+>>>>>>> Stashed changes
     }
     
     /* Show scrollbar only when scrolling */
@@ -60,6 +99,7 @@
       scrollbar-color: var(--border-color) transparent; /* For Firefox */
     }
     
+<<<<<<< Updated upstream
     .form-header {
       display: flex;
       align-items: center;
@@ -106,6 +146,37 @@
         font-weight: 600;
         flex: 1;
         margin-left: 2.5rem; /* Push title toward center, accounting for close button */
+=======
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      color: var(--text-primary);
+      text-align: center;
+      font-size: 1.4rem;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 2rem;
+      left: 1rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+      
+      &:hover {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+>>>>>>> Stashed changes
       }
     }
     
@@ -117,6 +188,7 @@
       margin-top: 1.5rem;
       padding-top: 0.75rem;
       
+<<<<<<< Updated upstream
       @media (max-width: 768px) {
         position: static;
         background-color: var(--bg-card);
@@ -130,6 +202,10 @@
       .btn {
         width: 146px;
         height: 39px;
+=======
+      .btn {
+        padding: 0.6rem 1.25rem;
+>>>>>>> Stashed changes
         border-radius: 0.5rem;
         font-size: 1rem;
         font-weight: 500;
@@ -229,9 +305,14 @@
       margin-top: 1.25rem;
       
       .btn {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
         font-size: 1rem;
+=======
+        padding: 0.5rem 1.15rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }
@@ -261,10 +342,16 @@
         padding-top: 0.6rem;
         
         .btn {
+<<<<<<< Updated upstream
           width: 146px;
           height: 39px;
           font-size: 1rem;
           border-radius: 0.5rem;
+=======
+          padding: 0.45rem 1rem;
+          font-size: 0.85rem;
+          border-radius: 0.4rem;
+>>>>>>> Stashed changes
         }
       }
     }
@@ -296,10 +383,16 @@
         gap: 0.75rem;
         
         .btn {
+<<<<<<< Updated upstream
           width: 146px;
           height: 39px;
           font-size: 1rem;
           border-radius: 0.5rem;
+=======
+          padding: 0.4rem 0.9rem;
+          font-size: 0.8rem;
+          border-radius: 0.4rem;
+>>>>>>> Stashed changes
         }
       }
     }
@@ -310,6 +403,7 @@
 @media (max-width: 599px) {
   .student-form .form-modal {
     width: 100%;
+<<<<<<< Updated upstream
     max-height: 97vh;
     padding-top: 74px;
     padding-inline: 0;
@@ -319,6 +413,11 @@
       top: 4.2rem;
       left: 1rem;
     }
+=======
+    max-height: 90vh;
+    padding: 1.25rem;
+    padding-top: 74px;
+>>>>>>> Stashed changes
     
     h2 {
       font-size: 1.2rem;
@@ -326,6 +425,7 @@
     }
     
     .form-actions {
+<<<<<<< Updated upstream
       position: static;
       background-color: var(--bg-card);
       padding: 1.5rem 0;
@@ -385,6 +485,14 @@
           grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
           gap: 1rem;
         }
+=======
+      padding-top: 0.75rem;
+      margin-top: 1rem;
+      
+      .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }

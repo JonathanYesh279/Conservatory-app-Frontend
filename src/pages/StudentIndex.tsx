@@ -12,15 +12,22 @@ import { BottomNavbar } from '../cmps/BottomNavbar.tsx';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.ts';
 import { Searchbar } from '../cmps/Searchbar.tsx';
+<<<<<<< Updated upstream
 import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown.tsx';
 import { FilterDropdown, FilterDropdownOptions } from '../cmps/FilterDropdown.tsx';
+=======
+import { useSearchbar } from '../hooks/useSearchbar.tsx';
+>>>>>>> Stashed changes
 import { Student } from '../services/studentService.ts';
 import { StudentForm } from '../cmps/StudentForm/index.ts';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useSchoolYearStore } from '../store/schoolYearStore';
+<<<<<<< Updated upstream
 import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
 import { sanitizeError } from '../utils/errorHandler';
 import { useToast } from '../cmps/Toast';
+=======
+>>>>>>> Stashed changes
 
 export function StudentIndex() {
   const { students, isLoading, error, loadStudents, removeStudent } =
@@ -33,9 +40,12 @@ export function StudentIndex() {
   // Add state for the confirmation dialog
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<string | null>(null);
+<<<<<<< Updated upstream
   
   // Add filter dropdown state
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
+=======
+>>>>>>> Stashed changes
 
   // Define which fields to search in students
   const studentSearchFields = (student: Student) => {
@@ -50,6 +60,7 @@ export function StudentIndex() {
     return fields.filter((field): field is string => typeof field === 'string');
   };
 
+<<<<<<< Updated upstream
   // Use the enhanced search and filter dropdown hook
   const {
     filteredEntities: filteredStudents,
@@ -68,10 +79,17 @@ export function StudentIndex() {
     (student: Student) => student.personalInfo.age || 0,
     (student: Student) => parseInt(student.academicInfo.class || '0') || 0,
     (student: Student) => student.personalInfo.fullName
+=======
+  // Use the search hook
+  const { filteredEntities: filteredStudents, handleSearch } = useSearchbar(
+    students,
+    studentSearchFields
+>>>>>>> Stashed changes
   );
 
   const navigate = useNavigate();
   const location = useLocation();
+<<<<<<< Updated upstream
   const { user, isAuthenticated } = useAuth();
   const { addToast } = useToast();
 
@@ -80,6 +98,11 @@ export function StudentIndex() {
   const auth = useAuthorization(authContext);
 
   const isAdmin = auth.isAdmin();
+=======
+  const { user } = useAuth();
+
+  const isAdmin = user?.roles.includes('מנהל');
+>>>>>>> Stashed changes
   const isDetailPage =
     location.pathname.includes('/students/') &&
     !location.pathname.endsWith('/students/');
@@ -112,6 +135,7 @@ export function StudentIndex() {
     }
   }, [location.pathname, isDetailPage]);
 
+<<<<<<< Updated upstream
   // Effect to handle edit student navigation from details page
   useEffect(() => {
     const state = location.state as { editStudentId?: string } | null;
@@ -137,6 +161,11 @@ export function StudentIndex() {
         autoCloseTime: 4000
       });
     }
+=======
+  const handleAddStudent = () => {
+    setSelectedStudent(null);
+    setIsFormOpen(true);
+>>>>>>> Stashed changes
   };
 
   const handleCloseForm = useCallback(() => {
@@ -153,6 +182,7 @@ export function StudentIndex() {
 
   const handleEditStudent = (studentId: string) => {
     const student = students.find((s) => s._id === studentId) || null;
+<<<<<<< Updated upstream
     if (!student) return;
     
     try {
@@ -167,6 +197,10 @@ export function StudentIndex() {
         autoCloseTime: 4000
       });
     }
+=======
+    setSelectedStudent(student);
+    setIsFormOpen(true);
+>>>>>>> Stashed changes
   };
 
   const handleViewStudent = (studentId: string) => {
@@ -176,6 +210,7 @@ export function StudentIndex() {
   // Updated to show confirmation dialog instead of browser prompt
   const handleRemoveStudent = (studentId: string) => {
     const student = students.find((s) => s._id === studentId);
+<<<<<<< Updated upstream
     if (!student) return;
     
     try {
@@ -189,6 +224,11 @@ export function StudentIndex() {
         message: sanitizedError.userMessage,
         autoCloseTime: 4000
       });
+=======
+    if (student) {
+      setStudentToDelete(studentId);
+      setIsConfirmDialogOpen(true);
+>>>>>>> Stashed changes
     }
   };
 
@@ -200,6 +240,7 @@ export function StudentIndex() {
         setStudentToDelete(null);
         // Refresh the list after removing a student
         setShouldRefreshList(true);
+<<<<<<< Updated upstream
         
         // Show success toast
         addToast({
@@ -215,15 +256,27 @@ export function StudentIndex() {
           message: sanitizedError.userMessage,
           autoCloseTime: 5000
         });
+=======
+      } catch (err) {
+        console.error('Failed to remove student:', err);
+>>>>>>> Stashed changes
       }
     }
   };
 
   const handleFilter = () => {
+<<<<<<< Updated upstream
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
 
   const canAddStudent = auth.canAddStudent();
+=======
+    // This would open your filter dialog
+    alert('Open filter dialog');
+  };
+
+  const canAddStudent = isAdmin || user?.roles.includes('מורה');
+>>>>>>> Stashed changes
 
   return (
     <div className='app-container'>
@@ -239,6 +292,7 @@ export function StudentIndex() {
               />
 
               <div className='action-buttons'>
+<<<<<<< Updated upstream
                 <div className='filter-container'>
                   <button
                     className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
@@ -261,6 +315,15 @@ export function StudentIndex() {
                     entityType="students"
                   />
                 </div>
+=======
+                <button
+                  className='btn-icon filter-btn'
+                  onClick={handleFilter}
+                  aria-label='סנן תלמידים'
+                >
+                  <Filter className='icon' />
+                </button>
+>>>>>>> Stashed changes
 
                 {canAddStudent && (
                   <button
@@ -284,8 +347,12 @@ export function StudentIndex() {
             isLoading={isLoading}
             onEdit={handleEditStudent}
             onView={handleViewStudent}
+<<<<<<< Updated upstream
             onRemove={handleRemoveStudent}
             authContext={authContext}
+=======
+            onRemove={isAdmin ? handleRemoveStudent : undefined}
+>>>>>>> Stashed changes
           />
         )}
 
@@ -320,7 +387,10 @@ export function StudentIndex() {
           cancelText='ביטול'
           type='danger'
         />
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
       </main>
       {!isDetailPage && !isFormOpen && <BottomNavbar />}
     </div>

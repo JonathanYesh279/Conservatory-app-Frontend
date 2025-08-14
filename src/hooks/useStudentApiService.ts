@@ -3,7 +3,10 @@ import { useState } from 'react';
 import { StudentFormData } from '../constants/formConstants';
 import { studentService, Student } from '../services/studentService';
 import { useToast } from '../cmps/Toast';
+<<<<<<< Updated upstream
 import { sanitizeError } from '../utils/errorHandler';
+=======
+>>>>>>> Stashed changes
 
 interface UseStudentApiServiceProps {
   onClose?: () => void;
@@ -113,14 +116,20 @@ export const useStudentApiService = ({
       return savedStudent;
     } catch (err) {
       console.error('Error saving student data:', err);
+<<<<<<< Updated upstream
       
       // Use sanitized error handling
       const sanitizedError = sanitizeError(err);
       const errorObj = new Error(sanitizedError.userMessage);
+=======
+      const errorObj =
+        err instanceof Error ? err : new Error('Failed to save student data');
+>>>>>>> Stashed changes
 
       setError(errorObj);
       setIsSubmitting(false);
 
+<<<<<<< Updated upstream
       // Show user-friendly error toast
       addToast({
         type: 'danger',
@@ -128,6 +137,8 @@ export const useStudentApiService = ({
         autoCloseTime: 5000
       });
 
+=======
+>>>>>>> Stashed changes
       if (onError) {
         onError(errorObj);
       }
@@ -155,6 +166,7 @@ export const useStudentApiService = ({
     } catch (err) {
       console.error('Error undoing student creation:', err);
       
+<<<<<<< Updated upstream
       // Use sanitized error handling
       const sanitizedError = sanitizeError(err);
       
@@ -163,6 +175,12 @@ export const useStudentApiService = ({
         type: 'danger',
         message: sanitizedError.userMessage,
         autoCloseTime: 5000
+=======
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: 'אירעה שגיאה בעת ביטול הוספת התלמיד',
+>>>>>>> Stashed changes
       });
     }
   };

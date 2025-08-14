@@ -11,7 +11,10 @@ import {
   GraduationCap,
 } from 'lucide-react';
 import { openWhatsApp } from '../utils/phoneUtils.ts'; // Import the utility function
+<<<<<<< Updated upstream
 import { AuthorizationContext, useAuthorization } from '../utils/authorization';
+=======
+>>>>>>> Stashed changes
 
 interface TeacherPreviewProps {
   teacher: Teacher;
@@ -19,7 +22,10 @@ interface TeacherPreviewProps {
   onEdit: (teacherId: string) => void;
   onRemove?: (teacherId: string) => void;
   studentCount?: number; // Add optional student count prop
+<<<<<<< Updated upstream
   authContext?: AuthorizationContext;
+=======
+>>>>>>> Stashed changes
 }
 
 export function TeacherPreview({
@@ -28,6 +34,7 @@ export function TeacherPreview({
   onEdit,
   onRemove,
   studentCount,
+<<<<<<< Updated upstream
   authContext,
 }: TeacherPreviewProps) {
   // Safety check for teacher data
@@ -42,6 +49,11 @@ export function TeacherPreview({
   // Get initials for avatar
   const getInitials = (name: string): string => {
     if (!name) return 'NA';
+=======
+}: TeacherPreviewProps) {
+  // Get initials for avatar
+  const getInitials = (name: string): string => {
+>>>>>>> Stashed changes
     return name
       .split(' ')
       .map((n) => n[0])
@@ -183,6 +195,7 @@ export function TeacherPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
+<<<<<<< Updated upstream
           {/* Get permissions for this teacher */}
           {(() => {
             const permissions = auth?.getTeacherActionPermissions(teacher) || {
@@ -222,6 +235,31 @@ export function TeacherPreview({
               </>
             );
           })()}
+=======
+          <button
+            className='action-btn edit'
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(teacher._id);
+            }}
+            aria-label='ערוך מורה'
+          >
+            <Edit size={20} />
+          </button>
+
+          {onRemove && (
+            <button
+              className='action-btn delete'
+              onClick={(e) => {
+                e.stopPropagation();
+                onRemove(teacher._id);
+              }}
+              aria-label='מחק מורה'
+            >
+              <Trash2 size={20} />
+            </button>
+          )}
+>>>>>>> Stashed changes
         </div>
 
         <div className='date-info'>

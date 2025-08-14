@@ -315,9 +315,26 @@
     select,
     input {
       width: 100%;
+<<<<<<< Updated upstream
       // Base styles from _forms.scss will be applied
       text-align: right;
       
+=======
+      background-color: rgba(var(--bg-tertiary-rgb));
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      color: var(--text-primary);
+      padding: 0.5rem;
+      font-size: 0.9rem;
+      text-align: right;
+      
+      &:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(var(--primary-color-rgb), 0.1);
+      }
+      
+>>>>>>> Stashed changes
       &.is-invalid {
         border-color: var(--danger);
       }

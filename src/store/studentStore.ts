@@ -13,8 +13,11 @@ interface StudentState {
   filterBy: StudentFilter;
   isLoading: boolean;
   error: string | null;
+<<<<<<< Updated upstream
   // Track local stage changes that haven't been persisted to backend
   localStageChanges: Record<string, Record<string, number>>; // studentId -> instrumentName -> stage
+=======
+>>>>>>> Stashed changes
 
   // Actions
   loadStudents: (filterBy?: StudentFilter) => Promise<void>;
@@ -25,6 +28,7 @@ interface StudentState {
   setFilter: (filterBy: Partial<StudentFilter>) => void;
   clearSelectedStudent: () => void;
   clearError: () => void;
+<<<<<<< Updated upstream
   updateStudentStage: (studentId: string, instrumentName: string, newStage: number) => void;
 }
 
@@ -50,19 +54,27 @@ const applyLocalStageChanges = (student: Student, localChanges: Record<string, R
   };
 };
 
+=======
+}
+
+>>>>>>> Stashed changes
 export const useStudentStore = create<StudentState>((set, get) => ({
   students: [],
   selectedStudent: null,
   filterBy: {},
   isLoading: false,
   error: null,
+<<<<<<< Updated upstream
   localStageChanges: {},
+=======
+>>>>>>> Stashed changes
 
   loadStudents: async (filterBy = {}) => {
     set({ isLoading: true, error: null });
     try {
       const newFilterBy = { ...get().filterBy, ...filterBy };
       const students = await studentService.getStudents(newFilterBy);
+<<<<<<< Updated upstream
       
       // Apply local stage changes to preserve local updates
       const currentState = get();
@@ -71,6 +83,9 @@ export const useStudentStore = create<StudentState>((set, get) => ({
       );
       
       set({ students: studentsWithLocalChanges, filterBy: newFilterBy, isLoading: false });
+=======
+      set({ students, filterBy: newFilterBy, isLoading: false });
+>>>>>>> Stashed changes
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load students';
@@ -83,12 +98,16 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const student = await studentService.getStudentById(studentId);
+<<<<<<< Updated upstream
       
       // Apply local stage changes to preserve local updates
       const currentState = get();
       const studentWithLocalChanges = applyLocalStageChanges(student, currentState.localStageChanges);
       
       set({ selectedStudent: studentWithLocalChanges, isLoading: false });
+=======
+      set({ selectedStudent: student, isLoading: false });
+>>>>>>> Stashed changes
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load student';
@@ -252,6 +271,7 @@ export const useStudentStore = create<StudentState>((set, get) => ({
   clearError: () => {
     set({ error: null });
   },
+<<<<<<< Updated upstream
 
   updateStudentStage: (studentId: string, instrumentName: string, newStage: number) => {
     const currentState = get();
@@ -310,4 +330,6 @@ export const useStudentStore = create<StudentState>((set, get) => ({
     console.log(`Updated stage in student store: ${instrumentName} -> ${newStage} for student ${studentId}`);
     console.log('Local stage changes:', updatedLocalStageChanges);
   },
+=======
+>>>>>>> Stashed changes
 }));

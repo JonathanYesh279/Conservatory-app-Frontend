@@ -8,7 +8,10 @@ interface RehearsalPreviewProps {
   onView: (rehearsalId: string) => void;
   onEdit?: (rehearsalId: string) => void;
   onRemove?: (rehearsalId: string) => void;
+<<<<<<< Updated upstream
   onRemoveOrchestra?: (orchestraId: string, rehearsalId: string) => void;
+=======
+>>>>>>> Stashed changes
   isToday?: boolean;
 }
 
@@ -18,7 +21,10 @@ export function RehearsalPreview({
   onView,
   onEdit,
   onRemove,
+<<<<<<< Updated upstream
   onRemoveOrchestra,
+=======
+>>>>>>> Stashed changes
   isToday = false,
 }: RehearsalPreviewProps) {
   // Calculate duration in minutes
@@ -99,6 +105,7 @@ export function RehearsalPreview({
             </button>
           )}
 
+<<<<<<< Updated upstream
           {onRemoveOrchestra && (
             <button
               className='action-btn delete'
@@ -114,6 +121,9 @@ export function RehearsalPreview({
           )}
           
           {onRemove && !onRemoveOrchestra && (
+=======
+          {onRemove && (
+>>>>>>> Stashed changes
             <button
               className='action-btn delete'
               onClick={(e) => {

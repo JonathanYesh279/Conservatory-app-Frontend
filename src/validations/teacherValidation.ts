@@ -1,6 +1,9 @@
 // src/validations/teacherValidation.ts
 import * as Yup from 'yup';
+<<<<<<< Updated upstream
 import { VALID_INSTRUMENTS as INSTRUMENTS_FROM_CONSTANTS } from '../constants/formConstants';
+=======
+>>>>>>> Stashed changes
 
 // Constants for validation
 export const VALID_ROLES = [
@@ -11,8 +14,30 @@ export const VALID_ROLES = [
   'מורה תאוריה',
 ];
 
+<<<<<<< Updated upstream
 // Re-export VALID_INSTRUMENTS for backward compatibility
 export const VALID_INSTRUMENTS = INSTRUMENTS_FROM_CONSTANTS;
+=======
+export const VALID_INSTRUMENTS = [
+  'חצוצרה',
+  'חליל צד',
+  'קלרינט',
+  'קרן יער',
+  'בריטון',
+  'טרומבון',
+  'סקסופון',
+  'אבוב',
+  'כינור',
+  'צ׳לו',
+  'ויולה',
+  'קונטרבס',
+  'פסנתר',
+  'גיטרה',
+  'מדרימבה',
+  'תופים',
+  'הקשה',
+];
+>>>>>>> Stashed changes
 
 export const DAYS_OF_WEEK = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי'];
 export const LESSON_DURATIONS = [30, 45, 60];
@@ -72,7 +97,11 @@ export const teacherValidationSchema = Yup.object().shape({
       ['מורה', 'מורה תאוריה'],
       Yup.string()
         .required('כלי נגינה הוא שדה חובה למורה')
+<<<<<<< Updated upstream
         .oneOf(INSTRUMENTS_FROM_CONSTANTS, 'כלי נגינה לא תקין')
+=======
+        .oneOf(VALID_INSTRUMENTS, 'כלי נגינה לא תקין')
+>>>>>>> Stashed changes
     ),
     isActive: Yup.boolean().default(true),
   }),
@@ -97,7 +126,11 @@ export const teacherValidationSchema = Yup.object().shape({
     })
   ),
 
+<<<<<<< Updated upstream
   // Credentials - email only for new teachers (password will be set via invitation)
+=======
+  // Credentials - only validated for new teachers
+>>>>>>> Stashed changes
   credentials: Yup.object().when('_id', {
     is: (id: string) => !id, // Only apply when _id is not present (new teacher)
     then: () =>
@@ -105,7 +138,13 @@ export const teacherValidationSchema = Yup.object().shape({
         email: Yup.string()
           .required('דוא"ל הוא שדה חובה')
           .email('כתובת דוא"ל לא תקינה'),
+<<<<<<< Updated upstream
         // Password removed - will be set via invitation system
+=======
+        password: Yup.string()
+          .required('סיסמה היא שדה חובה')
+          .min(6, 'סיסמה חייבת להכיל לפחות 6 תווים'),
+>>>>>>> Stashed changes
       }),
     otherwise: () => Yup.object(), // No validation for existing teachers
   }),
@@ -147,6 +186,10 @@ export interface TeacherFormData {
   }>;
   credentials: {
     email: string;
+<<<<<<< Updated upstream
+=======
+    password: string;
+>>>>>>> Stashed changes
   };
   isActive: boolean;
 }
@@ -175,6 +218,10 @@ export const initialTeacherFormValues: TeacherFormData = {
   schoolYears: [],
   credentials: {
     email: '',
+<<<<<<< Updated upstream
+=======
+    password: '',
+>>>>>>> Stashed changes
   },
   isActive: true,
 };

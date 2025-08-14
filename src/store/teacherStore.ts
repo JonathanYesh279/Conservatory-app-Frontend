@@ -168,6 +168,7 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
     try {
       let savedTeacher;
 
+<<<<<<< Updated upstream
       // Force detection of update operation - check both teacherId parameter AND teacher._id
       const actualTeacherId = teacherId || teacher._id;
       
@@ -213,6 +214,14 @@ export const useTeacherStore = create<TeacherState>((set, get) => ({
         roles: savedTeacher.roles
       });
 
+=======
+      if (teacherId) {
+        savedTeacher = await teacherService.updateTeacher(teacherId, teacher);
+      } else {
+        savedTeacher = await teacherService.addTeacher(teacher);
+      }
+
+>>>>>>> Stashed changes
       // Update the teachers array
       const teachers = [...get().teachers];
       const index = teachers.findIndex((t) => t._id === savedTeacher._id);

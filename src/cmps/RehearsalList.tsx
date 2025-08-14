@@ -12,7 +12,10 @@ interface RehearsalListProps {
   onEdit?: (rehearsalId: string) => void;
   onView: (rehearsalId: string) => void;
   onRemove?: (rehearsalId: string) => void;
+<<<<<<< Updated upstream
   onRemoveOrchestra?: (orchestraId: string, rehearsalId: string) => void;
+=======
+>>>>>>> Stashed changes
 }
 
 export function RehearsalList({
@@ -22,9 +25,13 @@ export function RehearsalList({
   onEdit,
   onView,
   onRemove,
+<<<<<<< Updated upstream
   onRemoveOrchestra,
 }: RehearsalListProps) {
 
+=======
+}: RehearsalListProps) {
+>>>>>>> Stashed changes
   // Group rehearsals by date with today's rehearsals first
   const groupedRehearsals = useMemo(() => {
     if (!rehearsals.length) return [];
@@ -117,7 +124,10 @@ export function RehearsalList({
                 onEdit={onEdit}
                 onView={onView}
                 onRemove={onRemove}
+<<<<<<< Updated upstream
                 onRemoveOrchestra={onRemoveOrchestra}
+=======
+>>>>>>> Stashed changes
                 isToday={isToday}
               />
             ))}

@@ -1,9 +1,16 @@
 // src/cmps/StudentDetails/sections/OrchestrasSection.tsx
+<<<<<<< Updated upstream
 import { ChevronDown, ChevronUp, Music, Award, RefreshCw, Users, Calendar, MapPin, User } from 'lucide-react';
 import { Student } from '../../../services/studentService';
 import { Orchestra } from '../../../services/orchestraService';
 import { teacherService } from '../../../services/teacherService';
 import { useEffect, useState, useRef, useMemo } from 'react';
+=======
+import { ChevronDown, ChevronUp, Music, Award, RefreshCw } from 'lucide-react';
+import { Student } from '../../../services/studentService';
+import { Orchestra } from '../../../services/orchestraService';
+import { useEffect, useState, useRef } from 'react';
+>>>>>>> Stashed changes
 
 interface OrchestrasSectionProps {
   student: Student;
@@ -26,6 +33,7 @@ export function OrchestrasSection({
   const placeholdersCreated = useRef(false);
 
   // Create placeholders for orchestras that haven't loaded yet
+<<<<<<< Updated upstream
   const [placeholderOrchestras, setPlaceholderOrchestras] = useState<Orchestra[]>([]);
   
   // State for conductor names
@@ -40,6 +48,17 @@ export function OrchestrasSection({
         ].filter((id) => id)
       : []; // Remove any undefined/null/empty values
   }, [student]);
+=======
+  const [placeholderOrchestras, setPlaceholderOrchestras] = useState<any[]>([]);
+
+  // Get orchestra IDs from both possible locations in the student object
+  // Use useMemo to prevent recalculation on every render
+  const studentOrchestraIds = student
+    ? [
+        ...(student.enrollments?.orchestraIds || []),
+      ].filter((id) => id)
+    : []; // Remove any undefined/null/empty values
+>>>>>>> Stashed changes
 
   // Determine if we have any orchestra IDs
   const hasOrchestras = studentOrchestraIds.length > 0;
@@ -62,12 +81,16 @@ export function OrchestrasSection({
         _id: id,
         name: `תזמורת ${id.slice(-4)}`,
         type: '',
+<<<<<<< Updated upstream
         conductorId: '',
         memberIds: [],
         rehearsalIds: [],
         schoolYearId: '',
         location: '',
         isActive: true,
+=======
+        isPlaceholder: true,
+>>>>>>> Stashed changes
       }));
 
       setPlaceholderOrchestras(placeholders);
@@ -82,6 +105,7 @@ export function OrchestrasSection({
     };
   }, [student._id]); // Only reset when student changes
 
+<<<<<<< Updated upstream
   // Load conductor names for orchestras
   useEffect(() => {
     const loadConductorNames = async () => {
@@ -111,6 +135,8 @@ export function OrchestrasSection({
     loadConductorNames();
   }, [orchestras, conductorNames]);
 
+=======
+>>>>>>> Stashed changes
   // Determine if we should use placeholder data
   const shouldUsePlaceholders =
     studentOrchestraIds.length > 0 &&
@@ -146,6 +172,7 @@ export function OrchestrasSection({
             <div className='sd-empty-state'>התלמיד אינו משתתף בתזמורות</div>
           ) : shouldUsePlaceholders ? (
             // Use placeholder data when orchestras haven't loaded yet
+<<<<<<< Updated upstream
             <div className='sd-orchestras-swiper'>
               {placeholderOrchestras.map((orchestra) => (
                 <div
@@ -169,10 +196,22 @@ export function OrchestrasSection({
                       <span>טוען פרטים...</span>
                     </div>
                   </div>
+=======
+            <div className='sd-orchestras-grid'>
+              {placeholderOrchestras.map((orchestra) => (
+                <div
+                  key={orchestra._id}
+                  className='sd-orchestra-card clickable sd-orchestra-placeholder'
+                  onClick={() => onOrchestraClick(orchestra._id)}
+                >
+                  <Award size={20} />
+                  <span>{orchestra.name}</span>
+>>>>>>> Stashed changes
                 </div>
               ))}
             </div>
           ) : (
+<<<<<<< Updated upstream
             // Use fully loaded orchestras data with swiper structure
             <div className='sd-orchestras-swiper'>
               {orchestras.map((orchestra) => (
@@ -227,6 +266,21 @@ export function OrchestrasSection({
                       <span>{orchestra.isActive ? 'פעיל' : 'לא פעיל'}</span>
                     </div>
                   </div>
+=======
+            // Use fully loaded orchestras data
+            <div className='sd-orchestras-grid'>
+              {orchestras.map((orchestra) => (
+                <div
+                  key={orchestra._id}
+                  className='sd-orchestra-card clickable'
+                  onClick={() => onOrchestraClick(orchestra._id)}
+                >
+                  <Award size={20} />
+                  <span>{orchestra.name}</span>
+                  {orchestra.type && (
+                    <span className='sd-orchestra-type'>{orchestra.type}</span>
+                  )}
+>>>>>>> Stashed changes
                 </div>
               ))}
             </div>

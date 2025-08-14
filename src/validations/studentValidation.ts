@@ -3,7 +3,11 @@ import * as Yup from 'yup';
 import {
   VALID_CLASSES,
   VALID_INSTRUMENTS,
+<<<<<<< Updated upstream
   EXTENDED_TEST_STATUSES,
+=======
+  TEST_STATUSES,
+>>>>>>> Stashed changes
   DAYS_OF_WEEK,
   LESSON_DURATIONS,
 } from '../constants/formConstants';
@@ -21,13 +25,21 @@ const instrumentProgressSchema = Yup.object({
     .max(8, 'שלב חייב להיות מספר בין 1 ל-8'),
   tests: Yup.object({
     stageTest: Yup.object({
+<<<<<<< Updated upstream
       status: Yup.string().oneOf(EXTENDED_TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+=======
+      status: Yup.string().oneOf(TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+>>>>>>> Stashed changes
       notes: Yup.string(),
       lastTestDate: Yup.date().nullable(),
       nextTestDate: Yup.date().nullable(),
     }),
     technicalTest: Yup.object({
+<<<<<<< Updated upstream
       status: Yup.string().oneOf(EXTENDED_TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+=======
+      status: Yup.string().oneOf(TEST_STATUSES, 'סטטוס מבחן לא תקין'),
+>>>>>>> Stashed changes
       notes: Yup.string(),
       lastTestDate: Yup.date().nullable(),
       nextTestDate: Yup.date().nullable(),
@@ -46,6 +58,7 @@ const teacherAssignmentSchema = Yup.object({
   duration: Yup.number().oneOf(LESSON_DURATIONS, 'משך שיעור לא תקין'),
 });
 
+<<<<<<< Updated upstream
 // Validation schema factory function that accepts context for conditional validation
 export const createStudentValidationSchema = (isAdmin = false, isUpdate = false) => {
   return Yup.object({
@@ -122,6 +135,9 @@ export const createStudentValidationSchema = (isAdmin = false, isUpdate = false)
 };
 
 // Legacy export for backward compatibility
+=======
+// Main validation schema for the entire student form
+>>>>>>> Stashed changes
 export const studentValidationSchema = Yup.object({
   personalInfo: Yup.object({
     fullName: Yup.string().required('שם מלא הוא שדה חובה'),

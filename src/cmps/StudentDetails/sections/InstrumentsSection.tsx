@@ -1,19 +1,25 @@
 // src/components/StudentDetails/sections/InstrumentsSection.tsx
 import { Music, Star, ChevronUp, ChevronDown } from 'lucide-react';
 import { Student } from '../../../services/studentService';
+<<<<<<< Updated upstream
 import { useState } from 'react';
+=======
+>>>>>>> Stashed changes
 
 interface InstrumentsSectionProps {
   student: Student;
   isOpen: boolean;
   onToggle: () => void;
   getStageColor: (stage: number) => string;
+<<<<<<< Updated upstream
   updateStudentStage?: (
     instrumentName: string,
     newStage: number
   ) => Promise<Student | undefined>;
   isUpdatingStage?: boolean;
   canEditStage?: boolean;
+=======
+>>>>>>> Stashed changes
 }
 
 export function InstrumentsSection({
@@ -21,6 +27,7 @@ export function InstrumentsSection({
   isOpen,
   onToggle,
   getStageColor,
+<<<<<<< Updated upstream
   updateStudentStage,
   isUpdatingStage = false,
   canEditStage = false,
@@ -71,6 +78,9 @@ export function InstrumentsSection({
     }
   };
 
+=======
+}: InstrumentsSectionProps) {
+>>>>>>> Stashed changes
   if (
     !student ||
     !student.academicInfo ||
@@ -138,6 +148,7 @@ export function InstrumentsSection({
                         </span>
                       )}
                     </div>
+<<<<<<< Updated upstream
                     <div className='sd-stage-badge-container'>
                       <div
                         className={`sd-stage-badge ${canEditStage ? 'sd-clickable' : ''} ${
@@ -172,6 +183,15 @@ export function InstrumentsSection({
                             ))}
                           </div>
                         )}
+=======
+                    <div
+                      className='sd-stage-badge'
+                      style={{
+                        backgroundColor: getStageColor(instrument.currentStage),
+                      }}
+                    >
+                      שלב {instrument.currentStage}
+>>>>>>> Stashed changes
                     </div>
                   </div>
 

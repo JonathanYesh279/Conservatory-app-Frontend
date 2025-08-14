@@ -4,14 +4,20 @@ import { Edit, Trash2, Calendar, Award, Music } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { orchestraService } from '../services/orchestraService';
 import { studentService } from '../services/studentService'; // Use studentService directly
+<<<<<<< Updated upstream
 import { AuthorizationContext, useAuthorization } from '../utils/authorization';
+=======
+>>>>>>> Stashed changes
 
 interface StudentPreviewProps {
   student: Student;
   onView: (studentId: string) => void;
   onEdit: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
+<<<<<<< Updated upstream
   authContext?: AuthorizationContext;
+=======
+>>>>>>> Stashed changes
 }
 
 export function StudentPreview({
@@ -19,7 +25,10 @@ export function StudentPreview({
   onView,
   onEdit,
   onRemove,
+<<<<<<< Updated upstream
   authContext,
+=======
+>>>>>>> Stashed changes
 }: StudentPreviewProps) {
   // Local state for the current student data
   const [currentStudent, setCurrentStudent] = useState<Student>(student);
@@ -27,16 +36,46 @@ export function StudentPreview({
   // State to store orchestra names after fetching them
   const [orchestraNames, setOrchestraNames] = useState<string[]>([]);
 
+<<<<<<< Updated upstream
   // Initialize authorization
   const auth = authContext ? useAuthorization(authContext) : null;
+=======
+  // Track if we've already fetched updated data to prevent infinite loops
+  const [hasRefreshed, setHasRefreshed] = useState(false);
+>>>>>>> Stashed changes
 
   // Update the component when the original student prop changes
   useEffect(() => {
     setCurrentStudent(student);
+<<<<<<< Updated upstream
   }, [student]);
 
   // Note: Removed direct API call to avoid overriding store's local changes
   // The student data should come from the store which applies local stage changes
+=======
+    setHasRefreshed(false); // Reset refresh flag when student prop changes
+  }, [student]);
+
+  // Fetch the latest student data once when component mounts
+  useEffect(() => {
+    // Only fetch once per student and only if we haven't already refreshed
+    if (student?._id && !hasRefreshed) {
+      const getLatestStudentData = async () => {
+        try {
+          const latestStudent = await studentService.getStudentById(
+            student._id
+          );
+          setCurrentStudent(latestStudent);
+          setHasRefreshed(true); // Mark as refreshed to prevent further calls
+        } catch (error) {
+          console.error('Error fetching latest student data:', error);
+        }
+      };
+
+      getLatestStudentData();
+    }
+  }, [student?._id, hasRefreshed]);
+>>>>>>> Stashed changes
 
   // Fetch orchestra names when component mounts or currentStudent changes
   useEffect(() => {
@@ -165,6 +204,7 @@ export function StudentPreview({
     return null;
   }
 
+<<<<<<< Updated upstream
   // Get permissions for this student
   const permissions = auth?.getStudentActionPermissions(displayStudent) || {
     canEdit: true,
@@ -173,6 +213,8 @@ export function StudentPreview({
     showDeleteButton: true
   };
 
+=======
+>>>>>>> Stashed changes
   return (
     <div className='student-preview' onClick={() => onView(displayStudent._id)}>
       <div className='preview-header'>
@@ -274,6 +316,7 @@ export function StudentPreview({
 
       <div className='preview-footer'>
         <div className='action-buttons'>
+<<<<<<< Updated upstream
           {permissions.showEditButton && (
             <button
               className='action-btn edit'
@@ -288,6 +331,20 @@ export function StudentPreview({
           )}
 
           {permissions.showDeleteButton && onRemove && (
+=======
+          <button
+            className='action-btn edit'
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(displayStudent._id);
+            }}
+            aria-label='ערוך תלמיד'
+          >
+            <Edit size={20} />
+          </button>
+
+          {onRemove && (
+>>>>>>> Stashed changes
             <button
               className='action-btn delete'
               onClick={(e) => {

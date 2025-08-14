@@ -7,14 +7,21 @@ import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
+<<<<<<< Updated upstream
 import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown';
+=======
+import { useSearchbar } from '../hooks/useSearchbar';
+>>>>>>> Stashed changes
 import { Orchestra } from '../services/orchestraService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { OrchestraList } from '../cmps/OrchestraList';
 import { OrchestraForm } from '../cmps/OrchestraForm';
 import { useSchoolYearStore } from '../store/schoolYearStore';
+<<<<<<< Updated upstream
 import { useToast } from '../cmps/Toast';
 import { FilterDropdown } from '../cmps/FilterDropdown';
+=======
+>>>>>>> Stashed changes
 
 export function OrchestraIndex() {
   const {
@@ -37,18 +44,22 @@ export function OrchestraIndex() {
     null
   );
 
+<<<<<<< Updated upstream
   // State for synchronization
   const { showSuccess, showError } = useToast();
 
   // State for filter dropdown
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+=======
+>>>>>>> Stashed changes
   // Define which fields to search in orchestras
   const orchestraSearchFields = (orchestra: Orchestra) => [
     orchestra.name,
     orchestra.type,
   ];
 
+<<<<<<< Updated upstream
   // Use the search and filter hook
   const {
     filteredEntities: filteredOrchestras,
@@ -64,6 +75,12 @@ export function OrchestraIndex() {
     undefined, // No age filtering for orchestras
     undefined, // No class filtering for orchestras
     (orchestra: Orchestra) => orchestra.name // For sorting
+=======
+  // Use the search hook
+  const { filteredEntities: filteredOrchestras, handleSearch } = useSearchbar(
+    orchestras,
+    orchestraSearchFields
+>>>>>>> Stashed changes
   );
 
   const navigate = useNavigate();
@@ -123,10 +140,17 @@ export function OrchestraIndex() {
   };
 
   const handleFilter = () => {
+<<<<<<< Updated upstream
     setIsFilterOpen(!isFilterOpen);
   };
 
 
+=======
+    // This would open your filter dialog
+    alert('Open filter dialog');
+  };
+
+>>>>>>> Stashed changes
   // Check if user can add/edit orchestras
   const canAddOrchestra = isAdmin;
   const canEditOrchestra = isAdmin || isConductor;
@@ -145,6 +169,7 @@ export function OrchestraIndex() {
               />
 
               <div className='action-buttons'>
+<<<<<<< Updated upstream
                 <div className='filter-container'>
                   <button
                     className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
@@ -164,6 +189,15 @@ export function OrchestraIndex() {
                     entityType="orchestras"
                   />
                 </div>
+=======
+                <button
+                  className='btn-icon filter-btn'
+                  onClick={handleFilter}
+                  aria-label='סנן תזמורות'
+                >
+                  <Filter className='icon' />
+                </button>
+>>>>>>> Stashed changes
 
                 {canAddOrchestra && (
                   <button

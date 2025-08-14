@@ -1,5 +1,6 @@
 // Enhanced version of src/services/httpService.ts with better error handling and request timeout
 import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios';
+<<<<<<< Updated upstream
 import { sanitizeError, handleApiError } from '../utils/errorHandler';
 import { authService } from './authService';
 
@@ -35,6 +36,14 @@ if (process.env.NODE_ENV === 'development') {
   console.log('🔗 HTTP Service initialized with base URL:', BASE_URL);
   console.log('🌐 Current hostname:', window.location.hostname);
 }
+=======
+
+// Base URL based on environment
+const BASE_URL =
+  process.env.NODE_ENV === 'production'
+    ? '/api/'
+    : 'http://localhost:3001/api/';
+>>>>>>> Stashed changes
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -56,6 +65,7 @@ interface RetryConfig extends AxiosRequestConfig {
   _retry?: number;
 }
 
+<<<<<<< Updated upstream
 // Helper function to check if a URL is invitation-related
 const isInvitationEndpoint = (url?: string): boolean => {
   if (!url) return false;
@@ -96,6 +106,42 @@ axiosInstance.interceptors.request.use(
       }
     } else if (process.env.NODE_ENV === 'development') {
       console.warn('No auth token found for request to:', config.url);
+=======
+// Request interceptor for adding auth token
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('accessToken');
+    if (token) {
+      // Make sure this line is working correctly
+      config.headers.Authorization = `Bearer ${token}`;
+
+      // Add debugging for token
+      console.log(
+        'Sending request with token:',
+        token.substring(0, 10) + '...'
+      );
+    } else {
+      console.warn('No auth token found for request to:', config.url);
+    }
+
+    // Debug: Check if schoolYearId is being added here
+    if (config.url?.includes('available-slots')) {
+      console.log('Request interceptor - available-slots request config:', {
+        url: config.url,
+        params: config.params,
+        data: config.data,
+        headers: config.headers
+      });
+      
+      if (config.params && 'schoolYearId' in config.params) {
+        console.error('CONTAMINATION DETECTED in request interceptor - params contains schoolYearId:', config.params);
+        console.trace();
+        
+        // Try to remove it here as a last resort
+        delete config.params.schoolYearId;
+        console.log('Removed schoolYearId from params. New params:', config.params);
+      }
+>>>>>>> Stashed changes
     }
 
     return config;
@@ -111,7 +157,11 @@ axiosInstance.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryConfig;
 
+<<<<<<< Updated upstream
     // If there's no config, reject
+=======
+    // If there's no config or it's already retried, reject
+>>>>>>> Stashed changes
     if (!originalRequest) {
       return Promise.reject(error);
     }
@@ -121,6 +171,7 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = 0;
     }
 
+<<<<<<< Updated upstream
     // Handle 401 Unauthorized - determine if it's token expiration or auth failure
     if (error.response?.status === 401) {
       // Skip refresh for auth endpoints and invitation endpoints
@@ -155,6 +206,38 @@ axiosInstance.interceptors.response.use(
           
           return Promise.reject(refreshError);
         }
+=======
+    // Handle 401 Unauthorized - try to refresh token
+    if (error.response?.status === 401 && originalRequest._retry === 0) {
+      try {
+        // Mark as retried for token refresh
+        originalRequest._retry = 1;
+
+        // Get new token
+        const response = await axiosInstance.post('/auth/refresh');
+        const { accessToken } = response.data;
+
+        // Save new token
+        localStorage.setItem('accessToken', accessToken);
+
+        // Update Authorization header and retry
+        if (!originalRequest.headers) {
+          originalRequest.headers = {};
+        }
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // Clear auth data if refresh fails
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('user');
+
+        // Redirect to login (in a more sophisticated setup, this would be handled by context)
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
+
+        return Promise.reject(refreshError);
+>>>>>>> Stashed changes
       }
     }
 
@@ -170,12 +253,18 @@ axiosInstance.interceptors.response.use(
 
       // Wait before retrying (with exponential backoff)
       const retryDelay = RETRY_DELAY_MS * 2 ** (originalRequest._retry - 1);
+<<<<<<< Updated upstream
       
       if (process.env.NODE_ENV === 'development') {
         console.log(
           `Retrying request (${originalRequest._retry}/${MAX_RETRIES}) after ${retryDelay}ms...`
         );
       }
+=======
+      console.log(
+        `Retrying request (${originalRequest._retry}/${MAX_RETRIES}) after ${retryDelay}ms...`
+      );
+>>>>>>> Stashed changes
 
       await delay(retryDelay);
       return axiosInstance(originalRequest);
@@ -185,6 +274,7 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+<<<<<<< Updated upstream
 // Response interceptor for handling password change requirements
 axiosInstance.interceptors.response.use(
   (response) => response,
@@ -206,6 +296,8 @@ axiosInstance.interceptors.response.use(
   }
 )
 
+=======
+>>>>>>> Stashed changes
 // Type for params/data
 type RequestData = Record<string, any> | null;
 
@@ -289,6 +381,7 @@ async function ajax<T = any>(
 
     return response.data;
   } catch (err: any) {
+<<<<<<< Updated upstream
     // Check if this is an expected 404 for time block endpoints that don't exist yet
     const isExpected404 = err?.response?.status === 404 && 
       (endpoint.includes('schedule/time-blocks/') && !endpoint.includes('/teacher/'));
@@ -312,5 +405,46 @@ async function ajax<T = any>(
     (error as any).originalError = err;
     
     throw error;
+=======
+    // Log the error with more detailed information
+    console.error(`Error ${method} ${endpoint}:`, {
+      message: err.message,
+      status: err.response?.status,
+      data: err.response?.data,
+      endpoint,
+      params,
+    });
+
+    // Create a more user-friendly error message based on the type of error
+    let errorMessage = 'An unexpected error occurred';
+
+    if (err.response) {
+      // The request was made and the server responded with an error status
+      if (err.response.data?.error) {
+        errorMessage = err.response.data.error;
+      } else if (err.response.status === 404) {
+        errorMessage = `The requested resource was not found (${endpoint})`;
+      } else if (err.response.status === 403) {
+        errorMessage = 'You do not have permission to perform this action';
+      } else if (err.response.status === 401) {
+        errorMessage = 'Your session has expired. Please login again';
+      } else if (err.response.status === 409) {
+        errorMessage = err.response.data?.message || err.response.data?.error || 'A conflict occurred - this resource already exists or conflicts with existing data';
+      } else if (err.response.status >= 500) {
+        errorMessage = 'A server error occurred. Please try again later';
+      }
+    } else if (err.request) {
+      // The request was made but no response was received
+      if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+        errorMessage =
+          'The request timed out. Please check your connection and try again';
+      } else {
+        errorMessage =
+          'Network error - unable to connect to the server. Please check your connection';
+      }
+    }
+
+    throw new Error(errorMessage);
+>>>>>>> Stashed changes
   }
 }

@@ -63,7 +63,11 @@ export function useSearchbar<T extends SearchableEntity>(
           return false;
         }
 
+<<<<<<< Updated upstream
         // Check if any field starts with the search query (more precise search)
+=======
+        // Check if any field contains the search query
+>>>>>>> Stashed changes
         return fieldsToSearch.some((fieldValue) => {
           // Safety check for fieldValue
           if (typeof fieldValue !== 'string') {
@@ -73,7 +77,11 @@ export function useSearchbar<T extends SearchableEntity>(
             );
             return false;
           }
+<<<<<<< Updated upstream
           return fieldValue.toLowerCase().startsWith(lowercaseQuery);
+=======
+          return fieldValue.toLowerCase().includes(lowercaseQuery);
+>>>>>>> Stashed changes
         });
       } catch (err) {
         console.error('Error filtering entity:', err);

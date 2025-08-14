@@ -2,6 +2,7 @@ import { httpService } from './httpService.ts'
 
 interface LoginResponse {
   accessToken: string
+<<<<<<< Updated upstream
   refreshToken?: string
   teacher: {
     _id: string
@@ -22,6 +23,13 @@ interface LoginResponse {
       email: string
       requiresPasswordChange?: boolean
     }
+=======
+  teacher: {
+    _id: string
+    fullName: string
+    email: string
+    roles: string[]
+>>>>>>> Stashed changes
   }
 }
 
@@ -29,6 +37,7 @@ interface User {
   _id: string
   fullName: string
   email: string
+<<<<<<< Updated upstream
   phone?: string
   address?: string
   roles: string[]
@@ -61,12 +70,16 @@ function transformTeacherToUser(teacher: LoginResponse['teacher']): User {
     roles: teacher.roles || [],
     professionalInfo: teacher.professionalInfo
   }
+=======
+  roles: string[]
+>>>>>>> Stashed changes
 }
 
 export const authService = {
   login, 
   logout,
   getCurrentUser, 
+<<<<<<< Updated upstream
   isLoggedIn,
   validateSession,
   isTokenExpired,
@@ -74,12 +87,16 @@ export const authService = {
   getToken,
   setToken,
   clearAuthData
+=======
+  isLoggedIn
+>>>>>>> Stashed changes
 }
 
 async function login(email: string, password: string): Promise<User> {
   try {
     const response = await httpService.post<LoginResponse>('auth/login', { email, password })
 
+<<<<<<< Updated upstream
     setToken(response.accessToken)
     
     if (response.refreshToken) {
@@ -101,12 +118,22 @@ async function login(email: string, password: string): Promise<User> {
     }
 
     return user
+=======
+    // store accessToken in localStorage
+    localStorage.setItem('accessToken', response.accessToken)
+
+    // store user info in localStorage
+    localStorage.setItem('user', JSON.stringify(response.teacher))
+
+    return response.teacher
+>>>>>>> Stashed changes
   } catch (err) {
     console.error('Login failed:', err)
     throw err
   }
 }
 
+<<<<<<< Updated upstream
 async function logout(): Promise<void> {
   try {
     await httpService.post('auth/logout')
@@ -114,6 +141,20 @@ async function logout(): Promise<void> {
     console.error('Logout failed:', err)
   } finally {
     clearAuthData()
+=======
+function logout(): void {
+  try {
+    httpService.post('auth/logout')
+
+    // clean localStorage
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
+  } catch (err) {
+    console.error('Logout failed:', err)
+    
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('user')
+>>>>>>> Stashed changes
   }
 }
 
@@ -122,6 +163,7 @@ function getCurrentUser(): User | null {
   if (!userJson) return null
 
   try {
+<<<<<<< Updated upstream
     const userData = JSON.parse(userJson)
     
     // If the stored data is in the old format (Teacher object), transform it
@@ -131,12 +173,16 @@ function getCurrentUser(): User | null {
     
     // If it's already in the correct format, return as-is
     return userData
+=======
+    return JSON.parse(userJson)
+>>>>>>> Stashed changes
   } catch (err) {
     return null
   }
 }
 
 function isLoggedIn(): boolean { 
+<<<<<<< Updated upstream
   const token = getToken()
   return !!(token && !isTokenExpired(token))
 }
@@ -220,4 +266,7 @@ function clearAuthData(): void {
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('user')
   refreshPromise = null
+=======
+  return !!localStorage.getItem('accessToken')
+>>>>>>> Stashed changes
 }

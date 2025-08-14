@@ -2,12 +2,18 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Clock, MapPin, Repeat, Music } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+<<<<<<< Updated upstream
 import { ModalPortal } from './ModalPortal';
+=======
+>>>>>>> Stashed changes
 import { Formik, Form, Field } from 'formik';
 import { FormField } from './FormComponents/FormField';
 import { Rehearsal } from '../services/rehearsalService';
 import { useRehearsalStore } from '../store/rehearsalStore';
+<<<<<<< Updated upstream
 import { RehearsalBulkUpdateDialog } from './RehearsalBulkUpdateDialog';
+=======
+>>>>>>> Stashed changes
 import { useOrchestraStore } from '../store/orchestraStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 
@@ -57,7 +63,11 @@ export function RehearsalForm({
   const { addToast } = useToast();
 
   // Destructure values from stores
+<<<<<<< Updated upstream
   const { saveRehearsal, bulkCreateRehearsals, updateRehearsalsByOrchestra, rehearsals, isLoading, error, clearError } =
+=======
+  const { saveRehearsal, bulkCreateRehearsals, isLoading, error, clearError } =
+>>>>>>> Stashed changes
     rehearsalStore;
   const { orchestras, loadOrchestras } = orchestraStore;
   const { currentSchoolYear, loadCurrentSchoolYear } = schoolYearStore;
@@ -71,10 +81,13 @@ export function RehearsalForm({
   // Error handling
   const [formError, setFormError] = useState('');
 
+<<<<<<< Updated upstream
   // Bulk update dialog state
   const [showBulkUpdateDialog, setShowBulkUpdateDialog] = useState(false);
   const [pendingBulkUpdate, setPendingBulkUpdate] = useState<any>(null);
 
+=======
+>>>>>>> Stashed changes
   // Load data on mount
   useEffect(() => {
     const initializeFormData = async () => {
@@ -219,6 +232,7 @@ export function RehearsalForm({
     }
   };
 
+<<<<<<< Updated upstream
   // Handle bulk update
   const handleBulkUpdate = (values: RehearsalFormValues) => {
     if (!rehearsal?.groupId) {
@@ -300,6 +314,8 @@ export function RehearsalForm({
     }
   };
 
+=======
+>>>>>>> Stashed changes
   // Add excluded date in bulk mode
   const addExcludedDate = (
     excludedDate: string,
@@ -333,6 +349,7 @@ export function RehearsalForm({
   if (!isOpen) return null;
 
   return (
+<<<<<<< Updated upstream
     <ModalPortal isOpen={isOpen} onClose={onClose} className="rehearsal-form responsive-form">
       <div className='form-modal' {...modalProps}>
         {/* Form Header with Close Button */}
@@ -349,12 +366,25 @@ export function RehearsalForm({
             {rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}
           </h2>
         </div>
+=======
+    <div className='rehearsal-form'>
+      <div className='overlay' onClick={onClose}></div>
+      <div className='form-modal' {...modalProps}>
+        <button className='close-btn' onClick={onClose} aria-label='סגור'>
+          <X size={20} />
+        </button>
+>>>>>>> Stashed changes
 
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
           {rehearsal?._id ? 'טופס עריכת חזרה קיימת במערכת' : 'טופס הוספת חזרה חדשה למערכת'}
         </div>
 
+<<<<<<< Updated upstream
+=======
+        <h2 {...titleProps}>{rehearsal?._id ? 'עריכת חזרה' : 'הוספת חזרה חדשה'}</h2>
+
+>>>>>>> Stashed changes
         {error && <div className='error-message'>{error}</div>}
         {formError && <div className='error-message'>{formError}</div>}
 
@@ -390,7 +420,11 @@ export function RehearsalForm({
             onSubmit={handleSingleSubmit}
             enableReinitialize
           >
+<<<<<<< Updated upstream
             {({ values }) => (
+=======
+            {() => (
+>>>>>>> Stashed changes
               <Form>
                 {/* Orchestra Selection */}
                 <div className='form-section'>
@@ -485,6 +519,7 @@ export function RehearsalForm({
                   <button type='submit' className='primary' disabled={isLoading}>
                     {isLoading ? 'שומר...' : rehearsal?._id ? 'עדכון' : 'הוספה'}
                   </button>
+<<<<<<< Updated upstream
                   
                   {/* Bulk update button - only show when editing a rehearsal */}
                   {rehearsal?._id && (
@@ -498,6 +533,8 @@ export function RehearsalForm({
                     </button>
                   )}
                   
+=======
+>>>>>>> Stashed changes
                   <button type='button' className='secondary' onClick={onClose}>
                     ביטול
                   </button>
@@ -690,6 +727,7 @@ export function RehearsalForm({
             )}
           </Formik>
         )}
+<<<<<<< Updated upstream
         
         {/* Bulk Update Dialog */}
         {showBulkUpdateDialog && pendingBulkUpdate && (
@@ -711,5 +749,9 @@ export function RehearsalForm({
         )}
       </div>
     </ModalPortal>
+=======
+      </div>
+    </div>
+>>>>>>> Stashed changes
   );
 }

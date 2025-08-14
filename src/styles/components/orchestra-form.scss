@@ -1,5 +1,6 @@
 // src/styles/components/orchestra-form.scss
 
+<<<<<<< Updated upstream
 // Orchestra form modal - now works with ModalPortal
 .orchestra-form {
   // Remove fixed positioning since ModalPortal handles it
@@ -8,6 +9,30 @@
   display: flex;
   align-items: center;
   justify-content: center;
+=======
+// Orchestra form modal
+.orchestra-form {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem 1.5rem;
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+  }
+>>>>>>> Stashed changes
   
   .form-modal {
     position: relative;
@@ -20,14 +45,23 @@
     padding: 2rem;
     padding-bottom: 3rem;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 8px 25px rgba(0, 0, 0, 0.2);
+<<<<<<< Updated upstream
     border: 1px solid var(--border-color);
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
+=======
+    margin: auto;
+    border: 1px solid var(--border-color);
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    height: 750px;
+>>>>>>> Stashed changes
     
     &:hover {
       scrollbar-color: var(--border-color) transparent;
     }
     
+<<<<<<< Updated upstream
     .form-header {
       display: flex;
       align-items: center;
@@ -74,6 +108,47 @@
         font-weight: 600;
         flex: 1;
         margin-left: 2.5rem; /* Push title toward center, accounting for close button */
+=======
+    h2 {
+      margin-top: 0;
+      margin-bottom: 2rem;
+      padding-bottom: 0;
+      color: var(--text-primary);
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      position: relative;
+    }
+    
+    .close-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(var(--bg-tertiary-rgb), 0.8);
+      backdrop-filter: blur(8px);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      
+      &:hover {
+        background-color: rgba(var(--bg-secondary-rgb), 0.9);
+        color: var(--text-primary);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+      
+      &:active {
+        transform: scale(0.95);
+>>>>>>> Stashed changes
       }
     }
     
@@ -410,6 +485,7 @@
       padding: 2rem 0 0.5rem 0;
       
       button {
+<<<<<<< Updated upstream
           width: 146px;
           height: 39px;
           border-radius: 0.5rem;
@@ -417,33 +493,83 @@
           font-size: 1rem;
           cursor: pointer;
           transition: all 0.2s ease;
+=======
+          padding: 1rem 2.5rem;
+          border-radius: 0.75rem;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          min-width: 140px;
+>>>>>>> Stashed changes
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
           
           &.primary {
+<<<<<<< Updated upstream
             background: var(--primary-color);
             color: white;
             border: none;
             
             &:hover:not(:disabled) {
               background: var(--primary-dark);
+=======
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.25),
+                       0 2px 8px rgba(0, 0, 0, 0.1);
+            
+            &:hover:not(:disabled) {
+              transform: translateY(-2px);
+              box-shadow: 0 8px 24px rgba(var(--primary-color-rgb), 0.35),
+                         0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+            
+            &:active {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 16px rgba(var(--primary-color-rgb), 0.25);
+>>>>>>> Stashed changes
             }
             
             &:disabled {
               opacity: 0.6;
               cursor: not-allowed;
+<<<<<<< Updated upstream
+=======
+              transform: none;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+>>>>>>> Stashed changes
             }
           }
           
           &.secondary {
+<<<<<<< Updated upstream
             background-color: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
             
             &:hover {
               background-color: var(--bg-secondary);
+=======
+            background-color: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            
+            &:hover {
+              background-color: var(--bg-secondary);
+              border-color: var(--primary-color);
+              transform: translateY(-2px);
+              box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.1),
+                         0 3px 10px rgba(0, 0, 0, 0.08);
+            }
+            
+            &:active {
+              transform: translateY(-1px);
+>>>>>>> Stashed changes
             }
           }
         }
@@ -495,6 +621,7 @@
 
 @media (max-width: 768px) {
   .orchestra-form {
+<<<<<<< Updated upstream
     align-items: stretch;
     
     .form-modal {
@@ -525,6 +652,23 @@
       .form-content {
         flex: 1;
         overflow-y: auto;
+=======
+    padding: 1rem;
+    align-items: flex-start;
+    
+    .form-modal {
+      width: 100%;
+      max-width: none;
+      max-height: calc(100vh - 2rem);
+      padding: 1.5rem 1rem;
+      border-radius: 1rem 1rem 0 0;
+      margin: 0;
+      margin-top: auto;
+    
+      h2 {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+>>>>>>> Stashed changes
       }
       
       .form-section {
@@ -573,6 +717,7 @@
       }
       
       .form-actions {
+<<<<<<< Updated upstream
         padding: 1.5rem 1rem;
         margin-top: auto;
         flex-direction: row;
@@ -585,6 +730,18 @@
           width: 146px;
           height: 39px;
           font-size: 1rem;
+=======
+        padding-top: 1.5rem;
+        margin-top: 1.5rem;
+        flex-direction: column;
+        gap: 0.75rem;
+        
+        button {
+          width: 100%;
+          min-width: auto;
+          padding: 0.875rem 1.5rem;
+          font-size: 0.9rem;
+>>>>>>> Stashed changes
         }
       }
     }

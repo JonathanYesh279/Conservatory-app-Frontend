@@ -73,9 +73,14 @@
 input.is-invalid,
 select.is-invalid,
 textarea.is-invalid {
+<<<<<<< Updated upstream
   border-color: var(--danger) !important;
   background-color: rgba(var(--danger-rgb), 0.05) !important;
   box-shadow: 0 0 0 2px rgba(var(--danger-rgb), 0.25) !important;
+=======
+  border-color: #ff3b30;
+  background-color: rgba(255, 59, 48, 0.05);
+>>>>>>> Stashed changes
 }
 
 input:disabled,
@@ -86,6 +91,7 @@ button:disabled {
   cursor: not-allowed;
 }
 
+<<<<<<< Updated upstream
 /* Ensure all form inputs use consistent base styles */
 .form-group input,
 .form-group select,
@@ -109,6 +115,8 @@ button:disabled {
   }
 }
 
+=======
+>>>>>>> Stashed changes
 /* Fix autocomplete styling to match dark theme */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -157,6 +165,7 @@ input:-moz-autofill {
   }
 }
 
+<<<<<<< Updated upstream
 /* Specific sizing for select fields */
 .form-row.two-columns > .form-group.class-select {
   flex: 0.8;
@@ -177,6 +186,8 @@ input:-moz-autofill {
   }
 }
 
+=======
+>>>>>>> Stashed changes
 /* Checkbox specific styling */
 .form-checkbox {
   display: flex;

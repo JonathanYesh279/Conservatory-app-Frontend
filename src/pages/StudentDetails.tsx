@@ -1,7 +1,10 @@
 // src/pages/StudentDetails.tsx
 import { useStudentDetailsState } from '../hooks/useStudentDetailsState';
 import { RefreshCw, ArrowLeft, User, Music } from 'lucide-react';
+<<<<<<< Updated upstream
 import { useAuth } from '../hooks/useAuth';
+=======
+>>>>>>> Stashed changes
 
 // Import section components
 import { InstrumentsSection } from '../cmps/StudentDetails/sections/InstrumentsSection';
@@ -31,7 +34,10 @@ export function StudentDetails() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+<<<<<<< Updated upstream
     navigateToStudentEdit,
+=======
+>>>>>>> Stashed changes
     teachersData,
     teachersLoading,
     teachersError,
@@ -42,6 +48,7 @@ export function StudentDetails() {
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,
+<<<<<<< Updated upstream
     updateStudentStage,
     isUpdatingStage,
   } = useStudentDetailsState();
@@ -54,6 +61,10 @@ export function StudentDetails() {
     (user.roles.includes('מורה') && student?.teacherIds?.includes(user._id))
   ));
 
+=======
+  } = useStudentDetailsState();
+
+>>>>>>> Stashed changes
   if (isLoading) {
     return (
       <div className='sd-loading-state'>
@@ -136,16 +147,23 @@ export function StudentDetails() {
 
               {/* Main academic content area with all sections */}
               <div className='sd-card-scroll-area'>
+<<<<<<< Updated upstream
                 {/* Use the separate InstrumentsSection component - now editable */}
+=======
+                {/* Use the separate InstrumentsSection component - now read-only */}
+>>>>>>> Stashed changes
                 {student.academicInfo.instrumentProgress?.length > 0 && (
                   <InstrumentsSection
                     student={student}
                     isOpen={openSections.instruments}
                     onToggle={() => toggleSection('instruments')}
                     getStageColor={getStageColor}
+<<<<<<< Updated upstream
                     updateStudentStage={updateStudentStage}
                     isUpdatingStage={isUpdatingStage}
                     canEditStage={canEditStage}
+=======
+>>>>>>> Stashed changes
                   />
                 )}
 
@@ -165,7 +183,14 @@ export function StudentDetails() {
                   student={student}
                   isOpen={openSections.schedule}
                   onToggle={() => toggleSection('schedule')}
+<<<<<<< Updated upstream
                   onEditSchedule={navigateToStudentEdit}
+=======
+                  onEditSchedule={() => {
+                    // Navigate to student edit form
+                    window.location.href = `/students/${student._id}/edit`;
+                  }}
+>>>>>>> Stashed changes
                 />
 
                 <OrchestrasSection

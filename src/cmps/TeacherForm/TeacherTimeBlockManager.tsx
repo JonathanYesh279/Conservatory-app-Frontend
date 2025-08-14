@@ -426,7 +426,10 @@ export function TeacherTimeBlockManager({
           onBlockCreated={handleTimeBlockCreated}
           onCancel={() => setShowCreator(false)}
           initialData={editingTimeBlock ? {
+<<<<<<< Updated upstream
             _id: editingTimeBlock._id,
+=======
+>>>>>>> Stashed changes
             day: editingTimeBlock.day,
             startTime: editingTimeBlock.startTime,
             endTime: editingTimeBlock.endTime,

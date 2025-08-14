@@ -16,11 +16,18 @@ import { Rehearsal, RehearsalFilter } from '../services/rehearsalService';
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { RehearsalList } from '../cmps/RehearsalList';
 import { RehearsalForm } from '../cmps/RehearsalForm';
+<<<<<<< Updated upstream
 import { RehearsalDeleteDialog } from '../cmps/RehearsalDeleteDialog';
 import { useToast } from '../cmps/Toast';
 
 export function RehearsalIndex() {
   const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal, removeRehearsalsByOrchestra } =
+=======
+import { useToast } from '../cmps/Toast';
+
+export function RehearsalIndex() {
+  const { rehearsals, isLoading, error, loadRehearsals, removeRehearsal } =
+>>>>>>> Stashed changes
     useRehearsalStore();
   const { orchestras, loadOrchestras } = useOrchestraStore();
   const { addToast } = useToast();
@@ -39,10 +46,13 @@ export function RehearsalIndex() {
   const [rehearsalToDelete, setRehearsalToDelete] = useState<string | null>(
     null
   );
+<<<<<<< Updated upstream
   
   // State for bulk delete dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRehearsalForDelete, setSelectedRehearsalForDelete] = useState<Rehearsal | null>(null);
+=======
+>>>>>>> Stashed changes
 
   // Filter states
   const [selectedOrchestraId, setSelectedOrchestraId] = useState<string | null>(
@@ -172,6 +182,7 @@ export function RehearsalIndex() {
     setIsConfirmDialogOpen(false);
   };
 
+<<<<<<< Updated upstream
   // Handle opening the delete dialog with options
   const handleRehearsalDeleteWithOptions = (orchestraId: string, rehearsalId: string) => {
     const rehearsal = rehearsals.find(r => r._id === rehearsalId);
@@ -221,6 +232,8 @@ export function RehearsalIndex() {
     }
   };
 
+=======
+>>>>>>> Stashed changes
   // Handle filter changes
   const handleOrchestraChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newOrchestraId = e.target.value || null;
@@ -360,7 +373,11 @@ export function RehearsalIndex() {
             isLoading={isLoading}
             onEdit={canEditRehearsal ? handleEditRehearsal : undefined}
             onView={handleViewRehearsal}
+<<<<<<< Updated upstream
             onRemoveOrchestra={isAdmin ? handleRehearsalDeleteWithOptions : undefined}
+=======
+            onRemove={isAdmin ? handleRemoveRehearsal : undefined}
+>>>>>>> Stashed changes
             orchestras={orchestras}
           />
         )}
@@ -386,6 +403,7 @@ export function RehearsalIndex() {
           type='danger'
         />
 
+<<<<<<< Updated upstream
         {/* Rehearsal Delete Dialog */}
         {isDeleteDialogOpen && selectedRehearsalForDelete && (
           <RehearsalDeleteDialog
@@ -413,6 +431,8 @@ export function RehearsalIndex() {
           />
         )}
 
+=======
+>>>>>>> Stashed changes
         {/* Rehearsal Form Modal */}
         {isFormOpen && (
           <RehearsalForm

@@ -1,6 +1,9 @@
 // src/services/theoryService.ts
 import { httpService } from './httpService';
+<<<<<<< Updated upstream
 import { handleApiError } from '../utils/errorHandler';
+=======
+>>>>>>> Stashed changes
 
 export interface TheoryLesson {
   _id: string;
@@ -179,6 +182,7 @@ export const theoryService = {
     }
 
     console.log('Adding theory lesson with data:', theoryLesson);
+<<<<<<< Updated upstream
     const response = await httpService.post('theory', theoryLesson);
     
     // Handle wrapped response format from backend
@@ -189,6 +193,9 @@ export const theoryService = {
     
     // If response is already unwrapped, return as is
     return response;
+=======
+    return httpService.post('theory', theoryLesson);
+>>>>>>> Stashed changes
   },
 
   // Update an existing theory lesson
@@ -205,6 +212,7 @@ export const theoryService = {
       theoryLessonWithoutId.dayOfWeek = date.getDay();
     }
 
+<<<<<<< Updated upstream
     const response = await httpService.put(`theory/${theoryLessonId}`, theoryLessonWithoutId);
     
     // Handle wrapped response format from backend
@@ -215,6 +223,9 @@ export const theoryService = {
     
     // If response is already unwrapped, return as is
     return response;
+=======
+    return httpService.put(`theory/${theoryLessonId}`, theoryLessonWithoutId);
+>>>>>>> Stashed changes
   },
 
   // Hard delete a theory lesson (permanently removes from database)
@@ -294,6 +305,7 @@ export const theoryService = {
         }
       );
 
+<<<<<<< Updated upstream
       // Handle wrapped response format from backend
       if (response && typeof response === 'object' && 'data' in response) {
         console.log('Backend returned wrapped bulk response:', response);
@@ -312,6 +324,12 @@ export const theoryService = {
       (newError as any).developerMessage = sanitizedError.developerMessage;
       
       throw newError;
+=======
+      return response;
+    } catch (error) {
+      console.error('Error in bulk create:', error);
+      throw error;
+>>>>>>> Stashed changes
     }
   },
 
@@ -320,6 +338,7 @@ export const theoryService = {
     theoryLessonId: string,
     attendance: { present: string[]; absent: string[] }
   ): Promise<TheoryLesson> {
+<<<<<<< Updated upstream
     const response = await httpService.put(`theory/${theoryLessonId}/attendance`, attendance);
     
     // Handle wrapped response format from backend
@@ -330,6 +349,9 @@ export const theoryService = {
     
     // If response is already unwrapped, return as is
     return response;
+=======
+    return httpService.put(`theory/${theoryLessonId}/attendance`, attendance);
+>>>>>>> Stashed changes
   },
 
   async getAttendance(
@@ -340,6 +362,7 @@ export const theoryService = {
 
   // Student enrollment
   async addStudentToTheory(theoryLessonId: string, studentId: string): Promise<TheoryLesson> {
+<<<<<<< Updated upstream
     const response = await httpService.post(`theory/${theoryLessonId}/student`, { studentId });
     
     // Handle wrapped response format from backend
@@ -363,6 +386,13 @@ export const theoryService = {
     
     // If response is already unwrapped, return as is
     return response;
+=======
+    return httpService.post(`theory/${theoryLessonId}/student`, { studentId });
+  },
+
+  async removeStudentFromTheory(theoryLessonId: string, studentId: string): Promise<TheoryLesson> {
+    return httpService.delete(`theory/${theoryLessonId}/student/${studentId}`);
+>>>>>>> Stashed changes
   },
 
   async getStudentTheoryAttendanceStats(studentId: string, category?: string): Promise<any> {

@@ -8,7 +8,10 @@ import {
   Outlet,
 } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+<<<<<<< Updated upstream
 import { AcceptInvitationPage } from './pages/AcceptInvitationPage';
+=======
+>>>>>>> Stashed changes
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useAuthStore } from './store/authStore';
 import { useTeacherStore } from './store/teacherStore'; // Import teacher store
@@ -17,7 +20,10 @@ import { EventRegistrationForm } from './cmps/EventRegistrationForm';
 import { useEffect } from 'react';
 import { ToastProvider } from './cmps/Toast';
 import ToastTest from './cmps/Toast/ToastTest';
+<<<<<<< Updated upstream
 import './utils/debugUtils'; // Import debug utils for development
+=======
+>>>>>>> Stashed changes
 
 import { Dashboard } from './pages/Dashboard.tsx';
 import { StudentIndex } from './pages/StudentIndex.tsx';
@@ -30,8 +36,11 @@ import { RehearsalIndex } from './pages/RehearsalIndex.tsx';
 import { RehearsalDetails } from './pages/RehearsalDetails.tsx';
 import { TheoryIndex } from './pages/TheoryIndex.tsx';
 import { TheoryDetails } from './pages/TheoryDetails.tsx';
+<<<<<<< Updated upstream
 import { UserProfile } from './pages/UserProfile.tsx';
 import { ResetPassword } from './pages/ResetPassword.tsx';
+=======
+>>>>>>> Stashed changes
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -47,7 +56,10 @@ const queryClient = new QueryClient({
 function ProtectedRoute() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const isLoading = useAuthStore((state) => state.isLoading);
+<<<<<<< Updated upstream
   const isInitialized = useAuthStore((state) => state.isInitialized);
+=======
+>>>>>>> Stashed changes
   const loadBasicTeacherData = useTeacherStore(
     (state) => state.loadBasicTeacherData
   );
@@ -59,6 +71,7 @@ function ProtectedRoute() {
     }
   }, [isAuthenticated, loadBasicTeacherData]);
 
+<<<<<<< Updated upstream
   // Show loading while validating session
   if (!isInitialized || isLoading) {
     return (
@@ -72,6 +85,10 @@ function ProtectedRoute() {
         Validating session...
       </div>
     );
+=======
+  if (isLoading) {
+    return <div>Loading...</div>;
+>>>>>>> Stashed changes
   }
 
   if (!isAuthenticated) {
@@ -96,8 +113,11 @@ function App() {
             <Routes>
               {/* Public routes */}
               <Route path='/login' element={<LoginPage />} />
+<<<<<<< Updated upstream
               <Route path='/reset-password/:token' element={<ResetPassword />} />
               <Route path='/accept-invitation/:token' element={<AcceptInvitationPage />} />
+=======
+>>>>>>> Stashed changes
               <Route
                 path='/event-registration'
                 element={<EventRegistrationForm />}
@@ -110,7 +130,10 @@ function App() {
             {/* Protected routes */}
             <Route element={<ProtectedRoute />}>
               <Route path='/dashboard' element={<Dashboard />} />
+<<<<<<< Updated upstream
               <Route path='/profile' element={<UserProfile />} />
+=======
+>>>>>>> Stashed changes
 
               {/* Student routes */}
               <Route path='/students' element={<StudentIndex />}>

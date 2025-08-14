@@ -3,7 +3,10 @@ import {
   User, Calendar, Clock, MapPin, CheckCircle, AlertCircle, 
   Trash2, Plus, Search, Filter, Star, RotateCcw 
 } from 'lucide-react';
+<<<<<<< Updated upstream
 import { SearchableTeacherSelect } from '../SearchableTeacherSelect';
+=======
+>>>>>>> Stashed changes
 import { useFormikContext } from 'formik';
 import { StudentFormData } from '../../constants/formConstants';
 import { useTeacherStore } from '../../store/teacherStore';
@@ -79,19 +82,32 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     return `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
   };
 
+<<<<<<< Updated upstream
   // Initialize lesson assignments from form data with improved persistence
   useEffect(() => {
+=======
+  // Initialize lesson assignments from form data
+  useEffect(() => {
+    console.log('🔄 StudentLessonScheduler: values.teacherAssignments changed:', values.teacherAssignments);
+    console.log('🔄 StudentLessonScheduler: values.teacherIds:', values.teacherIds);
+    
+>>>>>>> Stashed changes
     if (values.teacherAssignments && values.teacherAssignments.length > 0) {
       const assignments: LessonAssignment[] = values.teacherAssignments.map((assignment, index) => {
         const startTime = assignment.time || '';
         const duration = (assignment.duration as LessonDurationMinutes) || 60;
         const endTime = calculateEndTime(startTime, duration);
         
+<<<<<<< Updated upstream
         // Create unique ID using index, teacherId, day, and time to ensure uniqueness
         const uniqueId = `${assignment.teacherId}-${assignment.day}-${assignment.time}-${index}`;
         
         return {
           id: uniqueId,
+=======
+        return {
+          id: assignment.scheduleSlotId || `assignment-${index}`,
+>>>>>>> Stashed changes
           teacherId: assignment.teacherId,
           teacherName: getTeacherName(assignment.teacherId),
           instrument: getTeacherInstrument(assignment.teacherId),
@@ -105,6 +121,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
           notes: assignment.notes
         };
       });
+<<<<<<< Updated upstream
       
       // Only update if assignments actually changed to prevent loops
       if (JSON.stringify(assignments) !== JSON.stringify(lessonAssignments)) {
@@ -128,6 +145,16 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     console.log('👨‍🏫 Teacher IDs in form:', values.teacherIds?.length || 0);
   }, [values.teacherAssignments, lessonAssignments, values.teacherIds]);
 
+=======
+      console.log('🔄 StudentLessonScheduler: Setting lesson assignments from form:', assignments);
+      setLessonAssignments(assignments);
+    } else {
+      console.log('🔄 StudentLessonScheduler: No teacherAssignments in form, clearing local assignments');
+      setLessonAssignments([]);
+    }
+  }, [values.teacherAssignments]);
+
+>>>>>>> Stashed changes
   // Get teacher name by ID
   const getTeacherName = (teacherId: string): string => {
     if (teacherId === 'new-teacher' && newTeacherInfo) {
@@ -155,11 +182,24 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Handle slot selection from AvailableSlotsFinder
   const handleSlotSelect = (slot: AvailableSlot) => {
+<<<<<<< Updated upstream
     setSelectedSlot(slot);
     
     // Check if the slot has the required properties
     if (!slot.timeBlockId || !slot.possibleStartTime) {
       console.warn('⚠️ Selected slot is missing required properties:', {
+=======
+    console.log('📍 StudentLessonScheduler.handleSlotSelect called with slot:', slot);
+    console.log('📍 Available slot properties:', Object.keys(slot));
+    console.log('📍 possibleStartTime:', slot.possibleStartTime, 'possibleEndTime:', slot.possibleEndTime);
+    console.log('📍 Previous selectedSlot:', selectedSlot);
+    setSelectedSlot(slot);
+    console.log('📍 selectedSlot state will be updated to:', slot);
+    
+    // Check if the slot has the required properties
+    if (!slot.timeBlockId || !slot.possibleStartTime) {
+      console.warn('⚠️ Selected slot is missing timeBlockId or time properties:', {
+>>>>>>> Stashed changes
         timeBlockId: slot.timeBlockId,
         possibleStartTime: slot.possibleStartTime
       });
@@ -168,15 +208,34 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Add lesson assignment
   const handleAddLesson = () => {
+<<<<<<< Updated upstream
+=======
+    console.log('🎯 handleAddLesson called!');
+    console.log('selectedSlot:', selectedSlot);
+    console.log('selectedTeacherId:', selectedTeacherId);
+    
+>>>>>>> Stashed changes
     if (!selectedSlot || !selectedTeacherId) {
       console.log('❌ Missing selectedSlot or selectedTeacherId');
       return;
     }
 
     // Get the actual start and end times from the slot
+<<<<<<< Updated upstream
     // Handle different property names for time
     const startTime = selectedSlot.possibleStartTime || (selectedSlot as any).startTime || (selectedSlot as any).lessonStartTime;
     const endTime = selectedSlot.possibleEndTime || (selectedSlot as any).endTime || (selectedSlot as any).lessonEndTime;
+=======
+    const startTime = selectedSlot.possibleStartTime;
+    const endTime = selectedSlot.possibleEndTime;
+    
+    console.log('🕐 Time extraction:', {
+      possibleStartTime: selectedSlot.possibleStartTime,
+      finalStartTime: startTime,
+      possibleEndTime: selectedSlot.possibleEndTime,
+      finalEndTime: endTime
+    });
+>>>>>>> Stashed changes
 
     if (!startTime) {
       console.error('❌ No start time available in slot:', selectedSlot);
@@ -185,7 +244,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     }
 
     const newAssignment: LessonAssignment = {
+<<<<<<< Updated upstream
       id: `${selectedTeacherId}-${selectedSlot.day}-${startTime}-${Date.now()}`,
+=======
+      id: `lesson-${Date.now()}`,
+>>>>>>> Stashed changes
       teacherId: selectedTeacherId,
       teacherName: getTeacherName(selectedTeacherId),
       instrument: getTeacherInstrument(selectedTeacherId),
@@ -200,6 +263,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
       notes: ''
     };
 
+<<<<<<< Updated upstream
+=======
+    console.log('📝 Created newAssignment:', newAssignment);
+
+>>>>>>> Stashed changes
     const updatedAssignments = [...lessonAssignments, newAssignment];
     setLessonAssignments(updatedAssignments);
 
@@ -215,9 +283,17 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
         notes: assignment.notes || ''
       }));
 
+<<<<<<< Updated upstream
     try {
       setFieldValue('teacherAssignments', formAssignments);
       console.log('✅ Added lesson assignment successfully');
+=======
+    console.log('📋 Form assignments to set:', formAssignments);
+
+    try {
+      setFieldValue('teacherAssignments', formAssignments);
+      console.log('✅ setFieldValue(teacherAssignments) called successfully');
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('❌ setFieldValue(teacherAssignments) failed:', error);
     }
@@ -226,10 +302,15 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     const teacherIds = [...new Set(updatedAssignments.map(a => a.teacherId))];
     try {
       setFieldValue('teacherIds', teacherIds);
+<<<<<<< Updated upstream
+=======
+      console.log('✅ setFieldValue(teacherIds) called successfully');
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('❌ setFieldValue(teacherIds) failed:', error);
     }
 
+<<<<<<< Updated upstream
     // Validate form data persistence without setTimeout to avoid race conditions
     const validateFormData = () => {
       if (values.teacherAssignments.length === 0 && formAssignments.length > 0) {
@@ -244,6 +325,17 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     
     // Backup validation after a short delay
     setTimeout(validateFormData, 50);
+=======
+    console.log('✅ Updated form values - teacherAssignments:', formAssignments.length, 'items');
+    console.log('✅ Updated teacherIds:', teacherIds);
+
+    // Check current form values after update
+    setTimeout(() => {
+      console.log('🔍 Current form values.teacherAssignments:', values.teacherAssignments);
+      console.log('🔍 Current form values.teacherIds:', values.teacherIds);
+      console.log('🔍 Local lessonAssignments state:', lessonAssignments);
+    }, 100);
+>>>>>>> Stashed changes
 
     // Reset selection
     setSelectedSlot(null);
@@ -251,10 +343,16 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     setShowSlotFinder(false);
     setShowTeacherSelect(false);
     
+<<<<<<< Updated upstream
     // Trigger refresh to update conflict detection
     setTimeout(() => {
       setRefreshTrigger(prev => prev + 1);
     }, 200);
+=======
+    // CRITICAL FIX: Trigger refresh of available slots to update conflict detection
+    setRefreshTrigger(prev => prev + 1);
+    console.log('🔄 Triggered slot refresh to update conflict detection');
+>>>>>>> Stashed changes
   };
 
   // Remove lesson assignment
@@ -265,6 +363,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
 
   // Confirm removal
   const confirmRemoveLesson = () => {
+<<<<<<< Updated upstream
     console.log('🗑️ Removing assignment with ID:', assignmentToRemove);
     console.log('📋 Current assignments before removal:', lessonAssignments.map(a => ({ id: a.id, teacher: a.teacherName, time: a.startTime })));
     
@@ -309,11 +408,33 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
     // Update teacherIds - only include teachers that still have assignments
     const teacherIds = [...new Set(updatedFormAssignments.map(a => a.teacherId))];
     console.log('👨‍🏫 Updated teacher IDs:', teacherIds);
+=======
+    const updatedAssignments = lessonAssignments.filter(a => a.id !== assignmentToRemove);
+    setLessonAssignments(updatedAssignments);
+
+    // Update form data - ensure all required fields are present
+    const formAssignments = updatedAssignments
+      .filter(assignment => assignment.startTime) // Only include assignments with valid start times
+      .map(assignment => ({
+        teacherId: assignment.teacherId,
+        scheduleSlotId: assignment.timeBlockId,
+        day: assignment.day,
+        time: assignment.startTime,
+        duration: assignment.duration || 60,
+        notes: assignment.notes || ''
+      }));
+
+    setFieldValue('teacherAssignments', formAssignments);
+
+    // Update teacherIds
+    const teacherIds = [...new Set(updatedAssignments.map(a => a.teacherId))];
+>>>>>>> Stashed changes
     setFieldValue('teacherIds', teacherIds);
 
     setConfirmDialogOpen(false);
     setAssignmentToRemove('');
     
+<<<<<<< Updated upstream
     console.log('🗑️ Lesson removed. Updated assignments:', updatedFormAssignments.length);
     console.log('🗑️ Updated teacherIds:', teacherIds);
     
@@ -322,6 +443,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
       setRefreshTrigger(prev => prev + 1);
       console.log('🔄 Triggered delayed slot refresh after lesson removal');
     }, 500); // Give time for form to auto-save or update
+=======
+    // CRITICAL FIX: Trigger refresh of available slots to update conflict detection
+    setRefreshTrigger(prev => prev + 1);
+    console.log('🔄 Triggered slot refresh after lesson removal');
+>>>>>>> Stashed changes
   };
 
   // Group assignments by teacher
@@ -379,7 +505,11 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
                 </div>
                 
                 <div className="lessons-list">
+<<<<<<< Updated upstream
                   {assignments.map((assignment, assignmentIndex) => (
+=======
+                  {assignments.map((assignment) => (
+>>>>>>> Stashed changes
                     <div key={assignment.id} className={`lesson-card ${assignment.status}`}>
                       <div className="lesson-main-info">
                         <div className="lesson-time">
@@ -461,6 +591,7 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
               <User size={16} />
               מורה
             </label>
+<<<<<<< Updated upstream
             <SearchableTeacherSelect
               teachers={teachers}
               selectedTeacherId={selectedTeacherId}
@@ -471,6 +602,35 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
               placeholder="בחר מורה"
               className="teacher-select-input"
             />
+=======
+            <select
+              id="teacherSelect"
+              className="form-select"
+              value={selectedTeacherId}
+              onChange={(e) => handleTeacherSelect(e.target.value)}
+              disabled={isLoadingTeachers || isSubmitting}
+            >
+              <option value="">בחר מורה</option>
+              {newTeacherInfo && (
+                <option value="new-teacher">
+                  {newTeacherInfo.fullName}
+                  {newTeacherInfo.instrument && ` (${newTeacherInfo.instrument})`}
+                  {' (מורה חדש)'}
+                </option>
+              )}
+              {teachers
+                .filter(teacher => teacher.isActive)
+                .map((teacher) => (
+                <option key={teacher._id} value={teacher._id}>
+                  {teacher.personalInfo.fullName}
+                  {teacher.professionalInfo?.instrument && ` (${teacher.professionalInfo.instrument})`}
+                </option>
+              ))}
+            </select>
+            {isLoadingTeachers && (
+              <div className="loading-indicator">טוען מורים...</div>
+            )}
+>>>>>>> Stashed changes
           </div>
 
           <div className="duration-selection">
@@ -540,12 +700,15 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
             selectedSlot={selectedSlot}
             refreshTrigger={refreshTrigger}
             showAdvancedFilters={showAdvancedFilters}
+<<<<<<< Updated upstream
             currentStudentAssignments={lessonAssignments.map(assignment => ({
               teacherId: assignment.teacherId,
               day: assignment.day,
               time: assignment.startTime,
               duration: assignment.duration
             }))}
+=======
+>>>>>>> Stashed changes
             key={`${selectedTeacherId}-${selectedDuration}-${refreshTrigger}`}
           />
           
@@ -563,11 +726,15 @@ export function StudentLessonScheduler({ newTeacherInfo }: StudentLessonSchedule
                 <div className="preview-item">
                   <Clock size={14} />
                   <span>
+<<<<<<< Updated upstream
                     {(() => {
                       const startTime = selectedSlot.possibleStartTime || (selectedSlot as any).startTime || (selectedSlot as any).lessonStartTime;
                       const endTime = selectedSlot.possibleEndTime || (selectedSlot as any).endTime || (selectedSlot as any).lessonEndTime || (startTime ? calculateEndTime(startTime, selectedSlot.duration) : '');
                       return startTime && endTime ? `${startTime} - ${endTime}` : 'זמן לא זמין';
                     })()}
+=======
+                    {selectedSlot.possibleStartTime} - {selectedSlot.possibleEndTime}
+>>>>>>> Stashed changes
                   </span>
                 </div>
                 <div className="preview-item">

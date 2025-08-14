@@ -4,12 +4,17 @@ import { teacherService, Teacher } from '../services/teacherService'
 import { Orchestra, orchestraService } from '../services/orchestraService'
 import { studentService } from '../services/studentService'
 import { theoryService, TheoryLesson } from '../services/theoryService'
+<<<<<<< Updated upstream
 import { useRehearsalStore } from '../store/rehearsalStore'
 import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
 import { TeacherTimeBlockManager } from '../cmps/TeacherForm/TeacherTimeBlockManager'
 import { TeacherTimeBlockView } from '../cmps/TimeBlock/TeacherTimeBlockView'
 import { useAuth } from '../hooks/useAuth'
 import { AuthorizationManager } from '../utils/authorization'
+=======
+import { TeacherTheoryLessonsSection } from '../cmps/TeacherDetails'
+import { TeacherTimeBlockManager } from '../cmps/TeacherForm/TeacherTimeBlockManager'
+>>>>>>> Stashed changes
 import {
   User,
   Calendar,
@@ -55,6 +60,7 @@ export function TeacherDetails() {
   const [theoryLessons, setTheoryLessons] = useState<TheoryLesson[]>([]);
   const [theoryLessonsLoading, setTheoryLessonsLoading] = useState(false);
 
+<<<<<<< Updated upstream
   // Rehearsal store for getting orchestra rehearsal times
   const { rehearsals, loadRehearsals } = useRehearsalStore();
 
@@ -62,6 +68,8 @@ export function TeacherDetails() {
   const { user, isAuthenticated } = useAuth();
   const authManager = new AuthorizationManager({ user, isAuthenticated });
 
+=======
+>>>>>>> Stashed changes
   // Collapsible sections state
   const [openSections, setOpenSections] = useState({
     students: false,
@@ -101,9 +109,12 @@ export function TeacherDetails() {
 
       // Load related data if teacher data exists
       if (teacherData) {
+<<<<<<< Updated upstream
         // Load rehearsals for orchestras
         await loadRehearsals();
         
+=======
+>>>>>>> Stashed changes
         // Load theory lessons for this teacher
         await loadTheoryLessons(id);
 
@@ -251,6 +262,7 @@ export function TeacherDetails() {
     }
   };
 
+<<<<<<< Updated upstream
   // Helper function to get rehearsal times for an orchestra
   const getOrchestraRehearsalTimes = (orchestraId: string) => {
     // Find rehearsals for this orchestra
@@ -325,6 +337,8 @@ export function TeacherDetails() {
     return sortedLessons[0];
   };
 
+=======
+>>>>>>> Stashed changes
   // Load orchestra details
   const loadOrchestras = async (orchestraIds: string[]) => {
     try {
@@ -540,6 +554,7 @@ export function TeacherDetails() {
                   {openSections.students && (
                     <div className='section-content'>
                       {students.length > 0 ? (
+<<<<<<< Updated upstream
                         <div className='compact-students-overview'>
                           {students.map((student) => {
                             const assignments = student.assignments || [];
@@ -600,6 +615,32 @@ export function TeacherDetails() {
                               </div>
                             );
                           })}
+=======
+                        <div className='members-list'>
+                          <ul className='members-items'>
+                            {students.map((student) => (
+                              <li 
+                                key={student._id} 
+                                className='member-item clickable'
+                                onClick={() => navigateToStudent(student._id)}
+                              >
+                                <div className='member-info'>
+                                  <div className='member-avatar'>
+                                    {student.fullName.charAt(0)}
+                                  </div>
+                                  <div className='member-details'>
+                                    <div className='member-name'>
+                                      {student.fullName}
+                                    </div>
+                                    <div className='member-instrument'>
+                                      {student.instrument}
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+>>>>>>> Stashed changes
                         </div>
                       ) : teacher.teaching?.studentIds?.length ? (
                         <div className='loading-section'>
@@ -653,6 +694,7 @@ export function TeacherDetails() {
                             </div>
                           ) : orchestras.length > 0 ? (
                             <div className='orchestras-grid'>
+<<<<<<< Updated upstream
                               {orchestras.map((orchestra) => {
                                 const rehearsalTimes = getOrchestraRehearsalTimes(orchestra._id);
                                 return (
@@ -697,6 +739,19 @@ export function TeacherDetails() {
                                   </div>
                                 );
                               })}
+=======
+                              {orchestras.map((orchestra) => (
+                                <div
+                                  key={orchestra._id}
+                                  className='orchestra-card clickable'
+                                  onClick={() =>
+                                    navigateToOrchestra(orchestra._id)
+                                  }
+                                >
+                                  <span>{orchestra.name}</span>
+                                </div>
+                              ))}
+>>>>>>> Stashed changes
                             </div>
                           ) : (
                             <div className='no-orchestra-message'>
@@ -739,6 +794,7 @@ export function TeacherDetails() {
 
                   {openSections.schedule && (
                     <div className='section-content'>
+<<<<<<< Updated upstream
                       {authManager.canManageTeacherSchedule(teacher) ? (
                         <TeacherTimeBlockManager
                           teacherId={teacher._id}
@@ -758,6 +814,15 @@ export function TeacherDetails() {
                           />
                         </div>
                       )}
+=======
+                      <TeacherTimeBlockManager
+                        teacherId={teacher._id}
+                        teacherName={teacher.personalInfo?.fullName || 'מורה לא ידוע'}
+                        onTimeBlockChange={() => {
+                          // Empty callback to prevent infinite loops
+                        }}
+                      />
+>>>>>>> Stashed changes
                     </div>
                   )}
                 </div>

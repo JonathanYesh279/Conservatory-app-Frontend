@@ -1,9 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { BookOpen, Calendar, Music, Users, GraduationCap } from 'lucide-react'
+<<<<<<< Updated upstream
+=======
+import { useNavbar } from '../context/NavbarContext'
+>>>>>>> Stashed changes
 
 export function BottomNavbar() {
   const location = useLocation()
   const path = location.pathname
+<<<<<<< Updated upstream
+=======
+  const { isVisible } = useNavbar()
+>>>>>>> Stashed changes
   
   // Define navigation items
   const navItems = [
@@ -35,7 +43,13 @@ export function BottomNavbar() {
   ]
 
   return (
+<<<<<<< Updated upstream
     <nav className="bottom-nav visible">
+=======
+    <nav 
+      className={`bottom-nav mounted ${isVisible ? 'scroll-up' : 'scroll-down'}`}
+    >
+>>>>>>> Stashed changes
       <div className='nav-items'>
         {navItems.map((item) => {
           const isActive =

@@ -7,6 +7,10 @@
   padding: 0;
   gap: 1.5rem;
   margin-top: 1.5rem;
+<<<<<<< Updated upstream
+=======
+  padding-bottom: 85px;
+>>>>>>> Stashed changes
 }
 
 // Empty state and loading state
@@ -69,9 +73,15 @@
   }
 }
 
+<<<<<<< Updated upstream
 @media (min-width: 481px) and (max-width: 1024px) {
   .student-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+=======
+@media (min-width: 768px) and (max-width: 1024px) {
+  .student-grid {
+    grid-template-columns: repeat(2, 1fr);
+>>>>>>> Stashed changes
   }
 }

@@ -1,5 +1,9 @@
 // src/cmps/StudentDetails/sections/TheoryLessonsSection.tsx
+<<<<<<< Updated upstream
 import { ChevronDown, ChevronUp, BookOpen, RefreshCw, User, Clock, MapPin } from 'lucide-react';
+=======
+import { ChevronDown, ChevronUp, BookOpen, RefreshCw } from 'lucide-react';
+>>>>>>> Stashed changes
 import { Student } from '../../../services/studentService';
 import { TheoryLesson } from '../../../services/theoryService';
 import { useEffect, useState, useRef } from 'react';
@@ -124,6 +128,7 @@ export function TheoryLessonsSection({
       >
         <BookOpen size={16} />
         <span>
+<<<<<<< Updated upstream
           שיעורי העשרה {hasTheoryLessons ? (() => {
             // Count unique theory lesson groups
             const uniqueGroups = theoryLessons.reduce((groups, lesson) => {
@@ -133,6 +138,9 @@ export function TheoryLessonsSection({
             }, new Set());
             return `(${uniqueGroups.size})`;
           })() : ''}
+=======
+          שיעורי העשרה {hasTheoryLessons ? `(${studentTheoryLessonIds.length})` : ''}
+>>>>>>> Stashed changes
         </span>
         {isOpen ? (
           <ChevronUp size={18} className='sd-toggle-icon' />
@@ -165,6 +173,7 @@ export function TheoryLessonsSection({
               ))}
             </div>
           ) : (
+<<<<<<< Updated upstream
             // Use consolidated theory lesson groups with swiper structure
             <div className='sd-theory-lessons-swiper'>
               {(() => {
@@ -231,6 +240,42 @@ export function TheoryLessonsSection({
                   </div>
                 ));
               })()}
+=======
+            // Use fully loaded theory lessons data
+            <div className='sd-theory-lessons-grid'>
+              {theoryLessons.map((theoryLesson) => (
+                <div
+                  key={theoryLesson._id}
+                  className='sd-theory-lesson-card clickable'
+                  onClick={() => onTheoryLessonClick(theoryLesson._id)}
+                >
+                  <div className="sd-theory-lesson-header">
+                    <BookOpen size={20} />
+                    <span className="sd-theory-lesson-category">{theoryLesson.category}</span>
+                  </div>
+                  
+                  <div className="sd-theory-lesson-details">
+                    {theoryLesson.teacherId && (
+                      <div className="sd-theory-lesson-teacher">
+                        <span>מורה: {teacherNames[theoryLesson.teacherId] || 'לא ידוע'}</span>
+                      </div>
+                    )}
+                    
+                    {theoryLesson.dayOfWeek !== undefined && theoryLesson.startTime && theoryLesson.endTime && (
+                      <div className="sd-theory-lesson-schedule">
+                        <span>{formatTimeDisplay(theoryLesson.dayOfWeek, theoryLesson.startTime, theoryLesson.endTime)}</span>
+                      </div>
+                    )}
+                    
+                    {theoryLesson.location && (
+                      <div className="sd-theory-lesson-location">
+                        <span>מיקום: {theoryLesson.location}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+>>>>>>> Stashed changes
             </div>
           )}
         </div>

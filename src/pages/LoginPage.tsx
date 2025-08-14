@@ -1,19 +1,31 @@
 import { useState, FormEvent } from 'react'
+<<<<<<< Updated upstream
 import { Mail, Lock, ArrowLeft } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { Navigate } from 'react-router-dom'
 import { passwordService } from '../services/passwordService'
 import { sanitizeError } from '../utils/errorHandler'
+=======
+import { Mail, Lock, Sun, Moon } from 'lucide-react'
+import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/useTheme'
+import { Navigate } from 'react-router-dom'
+>>>>>>> Stashed changes
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+<<<<<<< Updated upstream
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('')
   const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false)
   const [forgotPasswordError, setForgotPasswordError] = useState<string | null>(null)
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState<string | null>(null)
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
+=======
+  const { login, isAuthenticated, isLoading, error, clearError } = useAuth()
+  const { theme, toggleTheme } = useTheme()
+>>>>>>> Stashed changes
 
   // Redirect if already authenticated
   if (isAuthenticated) {
@@ -37,6 +49,7 @@ export function LoginPage() {
     clearError()
     setPassword(ev.target.value) 
   }
+<<<<<<< Updated upstream
 
   // Handle forgot password
   async function handleForgotPassword(ev: FormEvent) {
@@ -184,6 +197,71 @@ export function LoginPage() {
             </form>
           </>
         )}
+=======
+  
+  return (
+    <div className='login-page'>
+      <div className='login-form'>
+        <button 
+          className='theme-toggle' 
+          onClick={toggleTheme}
+          aria-label='Toggle theme'
+        >
+          {theme === 'dark' ? (
+            <Sun className='icon' />
+          ) : (
+            <Moon className='icon' />
+          )}
+        </button>
+        
+        <h1>התחברות</h1>
+
+        {error && <div className="error-message">{error}</div>}
+
+        <form className='form-section' onSubmit={handleSubmit}>
+          <div className='input-container'>
+            <input
+              type='email'
+              id='email'
+              className={email ? 'has-value' : ''}
+              placeholder=''
+              autoComplete='off'
+              required
+              value={email}
+              onChange={handleEmailChange}
+            />
+            <label htmlFor='email'>מייל</label>
+            <Mail className='input-icon' />
+          </div>
+
+          <div className='input-container'>
+            <input
+              type='password'
+              id='password'
+              className={password ? 'has-value' : ''}
+              placeholder=''
+              required
+              value={password}
+              onChange={handlePasswordChange}
+            />
+            <label htmlFor='password'>סיסמה</label>
+            <Lock className='input-icon' />
+          </div>
+
+          <button
+            className='btn'
+            type='submit'
+            disabled={isLoading}
+          >
+            {isLoading ? 'מתחבר...' : 'התחבר'}
+          </button>
+
+          <div className='forgot-password'>
+            <p>שכחת סיסמה?</p>
+            <a href='#'>לחץ כאן</a>
+          </div>
+        </form>
+>>>>>>> Stashed changes
       </div>
     </div>
   )

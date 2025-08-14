@@ -16,7 +16,11 @@ import { useToast } from '../cmps/Toast';
 export function TheoryIndex() {
   const navigate = useNavigate();
   const location = useLocation();
+<<<<<<< Updated upstream
   const { addToast, showError, showSuccess } = useToast();
+=======
+  const { addToast } = useToast();
+>>>>>>> Stashed changes
 
   const {
     theoryLessons,
@@ -55,13 +59,23 @@ export function TheoryIndex() {
       const savedTheoryLesson = await saveTheoryLesson(theoryLessonData);
       
       // Show success toast
+<<<<<<< Updated upstream
       showSuccess(theoryLessonData._id 
         ? `שיעור התאוריה עודכן בהצלחה`
         : `שיעור התאוריה נוסף בהצלחה`);
+=======
+      addToast({
+        type: 'success',
+        message: theoryLessonData._id 
+          ? `שיעור התאוריה עודכן בהצלחה`
+          : `שיעור התאוריה נוסף בהצלחה`,
+      });
+>>>>>>> Stashed changes
       
       setIsFormOpen(false);
       setEditingTheoryLesson(null);
       
+<<<<<<< Updated upstream
       // Navigate to the theory lesson details only if we have a valid ID
       if (savedTheoryLesson && savedTheoryLesson._id) {
         if (location.pathname !== `/theory/${savedTheoryLesson._id}`) {
@@ -71,14 +85,27 @@ export function TheoryIndex() {
         console.warn('Theory lesson saved but no ID returned, staying on index page');
         // Reload the theory lessons to show the newly created one
         loadTheoryLessons();
+=======
+      // Navigate to the theory lesson details if not already there
+      if (location.pathname !== `/theory/${savedTheoryLesson._id}`) {
+        navigate(`/theory/${savedTheoryLesson._id}`);
+>>>>>>> Stashed changes
       }
       
       return savedTheoryLesson;
     } catch (err) {
       console.error('Error saving theory lesson:', err);
       
+<<<<<<< Updated upstream
       // Show error toast with centralized error handling
       showError(err as Error);
+=======
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: 'אירעה שגיאה בשמירת שיעור התאוריה',
+      });
+>>>>>>> Stashed changes
       
       throw err;
     }
@@ -101,6 +128,7 @@ export function TheoryIndex() {
       console.log('Bulk creation result:', result);
       
       // Show success toast
+<<<<<<< Updated upstream
       if (result && result.insertedCount > 0) {
         showSuccess(`נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`);
       } else {
@@ -116,6 +144,22 @@ export function TheoryIndex() {
       
       // Show error toast with centralized error handling
       showError(err as Error);
+=======
+      addToast({
+        type: 'success',
+        message: `נוצרו ${result.insertedCount} שיעורי תאוריה בהצלחה`,
+      });
+      
+      setIsFormOpen(false);
+    } catch (err) {
+      console.error('Error bulk creating theory lessons:', err);
+      
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: err instanceof Error ? err.message : 'אירעה שגיאה ביצירת שיעורי התאוריה',
+      });
+>>>>>>> Stashed changes
       
       throw err;
     }
@@ -127,7 +171,14 @@ export function TheoryIndex() {
       await removeTheoryLesson(theoryLessonId);
       
       // Show success toast
+<<<<<<< Updated upstream
       showSuccess('שיעור התאוריה נמחק לצמיתות בהצלחה');
+=======
+      addToast({
+        type: 'success',
+        message: 'שיעור התאוריה נמחק לצמיתות בהצלחה',
+      });
+>>>>>>> Stashed changes
       
       // Navigate back to the index if we were on the deleted theory lesson
       if (location.pathname.includes(theoryLessonId)) {
@@ -136,8 +187,16 @@ export function TheoryIndex() {
     } catch (err) {
       console.error('Error deleting theory lesson:', err);
       
+<<<<<<< Updated upstream
       // Show error toast with centralized error handling
       showError(err as Error);
+=======
+      // Show error toast
+      addToast({
+        type: 'danger',
+        message: 'אירעה שגיאה במחיקת שיעור התאוריה',
+      });
+>>>>>>> Stashed changes
     } finally {
       setConfirmDelete({ isOpen: false, theoryLessonId: null });
     }

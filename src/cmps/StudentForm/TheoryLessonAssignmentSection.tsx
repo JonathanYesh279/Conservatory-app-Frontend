@@ -1,11 +1,17 @@
 // src/cmps/StudentForm/TheoryLessonAssignmentSection.tsx
 import { useState, useEffect } from 'react';
 import { useFormikContext } from 'formik';
+<<<<<<< Updated upstream
 import { BookOpen, Trash2, User } from 'lucide-react';
 import { StudentFormData } from '../../constants/formConstants';
 import { useTheoryStore } from '../../store/theoryStore';
 import { useTeacherStore } from '../../store/teacherStore';
 import { useNavigate } from 'react-router-dom';
+=======
+import { BookOpen, Trash2 } from 'lucide-react';
+import { StudentFormData } from '../../constants/formConstants';
+import { useTheoryStore } from '../../store/theoryStore';
+>>>>>>> Stashed changes
 
 export function TheoryLessonAssignmentSection() {
   // Get Formik context for form operations
@@ -14,6 +20,7 @@ export function TheoryLessonAssignmentSection() {
   // Get theory lessons from store
   const { theoryLessons, loadTheoryLessons, isLoading: isLoadingTheoryLessons } = useTheoryStore();
   
+<<<<<<< Updated upstream
   // Get teachers from store
   const { teachers, loadTeachers } = useTeacherStore();
   
@@ -62,12 +69,25 @@ export function TheoryLessonAssignmentSection() {
 
   // Group consolidated lessons by category for better organization in the dropdown
   const theoryLessonsByCategory = Object.values(consolidatedTheoryLessons).reduce((acc, lesson) => {
+=======
+  // Local state for theory lesson selection
+  const [selectedTheoryLessonId, setSelectedTheoryLessonId] = useState('');
+  
+  // Load theory lessons if needed
+  useEffect(() => {
+    loadTheoryLessons();
+  }, [loadTheoryLessons]);
+  
+  // Group theory lessons by category for better organization in the dropdown
+  const theoryLessonsByCategory = theoryLessons.reduce((acc, lesson) => {
+>>>>>>> Stashed changes
     const category = lesson.category || 'אחר';
     if (!acc[category]) {
       acc[category] = [];
     }
     acc[category].push(lesson);
     return acc;
+<<<<<<< Updated upstream
   }, {} as Record<string, any[]>);
   
   // Get assigned theory lessons details by ID, grouped by recurring pattern
@@ -100,6 +120,20 @@ export function TheoryLessonAssignmentSection() {
   }, {} as Record<string, any>);
   
   const assignedTheoryLessons = Object.values(assignedTheoryLessonsMap);
+=======
+  }, {} as Record<string, typeof theoryLessons>);
+  
+  // Get assigned theory lessons details by ID
+  const assignedTheoryLessons = values.theoryLessonAssignments.map((assignment) => {
+    const theoryLesson = theoryLessons.find((t) => t._id === assignment.theoryLessonId);
+    return {
+      id: assignment.theoryLessonId,
+      category: theoryLesson?.category || 'שיעור העשרה לא ידוע',
+      dayTime: theoryLesson ? formatDayTime(theoryLesson.dayOfWeek, theoryLesson.startTime, theoryLesson.endTime) : '',
+      location: theoryLesson?.location || '',
+    };
+  });
+>>>>>>> Stashed changes
   
   // Format day and time for display
   function formatDayTime(dayOfWeek?: number, startTime?: string, endTime?: string) {
@@ -112,6 +146,7 @@ export function TheoryLessonAssignmentSection() {
   
   // Handle theory lesson selection change
   const handleTheoryLessonChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+<<<<<<< Updated upstream
     const selectedRepresentativeId = e.target.value;
     setSelectedTheoryLessonId(selectedRepresentativeId);
     
@@ -163,6 +198,33 @@ export function TheoryLessonAssignmentSection() {
         } else {
           console.log('⚠️ All instances of this theory lesson pattern are already assigned');
         }
+=======
+    const theoryLessonId = e.target.value;
+    setSelectedTheoryLessonId(theoryLessonId);
+    
+    // If a valid theory lesson is selected, add it to the assignments
+    if (theoryLessonId) {
+      // Check if this theory lesson is already assigned
+      const isAlreadyAssigned = values.theoryLessonAssignments.some(
+        (a) => a.theoryLessonId === theoryLessonId
+      );
+      
+      // Add the theory lesson assignment if not already assigned
+      if (!isAlreadyAssigned) {
+        const updatedAssignments = [
+          ...values.theoryLessonAssignments,
+          { theoryLessonId },
+        ];
+        
+        // Update Formik values
+        setFieldValue('theoryLessonAssignments', updatedAssignments);
+        
+        // Update enrollments.theoryLessonIds to stay in sync
+        setFieldValue('enrollments.theoryLessonIds', [
+          ...values.enrollments.theoryLessonIds,
+          theoryLessonId,
+        ]);
+>>>>>>> Stashed changes
         
         // Reset selection
         setSelectedTheoryLessonId('');
@@ -172,6 +234,7 @@ export function TheoryLessonAssignmentSection() {
   
   // Remove theory lesson assignment
   const handleRemoveTheoryLessonAssignment = (theoryLessonId: string) => {
+<<<<<<< Updated upstream
     // Find the consolidated lesson that contains this lesson ID
     const consolidatedLesson = Object.values(consolidatedTheoryLessons).find(
       lesson => lesson.allInstanceIds.includes(theoryLessonId)
@@ -213,6 +276,19 @@ export function TheoryLessonAssignmentSection() {
       
       console.log('🗑️ Removed single theory lesson instance (fallback):', theoryLessonId);
     }
+=======
+    // Remove from theoryLessonAssignments
+    const updatedAssignments = values.theoryLessonAssignments.filter(
+      (a) => a.theoryLessonId !== theoryLessonId
+    );
+    setFieldValue('theoryLessonAssignments', updatedAssignments);
+    
+    // Remove from enrollments.theoryLessonIds to stay in sync
+    const updatedTheoryLessons = values.enrollments.theoryLessonIds.filter(
+      (id) => id !== theoryLessonId
+    );
+    setFieldValue('enrollments.theoryLessonIds', updatedTheoryLessons);
+>>>>>>> Stashed changes
   };
 
   return (
@@ -225,25 +301,38 @@ export function TheoryLessonAssignmentSection() {
           <h4>שיעורי העשרה משויכים</h4>
           <div className='assignments-list'>
             {assignedTheoryLessons.map((theoryLesson) => (
+<<<<<<< Updated upstream
               <div key={theoryLesson.representativeId} className='assignment-card clickable'
                    onClick={() => handleTheoryLessonClick(theoryLesson.assignedInstances[0])}>
+=======
+              <div key={theoryLesson.id} className='assignment-card'>
+>>>>>>> Stashed changes
                 <div className='assignment-header'>
                   <div className='theory-lesson-name'>
                     <BookOpen size={12} />
                     <span>{theoryLesson.category}</span>
+<<<<<<< Updated upstream
                     {theoryLesson.totalInstances > 1 && (
                       <span className='instance-count'>
                         ({theoryLesson.assignedInstances.length}/{theoryLesson.totalInstances} שיעורים)
                       </span>
                     )}
+=======
+>>>>>>> Stashed changes
                   </div>
                   <button
                     type='button'
                     className='remove-btn'
+<<<<<<< Updated upstream
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when removing
                       handleRemoveTheoryLessonAssignment(theoryLesson.assignedInstances[0]);
                     }}
+=======
+                    onClick={() =>
+                      handleRemoveTheoryLessonAssignment(theoryLesson.id)
+                    }
+>>>>>>> Stashed changes
                     aria-label='הסר שיעור העשרה'
                     disabled={isSubmitting}
                   >
@@ -251,23 +340,29 @@ export function TheoryLessonAssignmentSection() {
                   </button>
                 </div>
                 <div className='assignment-details'>
+<<<<<<< Updated upstream
                   {theoryLesson.teacherName && (
                     <div className='teacher-name'>
                       <User size={12} />
                       <span>מורה: {theoryLesson.teacherName}</span>
                     </div>
                   )}
+=======
+>>>>>>> Stashed changes
                   {theoryLesson.dayTime && (
                     <div className='day-time'>{theoryLesson.dayTime}</div>
                   )}
                   {theoryLesson.location && (
                     <div className='location'>מיקום: {theoryLesson.location}</div>
                   )}
+<<<<<<< Updated upstream
                   {theoryLesson.totalInstances > 1 && (
                     <div className='enrollment-info'>
                       רישום לכל השיעורים השבועיים
                     </div>
                   )}
+=======
+>>>>>>> Stashed changes
                 </div>
               </div>
             ))}
@@ -293,11 +388,17 @@ export function TheoryLessonAssignmentSection() {
               <option value=''>בחר שיעור העשרה</option>
               {Object.entries(theoryLessonsByCategory).map(([category, lessons]) => (
                 <optgroup key={category} label={category}>
+<<<<<<< Updated upstream
                   {(lessons as any[]).map((lesson: any) => (
                     <option key={lesson.representativeId} value={lesson.representativeId}>
                       {lesson.category} - {lesson.location} | {formatDayTime(lesson.dayOfWeek, lesson.startTime, lesson.endTime)}
                       {getTeacherName(lesson.teacherId) !== 'מורה לא ידוע' && ` | מורה: ${getTeacherName(lesson.teacherId)}`}
                       {lesson.allInstanceIds.length > 1 && ` | ${lesson.allInstanceIds.length} שיעורים`}
+=======
+                  {lessons.map((lesson) => (
+                    <option key={lesson._id} value={lesson._id}>
+                      {formatDayTime(lesson.dayOfWeek, lesson.startTime, lesson.endTime)} - {lesson.location}
+>>>>>>> Stashed changes
                     </option>
                   ))}
                   </optgroup>

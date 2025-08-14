@@ -6,18 +6,25 @@ import { teacherService } from '../services/teacherService';
 import { orchestraService } from '../services/orchestraService';
 import { theoryService, TheoryLesson } from '../services/theoryService';
 import { TestStatus } from '../services/studentService';
+<<<<<<< Updated upstream
 import { useStudentStore } from '../store/studentStore';
+=======
+>>>>>>> Stashed changes
 
 export function useStudentDetailsState() {
   const { studentId } = useParams<{ studentId: string }>();
   const [student, setStudent] = useState<Student | null>(null);
+<<<<<<< Updated upstream
   
   // Get the student store update function for cross-page state consistency
   const { updateStudentStage: updateStoreStage } = useStudentStore();
+=======
+>>>>>>> Stashed changes
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [flipped, setFlipped] = useState(false);
   const [isUpdatingTest, setIsUpdatingTest] = useState(false);
+<<<<<<< Updated upstream
   const [isUpdatingStage, setIsUpdatingStage] = useState(false);
   
   // Store local stage changes that haven't been persisted to backend yet
@@ -43,6 +50,8 @@ export function useStudentDetailsState() {
       }
     };
   };
+=======
+>>>>>>> Stashed changes
 
   // Teachers data - simplified without assignments
   const [teachersData, setTeachersData] = useState<{
@@ -88,6 +97,7 @@ export function useStudentDetailsState() {
 
       try {
         console.log(`Fetching student data for ID: ${studentId}`);
+<<<<<<< Updated upstream
         
         // First, try to get the student from the store (which has local changes applied)
         const { students, selectedStudent } = useStudentStore.getState();
@@ -105,11 +115,20 @@ export function useStudentDetailsState() {
           // Apply local stage changes to the fetched data
           studentData = mergeStudentWithLocalChanges(apiStudent);
         }
+=======
+        const studentData = await studentService.getStudentById(
+          studentId || ''
+        );
+>>>>>>> Stashed changes
 
         if (!isMounted) return;
 
         if (studentData) {
+<<<<<<< Updated upstream
           console.log(`Student data loaded successfully:`, studentData);
+=======
+          console.log(`Student data fetched successfully:`, studentData);
+>>>>>>> Stashed changes
           setStudent(studentData);
 
           // Load teachers immediately if there are teacher IDs
@@ -262,6 +281,7 @@ export function useStudentDetailsState() {
     navigate(`/theory/${theoryLessonId}`);
   };
 
+<<<<<<< Updated upstream
   // Navigate to student edit form
   const navigateToStudentEdit = () => {
     if (student?._id) {
@@ -273,6 +293,8 @@ export function useStudentDetailsState() {
     }
   };
 
+=======
+>>>>>>> Stashed changes
   // Get initials for avatar display
   const getInitials = (name: string): string => {
     if (!name) return '';
@@ -454,6 +476,7 @@ export function useStudentDetailsState() {
     }
   };
 
+<<<<<<< Updated upstream
   // Update student instrument stage
   const updateStudentStage = async (
     instrumentName: string,
@@ -572,6 +595,8 @@ export function useStudentDetailsState() {
     }
   };
 
+=======
+>>>>>>> Stashed changes
   return {
     student,
     isLoading,
@@ -588,7 +613,10 @@ export function useStudentDetailsState() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+<<<<<<< Updated upstream
     navigateToStudentEdit,
+=======
+>>>>>>> Stashed changes
     teachersData,
     teachersLoading,
     teachersError,
@@ -599,7 +627,10 @@ export function useStudentDetailsState() {
     retryLoadTeachers,
     updateStudentTest,
     isUpdatingTest,
+<<<<<<< Updated upstream
     updateStudentStage,
     isUpdatingStage,
+=======
+>>>>>>> Stashed changes
   };
 }

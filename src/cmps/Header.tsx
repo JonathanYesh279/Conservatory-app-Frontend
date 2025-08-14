@@ -41,16 +41,23 @@ export function Header() {
   // Create initials for avatar placeholder
   const userInitials = user?.fullName
     ? user.fullName
+<<<<<<< Updated upstream
         .trim() // Remove leading/trailing whitespace
         .split(' ')
         .filter(name => name.length > 0) // Remove empty strings
+=======
+        .split(' ')
+>>>>>>> Stashed changes
         .map(name => name[0])
         .join('')
         .substring(0, 2)
         .toUpperCase()
     : 'U'
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
   return (
     <header className='header'>
       <div className='header-container'>

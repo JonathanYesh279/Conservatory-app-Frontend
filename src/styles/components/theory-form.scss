@@ -1,4 +1,5 @@
 .theory-form-overlay {
+<<<<<<< Updated upstream
   // Remove fixed positioning since ModalPortal handles it
   width: 100%;
   height: 100%;
@@ -8,6 +9,32 @@
   
   @media (max-width: 768px) {
     align-items: stretch;
+=======
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem 1.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+>>>>>>> Stashed changes
   }
   
   .form-modal {
@@ -26,6 +53,7 @@
     
     @media (max-width: 768px) {
       width: 100%;
+<<<<<<< Updated upstream
       height: 100%;
       padding: 1rem 1rem 2rem 1rem;
       border-radius: 0;
@@ -33,11 +61,21 @@
       display: flex;
       flex-direction: column;
       background-color: var(--bg-card);
+=======
+      max-width: none;
+      max-height: calc(100vh - 2rem);
+      padding: 1.5rem 1rem;
+      padding-bottom: 3rem;
+      border-radius: 1rem 1rem 0 0;
+      margin: 0;
+      margin-top: auto;
+>>>>>>> Stashed changes
     }
     direction: rtl;
     scrollbar-width: thin; /* For Firefox */
     scrollbar-color: transparent transparent; /* For Firefox */
     
+<<<<<<< Updated upstream
     .form-header {
       display: flex;
       align-items: center;
@@ -87,6 +125,8 @@
       }
     }
     
+=======
+>>>>>>> Stashed changes
     /* Show scrollbar only when scrolling */
     &:hover {
       scrollbar-color: var(--border-color, rgba(100, 100, 100, 0.3)) transparent; /* For Firefox */
@@ -114,6 +154,41 @@
       margin: 0.5rem;
     }
     
+<<<<<<< Updated upstream
+=======
+    .close-button {
+      position: absolute;
+      top: 1.75rem;
+      left: 1.75rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary, #2c3a52);
+      color: var(--text-secondary, #a0aec0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+      
+      &:hover {
+        background-color: var(--bg-secondary, #263144);
+        color: var(--text-primary, white);
+      }
+    }
+    
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      color: var(--text-primary, white);
+      text-align: center;
+      font-size: 1.4rem;
+    
+    }
+>>>>>>> Stashed changes
     
     h3 {
       font-size: 1.1rem;
@@ -584,8 +659,12 @@
         margin: 1.5rem 0 0.5rem;
         
         button {
+<<<<<<< Updated upstream
           width: 146px;
           height: 39px;
+=======
+          padding: 0.6rem 1.5rem;
+>>>>>>> Stashed changes
           border-radius: 0.5rem;
           font-weight: 500;
           cursor: pointer;
@@ -628,7 +707,11 @@
   .theory-form-overlay .form-modal {
     width: 100%;
     max-width: 650px;
+<<<<<<< Updated upstream
     padding-top: 6rem;
+=======
+    padding: 1.75rem;
+>>>>>>> Stashed changes
     padding-bottom: 3rem;
     
     h2 {
@@ -642,9 +725,14 @@
       margin-top: 1.25rem;
       
       button {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
         font-size: 1rem;
+=======
+        padding: 0.5rem 1.15rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }
@@ -683,15 +771,29 @@
 @media (max-width: 599px) {
   .theory-form-overlay .form-modal {
     width: 100%;
+<<<<<<< Updated upstream
     max-height: 97vh;
     padding: 0;
     padding-top: 4.5rem;
+=======
+    max-height: 90vh;
+    padding: 1.25rem;
+    padding-top: 4.5rem;
+    padding-bottom: 3rem;
+>>>>>>> Stashed changes
     
     h2 {
       font-size: 1.2rem;
       margin-bottom: 1rem;
     }
     
+<<<<<<< Updated upstream
+=======
+    .close-button {
+      top: 4.2rem;
+      left: 1rem;
+    }
+>>>>>>> Stashed changes
     
     .theory-form .form-row {
       gap: 0.75rem;
@@ -715,9 +817,14 @@
       margin-top: 1rem;
       
       button {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
         font-size: 1rem;
+=======
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }

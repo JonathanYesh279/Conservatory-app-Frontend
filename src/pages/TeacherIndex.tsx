@@ -1,12 +1,20 @@
+<<<<<<< Updated upstream
 import { useEffect, useState, useMemo } from 'react';
+=======
+import { useEffect, useState } from 'react';
+>>>>>>> Stashed changes
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Header } from '../cmps/Header';
 import { BottomNavbar } from '../cmps/BottomNavbar';
 import { Filter, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Searchbar } from '../cmps/Searchbar';
+<<<<<<< Updated upstream
 import { useSearchAndFilterDropdown } from '../hooks/useSearchAndFilterDropdown.tsx';
 import { FilterDropdown, FilterDropdownOptions } from '../cmps/FilterDropdown.tsx';
+=======
+import { useSearchbar } from '../hooks/useSearchbar';
+>>>>>>> Stashed changes
 import { ConfirmDialog } from '../cmps/ConfirmDialog';
 import { useTeacherStore } from '../store/teacherStore';
 import { Teacher } from '../services/teacherService';
@@ -14,9 +22,12 @@ import { TeacherList } from '../cmps/TeacherList';
 import { TeacherForm } from '../cmps/TeacherForm';
 import { StudentForm } from '../cmps/StudentForm/StudentForm';
 import { Student } from '../services/studentService';
+<<<<<<< Updated upstream
 import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
 import { sanitizeError } from '../utils/errorHandler';
 import { useToast } from '../cmps/Toast';
+=======
+>>>>>>> Stashed changes
 
 export function TeacherIndex() {
   const {
@@ -30,11 +41,14 @@ export function TeacherIndex() {
     selectedTeacher,
   } = useTeacherStore();
 
+<<<<<<< Updated upstream
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { addToast } = useToast();
 
+=======
+>>>>>>> Stashed changes
   // State for modal forms and dialogs
   const [isTeacherFormOpen, setIsTeacherFormOpen] = useState(false);
   const [isStudentFormOpen, setIsStudentFormOpen] = useState(false);
@@ -48,16 +62,23 @@ export function TeacherIndex() {
     fullName: string;
     instrument?: string;
   } | null>(null);
+<<<<<<< Updated upstream
   
   // Add filter dropdown state
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
 
   // Define which fields to search in teachers - memoized to prevent infinite loop
   const teacherSearchFields = useMemo(() => (teacher: Teacher) => [
+=======
+
+  // Define which fields to search in teachers
+  const teacherSearchFields = (teacher: Teacher) => [
+>>>>>>> Stashed changes
     teacher.personalInfo.fullName,
     teacher.professionalInfo?.instrument || '',
     teacher.personalInfo.email || '',
     teacher.personalInfo.phone || '',
+<<<<<<< Updated upstream
   ], []);
 
   // Filter out current user from teachers list - memoized to prevent infinite loop
@@ -88,6 +109,21 @@ export function TeacherIndex() {
   const auth = useAuthorization(authContext);
 
   const isAdmin = auth.isAdmin();
+=======
+  ];
+
+  // Use the search hook
+  const { filteredEntities: filteredTeachers, handleSearch } = useSearchbar(
+    teachers,
+    teacherSearchFields
+  );
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const isAdmin = user?.roles.includes('מנהל');
+>>>>>>> Stashed changes
   const isDetailPage =
     location.pathname.includes('/teachers/') &&
     !location.pathname.endsWith('/teachers/');
@@ -117,6 +153,7 @@ export function TeacherIndex() {
 
   // Handler functions for teacher CRUD operations
   const handleAddTeacher = () => {
+<<<<<<< Updated upstream
     try {
       auth.validateAction('add', undefined, 'teacher');
       
@@ -146,6 +183,26 @@ export function TeacherIndex() {
         autoCloseTime: 4000
       });
     }
+=======
+    // Important: First clear all teacher state before opening the form
+    console.log('Adding new teacher, clearing previous teacher data');
+
+    // Reset all teacher states properly
+    clearSelectedTeacher(); // Clear the store state first
+    setTeacherToEdit(null);
+    setCreatedStudent(null);
+
+    // Make sure the form is closed before opening it again
+    // This ensures the useEffect for form closing will trigger
+    // which helps reset state completely
+    setIsTeacherFormOpen(false);
+
+    // Now, after states are cleared, open the form in the next tick
+    setTimeout(() => {
+      console.log('Opening empty teacher form');
+      setIsTeacherFormOpen(true);
+    }, 10); // Small delay to ensure state updates have happened
+>>>>>>> Stashed changes
   };
 
   const handleCloseTeacherForm = () => {
@@ -183,6 +240,7 @@ export function TeacherIndex() {
 
   const handleEditTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId) || null;
+<<<<<<< Updated upstream
     if (!teacher) return;
     
     try {
@@ -199,6 +257,12 @@ export function TeacherIndex() {
         autoCloseTime: 4000
       });
     }
+=======
+    console.log('Editing teacher:', teacher?.personalInfo?.fullName);
+    setTeacherToEdit(teacher);
+    setSelectedTeacher(teacher); // Update the store as well
+    setIsTeacherFormOpen(true);
+>>>>>>> Stashed changes
   };
 
   const handleViewTeacher = (teacherId: string) => {
@@ -207,6 +271,7 @@ export function TeacherIndex() {
 
   const handleRemoveTeacher = (teacherId: string) => {
     const teacher = teachers.find((t) => t._id === teacherId);
+<<<<<<< Updated upstream
     if (!teacher) return;
     
     try {
@@ -220,6 +285,11 @@ export function TeacherIndex() {
         message: sanitizedError.userMessage,
         autoCloseTime: 4000
       });
+=======
+    if (teacher) {
+      setTeacherToDelete(teacherId);
+      setIsConfirmDialogOpen(true);
+>>>>>>> Stashed changes
     }
   };
 
@@ -229,6 +299,7 @@ export function TeacherIndex() {
         await removeTeacher(teacherToDelete);
         setTeacherToDelete(null);
         setIsConfirmDialogOpen(false);
+<<<<<<< Updated upstream
         
         // Show success toast
         addToast({
@@ -244,16 +315,29 @@ export function TeacherIndex() {
           message: sanitizedError.userMessage,
           autoCloseTime: 5000
         });
+=======
+      } catch (err) {
+        console.error('Failed to remove teacher:', err);
+>>>>>>> Stashed changes
       }
     }
   };
 
   const handleFilter = () => {
+<<<<<<< Updated upstream
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
   };
 
   // Only admin can add new teachers
   const canAddTeacher = auth.canAddTeacher();
+=======
+    // This would open your filter dialog
+    alert('Open filter dialog');
+  };
+
+  // Only admin can add new teachers
+  const canAddTeacher = isAdmin;
+>>>>>>> Stashed changes
 
   // Handle successful save of a teacher
   const handleSaveSuccess = () => {
@@ -278,6 +362,7 @@ export function TeacherIndex() {
               <Searchbar onSearch={handleSearch} placeholder='חיפוש מורים...' />
 
               <div className='action-buttons'>
+<<<<<<< Updated upstream
                 <div className='filter-container'>
                   <button
                     className={`btn-icon filter-btn ${hasActiveFilters ? 'active' : ''}`}
@@ -300,6 +385,15 @@ export function TeacherIndex() {
                     entityType="teachers"
                   />
                 </div>
+=======
+                <button
+                  className='btn-icon filter-btn'
+                  onClick={handleFilter}
+                  aria-label='סנן מורים'
+                >
+                  <Filter className='icon' />
+                </button>
+>>>>>>> Stashed changes
 
                 {canAddTeacher && (
                   <button
@@ -323,8 +417,12 @@ export function TeacherIndex() {
             isLoading={isLoading}
             onEdit={handleEditTeacher}
             onView={handleViewTeacher}
+<<<<<<< Updated upstream
             onRemove={handleRemoveTeacher}
             authContext={authContext}
+=======
+            onRemove={isAdmin ? handleRemoveTeacher : undefined}
+>>>>>>> Stashed changes
           />
         )}
 

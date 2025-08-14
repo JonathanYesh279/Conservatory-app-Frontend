@@ -6,7 +6,10 @@ import React, {
   useEffect,
   ReactNode,
 } from 'react';
+<<<<<<< Updated upstream
 import { mobileUIController } from '../utils/mobileUIUtils';
+=======
+>>>>>>> Stashed changes
 
 // Define the context type
 interface NavbarContextType {
@@ -40,6 +43,7 @@ export const NavbarProvider: React.FC<NavbarProviderProps> = ({ children }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [scrollHidden, setScrollHidden] = useState(false);
 
+<<<<<<< Updated upstream
   // Handle scroll-based navbar and browser UI hiding
   useEffect(() => {
 
@@ -146,6 +150,37 @@ export const NavbarProvider: React.FC<NavbarProviderProps> = ({ children }) => {
       scrollContainer.removeEventListener('touchstart', handleTouchStart);
       scrollContainer.removeEventListener('touchmove', handleTouchMove);
       mobileUIController.showBrowserUI();
+=======
+  // Track scroll position
+  useEffect(() => {
+    // Find the scrollable container
+    const scrollContainer = document.querySelector('.app-container');
+    if (!scrollContainer) return;
+
+    let lastScrollY = 0;
+
+    const handleScroll = () => {
+      const currentScrollY = scrollContainer.scrollTop;
+
+      // Determine scroll direction and update visibility
+      if (currentScrollY > lastScrollY + 5) {
+        // Scrolling DOWN - hide
+        setScrollHidden(true);
+      } else if (currentScrollY < lastScrollY - 5) {
+        // Scrolling UP - show
+        setScrollHidden(false);
+      }
+
+      lastScrollY = currentScrollY;
+    };
+
+    // Add event listener
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Cleanup
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+>>>>>>> Stashed changes
     };
   }, []);
 

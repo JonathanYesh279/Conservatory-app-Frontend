@@ -32,7 +32,10 @@ export function StudentDetailsMain() {
     navigateToTeacher,
     navigateToOrchestra,
     navigateToTheoryLesson,
+<<<<<<< Updated upstream
     navigateToStudentEdit,
+=======
+>>>>>>> Stashed changes
     formatDate,
     retryLoadTeachers,
   } = useStudentDetailsState();
@@ -297,7 +300,14 @@ export function StudentDetailsMain() {
         student={student}
         isOpen={openSections.schedule}
         onToggle={() => toggleSection('schedule')}
+<<<<<<< Updated upstream
         onEditSchedule={navigateToStudentEdit}
+=======
+        onEditSchedule={() => {
+          // TODO: Implement edit schedule functionality
+          console.log('Edit schedule clicked');
+        }}
+>>>>>>> Stashed changes
       />
     </div>
   );

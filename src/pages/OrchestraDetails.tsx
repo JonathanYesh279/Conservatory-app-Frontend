@@ -1,7 +1,11 @@
 // src/pages/OrchestraDetails.tsx
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+<<<<<<< Updated upstream
 import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowLeft, MoreHorizontal, Trash2, User } from 'lucide-react'
+=======
+import { Edit, ChevronDown, ChevronUp, Music, Calendar, Users, X, Plus, Clock, MapPin, ArrowLeft } from 'lucide-react'
+>>>>>>> Stashed changes
 import { useOrchestraStore } from '../store/orchestraStore'
 import { useTeacherStore } from '../store/teacherStore'
 import { useStudentStore } from '../store/studentStore'
@@ -12,7 +16,10 @@ import { RehearsalForm } from '../cmps/RehearsalForm'
 import { ConfirmDialog } from '../cmps/ConfirmDialog'
 import { Student } from '../services/studentService'
 import { Rehearsal } from '../services/rehearsalService'
+<<<<<<< Updated upstream
 import { useAuthorization, createAuthorizationContext } from '../utils/authorization'
+=======
+>>>>>>> Stashed changes
 
 // Define member interface
 interface OrchestraMember {
@@ -76,6 +83,7 @@ export function OrchestraDetails() {
   const [showMembersSection, setShowMembersSection] = useState(false)
   const [showRehearsalsSection, setShowRehearsalsSection] = useState(false)
 
+<<<<<<< Updated upstream
   // Authorization setup
   const authContext = createAuthorizationContext(user, !!user)
   const authManager = useAuthorization(authContext)
@@ -88,6 +96,13 @@ export function OrchestraDetails() {
   const canEdit = orchestraPermissions.canEdit
   const canDelete = orchestraPermissions.canDelete
   const isAdmin = authManager.isAdmin()
+=======
+  // Check permissions
+  const isAdmin = user?.roles?.includes('מנהל') || false
+  const isConductor = user?.roles?.includes('מנצח') || false
+  const canEdit =
+    isAdmin || (isConductor && selectedOrchestra?.conductorId === user?._id)
+>>>>>>> Stashed changes
 
   // Load orchestra data
   useEffect(() => {
@@ -284,6 +299,7 @@ export function OrchestraDetails() {
               <h2 className='header-title'>{selectedOrchestra.name}</h2>
 
               <div className='header-actions'>
+<<<<<<< Updated upstream
                 {(orchestraPermissions.showEditButton || orchestraPermissions.showDeleteButton) && (
                   <div className='actions-dropdown'>
                     <button className='actions-trigger'>
@@ -304,6 +320,18 @@ export function OrchestraDetails() {
                       )}
                     </div>
                   </div>
+=======
+                {canEdit && (
+                  <button className='action-btn edit' onClick={handleEdit}>
+                    <Edit size={16} />
+                  </button>
+                )}
+
+                {isAdmin && (
+                  <button className='action-btn delete' onClick={handleDelete}>
+                    <X size={16} />
+                  </button>
+>>>>>>> Stashed changes
                 )}
 
                 <button
@@ -326,7 +354,10 @@ export function OrchestraDetails() {
                   }`}
                   onClick={toggleInfoSection}
                 >
+<<<<<<< Updated upstream
                   <Music size={16} />
+=======
+>>>>>>> Stashed changes
                   {selectedOrchestra.type === 'הרכב' ? 'פרטי הרכב' : 'פרטי התזמורת'}
                   {showInfoSection ? (
                     <ChevronUp className='toggle-icon' size={20} />
@@ -337,6 +368,7 @@ export function OrchestraDetails() {
 
                 {showInfoSection && (
                   <div className='section-content'>
+<<<<<<< Updated upstream
                     <div className='orchestra-info-grid'>
                       <div className='info-item'>
                         <span className='info-label'>
@@ -382,6 +414,31 @@ export function OrchestraDetails() {
                         </span>
                       </div>
 
+=======
+                    <div className='info-row'>
+                      <span className='info-label'>מנצח:</span>
+                      <span className='info-value'>
+                        {isLoadingConductor
+                          ? 'טוען...'
+                          : conductor && 'personalInfo' in conductor
+                          ? conductor.personalInfo.fullName
+                          : 'לא הוגדר'}
+                      </span>
+                    </div>
+
+                    <div className='info-row'>
+                      <span className='info-label'>מספר תלמידים:</span>
+                      <span className='info-value'>
+                        {selectedOrchestra.memberIds?.length || 0}
+                      </span>
+                    </div>
+
+                    <div className='info-row'>
+                      <span className='info-label'>מספר חזרות:</span>
+                      <span className='info-value'>
+                        {rehearsals?.length || 0}
+                      </span>
+>>>>>>> Stashed changes
                     </div>
                   </div>
                 )}
@@ -467,8 +524,13 @@ export function OrchestraDetails() {
 
                 {showRehearsalsSection && (
                   <div className='section-content'>
+<<<<<<< Updated upstream
                     {/* Add Rehearsal Button - Only visible for authorized users */}
                     {orchestraPermissions.canEdit && (
+=======
+                    {/* Add Rehearsal Button - Only visible for admin/conductor */}
+                    {canEdit && (
+>>>>>>> Stashed changes
                       <div className='add-rehearsal-btn-container'>
                         <button
                           className='btn primary add-rehearsal-btn'
@@ -502,7 +564,11 @@ export function OrchestraDetails() {
                                   <span>{formatDate(rehearsal.date)}</span>
                                 </div>
 
+<<<<<<< Updated upstream
                                 {orchestraPermissions.canEdit && (
+=======
+                                {canEdit && (
+>>>>>>> Stashed changes
                                   <div className='rehearsal-actions'>
                                     <button
                                       className='action-btn edit'

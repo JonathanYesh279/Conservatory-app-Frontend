@@ -21,8 +21,11 @@ interface RehearsalState {
   loadRehearsalsByOrchestraId: (orchestraId: string) => Promise<void>;
   saveRehearsal: (rehearsal: Partial<Rehearsal>) => Promise<Rehearsal>;
   removeRehearsal: (rehearsalId: string) => Promise<void>;
+<<<<<<< Updated upstream
   removeRehearsalsByOrchestra: (orchestraId: string) => Promise<{ deletedCount: number }>;
   updateRehearsalsByOrchestra: (orchestraId: string, updates: Partial<Rehearsal>) => Promise<{ updatedCount: number }>;
+=======
+>>>>>>> Stashed changes
   bulkCreateRehearsals: (data: BulkRehearsalData) => Promise<{
     insertedCount: number;
     rehearsalIds: string[];
@@ -171,6 +174,7 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
     }
   },
 
+<<<<<<< Updated upstream
   removeRehearsalsByOrchestra: async (orchestraId) => {
     set({ isLoading: true, error: null });
     try {
@@ -228,6 +232,8 @@ export const useRehearsalStore = create<RehearsalState>((set, get) => ({
     }
   },
 
+=======
+>>>>>>> Stashed changes
   bulkCreateRehearsals: async (data) => {
     set({ isLoading: true, error: null });
     try {

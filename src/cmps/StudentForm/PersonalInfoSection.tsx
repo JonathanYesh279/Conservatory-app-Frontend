@@ -36,7 +36,11 @@ export function PersonalInfoSection() {
           name="academicInfo.class"
           as="select"
           required
+<<<<<<< Updated upstream
           className="class-select"
+=======
+          style={{ flex: '0.8' }}
+>>>>>>> Stashed changes
         >
           {VALID_CLASSES.map((grade) => (
             <option key={grade} value={grade}>
@@ -61,7 +65,11 @@ export function PersonalInfoSection() {
           name="personalInfo.age"
           as="select"
           required
+<<<<<<< Updated upstream
           className="age-select"
+=======
+          style={{ flex: '0.6' }}
+>>>>>>> Stashed changes
         >
           <option value="">בחר גיל</option>
           {Array.from({ length: 97 }, (_, i) => i + 3).map((age) => (

@@ -56,7 +56,11 @@
       align-items: center;
       gap: 0.5rem;
       flex-wrap: wrap;
+<<<<<<< Updated upstream
       justify-content: flex-start;
+=======
+      justify-content: flex-end;
+>>>>>>> Stashed changes
       text-align: right;
       
       svg {
@@ -84,7 +88,10 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+<<<<<<< Updated upstream
     align-items: flex-start;
+=======
+>>>>>>> Stashed changes
     gap: 0.75rem;
     text-align: right;
     
@@ -97,15 +104,21 @@
       .teacher-name {
         font-weight: 500;
         color: var(--primary-color);
+<<<<<<< Updated upstream
         border: 1px solid var(--border-color);
         padding: 0.55rem 1rem;
         border-radius: 0.75rem;
+=======
+>>>>>>> Stashed changes
       }
     }
     
     .location-info,
     .student-info {
+<<<<<<< Updated upstream
       flex-direction: row;
+=======
+>>>>>>> Stashed changes
       display: flex;
       align-items: center;
       gap: 0.5rem;

@@ -2,7 +2,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, User, Search, X as XIcon } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
+<<<<<<< Updated upstream
 import { ModalPortal } from './ModalPortal';
+=======
+>>>>>>> Stashed changes
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Orchestra } from '../services/orchestraService';
 import { Student } from '../services/studentService';
@@ -339,8 +342,22 @@ export function OrchestraForm({
   if (!isOpen) return null;
 
   return (
+<<<<<<< Updated upstream
     <ModalPortal isOpen={isOpen} onClose={onClose} className="orchestra-form responsive-form">
       <div className='form-modal' {...modalProps}>
+=======
+    <div className='orchestra-form responsive-form'>
+      <div className='overlay' onClick={onClose}></div>
+      <div className='form-modal' {...modalProps}>
+        <button
+          className='btn-icon close-btn'
+          onClick={onClose}
+          aria-label='סגור'
+        >
+          <X size={20} />
+        </button>
+
+>>>>>>> Stashed changes
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
           {orchestra?._id ? 'טופס עריכת פרטי הרכב קיים במערכת' : 'טופס הוספת הרכב חדש למערכת'}
@@ -367,6 +384,7 @@ export function OrchestraForm({
 
             return (
               <Form>
+<<<<<<< Updated upstream
                 {/* Form Header with Close Button */}
                 <div className='form-header'>
                   <button
@@ -387,6 +405,17 @@ export function OrchestraForm({
                       : 'הוספת הרכב חדש'}
                   </h2>
                 </div>
+=======
+                <h2 {...titleProps}>
+                  {orchestra?._id
+                    ? isOrchestra
+                      ? 'עריכת תזמורת'
+                      : 'עריכת הרכב'
+                    : isOrchestra
+                    ? 'הוספת תזמורת חדשה'
+                    : 'הוספת הרכב חדש'}
+                </h2>
+>>>>>>> Stashed changes
 
                 {apiError && <div className='error-message'>{apiError}</div>}
 
@@ -607,6 +636,10 @@ export function OrchestraForm({
           }}
         </Formik>
       </div>
+<<<<<<< Updated upstream
     </ModalPortal>
+=======
+    </div>
+>>>>>>> Stashed changes
   );
 }

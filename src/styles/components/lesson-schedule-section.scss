@@ -1,6 +1,65 @@
 // Lesson Schedule Section - Mobile First Design
 .lesson-schedule-section {
+<<<<<<< Updated upstream
   .sd-section-content {
+=======
+  .section-header {
+    .section-title {
+      .lesson-count {
+        background: var(--primary-color);
+        color: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.75rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-left: 0.5rem;
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .refresh-btn,
+      .edit-btn {
+        background: none;
+        border: 1px solid var(--border-color);
+        color: var(--text-secondary);
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.375rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          background: var(--bg-tertiary);
+          color: var(--primary-color);
+          border-color: var(--primary-color);
+        }
+
+        &:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .spinning {
+          animation: spin 1s linear infinite;
+        }
+      }
+
+      .toggle-icon {
+        color: var(--text-secondary);
+        transition: transform 0.2s ease;
+      }
+    }
+  }
+
+  .section-content {
+>>>>>>> Stashed changes
     padding: 1.25rem;
   }
 
@@ -134,8 +193,11 @@
       border-radius: 0.75rem;
       overflow: hidden;
       transition: all 0.2s ease;
+<<<<<<< Updated upstream
       width: 100%;
       max-width: none;
+=======
+>>>>>>> Stashed changes
 
       &.has-lessons {
         border-color: var(--primary-color);
@@ -358,6 +420,7 @@
     }
 
     .weekly-schedule .schedule-grid {
+<<<<<<< Updated upstream
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -367,6 +430,11 @@
     .weekly-schedule .day-column {
       max-width: 600px;
       width: 100%;
+=======
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+>>>>>>> Stashed changes
     }
 
     .section-footer {
@@ -384,6 +452,7 @@
 @media (min-width: 1024px) {
   .lesson-schedule-section {
     .weekly-schedule .schedule-grid {
+<<<<<<< Updated upstream
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
@@ -393,6 +462,10 @@
     .weekly-schedule .day-column {
       max-width: 700px;
       width: 100%;
+=======
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.75rem;
+>>>>>>> Stashed changes
     }
 
     .schedule-stats .stat-card {

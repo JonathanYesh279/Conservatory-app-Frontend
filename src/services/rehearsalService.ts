@@ -104,6 +104,7 @@ export const rehearsalService = {
     return httpService.delete(`rehearsal/${rehearsalId}`);
   },
 
+<<<<<<< Updated upstream
   // Bulk delete rehearsals by orchestra ID
   async removeRehearsalsByOrchestra(orchestraId: string): Promise<{ deletedCount: number }> {
     if (!orchestraId) {
@@ -208,6 +209,8 @@ export const rehearsalService = {
     }
   },
 
+=======
+>>>>>>> Stashed changes
   // Bulk rehearsals creation
   async bulkCreateRehearsals(data: BulkRehearsalData): Promise<{
     insertedCount: number;

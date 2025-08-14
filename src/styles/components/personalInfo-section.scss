@@ -93,7 +93,15 @@
   [data-theme="dark"] & {
     background-color: var(--bg-secondary);
     
+<<<<<<< Updated upstream
     // Form inputs will use base styles from _forms.scss
+=======
+    .form-group select,
+    .form-group input {
+      background-color: rgba(var(--bg-tertiary-rgb));
+      border-color: var(--border-color);
+    }
+>>>>>>> Stashed changes
   }
 
   /* Media queries */

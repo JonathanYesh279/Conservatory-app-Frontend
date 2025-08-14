@@ -1,7 +1,10 @@
 // src/cmps/StudentList.tsx
 import { Student } from '../services/studentService';
 import { StudentPreview } from './StudentPreview';
+<<<<<<< Updated upstream
 import { AuthorizationContext } from '../utils/authorization';
+=======
+>>>>>>> Stashed changes
 
 interface StudentListProps {
   students: Student[];
@@ -9,7 +12,10 @@ interface StudentListProps {
   onEdit: (studentId: string) => void;
   onView?: (studentId: string) => void;
   onRemove?: (studentId: string) => void;
+<<<<<<< Updated upstream
   authContext?: AuthorizationContext;
+=======
+>>>>>>> Stashed changes
 }
 
 export function StudentList({
@@ -18,7 +24,10 @@ export function StudentList({
   onEdit,
   onView,
   onRemove,
+<<<<<<< Updated upstream
   authContext,
+=======
+>>>>>>> Stashed changes
 }: StudentListProps) {
   if (isLoading && students.length === 0) {
     return <div className='loading-state'>טוען תלמידים...</div>;
@@ -42,7 +51,10 @@ export function StudentList({
           onEdit={onEdit}
           onView={onView || onEdit} // Use view handler or fall back to edit
           onRemove={onRemove}
+<<<<<<< Updated upstream
           authContext={authContext}
+=======
+>>>>>>> Stashed changes
         />
       ))}
     </div>

@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react';
 import { Teacher } from '../services/teacherService';
 import { studentService } from '../services/studentService';
 import { TeacherPreview } from './TeacherPreview.tsx';
+<<<<<<< Updated upstream
 import { AuthorizationContext } from '../utils/authorization';
+=======
+>>>>>>> Stashed changes
 
 interface TeacherListProps {
   teachers: Teacher[];
@@ -11,7 +14,10 @@ interface TeacherListProps {
   onEdit: (teacherId: string) => void;
   onView?: (teacherId: string) => void;
   onRemove?: (teacherId: string) => void;
+<<<<<<< Updated upstream
   authContext?: AuthorizationContext;
+=======
+>>>>>>> Stashed changes
 }
 
 export function TeacherList({
@@ -20,7 +26,10 @@ export function TeacherList({
   onEdit,
   onView,
   onRemove,
+<<<<<<< Updated upstream
   authContext,
+=======
+>>>>>>> Stashed changes
 }: TeacherListProps) {
   // State to track student counts for each teacher
   const [teacherStudentCounts, setTeacherStudentCounts] = useState<Record<string, number>>({});
@@ -96,6 +105,7 @@ export function TeacherList({
 
   return (
     <div className='teacher-grid'>
+<<<<<<< Updated upstream
       {teachers
         .filter(teacher => teacher && teacher._id && teacher.personalInfo)
         .map((teacher) => (
@@ -109,6 +119,18 @@ export function TeacherList({
             authContext={authContext}
           />
         ))}
+=======
+      {teachers.map((teacher) => (
+        <TeacherPreview
+          key={teacher._id}
+          teacher={teacher}
+          onEdit={onEdit}
+          onView={onView || onEdit}
+          onRemove={onRemove}
+          studentCount={teacherStudentCounts[teacher._id] || 0}
+        />
+      ))}
+>>>>>>> Stashed changes
     </div>
   );
 }

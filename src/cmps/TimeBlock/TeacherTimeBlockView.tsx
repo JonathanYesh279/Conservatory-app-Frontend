@@ -1,5 +1,9 @@
 // src/cmps/TimeBlock/TeacherTimeBlockView.tsx
+<<<<<<< Updated upstream
 import React, { useState, useEffect, useCallback } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> Stashed changes
 import {
   Calendar,
   Clock,
@@ -10,16 +14,28 @@ import {
   MapPin,
   AlertCircle,
   CheckCircle,
+<<<<<<< Updated upstream
+=======
+  Settings,
+>>>>>>> Stashed changes
   BarChart3,
   TrendingUp,
   Target,
 } from 'lucide-react';
 import { useTimeBlockStore } from '../../store/timeBlockStore';
 import TimeBlockCreator from './TimeBlockCreator';
+<<<<<<< Updated upstream
+=======
+import AvailableSlotsFinder from './AvailableSlotsFinder';
+>>>>>>> Stashed changes
 import { ConfirmDialog } from '../ConfirmDialog';
 import {
   TimeBlockResponse,
   LessonAssignment,
+<<<<<<< Updated upstream
+=======
+  AvailableSlot,
+>>>>>>> Stashed changes
   HebrewDayName,
   HEBREW_DAYS,
   LessonDurationMinutes,
@@ -31,7 +47,10 @@ interface TeacherTimeBlockViewProps {
   onTimeBlockChange?: (timeBlocks: TimeBlockResponse[]) => void;
   readOnly?: boolean;
   className?: string;
+<<<<<<< Updated upstream
   isAdmin?: boolean;
+=======
+>>>>>>> Stashed changes
 }
 
 interface TimeBlockFormData {
@@ -47,8 +66,12 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
   teacherName,
   onTimeBlockChange,
   readOnly = false,
+<<<<<<< Updated upstream
   className = '',
   isAdmin = false
+=======
+  className = ''
+>>>>>>> Stashed changes
 }) => {
   const {
     currentTeacherSchedule,
@@ -65,12 +88,17 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
 
   // Component state
   const [showCreator, setShowCreator] = useState(false);
+<<<<<<< Updated upstream
+=======
+  const [showSlotFinder, setShowSlotFinder] = useState(false);
+>>>>>>> Stashed changes
   const [editingTimeBlock, setEditingTimeBlock] = useState<TimeBlockResponse | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [timeBlockToDelete, setTimeBlockToDelete] = useState<TimeBlockResponse | null>(null);
   const [viewMode, setViewMode] = useState<'blocks' | 'calendar' | 'stats'>('blocks');
   const [selectedDay, setSelectedDay] = useState<HebrewDayName | null>(null);
 
+<<<<<<< Updated upstream
   // Ensure non-admin users can't access stats view
   useEffect(() => {
     if (!isAdmin && viewMode === 'stats') {
@@ -78,6 +106,8 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     }
   }, [isAdmin, viewMode]);
 
+=======
+>>>>>>> Stashed changes
   // Load teacher schedule on mount
   useEffect(() => {
     if (teacherId) {
@@ -138,6 +168,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     if (!timeBlockToDelete) return;
 
     try {
+<<<<<<< Updated upstream
       console.log('Attempting to delete time block:', timeBlockToDelete._id);
       const result = await deleteTimeBlock(timeBlockToDelete._id);
       console.log('Delete result:', result);
@@ -156,6 +187,13 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
       // The error will be displayed by the timeBlockStore error state
       setShowDeleteConfirm(false);
       setTimeBlockToDelete(null);
+=======
+      await deleteTimeBlock(timeBlockToDelete._id);
+      setShowDeleteConfirm(false);
+      setTimeBlockToDelete(null);
+    } catch (err) {
+      console.error('Failed to delete time block:', err);
+>>>>>>> Stashed changes
     }
   };
 
@@ -167,6 +205,14 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
     loadTeacherSchedule(teacherId);
   };
 
+<<<<<<< Updated upstream
+=======
+  // Handle slot selection from finder
+  const handleSlotSelected = (slot: AvailableSlot) => {
+    console.log('Selected slot:', slot);
+    // Here you would typically open a lesson assignment modal
+  };
+>>>>>>> Stashed changes
 
   // Get time blocks grouped by day
   const getTimeBlocksByDay = (): Record<HebrewDayName, TimeBlockResponse[]> => {
@@ -312,6 +358,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
   const renderBlocksView = () => {
     const timeBlocksByDay = getTimeBlocksByDay();
 
+<<<<<<< Updated upstream
     // Filter days to show only those with time blocks
     const daysWithBlocks = HEBREW_DAYS.filter(day => {
       const dayBlocks = timeBlocksByDay[day] || [];
@@ -359,6 +406,43 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
             );
           })
         )}
+=======
+    return (
+      <div className="time-blocks-view">
+        {HEBREW_DAYS.map(day => {
+          const dayBlocks = timeBlocksByDay[day] || [];
+          
+          return (
+            <div key={day} className="day-column">
+              <div className="day-header">
+                <h4>{day}</h4>
+                <span className="block-count">({dayBlocks.length})</span>
+                {!readOnly && (
+                  <button
+                    type="button"
+                    className="add-block-btn"
+                    onClick={() => {
+                      setSelectedDay(day);
+                      handleCreateTimeBlock();
+                    }}
+                    title="הוסף יום לימוד"
+                  >
+                    <Plus size={14} />
+                  </button>
+                )}
+              </div>
+              
+              <div className="day-blocks">
+                {dayBlocks.length === 0 ? (
+                  <div className="no-blocks">אין ימי לימוד</div>
+                ) : (
+                  dayBlocks.map(renderTimeBlockCard)
+                )}
+              </div>
+            </div>
+          );
+        })}
+>>>>>>> Stashed changes
       </div>
     );
   };
@@ -450,6 +534,7 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         </div>
 
         <div className="header-actions">
+<<<<<<< Updated upstream
           {isAdmin && (
             <div className="view-controls">
               <button
@@ -480,6 +565,46 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
               <Plus size={16} />
               הוסף יום לימוד
             </button>
+=======
+          <div className="view-controls">
+            <button
+              type="button"
+              className={`view-btn ${viewMode === 'blocks' ? 'active' : ''}`}
+              onClick={() => setViewMode('blocks')}
+            >
+              <Calendar size={16} />
+              ימי לימוד
+            </button>
+            <button
+              type="button"
+              className={`view-btn ${viewMode === 'stats' ? 'active' : ''}`}
+              onClick={() => setViewMode('stats')}
+            >
+              <BarChart3 size={16} />
+              סטטיסטיקות
+            </button>
+          </div>
+
+          {!readOnly && (
+            <>
+              <button
+                type="button"
+                className="find-slots-btn"
+                onClick={() => setShowSlotFinder(!showSlotFinder)}
+              >
+                <Settings size={16} />
+                חיפוש זמינות
+              </button>
+              <button
+                type="button"
+                className="add-block-btn primary"
+                onClick={handleCreateTimeBlock}
+              >
+                <Plus size={16} />
+                הוסף יום לימוד
+              </button>
+            </>
+>>>>>>> Stashed changes
           )}
         </div>
       </div>
@@ -492,6 +617,19 @@ export const TeacherTimeBlockView: React.FC<TeacherTimeBlockViewProps> = ({
         </div>
       )}
 
+<<<<<<< Updated upstream
+=======
+      {/* Slot finder */}
+      {showSlotFinder && (
+        <div className="slot-finder-section">
+          <AvailableSlotsFinder
+            teacherId={teacherId}
+            onSlotSelect={handleSlotSelected}
+            compact={true}
+          />
+        </div>
+      )}
+>>>>>>> Stashed changes
 
       {/* Content */}
       <div className="time-block-content">

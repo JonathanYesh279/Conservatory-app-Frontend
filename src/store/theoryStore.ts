@@ -7,7 +7,10 @@ import {
   theoryService,
 } from '../services/theoryService';
 import { useSchoolYearStore } from './schoolYearStore';
+<<<<<<< Updated upstream
 import { checkTheoryLessonConflicts, formatConflictsForUser, checkSingleTheoryLessonConflicts } from '../utils/theoryConflictDetection';
+=======
+>>>>>>> Stashed changes
 
 interface TheoryState {
   theoryLessons: TheoryLesson[];
@@ -145,6 +148,7 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
       } else {
         // Add new theory lesson
         console.log('Adding new theory lesson with data:', theoryLessonToSave);
+<<<<<<< Updated upstream
         
         // Check for conflicts with existing lessons (only for new lessons)
         const existingLessons = get().theoryLessons;
@@ -167,6 +171,9 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
           console.error('Backend returned invalid theory lesson data:', savedTheoryLesson);
           throw new Error('שגיאה: השרת לא החזיר מזהה תקין לשיעור התאוריה החדש');
         }
+=======
+        savedTheoryLesson = await theoryService.addTheoryLesson(theoryLessonToSave);
+>>>>>>> Stashed changes
 
         set({
           theoryLessons: [...get().theoryLessons, savedTheoryLesson],
@@ -298,6 +305,7 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
 
       console.log('Formatted data for bulk create:', formattedData);
 
+<<<<<<< Updated upstream
       // Check for conflicts with existing lessons
       const existingLessons = get().theoryLessons;
       const conflicts = checkTheoryLessonConflicts(existingLessons, formattedData);
@@ -314,10 +322,13 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
         throw new Error(conflictMessage);
       }
 
+=======
+>>>>>>> Stashed changes
       // Execute API call
       const result = await theoryService.bulkCreateTheoryLessons(formattedData);
       console.log('Bulk create result:', result);
 
+<<<<<<< Updated upstream
       // Validate the bulk creation result
       if (!result || typeof result.insertedCount !== 'number' || !Array.isArray(result.theoryLessonIds)) {
         console.error('Backend returned invalid bulk creation result:', result);
@@ -329,6 +340,17 @@ export const useTheoryStore = create<TheoryState>((set, get) => ({
       const currentFilter = get().filterBy;
       await get().loadTheoryLessons(currentFilter);
 
+=======
+      // After bulk creating, refresh the theory lesson list
+      if (formattedData.category) {
+        await get().loadTheoryLessonsByCategory(formattedData.category);
+      } else if (formattedData.teacherId) {
+        await get().loadTheoryLessonsByTeacher(formattedData.teacherId);
+      } else {
+        await get().loadTheoryLessons();
+      }
+
+>>>>>>> Stashed changes
       set({ isLoading: false });
       return result;
     } catch (err) {

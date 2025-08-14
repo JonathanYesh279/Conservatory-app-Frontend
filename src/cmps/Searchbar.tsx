@@ -1,5 +1,9 @@
 // src/cmps/Searchbar.tsx
+<<<<<<< Updated upstream
 import { Search } from 'lucide-react';
+=======
+import { Search, X } from 'lucide-react';
+>>>>>>> Stashed changes
 import { useState } from 'react';
 
 interface SearchbarProps {
@@ -21,6 +25,13 @@ export function Searchbar({
     onSearch(value);
   };
 
+<<<<<<< Updated upstream
+=======
+  const clearSearch = () => {
+    setSearchQuery('');
+    onSearch('');
+  };
+>>>>>>> Stashed changes
 
   return (
     <div className={`search-bar-container ${className}`}>
@@ -33,6 +44,14 @@ export function Searchbar({
           placeholder={placeholder}
           className='search-input'
         />
+<<<<<<< Updated upstream
+=======
+        {searchQuery && (
+          <button className='clear-button' onClick={clearSearch}>
+            <X size={16} />
+          </button>
+        )}
+>>>>>>> Stashed changes
       </div>
     </div>
   );

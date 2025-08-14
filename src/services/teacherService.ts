@@ -1,7 +1,10 @@
 // src/services/teacherService.ts
 import { httpService } from './httpService';
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 export interface Teacher {
   _id: string;
   personalInfo: {
@@ -24,6 +27,7 @@ export interface Teacher {
       duration: number;
       isActive: boolean;
     }>;
+<<<<<<< Updated upstream
     timeBlocks?: Array<{
       _id: string;
       day: string;
@@ -33,6 +37,8 @@ export interface Teacher {
       notes?: string;
       isActive: boolean;
     }>;
+=======
+>>>>>>> Stashed changes
   };
   conducting?: {
     orchestraIds: string[];
@@ -48,11 +54,14 @@ export interface Teacher {
     lastLogin?: string;
     password?: string;
   };
+<<<<<<< Updated upstream
   invitationInfo?: {
     mode: 'EMAIL' | 'DEFAULT_PASSWORD';
     requiresPasswordChange: boolean;
     defaultPassword?: string;
   };
+=======
+>>>>>>> Stashed changes
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -76,11 +85,14 @@ function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
   // Create a new object with only the properties we want to update
   const prepared: any = {};
 
+<<<<<<< Updated upstream
   // IMPORTANT: Always preserve the _id for existing teachers
   if (teacher._id) {
     prepared._id = teacher._id;
   }
 
+=======
+>>>>>>> Stashed changes
   // Always include these basic fields if present
   if (teacher.personalInfo) {
     prepared.personalInfo = { ...teacher.personalInfo };
@@ -157,11 +169,14 @@ function prepareTeacherForUpdate(teacher: Partial<Teacher>): Partial<Teacher> {
         }));
       }
     }
+<<<<<<< Updated upstream
 
     // Include timeBlocks if present (for time block management)
     if (teacher.teaching.timeBlocks && Array.isArray(teacher.teaching.timeBlocks)) {
       prepared.teaching.timeBlocks = [...teacher.teaching.timeBlocks];
     }
+=======
+>>>>>>> Stashed changes
   }
 
   console.log(
@@ -176,6 +191,7 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
   // First get the base data using the update function
   const prepared = prepareTeacherForUpdate(teacher);
 
+<<<<<<< Updated upstream
   // For new teachers, always include email in credentials (password will be set via invitation)
   prepared.credentials = {
     email: teacher.personalInfo?.email || teacher.credentials?.email || '',
@@ -187,6 +203,13 @@ function prepareNewTeacher(teacher: Partial<Teacher>): Partial<Teacher> {
     prepared.teaching = {
       studentIds: [],
       schedule: []
+=======
+  // Then add credentials for new teacher
+  if (teacher.credentials) {
+    prepared.credentials = {
+      email: teacher.personalInfo?.email || teacher.credentials.email || '',
+      password: teacher.credentials.password || '',
+>>>>>>> Stashed changes
     };
   }
 
@@ -220,6 +243,7 @@ function createPlaceholderTeacher(teacherId: string): Teacher {
 export const teacherService = {
   async getTeachers(filterBy: TeacherFilter = {}): Promise<Teacher[]> {
     try {
+<<<<<<< Updated upstream
       const response = await httpService.get('teacher', filterBy);
       
       // Handle wrapped response structure {success: true, data: [...]}
@@ -235,6 +259,9 @@ export const teacherService = {
       }
       
       return teachersData;
+=======
+      return await httpService.get('teacher', filterBy);
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('Failed to get teachers:', error);
       throw new Error('Failed to load teachers. Please try again later.');
@@ -252,6 +279,7 @@ export const teacherService = {
       console.log(`Fetching teacher with ID: ${teacherId}`);
       const response = await httpService.get(`teacher/${teacherId}`);
 
+<<<<<<< Updated upstream
       // Handle wrapped response structure {success: true, data: {...}}
       let teacherData = response;
       if (response && response.success && response.data) {
@@ -259,12 +287,20 @@ export const teacherService = {
       }
 
       if (!teacherData || !teacherData._id) {
+=======
+      if (!response || !response._id) {
+>>>>>>> Stashed changes
         console.warn(`No valid teacher data found for ID ${teacherId}`);
         return createPlaceholderTeacher(teacherId);
       }
 
+<<<<<<< Updated upstream
       console.log(`Teacher data received:`, teacherData);
       return teacherData;
+=======
+      console.log(`Teacher data received:`, response);
+      return response;
+>>>>>>> Stashed changes
     } catch (error) {
       console.error(`Failed to get teacher with ID ${teacherId}:`, error);
       // Instead of returning null, return a placeholder teacher object
@@ -310,6 +346,7 @@ export const teacherService = {
       console.log(`Fetching teachers with role '${role}' from API`);
       const response = await httpService.get(`teacher/role/${role}`);
 
+<<<<<<< Updated upstream
       // Handle wrapped response structure {success: true, data: [...]}
       let teachersData = response;
       if (response && response.success && response.data) {
@@ -320,12 +357,22 @@ export const teacherService = {
         console.warn(
           `API response for getTeachersByRole is not an array:`,
           teachersData
+=======
+      if (!Array.isArray(response)) {
+        console.warn(
+          `API response for getTeachersByRole is not an array:`,
+          response
+>>>>>>> Stashed changes
         );
         return [];
       }
 
       // Filter to ensure we only get active teachers with the exact role
+<<<<<<< Updated upstream
       const filteredTeachers = teachersData.filter(
+=======
+      const filteredTeachers = response.filter(
+>>>>>>> Stashed changes
         (teacher) =>
           teacher.isActive !== false &&
           teacher.roles &&
@@ -356,6 +403,7 @@ export const teacherService = {
     const prepared = prepareNewTeacher(teacher);
     console.log('Creating new teacher with data:', prepared);
     try {
+<<<<<<< Updated upstream
       const response = await httpService.post('teacher', prepared);
       
       // Handle wrapped response structure {success: true, data: {...}}
@@ -375,6 +423,9 @@ export const teacherService = {
       
       console.log('Successfully created teacher:', teacherData);
       return teacherData;
+=======
+      return await httpService.post('teacher', prepared);
+>>>>>>> Stashed changes
     } catch (error) {
       console.error('Failed to add new teacher:', error);
       throw new Error(
@@ -394,6 +445,7 @@ export const teacherService = {
 
     try {
       // Send update request
+<<<<<<< Updated upstream
       const response = await httpService.put(`teacher/${teacherId}`, prepared);
       
       // Handle wrapped response structure {success: true, data: {...}}
@@ -413,6 +465,9 @@ export const teacherService = {
       
       console.log('Successfully updated teacher:', teacherData);
       return teacherData;
+=======
+      return await httpService.put(`teacher/${teacherId}`, prepared);
+>>>>>>> Stashed changes
     } catch (error) {
       console.error(`Failed to update teacher ${teacherId}:`, error);
       throw new Error(

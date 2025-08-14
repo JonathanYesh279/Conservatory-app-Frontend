@@ -22,6 +22,7 @@ export const VALID_CLASSES = [
 export const VALID_STAGES = [1, 2, 3, 4, 5, 6, 7, 8];
 
 export const VALID_INSTRUMENTS = [
+<<<<<<< Updated upstream
   'אבוב',
   'בסון',
   'חלילית',
@@ -32,6 +33,25 @@ export const VALID_INSTRUMENTS = [
   'קלרינט',
   'קרן יער',
   'פסנתר',
+=======
+  'כינור',
+  'צ׳לו',
+  'ויולה',
+  'קונטרבס',
+  'חליל צד',
+  'קלרינט',
+  'אבוב',
+  'בסון',
+  'סקסופון',
+  'חצוצרה',
+  'טרומבון',
+  'קרן יער',
+  'טובה',
+  'פסנתר',
+  'גיטרה',
+  'תופים',
+  'הקשה',
+>>>>>>> Stashed changes
 ];
 
 export const TEST_STATUSES = ['לא נבחן', 'עבר/ה', 'לא עבר/ה'];
@@ -40,6 +60,10 @@ export const EXTENDED_TEST_STATUSES = [
   'לא נבחן',
   'עבר/ה',
   'לא עבר/ה',
+<<<<<<< Updated upstream
+=======
+  'עבר/ה בהצלחה',
+>>>>>>> Stashed changes
   'עבר/ה בהצטיינות',
   'עבר/ה בהצטיינות יתרה',
 ];

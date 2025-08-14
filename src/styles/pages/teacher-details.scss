@@ -2,12 +2,20 @@
 
 /* Teacher Details Page Layout */
 .teacher-details-content {
+<<<<<<< Updated upstream
   min-height: calc(100vh - 8rem);
+=======
+  height: 100%;
+>>>>>>> Stashed changes
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+<<<<<<< Updated upstream
   padding: 1rem 0;
+=======
+  padding: 0;
+>>>>>>> Stashed changes
   overflow: hidden;
   direction: rtl;
 }
@@ -16,7 +24,11 @@
   position: relative;
   width: 100%;
   max-width: 700px;
+<<<<<<< Updated upstream
   min-height: 70vh;
+=======
+  height: 100%;
+>>>>>>> Stashed changes
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,7 +62,11 @@
 .teacher-card-container {
   position: relative;
   width: 100%;
+<<<<<<< Updated upstream
   min-height: 70vh;
+=======
+  height: 100%;
+>>>>>>> Stashed changes
   max-height: 80vh;
   perspective: 1500px;
 }
@@ -59,7 +75,11 @@
 .card-content {
   position: absolute;
   width: 100%;
+<<<<<<< Updated upstream
   min-height: 70vh;
+=======
+  height: 100%;
+>>>>>>> Stashed changes
   transform-style: preserve-3d;
   transition: all 0.5s ease;
   border-radius: 1rem;
@@ -85,7 +105,11 @@
 .card-side {
   position: absolute;
   width: 100%;
+<<<<<<< Updated upstream
   min-height: 70vh;
+=======
+  height: 100%;
+>>>>>>> Stashed changes
   border-radius: 1rem;
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -208,8 +232,11 @@
   padding-bottom: 3.5rem;
   overflow-y: auto;
   overflow-x: visible;
+<<<<<<< Updated upstream
   max-height: calc(70vh - 8rem);
   min-height: 0;
+=======
+>>>>>>> Stashed changes
 }
 
 /* Section styling */
@@ -291,6 +318,7 @@
   background-color: var(--bg-tertiary);
 }
 
+<<<<<<< Updated upstream
 /* Compact Students Overview - Teacher Dashboard */
 .compact-students-overview {
   display: flex;
@@ -430,6 +458,9 @@
 
 
 /* Legacy student card styles - keep for backward compatibility */
+=======
+/* Student card grid (for teachers) */
+>>>>>>> Stashed changes
 .students-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -458,6 +489,23 @@
   transform: translateY(-2px);
 }
 
+<<<<<<< Updated upstream
+=======
+.student-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+>>>>>>> Stashed changes
 .student-info {
   flex: 1;
   min-width: 0;
@@ -465,19 +513,52 @@
   flex-direction: column;
 }
 
+<<<<<<< Updated upstream
 /* Orchestra grid */
 .orchestras-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+=======
+.student-name {
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.9rem;
+}
+
+.student-instrument {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+/* Orchestra grid */
+.orchestras-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+>>>>>>> Stashed changes
   gap: 0.75rem;
 }
 
 .orchestra-card {
+<<<<<<< Updated upstream
   background-color: var(--bg-light);
   border-radius: 6px;
   padding: 0.75rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--border-color);
+=======
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: rgba(var(--primary-color-rgb), 0.1);
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(var(--primary-color-rgb), 0.2);
+>>>>>>> Stashed changes
   transition: all 0.2s ease;
 }
 
@@ -486,6 +567,7 @@
 }
 
 .orchestra-card.clickable:hover {
+<<<<<<< Updated upstream
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   border-color: var(--primary-color);
@@ -508,11 +590,25 @@
   svg {
     color: var(--primary-color);
   }
+=======
+  background-color: rgba(var(--primary-color-rgb), 0.15);
+  transform: translateY(-2px);
+}
+
+.orchestra-card svg {
+  color: var(--primary-color);
+}
+
+.orchestra-card span {
+  text-align: center;
+  font-weight: 500;
+>>>>>>> Stashed changes
 }
 
 .orchestra-type {
   font-size: 0.8rem;
   color: var(--text-secondary);
+<<<<<<< Updated upstream
   margin-left: 0.25rem;
 }
 
@@ -545,6 +641,8 @@
     font-weight: 500;
     margin-top: 0.25rem;
   }
+=======
+>>>>>>> Stashed changes
 }
 
 /* Information grid layout */
@@ -752,6 +850,7 @@
     grid-template-columns: 1fr;
   }
   
+<<<<<<< Updated upstream
   .students-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
@@ -812,6 +911,12 @@
     font-size: 0.7rem;
   }
 
+=======
+  .students-grid,
+  .orchestras-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+>>>>>>> Stashed changes
 }
 
 @media (max-width: 480px) {
@@ -856,7 +961,12 @@
     padding: 0.6rem 1.25rem;
   }
   
+<<<<<<< Updated upstream
   .students-grid {
+=======
+  .students-grid,
+  .orchestras-grid {
+>>>>>>> Stashed changes
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 0.4rem;
   }

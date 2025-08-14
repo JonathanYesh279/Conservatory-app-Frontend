@@ -1,12 +1,18 @@
 // src/cmps/StudentForm/OrchestraAssignmentSection.tsx
 import { useState, useEffect } from 'react';
 import { useFormikContext } from 'formik';
+<<<<<<< Updated upstream
 import { Music, Trash2, User, MapPin, Users, Clock } from 'lucide-react';
 import { StudentFormData } from '../../constants/formConstants';
 import { useOrchestraStore } from '../../store/orchestraStore';
 import { useTeacherStore } from '../../store/teacherStore';
 import { useRehearsalStore } from '../../store/rehearsalStore';
 import { useNavigate } from 'react-router-dom';
+=======
+import { Music, Trash2 } from 'lucide-react';
+import { StudentFormData } from '../../constants/formConstants';
+import { useOrchestraStore } from '../../store/orchestraStore';
+>>>>>>> Stashed changes
 
 export function OrchestraAssignmentSection() {
   // Get Formik context for form operations
@@ -15,6 +21,7 @@ export function OrchestraAssignmentSection() {
   // Get orchestras from store
   const { orchestras, loadOrchestras, isLoading: isLoadingOrchestras } = useOrchestraStore();
   
+<<<<<<< Updated upstream
   // Get teachers from store
   const { teachers, loadTeachers } = useTeacherStore();
   
@@ -126,22 +133,37 @@ export function OrchestraAssignmentSection() {
     acc[type].push(orchestra);
     return acc;
   }, {} as Record<string, any[]>);
+=======
+  // Local state for orchestra selection
+  const [selectedOrchestraId, setSelectedOrchestraId] = useState('');
+  
+  // Load orchestras if needed
+  useEffect(() => {
+    loadOrchestras();
+  }, [loadOrchestras]);
+>>>>>>> Stashed changes
   
   // Get assigned orchestras details by ID
   const assignedOrchestras = values.orchestraAssignments.map((assignment) => {
     const orchestra = orchestras.find((o) => o._id === assignment.orchestraId);
+<<<<<<< Updated upstream
     const rehearsalTimes = getOrchestraRehearsalTimes(assignment.orchestraId);
     
+=======
+>>>>>>> Stashed changes
     return {
       id: assignment.orchestraId,
       name: orchestra?.name || 'תזמורת לא ידועה',
       type: orchestra?.type || '',
+<<<<<<< Updated upstream
       conductorId: orchestra?.conductorId || '',
       conductorName: orchestra?.conductorId ? getConductorName(orchestra.conductorId) : '',
       location: orchestra?.location || '',
       memberCount: orchestra?.memberIds?.length || 0,
       isActive: orchestra?.isActive ?? true,
       rehearsalTimes: rehearsalTimes,
+=======
+>>>>>>> Stashed changes
     };
   });
   
@@ -204,29 +226,44 @@ export function OrchestraAssignmentSection() {
           <h4>תזמורות משוייכות</h4>
           <div className='assignments-list'>
             {assignedOrchestras.map((orchestra) => (
+<<<<<<< Updated upstream
               <div key={orchestra.id} className='assignment-card clickable'
                    onClick={() => handleOrchestraClick(orchestra.id)}>
+=======
+              <div key={orchestra.id} className='assignment-card'>
+>>>>>>> Stashed changes
                 <div className='assignment-header'>
                   <div className='orchestra-name'>
                     <Music size={12} />
                     <span>{orchestra.name}</span>
                     {orchestra.type && (
+<<<<<<< Updated upstream
                       <span className='orchestra-type'>({orchestra.type})</span>
+=======
+                      <span className='orchestra-type'>{orchestra.type}</span>
+>>>>>>> Stashed changes
                     )}
                   </div>
                   <button
                     type='button'
                     className='remove-btn'
+<<<<<<< Updated upstream
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent card click when removing
                       handleRemoveOrchestraAssignment(orchestra.id);
                     }}
+=======
+                    onClick={() =>
+                      handleRemoveOrchestraAssignment(orchestra.id)
+                    }
+>>>>>>> Stashed changes
                     aria-label='הסר תזמורת'
                     disabled={isSubmitting}
                   >
                     <Trash2 size={12} />
                   </button>
                 </div>
+<<<<<<< Updated upstream
                 <div className='assignment-details'>
                   {orchestra.conductorName && (
                     <div className='conductor-name'>
@@ -258,6 +295,8 @@ export function OrchestraAssignmentSection() {
                     </div>
                   )}
                 </div>
+=======
+>>>>>>> Stashed changes
               </div>
             ))}
           </div>
@@ -280,6 +319,7 @@ export function OrchestraAssignmentSection() {
               disabled={isLoadingOrchestras || isSubmitting}
             >
               <option value=''>בחר תזמורת</option>
+<<<<<<< Updated upstream
               {Object.entries(orchestrasByType).map(([type, orchestras]) => (
                 <optgroup key={type} label={type}>
                   {orchestras.map((orchestra) => {
@@ -295,6 +335,12 @@ export function OrchestraAssignmentSection() {
                     );
                   })}
                 </optgroup>
+=======
+              {orchestras.map((orchestra) => (
+                <option key={orchestra._id} value={orchestra._id}>
+                  {orchestra.name} ({orchestra.type})
+                </option>
+>>>>>>> Stashed changes
               ))}
             </select>
             {isLoadingOrchestras && (

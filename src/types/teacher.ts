@@ -75,8 +75,11 @@ export interface User {
   _id: string;
   fullName: string;
   email: string;
+<<<<<<< Updated upstream
   phone?: string;
   address?: string;
+=======
+>>>>>>> Stashed changes
   roles: string[];
   avatarUrl?: string;
   professionalInfo?: {

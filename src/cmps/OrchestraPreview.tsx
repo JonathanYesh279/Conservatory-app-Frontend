@@ -1,8 +1,12 @@
 // src/cmps/OrchestraPreview.tsx
 import { Orchestra } from '../services/orchestraService';
+<<<<<<< Updated upstream
 import { Edit, Trash2, Music, Users, Calendar, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { teacherService } from '../services/teacherService';
+=======
+import { Edit, Trash2, Music, Users, Calendar } from 'lucide-react';
+>>>>>>> Stashed changes
 
 interface OrchestraPreviewProps {
   orchestra: Orchestra;
@@ -17,6 +21,7 @@ export function OrchestraPreview({
   onEdit,
   onRemove,
 }: OrchestraPreviewProps) {
+<<<<<<< Updated upstream
   const [conductorName, setConductorName] = useState<string>('');
 
   // Fetch conductor name when component mounts
@@ -39,6 +44,8 @@ export function OrchestraPreview({
 
     fetchConductorName();
   }, [orchestra.conductorId]);
+=======
+>>>>>>> Stashed changes
   // Get background color based on orchestra type
   const getTypeColor = (type: string): string => {
     const typeColors: Record<string, string> = {
@@ -92,6 +99,7 @@ export function OrchestraPreview({
           <div className='orchestra-info'>
             <h3 className='orchestra-name'>{orchestra.name}</h3>
             <div className='orchestra-type'>
+<<<<<<< Updated upstream
               <Music size={14} />
               <span>{orchestra.type}</span>
             </div>
@@ -102,12 +110,19 @@ export function OrchestraPreview({
               <span>מנצח: {conductorName}</span>
             </div>
           )}
+=======
+              <Users size={14} />
+              <span>{getMembersCountText(memberCount)}</span>
+            </div>
+          </div>
+>>>>>>> Stashed changes
         </div>
       </div>
 
       <div className='preview-content'>
         <div className='info-row'>
           <div className='info-item'>
+<<<<<<< Updated upstream
             <Users size={16} />
             <span>{getMembersCountText(memberCount)}</span>
           </div>
@@ -116,6 +131,13 @@ export function OrchestraPreview({
             <Calendar size={16} />
             <span>{getRehearsalsCountText(rehearsalCount)}</span>
           </div>
+=======
+            <Calendar size={16} />
+            <span>{getRehearsalsCountText(rehearsalCount)}</span>
+          </div>
+
+          {/* We can add additional info here if needed */}
+>>>>>>> Stashed changes
         </div>
       </div>
 

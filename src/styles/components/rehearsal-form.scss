@@ -1,6 +1,7 @@
 // src/styles/components/rehearsal-form.scss
 
 .rehearsal-form {
+<<<<<<< Updated upstream
   // Remove fixed positioning since ModalPortal handles it
   width: 100%;
   height: 100%;
@@ -10,6 +11,32 @@
   
   @media (max-width: 768px) {
     align-items: stretch;
+=======
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1.5rem 3rem 1.5rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(3px);
+>>>>>>> Stashed changes
   }
   
   .form-modal {
@@ -28,6 +55,7 @@
     
     @media (max-width: 768px) {
       width: 100%;
+<<<<<<< Updated upstream
       height: 100%;
       padding: 1rem 1rem 2rem 1rem;
       border-radius: 0;
@@ -35,6 +63,15 @@
       display: flex;
       flex-direction: column;
       background-color: var(--bg-card);
+=======
+      max-width: none;
+      max-height: calc(100vh - 2rem);
+      padding: 1.5rem 1rem;
+      padding-bottom: 3rem;
+      border-radius: 1rem 1rem 0 0;
+      margin: 0;
+      margin-top: auto;
+>>>>>>> Stashed changes
     }
     direction: rtl;
     scrollbar-width: thin; /* For Firefox */
@@ -67,6 +104,7 @@
       margin: 0.5rem;
     }
     
+<<<<<<< Updated upstream
     .form-header {
       display: flex;
       align-items: center;
@@ -116,6 +154,40 @@
       }
     }
     
+=======
+    .close-btn {
+      position: absolute;
+      top: 1.75rem;
+      left: 1.75rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: var(--bg-tertiary, #2c3a52);
+      color: var(--text-secondary, #a0aec0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 5;
+      
+      &:hover {
+        background-color: var(--bg-secondary, #263144);
+        color: var(--text-primary, white);
+      }
+    }
+    
+    h2 {
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      color: var(--text-primary, white);
+      text-align: center;
+      font-size: 1.4rem;
+    }
+    
+>>>>>>> Stashed changes
     h3 {
       font-size: 1.1rem;
       color: var(--text-primary, white);
@@ -194,6 +266,7 @@
       gap: 1rem;
       margin-bottom: 1rem;
       
+<<<<<<< Updated upstream
       // Enhanced styling for full-width day of week row
       &.full-width {
         flex-direction: column;
@@ -230,6 +303,8 @@
         }
       }
       
+=======
+>>>>>>> Stashed changes
       .form-group {
         flex: 1;
         margin-bottom: 0.5rem;
@@ -302,6 +377,7 @@
           background-position: left 0.75rem center;
           background-size: 1rem;
           padding-left: 2.5rem;
+<<<<<<< Updated upstream
           
           // Enhanced styling for day of week dropdown
           &[name="dayOfWeek"] {
@@ -317,6 +393,8 @@
               padding: 0.4rem;
             }
           }
+=======
+>>>>>>> Stashed changes
         }
         
         textarea {
@@ -331,6 +409,7 @@
         }
         
         .help-text {
+<<<<<<< Updated upstream
           color: #8a8a8a !important;
           font-size: 0.65rem !important;
           margin-top: 0.2rem !important;
@@ -338,6 +417,11 @@
           font-weight: 300 !important;
           opacity: 0.7 !important;
           font-style: italic !important;
+=======
+          color: var(--text-secondary, #a0aec0);
+          font-size: 0.8rem;
+          margin-top: 0.35rem;
+>>>>>>> Stashed changes
         }
       }
     }
@@ -431,8 +515,12 @@
       margin: 1.5rem 0 0.5rem;
       
       button {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
+=======
+        padding: 0.6rem 1.5rem;
+>>>>>>> Stashed changes
         border-radius: 0.5rem;
         font-weight: 500;
         cursor: pointer;
@@ -488,9 +576,14 @@
       margin-top: 1.25rem;
       
       button {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
         font-size: 1rem;
+=======
+        padding: 0.5rem 1.15rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }
@@ -529,6 +622,7 @@
 @media (max-width: 599px) {
   .rehearsal-form .form-modal {
     width: 100%;
+<<<<<<< Updated upstream
     max-height: 97vh;
     padding-inline: 0;
     padding-top: 4.5rem;
@@ -547,16 +641,34 @@
         font-size: 1.2rem;
         margin-left: 2rem; /* Adjust for smaller mobile close button */
       }
+=======
+    max-height: 90vh;
+    padding: 1.25rem;
+    padding-top: 3.5rem;
+    padding-bottom: 3rem;
+    
+    h2 {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+    }
+    
+    .close-btn {
+      top: 3rem;
+      left: 1rem;
+>>>>>>> Stashed changes
     }
     
     .form-row {
       gap: 0.75rem;
+<<<<<<< Updated upstream
       
       &.full-width .form-group select[name="dayOfWeek"] {
         font-size: 0.9rem;
         padding: 0.65rem 2.5rem 0.65rem 0.75rem;
         min-width: 150px;
       }
+=======
+>>>>>>> Stashed changes
     }
     
     .form-actions {
@@ -564,9 +676,14 @@
       margin-top: 1rem;
       
       button {
+<<<<<<< Updated upstream
         width: 146px;
         height: 39px;
         font-size: 1rem;
+=======
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+>>>>>>> Stashed changes
       }
     }
   }

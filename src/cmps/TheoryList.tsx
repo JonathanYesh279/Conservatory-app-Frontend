@@ -45,11 +45,15 @@ export function TheoryList({
 
     // Sort theory lessons within each group by start time
     Object.values(dateGroups).forEach((group) => {
+<<<<<<< Updated upstream
       group.theoryLessons.sort((a, b) => {
         const timeA = a.startTime || '00:00';
         const timeB = b.startTime || '00:00';
         return timeA.localeCompare(timeB);
       });
+=======
+      group.theoryLessons.sort((a, b) => a.startTime.localeCompare(b.startTime));
+>>>>>>> Stashed changes
     });
 
     // Convert to array and sort with today first, then by date
@@ -93,9 +97,14 @@ export function TheoryList({
 
   // Get teacher name by id
   const getTeacherName = (teacherId: string) => {
+<<<<<<< Updated upstream
     if (!teacherId || !teachers) return 'מדריך לא מוגדר';
     const teacher = teachers.find((t) => t._id === teacherId);
     return teacher?.personalInfo?.fullName || 'מדריך לא מוגדר';
+=======
+    const teacher = teachers.find((t) => t._id === teacherId);
+    return teacher ? teacher.personalInfo.fullName : 'מדריך לא מוגדר';
+>>>>>>> Stashed changes
   };
 
   return (
@@ -111,6 +120,7 @@ export function TheoryList({
           </div>
 
           <div className='theory-grid'>
+<<<<<<< Updated upstream
             {theoryLessons
               .filter(theoryLesson => theoryLesson && theoryLesson._id) // Filter out invalid lessons
               .map((theoryLesson, index) => (
@@ -124,6 +134,19 @@ export function TheoryList({
                   isToday={isToday}
                 />
               ))}
+=======
+            {theoryLessons.map((theoryLesson) => (
+              <TheoryPreview
+                key={theoryLesson._id}
+                theoryLesson={theoryLesson}
+                teacherName={getTeacherName(theoryLesson.teacherId)}
+                onEdit={onEdit}
+                onView={onView}
+                onRemove={onRemove}
+                isToday={isToday}
+              />
+            ))}
+>>>>>>> Stashed changes
           </div>
         </div>
       ))}

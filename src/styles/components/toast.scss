@@ -2,7 +2,11 @@
 
 .toast-container {
   position: fixed;
+<<<<<<< Updated upstream
   max-width: 24rem; // Slightly wider for better readability
+=======
+  max-width: 20rem;
+>>>>>>> Stashed changes
   width: auto;
   z-index: 9999;
   display: flex;
@@ -49,6 +53,7 @@
 
   .toast-content {
     display: flex;
+<<<<<<< Updated upstream
     align-items: flex-start; // Better alignment for multi-line messages
     padding: 0.75rem 1rem; // More padding for better spacing
     gap: 0.5rem; // Consistent spacing
@@ -60,15 +65,32 @@
     align-items: center;
     flex-shrink: 0; // Prevent icon from shrinking
     margin-top: 0.1rem; // Slight adjustment for alignment
+=======
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .toast-icon {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+>>>>>>> Stashed changes
   }
 
   .toast-message {
     flex: 1;
+<<<<<<< Updated upstream
     font-size: 0.9rem; // Slightly larger for better readability
     font-weight: 500;
     line-height: 1.3; // Better line spacing
     max-width: 18rem; // Prevent overly long lines
     word-wrap: break-word; // Handle long words
+=======
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.2;
+>>>>>>> Stashed changes
   }
 
   .toast-actions {
@@ -136,6 +158,7 @@
 
   &.toast-warning {
     border-left: 4px solid var(--warning);
+<<<<<<< Updated upstream
     background-color: rgba(255, 193, 7, 0.95); // Orange background
     
     .toast-icon {
@@ -164,11 +187,21 @@
       &:hover {
         color: white;
       }
+=======
+    
+    .toast-icon {
+      color: var(--warning);
+    }
+    
+    .toast-progress {
+      background: var(--warning);
+>>>>>>> Stashed changes
     }
   }
 
   &.toast-danger {
     border-left: 4px solid var(--danger);
+<<<<<<< Updated upstream
     background-color: rgba(220, 53, 69, 0.95); // Red background
     
     .toast-icon {
@@ -197,11 +230,21 @@
       &:hover {
         color: white;
       }
+=======
+    
+    .toast-icon {
+      color: var(--danger);
+    }
+    
+    .toast-progress {
+      background: var(--danger);
+>>>>>>> Stashed changes
     }
   }
 
   &.toast-info {
     border-left: 4px solid var(--primary);
+<<<<<<< Updated upstream
     background-color: rgba(13, 110, 253, 0.95); // Blue background
     
     .toast-icon {
@@ -230,6 +273,15 @@
       &:hover {
         color: white;
       }
+=======
+    
+    .toast-icon {
+      color: var(--primary);
+    }
+    
+    .toast-progress {
+      background: var(--primary);
+>>>>>>> Stashed changes
     }
   }
 }
@@ -284,6 +336,7 @@ body.dark-theme {
   to {
     transform: scaleX(0);
   }
+<<<<<<< Updated upstream
 }
 
 // Professional error banner styling for forms
@@ -377,4 +430,6 @@ body.dark-theme {
     opacity: 1;
     transform: translateY(0);
   }
+=======
+>>>>>>> Stashed changes
 }

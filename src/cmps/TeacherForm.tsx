@@ -8,11 +8,16 @@ import {
   User,
   Calendar,
   ArrowLeft,
+<<<<<<< Updated upstream
   AlertCircle,
   Mail,
 } from 'lucide-react';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { ModalPortal } from './ModalPortal';
+=======
+} from 'lucide-react';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
+>>>>>>> Stashed changes
 import { Formik, Form, FormikHelpers } from 'formik';
 import { Teacher } from '../services/teacherService';
 import { Student } from '../services/studentService';
@@ -21,6 +26,7 @@ import { useTeacherStore } from '../store/teacherStore';
 import { useSchoolYearStore } from '../store/schoolYearStore';
 import { useToast } from './Toast';
 import { Orchestra, orchestraService } from '../services/orchestraService';
+<<<<<<< Updated upstream
 import { DuplicateConfirmationModal } from './DuplicateConfirmationModal';
 import { DuplicateDetectionInfo, sanitizeError } from '../utils/errorHandler';
 import { FormField } from './FormComponents/FormField';
@@ -28,6 +34,11 @@ import { TeacherTimeBlockManager } from './TeacherForm/TeacherTimeBlockManager';
 import { TimeBlock } from '../types/schedule';
 import { useAuth } from '../hooks/useAuth';
 import { useAuthorization, createAuthorizationContext } from '../utils/authorization';
+=======
+import { FormField } from './FormComponents/FormField';
+import { TeacherTimeBlockManager } from './TeacherForm/TeacherTimeBlockManager';
+import { TimeBlock } from '../types/schedule';
+>>>>>>> Stashed changes
 import {
   teacherValidationSchema,
   initialTeacherFormValues,
@@ -95,14 +106,18 @@ export function TeacherForm({
   const [loadingOrchestras, setLoadingOrchestras] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+<<<<<<< Updated upstream
   const [duplicateInfo, setDuplicateInfo] = useState<DuplicateDetectionInfo | null>(null);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<any>(null);
   const [forceDuplicateCreation, setForceDuplicateCreation] = useState(false);
+=======
+>>>>>>> Stashed changes
 
   // Store access
   const { saveTeacher, isLoading } = useTeacherStore();
   const { currentSchoolYear } = useSchoolYearStore();
+<<<<<<< Updated upstream
   const { addToast, showError } = useToast();
   const { user, isAuthenticated } = useAuth();
 
@@ -148,6 +163,9 @@ export function TeacherForm({
   const handleDuplicateCancel = () => {
     resetDuplicateState();
   };
+=======
+  const { addToast } = useToast();
+>>>>>>> Stashed changes
 
   // Determine if this is a new teacher or existing teacher
   const isNewTeacher = !teacher?._id;
@@ -199,6 +217,10 @@ export function TeacherForm({
         schoolYears: teacher.schoolYears || [],
         credentials: {
           email: teacher.personalInfo?.email || '',
+<<<<<<< Updated upstream
+=======
+          password: '', // Don't include password for updates
+>>>>>>> Stashed changes
         },
         isActive: teacher.isActive !== false,
       };
@@ -248,6 +270,7 @@ export function TeacherForm({
     fetchOrchestras();
   }, []);
 
+<<<<<<< Updated upstream
   // Process the actual teacher save operation
   const processSaveTeacher = async (dataToSend: any) => {
     const teacherId = dataToSend._id;
@@ -302,12 +325,15 @@ export function TeacherForm({
     return savedTeacher;
   };
 
+=======
+>>>>>>> Stashed changes
   // Form submission handler
   const handleSubmit = async (
     values: TeacherFormData,
     { setSubmitting, setValues }: FormikHelpers<TeacherFormData>
   ) => {
     setApiError(null);
+<<<<<<< Updated upstream
     resetDuplicateState();
     
     // Check authorization before proceeding
@@ -329,6 +355,8 @@ export function TeacherForm({
     // Prepare data for submission - declare outside try block for error handling
     let dataToSend: any;
     
+=======
+>>>>>>> Stashed changes
     try {
       // Ensure credentials email matches personal email
       if (
@@ -347,11 +375,20 @@ export function TeacherForm({
       }
       const teacherId = values._id;
 
+<<<<<<< Updated upstream
       if (teacherId) {
         // For updates: explicitly include only what we want to update
         console.log('🔧 FIXED VERSION LOADED - Update path with _id:', teacherId);
         dataToSend = {
           _id: teacherId, // IMPORTANT: Include the _id for updates
+=======
+      // Prepare data for submission
+      let dataToSend: any;
+
+      if (teacherId) {
+        // For updates: explicitly include only what we want to update
+        dataToSend = {
+>>>>>>> Stashed changes
           personalInfo: values.personalInfo,
           roles: values.roles,
           professionalInfo: values.professionalInfo,
@@ -399,6 +436,7 @@ export function TeacherForm({
         ];
       }
 
+<<<<<<< Updated upstream
       // Add force creation flag if it was set
       if (forceDuplicateCreation) {
         dataToSend.forceCreate = true;
@@ -434,6 +472,40 @@ export function TeacherForm({
         showError(err as Error);
         setApiError(null);
       }
+=======
+      // Save or update teacher
+      let savedTeacher;
+      if (teacherId) {
+        savedTeacher = await saveTeacher(dataToSend, teacherId);
+      } else {
+        savedTeacher = await saveTeacher(dataToSend);
+      }
+
+      // Show success toast
+      const toastMessage = teacherId 
+        ? `המורה ${values.personalInfo.fullName} עודכן בהצלחה` 
+        : `המורה ${values.personalInfo.fullName} נוסף בהצלחה`;
+      
+      addToast({
+        type: 'success',
+        message: toastMessage,
+      });
+
+      // Call optional onSave callback
+      if (onSave) {
+        onSave();
+      }
+
+      // Close the form after successful save
+      handleModalClose();
+    } catch (err) {
+      console.error('Error saving teacher:', err);
+      // More detailed error display
+      const errorMessage =
+        err instanceof Error ? err.message : 'שגיאה לא ידועה בשמירת המורה';
+      console.error('Error message:', errorMessage);
+      setApiError(errorMessage);
+>>>>>>> Stashed changes
     } finally {
       setSubmitting(false);
     }
@@ -449,6 +521,10 @@ export function TeacherForm({
         return (
           <div className='teacher-form-view'>
             <div className='teacher-modal-header'>
+<<<<<<< Updated upstream
+=======
+              <h2 {...titleProps}>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
+>>>>>>> Stashed changes
               <button
                 className='btn-icon close-btn'
                 onClick={handleModalClose}
@@ -456,6 +532,7 @@ export function TeacherForm({
               >
                 <X size={20} />
               </button>
+<<<<<<< Updated upstream
               <h2 {...titleProps}>{teacher?._id ? 'עריכת מורה' : 'הוספת מורה חדש'}</h2>
             </div>
 
@@ -475,6 +552,11 @@ export function TeacherForm({
                 </button>
               </div>
             )}
+=======
+            </div>
+
+            {apiError && <div className='error-message'>{apiError}</div>}
+>>>>>>> Stashed changes
 
             <Formik
               initialValues={getInitialFormValues()}
@@ -702,9 +784,13 @@ export function TeacherForm({
                                 : 'required-field'
                             }
                           >
+<<<<<<< Updated upstream
                             תפקידים {!isAdmin() && teacher?._id && (
                               <span className="readonly-indicator">(צפייה בלבד)</span>
                             )}
+=======
+                            תפקידים
+>>>>>>> Stashed changes
                           </label>
                           <div className='checkbox-group'>
                             {VALID_ROLES.map((role) => (
@@ -738,7 +824,11 @@ export function TeacherForm({
 
                                     setFieldValue('roles', updatedRoles);
                                   }}
+<<<<<<< Updated upstream
                                   disabled={isSubmitting || (!isAdmin() && !!teacher?._id)}
+=======
+                                  disabled={isSubmitting}
+>>>>>>> Stashed changes
                                 />
                                 <label htmlFor={`role-${role}`}>{role}</label>
                               </div>
@@ -981,6 +1071,7 @@ export function TeacherForm({
                       </div>
                     )}
 
+<<<<<<< Updated upstream
                     {/* Invitation Info - Only shown for new teachers */}
                     {isNewTeacher && (
                       <div className='form-section'>
@@ -998,6 +1089,81 @@ export function TeacherForm({
                             <p>
                               המורה יקבל קישור להגדרת סיסמה ויוכל להתחבר למערכת
                             </p>
+=======
+                    {/* Authentication - Only shown for new teachers */}
+                    {isNewTeacher && (
+                      <div className='form-section'>
+                        <h3>הרשאות</h3>
+
+                        {/* Email (this should be disabled and synced with the personal email) */}
+                        <div className='form-row full-width'>
+                          <FormField
+                            label='דוא"ל (להתחברות)'
+                            name='credentials.email'
+                            type='email'
+                            required
+                            disabled={true} // Always disabled - synced with personal email
+                          />
+                        </div>
+
+                        {/* Password */}
+                        <div className='form-row full-width'>
+                          <div className='form-group'>
+                            <label
+                              htmlFor='password'
+                              className={
+                                errors.credentials?.password &&
+                                touched.credentials?.password
+                                  ? 'required-field is-invalid'
+                                  : 'required-field'
+                              }
+                            >
+                              סיסמה
+                            </label>
+                            <div className='password-input-container'>
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                id='password'
+                                name='credentials.password'
+                                value={values.credentials.password}
+                                onChange={(e) => {
+                                  setFieldValue(
+                                    'credentials.password',
+                                    e.target.value
+                                  );
+                                }}
+                                className={
+                                  errors.credentials?.password &&
+                                  touched.credentials?.password
+                                    ? 'is-invalid'
+                                    : ''
+                                }
+                                required
+                                disabled={isSubmitting}
+                              />
+                              <button
+                                type='button'
+                                className='toggle-password-btn'
+                                onClick={() => setShowPassword(!showPassword)}
+                                aria-label={
+                                  showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'
+                                }
+                                disabled={isSubmitting}
+                              >
+                                {showPassword ? (
+                                  <EyeOff size={16} />
+                                ) : (
+                                  <Eye size={16} />
+                                )}
+                              </button>
+                            </div>
+                            {errors.credentials?.password &&
+                              touched.credentials?.password && (
+                                <div className='form-error'>
+                                  {errors.credentials.password}
+                                </div>
+                              )}
+>>>>>>> Stashed changes
                           </div>
                         </div>
                       </div>
@@ -1037,7 +1203,12 @@ export function TeacherForm({
   };
 
   return (
+<<<<<<< Updated upstream
     <ModalPortal isOpen={isOpen} onClose={handleModalClose} className="teacher-form responsive-form">
+=======
+    <div className='teacher-form responsive-form'>
+      <div className='overlay' onClick={handleModalClose}></div>
+>>>>>>> Stashed changes
       <div className='form-modal' {...modalProps}>
         {/* Hidden description for screen readers */}
         <div {...descriptionProps} className="sr-only">
@@ -1045,6 +1216,7 @@ export function TeacherForm({
         </div>
         {renderModalContent()}
       </div>
+<<<<<<< Updated upstream
       
       {/* Duplicate Confirmation Modal */}
       {duplicateInfo && (
@@ -1059,5 +1231,8 @@ export function TeacherForm({
         />
       )}
     </ModalPortal>
+=======
+    </div>
+>>>>>>> Stashed changes
   );
 }

@@ -2,7 +2,10 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 import { v4 as uuidv4 } from 'uuid';
 import ToastContainer from './ToastContainer';
 import { ToastType } from './Toast';
+<<<<<<< Updated upstream
 import { SanitizedError } from '../../utils/errorHandler';
+=======
+>>>>>>> Stashed changes
 
 export interface ToastOptions {
   type: ToastType;
@@ -10,8 +13,11 @@ export interface ToastOptions {
   autoClose?: boolean;
   autoCloseTime?: number;
   onUndo?: () => void;
+<<<<<<< Updated upstream
   errorId?: string;
   developerMessage?: string;
+=======
+>>>>>>> Stashed changes
 }
 
 export interface ToastItem extends ToastOptions {
@@ -22,10 +28,13 @@ export interface ToastContextType {
   addToast: (options: ToastOptions) => string;
   removeToast: (id: string) => void;
   removeAllToasts: () => void;
+<<<<<<< Updated upstream
   showError: (error: SanitizedError | Error | string) => string;
   showSuccess: (message: string) => string;
   showWarning: (message: string) => string;
   showInfo: (message: string) => string;
+=======
+>>>>>>> Stashed changes
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -63,6 +72,7 @@ const ToastProvider: React.FC<ToastProviderProps> = ({
     setToasts([]);
   }, []);
 
+<<<<<<< Updated upstream
   const showError = useCallback((error: SanitizedError | Error | string) => {
     let message: string;
     let errorId: string | undefined;
@@ -131,6 +141,10 @@ const ToastProvider: React.FC<ToastProviderProps> = ({
       showWarning, 
       showInfo 
     }}>
+=======
+  return (
+    <ToastContext.Provider value={{ addToast, removeToast, removeAllToasts }}>
+>>>>>>> Stashed changes
       {children}
       <ToastContainer
         toasts={toasts.map((toast) => ({

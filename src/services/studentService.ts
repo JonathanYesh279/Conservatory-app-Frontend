@@ -203,6 +203,7 @@ export const studentService = {
       delete updateData._id;
     }
 
+<<<<<<< Updated upstream
     // Remove read-only fields from teacherAssignments to prevent backend validation errors
     if (updateData.teacherAssignments) {
       updateData.teacherAssignments = updateData.teacherAssignments.map((assignment: any) => {
@@ -221,6 +222,10 @@ export const studentService = {
 
     console.log(`Updating student with ID: ${studentId}`);
     console.log('Clean update data:', updateData);
+=======
+    console.log(`Updating student with ID: ${studentId}`);
+    console.log('Update data:', updateData);
+>>>>>>> Stashed changes
 
     // Use PUT method for updating
     return httpService.put(`student/${studentId}`, updateData);
@@ -286,6 +291,7 @@ export const studentService = {
       );
     }
   },
+<<<<<<< Updated upstream
 
   // Update student instrument stage
   async updateStudentStage(
@@ -330,4 +336,6 @@ export const studentService = {
       );
     }
   },
+=======
+>>>>>>> Stashed changes
 };
